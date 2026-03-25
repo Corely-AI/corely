@@ -6,6 +6,8 @@ import { CatalogController } from "./http/catalog.controller";
 import { CATALOG_REPOSITORY } from "./application/ports/catalog-repository.port";
 import { PrismaCatalogRepositoryAdapter } from "./infrastructure/adapters/prisma-catalog-repository.adapter";
 import { CreateCatalogItemUseCase } from "./application/use-cases/create-item.usecase";
+import { CreatePosQuickCatalogItemUseCase } from "./application/use-cases/create-pos-quick-item.usecase";
+import { UpdatePosQuickCatalogItemUseCase } from "./application/use-cases/update-pos-quick-item.usecase";
 import { UpdateCatalogItemUseCase } from "./application/use-cases/update-item.usecase";
 import { ArchiveCatalogItemUseCase } from "./application/use-cases/archive-item.usecase";
 import { GetCatalogItemUseCase } from "./application/use-cases/get-item.usecase";
@@ -65,6 +67,8 @@ const makeUseCase = (UseCaseClass: any) => ({
     PrismaCatalogRepositoryAdapter,
     { provide: CATALOG_REPOSITORY, useExisting: PrismaCatalogRepositoryAdapter },
     makeUseCase(CreateCatalogItemUseCase),
+    makeUseCase(CreatePosQuickCatalogItemUseCase),
+    makeUseCase(UpdatePosQuickCatalogItemUseCase),
     makeUseCase(UpdateCatalogItemUseCase),
     makeUseCase(ArchiveCatalogItemUseCase),
     makeUseCase(GetCatalogItemUseCase),

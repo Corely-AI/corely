@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
-import { cashManagementFeature } from "@corely/web-features";
+import { cashManagementFeature, posAdminFeature } from "@corely/web-features";
 import { RequirePermission, RequireSurface } from "@corely/web-shared/shared/permissions";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
@@ -161,6 +161,13 @@ export const appShellRoutes = (
           key={route.path}
           path={route.path}
           element={<RequireSurface surfaces={["platform", "pos"]}>{route.element}</RequireSurface>}
+        />
+      ))}
+      {posAdminFeature.posAdminRoutes().map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={<RequireSurface surfaces={["pos"]}>{route.element}</RequireSurface>}
         />
       ))}
       <Route

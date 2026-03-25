@@ -9,9 +9,10 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { Register } from "@corely/contracts";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useRegisterStore } from "@/stores/registerStore";
 import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
 import { AppShell, Badge, Button, Card, EmptyState, TextField } from "@/ui/components";
@@ -19,6 +20,8 @@ import { posTheme } from "@/ui/theme";
 
 export default function RegisterSelectionScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)");
   const { isTablet } = useAdaptiveLayout();
   const { registers, selectedRegister, isLoading, loadRegisters, selectRegister } =
     useRegisterStore();
@@ -61,11 +64,7 @@ export default function RegisterSelectionScreen() {
     setSubmitting(true);
     try {
       await selectRegister(registerId);
-      if (router.canGoBack()) {
-        router.back();
-      } else {
-        router.replace("/(main)");
-      }
+      goBack();
     } catch (error) {
       Alert.alert(t("common.error"), t("register.failedSelect"));
       console.error(error);
@@ -78,7 +77,7 @@ export default function RegisterSelectionScreen() {
     <AppShell
       title={t("register.selectTitle")}
       subtitle={t("register.selectSubtitle")}
-      onBack={() => router.back()}
+      onBack={goBack}
     >
       <View
         testID="pos-register-selection-screen"

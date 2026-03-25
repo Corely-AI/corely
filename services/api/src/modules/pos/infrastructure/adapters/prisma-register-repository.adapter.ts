@@ -48,6 +48,7 @@ export class PrismaRegisterRepositoryAdapter implements RegisterRepositoryPort {
       data: {
         id: register.id,
         workspaceId: register.workspaceId,
+        cashDrawerId: register.cashDrawerId,
         name: register.name,
         defaultWarehouseId: register.defaultWarehouseId,
         defaultBankAccountId: register.defaultBankAccountId,
@@ -64,6 +65,7 @@ export class PrismaRegisterRepositoryAdapter implements RegisterRepositoryPort {
         id: register.id,
       },
       data: {
+        cashDrawerId: register.cashDrawerId,
         name: register.name,
         defaultWarehouseId: register.defaultWarehouseId,
         defaultBankAccountId: register.defaultBankAccountId,
@@ -77,6 +79,7 @@ export class PrismaRegisterRepositoryAdapter implements RegisterRepositoryPort {
     return new Register(
       record.id,
       record.workspaceId,
+      record.cashDrawerId ?? null,
       record.name,
       record.defaultWarehouseId,
       record.defaultBankAccountId,

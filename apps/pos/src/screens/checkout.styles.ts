@@ -81,6 +81,25 @@ export const styles = StyleSheet.create({
     backgroundColor: posTheme.colors.surfaceMuted,
     marginBottom: posTheme.spacing.sm,
   },
+  methodHintBox: {
+    marginTop: posTheme.spacing.sm,
+    marginBottom: posTheme.spacing.sm,
+    padding: posTheme.spacing.sm,
+    borderRadius: posTheme.radius.md,
+    borderWidth: 1,
+    borderColor: posTheme.colors.border,
+    backgroundColor: posTheme.colors.surfaceMuted,
+    gap: 4,
+  },
+  methodHintTitle: {
+    color: posTheme.colors.text,
+    fontWeight: "800",
+  },
+  methodHintText: {
+    color: posTheme.colors.textMuted,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   stateLabel: {
     color: posTheme.colors.textMuted,
     fontSize: 12,

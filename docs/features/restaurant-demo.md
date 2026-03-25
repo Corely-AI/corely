@@ -172,6 +172,61 @@ What to say:
 
 ---
 
+# Local demo bootstrap
+
+Use the built-in seed plus the localhost POS proxy:
+
+```bash
+pnpm dev:api
+pnpm dev:web
+pnpm --filter @corely/api seed:restaurant-demo
+```
+
+Then open `http://pos.localhost:8080/auth/login` and sign in with:
+
+```txt
+email: demo.restaurant@corely.one
+password: Password123!
+```
+
+These defaults come from:
+
+```txt
+CORELY_RESTAURANT_DEMO_EMAIL=demo.restaurant@corely.one
+CORELY_RESTAURANT_DEMO_PASSWORD=Password123!
+```
+
+Seeded employee users:
+
+```txt
+shared password for all users: Password123!
+
+manager / owner
+- demo.restaurant@corely.one
+
+cashier
+- cashier.linh@corely.one
+
+servers
+- server.minh@corely.one
+- server.lan@corely.one
+
+kitchen staff
+- kitchen.tuan@corely.one
+- kitchen.huong@corely.one
+
+manager
+- manager.ha@corely.one
+```
+
+Notes:
+
+- `pos.localhost` stays the only local POS host
+- the web dev proxy injects `x-corely-proxy-key` and `x-corely-surface: pos` on `/api/*`
+- the API still trusts only the proxy key, never browser `Origin` or browser-sent surface/vertical headers
+
+---
+
 ## Scene 6 — Send to kitchen
 
 **Actor:** Server

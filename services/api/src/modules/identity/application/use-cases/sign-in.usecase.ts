@@ -45,6 +45,7 @@ export interface SignInInput {
 
 export interface SignInOutput {
   userId: string;
+  partyId: string | null;
   email: string;
   tenantId: string | null;
   accessToken: string;
@@ -162,6 +163,7 @@ export class SignInUseCase {
 
     const response: SignInOutput = {
       userId: user.getId(),
+      partyId: user.getPartyId(),
       email: email.getValue(),
       tenantId: selectedTenantId,
       accessToken,

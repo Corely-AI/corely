@@ -94,7 +94,8 @@
     "start:debug": "node --inspect=0.0.0.0:9229 dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "seed:directory": "tsx --env-file=../../.env src/scripts/seed-directory-restaurants.ts",
-    "seed:crm:nails-sequence": "tsx --env-file=../../.env src/scripts/seed-crm-nails-sequence.ts"
+    "seed:crm:nails-sequence": "tsx --env-file=../../.env src/scripts/seed-crm-nails-sequence.ts",
+    "seed:restaurant-demo": "tsx --env-file=../../.env src/scripts/seed-restaurant-demo.ts"
   },
   "author": "Ha Doan <ha@oneway8x.com>"
 }

@@ -8,6 +8,7 @@ import type {
   RestaurantModifierGroup,
   RestaurantOrderProposalCard,
 } from "@corely/contracts";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useCatalogStore } from "@/stores/catalogStore";
 import { useRestaurantStore } from "@/stores/restaurantStore";
 import { RestaurantCopilotPanel } from "@/components/restaurant-copilot-panel";
@@ -25,6 +26,7 @@ type PendingModifierSelection = {
 
 export default function RestaurantTableOrderScreen() {
   const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)/restaurant");
   const { tableId } = useLocalSearchParams<{ tableId: string }>();
   const { products, initialize, searchProducts } = useCatalogStore();
   const {
@@ -202,7 +204,7 @@ export default function RestaurantTableOrderScreen() {
 
   if (!activeOrder) {
     return (
-      <AppShell title="Table order" subtitle="Loading active check..." onBack={() => router.back()}>
+      <AppShell title="Table order" subtitle="Loading active check..." onBack={goBack}>
         <View style={styles.emptyWrap}>
           <EmptyState title="Loading table" description="Opening or resuming the selected table." />
         </View>
@@ -214,7 +216,7 @@ export default function RestaurantTableOrderScreen() {
     <AppShell
       title={`Table ${tableId?.slice(0, 8) ?? ""}`}
       subtitle={`Order ${activeOrder.id.slice(0, 8)} · ${activeOrder.status}`}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={1200}
     >
       <View testID="pos-restaurant-table-screen" style={styles.layout}>

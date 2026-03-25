@@ -3,6 +3,7 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useAuthStore } from "@/stores/authStore";
 import { useEngagementService } from "@/hooks/useEngagementService";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
@@ -22,6 +23,7 @@ const parseCustomerId = (payload: string) => {
 export default function KioskScanScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/kiosk");
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export default function KioskScanScreen() {
             label: t("scanner.grantPermission"),
             onPress: () => void requestPermission(),
           }}
-          secondaryAction={{ label: t("common.notNow"), onPress: () => router.back() }}
+          secondaryAction={{ label: t("common.notNow"), onPress: goBack }}
         />
       </View>
     );
@@ -115,7 +117,7 @@ export default function KioskScanScreen() {
           <Button
             label={t("common.back")}
             variant="ghost"
-            onPress={() => router.back()}
+            onPress={goBack}
             align="stretch"
             labelLines={1}
           />

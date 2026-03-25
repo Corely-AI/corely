@@ -141,6 +141,53 @@ describe("MenuBuilderService", () => {
     expect(result.items).toEqual([]);
   });
 
+  it("shows POS admin registers only on the POS surface with the read permission", async () => {
+    manifests["pos-admin"] = {
+      ...createManifest("pos-admin", [
+        createMenuItem({
+          id: "pos-admin-registers",
+          route: "/pos/admin/registers",
+          requiresPermissions: ["pos.registers.read"],
+        }),
+      ]),
+      allowedSurfaces: ["pos"],
+      permissions: ["pos.registers.read", "pos.registers.manage"],
+    };
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["pos-admin"]), new Set())
+    );
+
+    const withoutPermission = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+      surfaceId: "pos",
+      verticalId: "restaurant",
+    });
+
+    const withPermission = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(["pos.registers.read"]),
+      scope: "web",
+      surfaceId: "pos",
+      verticalId: "restaurant",
+    });
+
+    const wrongSurface = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(["pos.registers.read"]),
+      scope: "web",
+      surfaceId: "platform",
+    });
+
+    expect(withoutPermission.items).toEqual([]);
+    expect(withPermission.items.map((item) => item.id)).toEqual(["pos-admin-registers"]);
+    expect(wrongSurface.items).toEqual([]);
+  });
+
   it("hides platform menu for normal users without host platform permission", async () => {
     manifests["platform"] = createManifest("platform", [
       createMenuItem({

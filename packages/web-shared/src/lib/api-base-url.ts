@@ -38,7 +38,7 @@ export const resolveApiBaseUrl = (input: ResolveApiBaseUrlInput): string => {
   const explicitUrl = explicitBaseUrl || explicitApiUrl;
 
   if (input.isDev && isLocalSurfaceHost(input.browserHostname)) {
-    if (!explicitUrl || !isLocalApiUrl(explicitUrl)) {
+    if (!explicitUrl || isLocalApiUrl(explicitUrl)) {
       return "/api";
     }
   }

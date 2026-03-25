@@ -96,7 +96,7 @@ export class GetWorkspaceConfigUseCase {
       throw new BadRequestException(surfacePolicy.message);
     }
 
-    const experience = await this.experienceResolver.resolve({
+    let experience = await this.experienceResolver.resolve({
       tenantId: input.tenantId,
       userId: input.userId,
       workspaceId: input.workspaceId,
@@ -146,7 +146,20 @@ export class GetWorkspaceConfigUseCase {
     const workspaceKind = experience.workspaceKind;
     const capabilities = experience.capabilities;
 
-    await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind);
+    const installedDefaults = await this.ensureDefaultAppsInstalled(
+      input.tenantId,
+      input.userId,
+      workspaceKind
+    );
+    if (installedDefaults) {
+      experience = await this.experienceResolver.resolve({
+        tenantId: input.tenantId,
+        userId: input.userId,
+        workspaceId: input.workspaceId,
+        surfaceId: input.surfaceId,
+        permissions: input.permissions,
+      });
+    }
 
     const menu = await this.menuComposer.composeMenuTree({
       tenantId: input.tenantId,
@@ -202,10 +215,11 @@ export class GetWorkspaceConfigUseCase {
     tenantId: string,
     userId: string,
     workspaceKind: "PERSONAL" | "COMPANY"
-  ) {
+  ): Promise<boolean> {
     const currentInstalls = await this.appInstallRepo.listEnabledByTenant(tenantId);
     const installed = new Set(currentInstalls.map((i) => i.appId));
     const defaultApps = this.templateService.getDefaultEnabledApps(workspaceKind);
+    let installedAny = false;
 
     for (const appId of defaultApps) {
       if (installed.has(appId)) {
@@ -224,6 +238,9 @@ export class GetWorkspaceConfigUseCase {
         enabledAt: new Date(),
         enabledByUserId: userId,
       });
+      installedAny = true;
     }
+
+    return installedAny;
   }
 }

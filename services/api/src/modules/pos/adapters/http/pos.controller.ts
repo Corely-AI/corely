@@ -23,6 +23,7 @@ import {
   StartCashlessPaymentInputSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { AllowSurfaces } from "@/shared/surface";
 import { CreateRegisterUseCase } from "../../application/use-cases/create-register.usecase";
 import { ListRegistersUseCase } from "../../application/use-cases/list-registers.usecase";
@@ -40,7 +41,7 @@ import { resolveIdempotencyKey } from "../../../../shared/http/usecase-mappers";
 @ApiBearerAuth()
 @AllowSurfaces("platform", "pos")
 @Controller("pos")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard)
 export class PosController {
   constructor(
     private createRegister: CreateRegisterUseCase,
@@ -74,6 +75,7 @@ export class PosController {
 
   @Post("registers")
   @ApiOperation({ summary: "Create a new POS register" })
+  @RequirePermission("pos.registers.manage")
   async createRegisterEndpoint(
     @Body() input: CreateRegisterInput,
     @Req() req: any
@@ -89,6 +91,7 @@ export class PosController {
 
   @Get("registers")
   @ApiOperation({ summary: "List POS registers" })
+  @RequirePermission("pos.registers.read")
   async listRegistersEndpoint(
     @Query() input: ListRegistersInput,
     @Req() req: any

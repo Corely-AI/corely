@@ -143,6 +143,7 @@ export class AuthController {
 
     return {
       userId: result.userId,
+      partyId: result.partyId,
       email: result.email,
       tenantId: result.tenantId,
       accessToken: result.accessToken,
@@ -280,6 +281,7 @@ export class AuthController {
 
     return {
       userId,
+      partyId: user.getPartyId(),
       email: user.getEmail().getValue(),
       name: user.getName(),
       activeTenantId: tenantId ?? null,

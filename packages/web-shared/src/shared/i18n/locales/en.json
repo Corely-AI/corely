@@ -291,6 +291,10 @@
     "inventoryReorder": "Inventory - Reorder",
     "inventoryCopilot": "Inventory - Copilot",
     "catalogItems": "Catalog Items",
+    "pos": {
+      "catalog": "Catalog",
+      "catalogQuickAdd": "Quick Add Item"
+    },
     "importShipments": "Shipments",
     "suppliers": "Suppliers",
     "automation": "Automation",

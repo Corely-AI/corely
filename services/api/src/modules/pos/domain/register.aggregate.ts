@@ -7,6 +7,7 @@ export class Register {
   constructor(
     public readonly id: string,
     public readonly workspaceId: string,
+    public cashDrawerId: string | null,
     public name: string,
     public defaultWarehouseId: string | null,
     public defaultBankAccountId: string | null,
@@ -35,6 +36,11 @@ export class Register {
     this.updatedAt = new Date();
   }
 
+  bindCashDrawer(cashDrawerId: string): void {
+    this.cashDrawerId = cashDrawerId;
+    this.updatedAt = new Date();
+  }
+
   /**
    * Deactivate register
    */
@@ -58,6 +64,7 @@ export class Register {
     return {
       registerId: this.id,
       workspaceId: this.workspaceId,
+      cashDrawerId: this.cashDrawerId,
       name: this.name,
       defaultWarehouseId: this.defaultWarehouseId,
       defaultBankAccountId: this.defaultBankAccountId,

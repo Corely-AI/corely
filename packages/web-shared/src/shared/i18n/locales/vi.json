@@ -286,6 +286,10 @@
     "inventoryReorder": "Kho - Đặt hàng",
     "inventoryCopilot": "Kho - Trợ lý",
     "catalogItems": "Mặt hàng danh mục",
+    "pos": {
+      "catalog": "Danh mục POS",
+      "catalogQuickAdd": "Thêm nhanh món"
+    },
     "importShipments": "Lô hàng",
     "suppliers": "Nhà cung cấp",
     "coaching": {

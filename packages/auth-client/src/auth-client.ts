@@ -67,6 +67,7 @@ export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   userId: string;
+  partyId?: string | null;
   email: string;
   tenantId?: string | null;
   tenantName?: string;
@@ -75,6 +76,7 @@ export interface AuthResponse {
 
 export interface CurrentUserResponse {
   userId: string;
+  partyId?: string | null;
   email: string;
   name: string | null;
   activeTenantId?: string | null;

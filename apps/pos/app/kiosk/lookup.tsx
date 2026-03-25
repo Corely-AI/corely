@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { CachedCustomer } from "@/services/engagementService";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useAuthStore } from "@/stores/authStore";
 import { useEngagementService } from "@/hooks/useEngagementService";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
@@ -22,6 +23,7 @@ import { posTheme } from "@/ui/theme";
 export default function KioskLookupScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/kiosk");
   const { isTablet } = useAdaptiveLayout();
   const { apiClient } = useAuthStore();
   const { engagementService } = useEngagementService();
@@ -88,7 +90,7 @@ export default function KioskLookupScreen() {
     <AppShell
       title={t("kiosk.findCustomer")}
       subtitle={t("kiosk.lookupSubtitle")}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={1180}
     >
       <View style={[styles.layout, isTablet && styles.layoutTablet]}>

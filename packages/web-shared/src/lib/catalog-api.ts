@@ -3,6 +3,8 @@ import type {
   ArchiveCatalogVariantOutput,
   CreateCatalogItemInput,
   CreateCatalogItemOutput,
+  CreatePosQuickCatalogItemInput,
+  CreatePosQuickCatalogItemOutput,
   GetCatalogItemOutput,
   ListCatalogCategoriesInput,
   ListCatalogCategoriesOutput,
@@ -18,6 +20,8 @@ import type {
   ListCatalogUomsOutput,
   UpdateCatalogItemInput,
   UpdateCatalogItemOutput,
+  UpdatePosQuickCatalogItemInput,
+  UpdatePosQuickCatalogItemOutput,
   UpsertCatalogCategoryInput,
   UpsertCatalogCategoryOutput,
   UpsertCatalogPriceInput,
@@ -55,6 +59,24 @@ export class CatalogApi {
   async createItem(input: CreateCatalogItemInput): Promise<CreateCatalogItemOutput> {
     return apiClient.post("/catalog/items", input, {
       idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createPosQuickItem(
+    input: CreatePosQuickCatalogItemInput
+  ): Promise<CreatePosQuickCatalogItemOutput> {
+    return apiClient.post("/catalog/pos/quick-items", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updatePosQuickItem(
+    itemId: string,
+    input: UpdatePosQuickCatalogItemInput
+  ): Promise<UpdatePosQuickCatalogItemOutput> {
+    return apiClient.patch(`/catalog/pos/quick-items/${itemId}`, input, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }

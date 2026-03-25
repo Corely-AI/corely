@@ -29,4 +29,48 @@ describe("Effective permission computations", () => {
     const allowed = toAllowedPermissionKeys(grants);
     expect(new Set(allowed)).toEqual(new Set(["menu.edit"]));
   });
+
+  it("expands cash permissions into POS register compatibility aliases", () => {
+    const grants: Array<{ key: string; effect: RolePermissionEffect }> = [
+      { key: "cash.read", effect: "ALLOW" },
+      { key: "cash.write", effect: "ALLOW" },
+    ];
+
+    const set = computeEffectivePermissionSet(grants);
+
+    expect(hasPermission(set, "cash.read")).toBe(true);
+    expect(hasPermission(set, "cash.write")).toBe(true);
+    expect(hasPermission(set, "pos.registers.read")).toBe(true);
+    expect(hasPermission(set, "pos.registers.manage")).toBe(true);
+
+    const allowed = new Set(toAllowedPermissionKeys(grants));
+    expect(allowed.has("pos.registers.read")).toBe(true);
+    expect(allowed.has("pos.registers.manage")).toBe(true);
+  });
+
+  it("applies deny precedence to compatibility aliases", () => {
+    const grants: Array<{ key: string; effect: RolePermissionEffect }> = [
+      { key: "cash.read", effect: "ALLOW" },
+      { key: "cash.read", effect: "DENY" },
+    ];
+
+    const set = computeEffectivePermissionSet(grants);
+
+    expect(hasPermission(set, "cash.read")).toBe(false);
+    expect(hasPermission(set, "pos.registers.read")).toBe(false);
+  });
+
+  it("expands legacy catalog quick-write grants into catalog.quickwrite", () => {
+    const grants: Array<{ key: string; effect: RolePermissionEffect }> = [
+      { key: "catalog.quick-write", effect: "ALLOW" },
+    ];
+
+    const set = computeEffectivePermissionSet(grants);
+
+    expect(hasPermission(set, "catalog.quick-write")).toBe(true);
+    expect(hasPermission(set, "catalog.quickwrite")).toBe(true);
+
+    const allowed = new Set(toAllowedPermissionKeys(grants));
+    expect(allowed.has("catalog.quickwrite")).toBe(true);
+  });
 });

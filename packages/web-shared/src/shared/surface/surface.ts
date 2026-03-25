@@ -3,6 +3,7 @@ import { resolveSurface, type SurfaceId } from "@corely/contracts";
 
 const CRM_SURFACE_PREFIXES = ["/crm", "/assistant", "/notifications", "/onboarding"] as const;
 const POS_SURFACE_PREFIXES = [
+  "/pos",
   "/restaurant",
   "/cash",
   "/cash-registers",

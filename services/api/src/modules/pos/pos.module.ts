@@ -23,10 +23,13 @@ import { PAYMENT_ATTEMPT_REPOSITORY_PORT } from "./application/ports/payment-att
 import { CASHLESS_GATEWAY_PORT } from "./application/ports/cashless-gateway.port";
 import { CASHLESS_PAYMENT_UPDATE_PORT } from "./application/ports/cashless-payment-update.port";
 import { CashlessPaymentUpdaterService } from "./application/services/cashless-payment-updater.service";
+import { ResolveCashDrawerForPosRegisterService } from "./application/services/resolve-cash-drawer-for-pos-register.service";
 import { IntegrationsCashlessGatewayService } from "../integrations/infrastructure/providers/integrations-cashless-gateway.service";
 
 import { CashManagementModule } from "../cash-management/cash-management.module";
+import { CatalogModule } from "../catalog/catalog.module";
 import { IntegrationsModule } from "../integrations";
+import { PlatformModule } from "../platform/platform.module";
 
 @Module({
   imports: [
@@ -34,6 +37,8 @@ import { IntegrationsModule } from "../integrations";
     KernelModule,
     IdentityModule,
     CashManagementModule,
+    CatalogModule,
+    PlatformModule,
     forwardRef(() => IntegrationsModule),
   ],
   controllers: [PosController],
@@ -44,6 +49,7 @@ import { IntegrationsModule } from "../integrations";
     PrismaPosSaleIdempotencyAdapter,
     PrismaPaymentAttemptRepositoryAdapter,
     CashlessPaymentUpdaterService,
+    ResolveCashDrawerForPosRegisterService,
 
     // Port bindings
     { provide: REGISTER_REPOSITORY_PORT, useExisting: PrismaRegisterRepositoryAdapter },

@@ -443,6 +443,7 @@ export class WorkspaceTemplateService {
   private getFreelancerEnabledApps(): string[] {
     return [
       "core",
+      "pos-admin",
       "platform",
       "workspaces",
       "directory",
@@ -464,6 +465,7 @@ export class WorkspaceTemplateService {
   private getCompanyEnabledApps(): string[] {
     return [
       "core",
+      "pos-admin",
       "platform",
       "workspaces",
       "directory",

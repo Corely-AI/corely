@@ -83,6 +83,9 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
     if (!user) {
       throw new Error("User not authenticated");
     }
+    if (!user.partyId) {
+      throw new Error("Authenticated user is missing employee party binding");
+    }
 
     set({ isMutating: true, isLoading: true, error: null });
     try {
@@ -96,7 +99,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       } = {
         workspaceId: user.workspaceId,
         registerId: data.registerId,
-        openedByEmployeePartyId: user.userId,
+        openedByEmployeePartyId: user.partyId,
         startingCashCents: data.startingCashCents,
       };
       if (data.notes) {
@@ -123,6 +126,9 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
     if (!user) {
       throw new Error("User not authenticated");
     }
+    if (!user.partyId) {
+      throw new Error("Authenticated user is missing employee party binding");
+    }
 
     const { currentShift } = get();
     if (!currentShift) {
@@ -141,7 +147,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
       } = {
         sessionId: currentShift.sessionId,
         workspaceId: user.workspaceId,
-        closedByEmployeePartyId: user.userId,
+        closedByEmployeePartyId: user.partyId,
         closingCashCents: data.closingCashCents,
       };
       if (data.notes) {
@@ -168,6 +174,9 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
     if (!user) {
       throw new Error("User not authenticated");
     }
+    if (!user.partyId) {
+      throw new Error("Authenticated user is missing employee party binding");
+    }
     if (!shift) {
       throw new Error("No active shift");
     }
@@ -179,7 +188,7 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
         sessionId: shift.sessionId,
         workspaceId: user.workspaceId,
         registerId: shift.registerId,
-        createdByEmployeePartyId: user.userId,
+        createdByEmployeePartyId: user.partyId,
         eventType,
         amountCents,
         reason,

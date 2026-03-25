@@ -11,6 +11,11 @@ export const catalogPermissions: PermissionGroup[] = [
         label: "View catalog",
       },
       {
+        key: "catalog.quickwrite",
+        group: "catalog",
+        label: "Quick add POS catalog items",
+      },
+      {
         key: "catalog.write",
         group: "catalog",
         label: "Manage catalog",

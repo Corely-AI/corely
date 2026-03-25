@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "@lukeed/uuid";
 import { useTranslation } from "react-i18next";
 import { HttpError } from "@corely/api-client";
 import type { CreateCheckInEventInput } from "@corely/contracts";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useAuthStore } from "@/stores/authStore";
 import { useRegisterStore } from "@/stores/registerStore";
 import { useEngagementService } from "@/hooks/useEngagementService";
@@ -18,6 +19,7 @@ import { posTheme } from "@/ui/theme";
 export default function KioskConfirmScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/kiosk");
   const { customerId } = useLocalSearchParams<{ customerId: string }>();
   const { apiClient, user } = useAuthStore();
   const { selectedRegister } = useRegisterStore();
@@ -64,7 +66,7 @@ export default function KioskConfirmScreen() {
       customerPartyId: customerId,
       registerId: selectedRegister.registerId,
       checkedInByType: "SELF_SERVICE",
-      checkedInByEmployeePartyId: user.userId ?? null,
+      checkedInByEmployeePartyId: user.partyId ?? null,
       checkedInAt: new Date().toISOString(),
       visitReason: reason || null,
       overrideDuplicate,
@@ -146,7 +148,7 @@ export default function KioskConfirmScreen() {
     <AppShell
       title={t("kiosk.confirmTitle")}
       subtitle={t("kiosk.confirmSubtitle")}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={760}
     >
       <Card>
@@ -172,7 +174,7 @@ export default function KioskConfirmScreen() {
             onPress={() => void handleConfirm()}
             loading={submitting}
           />
-          <Button label={t("common.cancel")} variant="ghost" onPress={() => router.back()} />
+          <Button label={t("common.cancel")} variant="ghost" onPress={goBack} />
         </CenteredActions>
       </Card>
     </AppShell>

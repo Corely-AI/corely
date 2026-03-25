@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Badge,
   Button,
@@ -86,9 +86,14 @@ export default function RestaurantFloorPlanPage() {
         <p className="text-sm text-muted-foreground">
           Configure dining rooms and tables for the restaurant POS pack.
         </p>
-        <Button variant="outline" onClick={() => navigate("/restaurant/copilot")}>
-          Open Restaurant Copilot
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" onClick={() => navigate("/restaurant/copilot")}>
+            Open Restaurant Copilot
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/pos/admin/registers">Manage POS Registers</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[340px,1fr]">

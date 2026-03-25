@@ -286,6 +286,10 @@
     "inventoryReorder": "Inventar - Nachbestellung",
     "inventoryCopilot": "Inventar - Copilot",
     "catalogItems": "Katalogartikel",
+    "pos": {
+      "catalog": "Katalog",
+      "catalogQuickAdd": "Artikel schnell anlegen"
+    },
     "importShipments": "Sendungen",
     "suppliers": "Lieferanten",
     "coaching": {

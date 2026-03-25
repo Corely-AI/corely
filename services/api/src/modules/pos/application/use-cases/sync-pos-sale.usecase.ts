@@ -3,10 +3,11 @@ import type { SyncPosSaleInput, SyncPosSaleOutput } from "@corely/contracts";
 import {
   BaseUseCase,
   NoopLogger,
+  ValidationError,
+  isErr,
   type Result,
   type UseCaseContext,
   type UseCaseError,
-  ValidationError,
   err,
   ok,
   RequireTenant,
@@ -20,8 +21,8 @@ import {
 // For now, this is a placeholder structure showing the integration pattern
 
 import { AddEntryUseCase } from "../../../cash-management/application/use-cases/add-entry.usecase";
-import { CreateRegisterUseCase } from "../../../cash-management/application/use-cases/create-register.usecase";
 import { CreateCashEntry, CashEntryType, CashEntrySourceType } from "@corely/contracts";
+import { ResolveCashDrawerForPosRegisterService } from "../services/resolve-cash-drawer-for-pos-register.service";
 
 @RequireTenant()
 @Injectable()
@@ -29,7 +30,7 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
   constructor(
     @Inject(POS_SALE_IDEMPOTENCY_PORT) private idempotencyStore: PosSaleIdempotencyPort,
     private readonly addCashEntryUC: AddEntryUseCase,
-    private readonly createCashRegisterUC: CreateRegisterUseCase
+    private readonly resolveCashDrawer: ResolveCashDrawerForPosRegisterService
     // TODO: Inject SalesApplication, InventoryApplication (for product validation)
     // TODO: Inject PartyApplication (for customer validation)
   ) {
@@ -96,42 +97,54 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
 
     // Bridge to Cash Management: Record cash movements
     const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate);
+    const cashPayments = input.payments.filter((payment) => payment.method === "CASH");
 
-    for (const payment of input.payments) {
-      if (payment.method === "CASH") {
-        const entryData: CreateCashEntry = {
-          tenantId,
-          registerId: input.registerId,
-          type: CashEntryType.IN,
-          amountCents: payment.amountCents,
-          sourceType: CashEntrySourceType.SALES,
-          description: `POS Sale #${receiptNumber}`,
-          referenceId: input.posSaleId,
-          businessDate: input.saleDate.toISOString().split("T")[0],
-        };
+    let cashDrawerId: string | null = null;
+    let cashManagementContext: UseCaseContext | null = null;
+    if (cashPayments.length > 0) {
+      const cashDrawerResult = await this.resolveCashDrawer.execute(
+        {
+          posRegisterId: input.registerId,
+          autoCreate: true,
+          cashDrawerName: `Cash Drawer ${input.registerId.slice(0, 8)}`,
+          location: "POS",
+          currency: "EUR",
+          idempotencyKey: `pos-register-cash-drawer:${tenantId}:${input.registerId}`,
+        },
+        ctx
+      );
+      if (isErr(cashDrawerResult)) {
+        return err(cashDrawerResult.error);
+      }
+      cashDrawerId = cashDrawerResult.value.cashDrawerId;
+      cashManagementContext = cashDrawerResult.value.scope.cashManagementContext;
+    }
 
-        try {
-          await this.addCashEntryUC.execute(entryData, ctx);
-        } catch (error: unknown) {
-          // If register not found, auto-create it (Bridge Legacy POS -> New Cash Mgmt)
-          const err = error as Error;
-          if (err?.message === "Cash Register not found") {
-            // Create register
-            await this.createCashRegisterUC.execute(
-              {
-                tenantId,
-                name: `POS Register ${input.registerId.slice(0, 8)}`,
-                currency: "EUR", // Default, or infer from input
-                location: "Main Store",
-              },
-              ctx
-            );
-            // Retry adding entry
-            await this.addCashEntryUC.execute(entryData, ctx);
-          } else {
-            throw error;
-          }
-        }
+    for (const [index, payment] of cashPayments.entries()) {
+      if (!cashDrawerId || !cashManagementContext) {
+        return err(
+          new ValidationError(
+            "Cash drawer resolution missing for cash sale sync",
+            { posRegisterId: input.registerId },
+            "Pos:RegisterCashDrawerNotBound"
+          )
+        );
+      }
+
+      const entryData: CreateCashEntry = {
+        registerId: cashDrawerId,
+        type: CashEntryType.IN,
+        amountCents: payment.amountCents,
+        sourceType: CashEntrySourceType.SALES,
+        description: `POS Sale #${receiptNumber}`,
+        referenceId: input.posSaleId,
+        businessDate: input.saleDate.toISOString().split("T")[0],
+        idempotencyKey: `${input.idempotencyKey}:cash:${index}`,
+      };
+
+      const addEntryResult = await this.addCashEntryUC.execute(entryData, cashManagementContext);
+      if (isErr(addEntryResult)) {
+        return err(addEntryResult.error);
       }
     }
 

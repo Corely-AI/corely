@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Platform, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
@@ -68,13 +68,44 @@ export default function SyncScreen() {
     Alert.alert(t("sync.logsCopiedTitle"), t("sync.logsCopiedMessage", { count: len }));
   };
 
+  const confirmDropSelectedCommand = () => {
+    if (!selectedCommand) {
+      return;
+    }
+
+    const executeDrop = () => {
+      void dropCommand(selectedCommand.commandId);
+      setSelectedCommand(null);
+    };
+
+    if (Platform.OS === "web" && typeof globalThis.confirm === "function") {
+      if (globalThis.confirm(t("sync.dropCommandMessage"))) {
+        executeDrop();
+      }
+      return;
+    }
+
+    Alert.alert(t("sync.dropCommandTitle"), t("sync.dropCommandMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.drop"),
+        style: "destructive",
+        onPress: executeDrop,
+      },
+    ]);
+  };
+
   return (
     <View testID="pos-sync-screen" style={styles.container}>
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.commandId}
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          Platform.OS === "web" ? undefined : (
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          )
+        }
         ListHeaderComponent={
           <View style={styles.headerBlock}>
             <Card>
@@ -219,23 +250,13 @@ export default function SyncScreen() {
                   }}
                 />
               ) : null}
-              <Button
-                label={t("sync.dropCommand")}
-                variant="destructive"
-                onPress={() => {
-                  Alert.alert(t("sync.dropCommandTitle"), t("sync.dropCommandMessage"), [
-                    { text: t("common.cancel"), style: "cancel" },
-                    {
-                      text: t("common.drop"),
-                      style: "destructive",
-                      onPress: () => {
-                        void dropCommand(selectedCommand.commandId);
-                        setSelectedCommand(null);
-                      },
-                    },
-                  ]);
-                }}
-              />
+              {selectedCommand.status !== "SUCCEEDED" ? (
+                <Button
+                  label={t("sync.dropCommand")}
+                  variant="destructive"
+                  onPress={confirmDropSelectedCommand}
+                />
+              ) : null}
             </CenteredActions>
           </View>
         ) : null}

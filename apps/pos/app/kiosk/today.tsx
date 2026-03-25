@@ -3,6 +3,7 @@ import { FlatList, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useEngagementService } from "@/hooks/useEngagementService";
 import { formatTime } from "@/lib/formatters";
 import { AppShell, Card, EmptyState, ListRow } from "@/ui/components";
@@ -19,6 +20,7 @@ type CheckInView = {
 export default function KioskTodayScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/kiosk");
   const { engagementService } = useEngagementService();
   const [checkIns, setCheckIns] = useState<CheckInView[]>([]);
 
@@ -46,7 +48,7 @@ export default function KioskTodayScreen() {
     <AppShell
       title={t("kiosk.todayCheckIns")}
       subtitle={t("kiosk.checkInCount", { count: checkIns.length })}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={960}
     >
       <Card>

@@ -5,10 +5,10 @@ import {
   ConflictError,
   NoopLogger,
   NotFoundError,
+  isErr,
   type Result,
   type UseCaseContext,
   type UseCaseError,
-  ValidationError,
   err,
   ok,
   RequireTenant,
@@ -19,7 +19,7 @@ import {
 } from "../ports/shift-session-repository.port";
 
 import { SubmitDailyCloseUseCase } from "../../../cash-management/application/use-cases/submit-daily-close.usecase";
-import { CreateRegisterUseCase } from "../../../cash-management/application/use-cases/create-register.usecase";
+import { ResolveCashDrawerForPosRegisterService } from "../services/resolve-cash-drawer-for-pos-register.service";
 
 @RequireTenant()
 @Injectable()
@@ -27,7 +27,7 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
   constructor(
     @Inject(SHIFT_SESSION_REPOSITORY_PORT) private shiftRepo: ShiftSessionRepositoryPort,
     private readonly submitDailyCloseUC: SubmitDailyCloseUseCase,
-    private readonly createRegisterUC: CreateRegisterUseCase
+    private readonly resolveCashDrawer: ResolveCashDrawerForPosRegisterService
   ) {
     super({ logger: new NoopLogger() });
   }
@@ -37,10 +37,6 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
     ctx: UseCaseContext
   ): Promise<Result<CloseShiftOutput, UseCaseError>> {
     const workspaceId = ctx.tenantId!;
-    const tenantId =
-      typeof ctx.metadata?.platformTenantId === "string"
-        ? ctx.metadata.platformTenantId
-        : (ctx.workspaceId ?? ctx.tenantId!);
 
     // Find session
     const session = await this.shiftRepo.findById(workspaceId, input.sessionId);
@@ -72,55 +68,35 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
     // Bridge to Cash Management: Submit Daily Close
     // This ensures that the POS Shift Close is reflected in the central ledger
     if (input.closingCashCents !== null && input.closingCashCents !== undefined) {
-      const cashManagementContext = {
-        ...ctx,
-        tenantId,
-        workspaceId,
-      };
+      const cashDrawerResult = await this.resolveCashDrawer.execute(
+        {
+          posRegisterId: session.registerId,
+          autoCreate: true,
+          cashDrawerName: `Cash Drawer ${session.registerId.slice(0, 8)}`,
+          currency: "EUR",
+          idempotencyKey: `pos-register-cash-drawer:${workspaceId}:${session.registerId}`,
+        },
+        ctx
+      );
+      if (isErr(cashDrawerResult)) {
+        return err(cashDrawerResult.error);
+      }
+
+      const { cashDrawerId, scope } = cashDrawerResult.value;
       const dayCloseResult = await this.submitDailyCloseUC.execute(
         {
-          tenantId,
-          registerId: session.registerId,
+          tenantId: scope.cashTenantId,
+          registerId: cashDrawerId,
           businessDate: new Date().toISOString().split("T")[0],
           countedBalanceCents: input.closingCashCents,
           denominationCounts: [],
           notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
         },
-        cashManagementContext
+        scope.cashManagementContext
       );
 
       if ("error" in dayCloseResult) {
-        if (this.isMissingCashRegisterError(dayCloseResult.error)) {
-          const createRegisterResult = await this.createRegisterUC.execute(
-            {
-              tenantId,
-              name: `POS Register ${session.registerId.slice(0, 8)}`,
-              currency: "EUR",
-            },
-            cashManagementContext
-          );
-
-          if ("error" in createRegisterResult) {
-            return err(createRegisterResult.error);
-          }
-
-          const retryResult = await this.submitDailyCloseUC.execute(
-            {
-              tenantId,
-              registerId: session.registerId,
-              businessDate: new Date().toISOString().split("T")[0],
-              countedBalanceCents: input.closingCashCents,
-              denominationCounts: [],
-              notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
-            },
-            cashManagementContext
-          );
-          if ("error" in retryResult) {
-            return err(retryResult.error);
-          }
-        } else {
-          return err(dayCloseResult.error);
-        }
+        return err(dayCloseResult.error);
       }
     }
 
@@ -132,12 +108,5 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
       totalCashReceivedCents: session.totalCashReceivedCents,
       varianceCents: session.varianceCents,
     });
-  }
-
-  private isMissingCashRegisterError(error: UseCaseError): boolean {
-    return (
-      error.code === "CashManagement:RegisterNotFound" ||
-      error.message === "Cash register not found"
-    );
   }
 }

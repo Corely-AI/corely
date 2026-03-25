@@ -1,6 +1,7 @@
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { v4 as uuidv4 } from "@lukeed/uuid";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useRestaurantStore } from "@/stores/restaurantStore";
 import { AppShell, Button, Card } from "@/ui/components";
 import { formatCurrencyFromCents } from "@/lib/formatters";
@@ -8,12 +9,13 @@ import { posTheme } from "@/ui/theme";
 
 export default function RestaurantPaymentScreen() {
   const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)/restaurant");
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const { activeOrder, closeOrder, isMutating } = useRestaurantStore();
 
   if (!activeOrder || activeOrder.id !== orderId) {
     return (
-      <AppShell title="Payment" subtitle="Restaurant settlement" onBack={() => router.back()}>
+      <AppShell title="Payment" subtitle="Restaurant settlement" onBack={goBack}>
         <View style={styles.centered}>
           <Text style={styles.muted}>Load the table order before taking payment.</Text>
         </View>
@@ -44,7 +46,7 @@ export default function RestaurantPaymentScreen() {
     <AppShell
       title="Payment / Close"
       subtitle={`Order ${activeOrder.id.slice(0, 8)}`}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={640}
     >
       <Card>

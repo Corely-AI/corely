@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import type { PosSalePayment } from "@corely/contracts";
 import { getHardwareManager } from "@corely/pos-hardware";
 import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { formatCurrencyFromCents } from "@/lib/formatters";
 import { useSalesService } from "@/hooks/useSalesService";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
@@ -35,6 +36,7 @@ type PaymentMethod = PosSalePayment["method"];
 export default function CheckoutScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)/cart");
   const { isTablet } = useAdaptiveLayout();
   const { items, customerPartyId, notes, orderDiscountCents, getTotals, clearCart } =
     useCartStore();
@@ -51,6 +53,7 @@ export default function CheckoutScreen() {
   const [paymentReference, setPaymentReference] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSummary, setShowSummary] = useState(isTablet);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [cashlessAttempt, setCashlessAttempt] = useState<{
     attemptId: string;
     status: string;
@@ -65,8 +68,58 @@ export default function CheckoutScreen() {
   );
   const remaining = totals.totalCents - totalPaid;
   const changeDue = totalPaid > totals.totalCents ? totalPaid - totals.totalCents : 0;
+  const hasBalanceDue = totals.totalCents > 0;
+  const canAddRemaining = remaining > 0;
+  const parsedAmount = moneyPad.value.trim() ? Number(moneyPad.value) : null;
+  const enteredAmountCents =
+    parsedAmount !== null && Number.isFinite(parsedAmount) ? Math.round(parsedAmount * 100) : null;
+  const canAddEnteredPayment =
+    hasBalanceDue &&
+    enteredAmountCents !== null &&
+    Number.isFinite(parsedAmount) &&
+    enteredAmountCents > 0;
 
   const methodLabel = (method: PaymentMethod) => t(`checkout.method.${method.toLowerCase()}`);
+  const paymentActionLabel =
+    selectedMethod === "CASH"
+      ? t("checkout.recordCashPayment")
+      : selectedMethod === "CARD"
+        ? t("checkout.recordCashlessPayment")
+        : selectedMethod === "BANK_TRANSFER"
+          ? t("checkout.recordBankTransfer")
+          : t("checkout.recordOtherPayment");
+  const addRemainingLabel =
+    selectedMethod === "CASH"
+      ? t("checkout.addRemainingCash", { amount: formatCurrencyFromCents(remaining) })
+      : selectedMethod === "CARD"
+        ? t("checkout.addRemainingCashless", { amount: formatCurrencyFromCents(remaining) })
+        : selectedMethod === "BANK_TRANSFER"
+          ? t("checkout.addRemainingBankTransfer", { amount: formatCurrencyFromCents(remaining) })
+          : t("checkout.addRemainingOther", { amount: formatCurrencyFromCents(remaining) });
+  const paymentHelp =
+    selectedMethod === "CASH"
+      ? t("checkout.cashHelp")
+      : selectedMethod === "CARD"
+        ? t("checkout.cardHelp")
+        : selectedMethod === "BANK_TRANSFER"
+          ? t("checkout.bankTransferHelp")
+          : t("checkout.otherHelp");
+  const referenceHelp =
+    selectedMethod === "CASH"
+      ? t("checkout.cashReferenceHelp")
+      : selectedMethod === "CARD"
+        ? t("checkout.cashlessReferenceHelp")
+        : selectedMethod === "BANK_TRANSFER"
+          ? t("checkout.bankTransferReferenceHelp")
+          : t("checkout.otherReferenceHelp");
+  const referencePlaceholder =
+    selectedMethod === "CASH"
+      ? t("checkout.cashReferencePlaceholder")
+      : selectedMethod === "CARD"
+        ? t("checkout.cashlessReferencePlaceholder")
+        : selectedMethod === "BANK_TRANSFER"
+          ? t("checkout.bankTransferReferencePlaceholder")
+          : t("checkout.otherReferencePlaceholder");
 
   const appendPayment = (
     amountCents: number,
@@ -81,16 +134,24 @@ export default function CheckoutScreen() {
     };
 
     setPayments((prev) => [...prev, payment]);
+    setPaymentError(null);
     moneyPad.clear();
     setPaymentReference("");
   };
 
   const addPayment = async (amountCents?: number) => {
-    const parsed = amountCents ?? Math.round(Number(moneyPad.value) * 100);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      Alert.alert(t("checkout.invalidAmountTitle"), t("checkout.invalidAmountMessage"));
+    if (!hasBalanceDue) {
+      setPaymentError(t("checkout.noBalanceDueMessage"));
       return;
     }
+
+    const parsed = amountCents ?? Math.round(Number(moneyPad.value) * 100);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setPaymentError(t("checkout.invalidAmountMessage"));
+      return;
+    }
+
+    setPaymentError(null);
 
     if (
       selectedMethod === "CARD" &&
@@ -194,6 +255,7 @@ export default function CheckoutScreen() {
   };
 
   const quickCashAdd = (deltaDollars: number) => {
+    setPaymentError(null);
     const target = Math.max(totals.totalCents + deltaDollars * 100, 0);
     void addPayment(target - totalPaid);
   };
@@ -261,7 +323,7 @@ export default function CheckoutScreen() {
           currentShift?.registerId ??
           selectedRegister?.registerId ??
           "00000000-0000-0000-0000-000000000000",
-        cashierEmployeePartyId: user.userId,
+        cashierEmployeePartyId: user.partyId ?? user.userId,
         customerPartyId,
         lineItems: items,
         payments,
@@ -288,7 +350,7 @@ export default function CheckoutScreen() {
     <AppShell
       title={t("checkout.title")}
       subtitle={t("checkout.subtitle")}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={1200}
     >
       <View
@@ -354,7 +416,10 @@ export default function CheckoutScreen() {
             <Text style={styles.sectionTitle}>{t("checkout.payment")}</Text>
             <SegmentedControl
               value={selectedMethod}
-              onChange={setSelectedMethod}
+              onChange={(method) => {
+                setSelectedMethod(method as PaymentMethod);
+                setPaymentError(null);
+              }}
               options={(["CASH", "CARD", "BANK_TRANSFER", "OTHER"] as PaymentMethod[]).map(
                 (method) => ({
                   value: method,
@@ -362,6 +427,10 @@ export default function CheckoutScreen() {
                 })
               )}
             />
+            <View style={styles.methodHintBox}>
+              <Text style={styles.methodHintTitle}>{methodLabel(selectedMethod)}</Text>
+              <Text style={styles.methodHintText}>{paymentHelp}</Text>
+            </View>
 
             <View style={styles.paymentState}>
               <View>
@@ -382,33 +451,41 @@ export default function CheckoutScreen() {
               testID="pos-checkout-payment-amount"
               label={t("common.amount")}
               value={moneyPad.value}
-              onChange={moneyPad.setValue}
-              {...(selectedMethod === "CARD" ? { help: t("checkout.cardHelp") } : {})}
+              onChange={(value) => {
+                setPaymentError(null);
+                moneyPad.setValue(value);
+              }}
+              help={
+                hasBalanceDue ? t("checkout.paymentEntryHint") : t("checkout.noBalanceDueMessage")
+              }
+              {...(paymentError ? { error: paymentError } : {})}
             />
             <TextField
               testID="pos-checkout-payment-reference"
               label={t("checkout.referenceOptional")}
               value={paymentReference}
               onChangeText={setPaymentReference}
-              placeholder={t("checkout.referencePlaceholder")}
+              placeholder={referencePlaceholder}
+              help={referenceHelp}
             />
             <CenteredActions style={styles.paymentActions}>
               <Button
                 testID="pos-checkout-payment-add"
-                label={t("checkout.addPayment")}
+                label={paymentActionLabel}
                 onPress={() => void addPayment()}
+                disabled={!canAddEnteredPayment}
               />
-              {remaining > 0 ? (
+              {canAddRemaining ? (
                 <Button
                   testID="pos-checkout-add-remaining"
-                  label={t("checkout.addRemaining", { amount: formatCurrencyFromCents(remaining) })}
+                  label={addRemainingLabel}
                   variant="secondary"
                   onPress={() => void addPayment(remaining)}
                 />
               ) : null}
             </CenteredActions>
 
-            {cashlessAttempt ? (
+            {selectedMethod === "CARD" && cashlessAttempt ? (
               <View style={styles.paymentState}>
                 <View>
                   <Text style={styles.stateLabel}>{t("checkout.cashlessStatusLabel")}</Text>
@@ -481,7 +558,7 @@ export default function CheckoutScreen() {
           testID="pos-checkout-complete-sale"
           label={isProcessing ? t("common.processing") : t("checkout.completeSale")}
           onPress={completeSale}
-          disabled={isProcessing || remaining > 0}
+          disabled={isProcessing || remaining > 0 || items.length === 0}
           loading={isProcessing}
           size="lg"
           fullWidth={!isTablet}
