@@ -4,6 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
 import { formatDateTime } from "@/lib/formatters";
+import {
+  deriveSyncBadgeStatus,
+  matchesSyncFilter,
+  type SyncFilterKey,
+} from "@/lib/offline/sync-status";
 import { posTheme } from "@/ui/theme";
 import {
   Badge,
@@ -16,8 +21,6 @@ import {
   SegmentedControl,
 } from "@/ui/components";
 import type { OutboxCommand } from "@corely/offline-core";
-
-type FilterKey = "ALL" | "PENDING" | "FAILED" | "CONFLICT" | "SUCCEEDED";
 
 export default function SyncScreen() {
   const { t } = useTranslation();
@@ -33,28 +36,32 @@ export default function SyncScreen() {
     lastSyncAt,
   } = useSyncEngine();
 
-  const [filter, setFilter] = useState<FilterKey>("ALL");
+  const [filter, setFilter] = useState<SyncFilterKey>("ALL");
   const [selectedCommand, setSelectedCommand] = useState<OutboxCommand | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const filtered = useMemo(() => {
-    if (filter === "ALL") {
-      return commands;
-    }
-    return commands.filter((command) => command.status === filter);
+    return commands.filter((command) => matchesSyncFilter(command, filter));
   }, [commands, filter]);
 
   const filterCounts = useMemo(
     () => ({
       ALL: commands.length,
-      PENDING: commands.filter(
-        (command) => command.status === "PENDING" || command.status === "IN_FLIGHT"
-      ).length,
+      PENDING: commands.filter((command) => matchesSyncFilter(command, "PENDING")).length,
       FAILED: commands.filter((command) => command.status === "FAILED").length,
       CONFLICT: commands.filter((command) => command.status === "CONFLICT").length,
       SUCCEEDED: commands.filter((command) => command.status === "SUCCEEDED").length,
     }),
     [commands]
+  );
+
+  const headerStatus = useMemo(
+    () =>
+      deriveSyncBadgeStatus({
+        syncStatus,
+        queueStats,
+      }),
+    [queueStats, syncStatus]
   );
 
   const onRefresh = async () => {
@@ -121,7 +128,7 @@ export default function SyncScreen() {
                       : t("sync.lastSyncNever")}
                   </Text>
                 </View>
-                <StatusBadge status={syncStatus === "syncing" ? "IN_FLIGHT" : "SUCCEEDED"} />
+                <StatusBadge status={headerStatus} />
               </View>
 
               <View style={styles.metricsRow}>

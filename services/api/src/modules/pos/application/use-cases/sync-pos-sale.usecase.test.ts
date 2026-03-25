@@ -139,4 +139,59 @@ describe("SyncPosSaleUseCase", () => {
     expect(addCashEntry.execute).not.toHaveBeenCalled();
     expect(idempotencyStore.store).not.toHaveBeenCalled();
   });
+
+  it("accepts an HTTP-style saleDate string and normalizes it before receipt generation", async () => {
+    const idempotencyStore: PosSaleIdempotencyPort = {
+      get: vi.fn().mockResolvedValue(null),
+      store: vi.fn().mockResolvedValue(undefined),
+    };
+    const addCashEntry = {
+      execute: vi.fn().mockResolvedValue(ok({ entry: { id: "entry-1" } })),
+    } satisfies Pick<AddEntryUseCase, "execute">;
+    const resolveCashDrawer = {
+      execute: vi.fn().mockResolvedValue(
+        ok({
+          cashDrawerId: "cash-1",
+          resolution: "bound" as const,
+          posRegister: { id: syncInput.registerId },
+          scope: {
+            posWorkspaceId: "workspace-1",
+            cashTenantId: "tenant-1",
+            cashManagementContext: {
+              ...createPosCtx(),
+              tenantId: "tenant-1",
+              workspaceId: "workspace-1",
+            },
+          },
+        })
+      ),
+    } satisfies Pick<ResolveCashDrawerForPosRegisterService, "execute">;
+
+    const useCase = new SyncPosSaleUseCase(
+      idempotencyStore,
+      addCashEntry as unknown as AddEntryUseCase,
+      resolveCashDrawer as unknown as ResolveCashDrawerForPosRegisterService
+    );
+
+    const result = await useCase.execute(
+      {
+        ...syncInput,
+        saleDate: "2026-03-25T12:00:00.000Z" as unknown as Date,
+      },
+      createPosCtx()
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error("Expected sync to succeed");
+    }
+
+    expect(result.value.receiptNumber).toContain("20260325");
+    expect(addCashEntry.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessDate: "2026-03-25",
+      }),
+      expect.anything()
+    );
+  });
 });

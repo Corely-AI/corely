@@ -1,7 +1,8 @@
 import { Platform } from "react-native";
 import { SqliteOutboxStore } from "@corely/offline-rn";
 import { getPosDatabase } from "@/lib/pos-db";
-import { type PosOutboxStore, WebOutboxStore } from "@/lib/offline/webOutboxStore";
+import type { PosOutboxStore } from "@/lib/offline/webOutboxStore";
+import { WebOutboxStore } from "@/lib/offline/webOutboxStore";
 
 let outboxStoreInstance: PosOutboxStore | null = null;
 

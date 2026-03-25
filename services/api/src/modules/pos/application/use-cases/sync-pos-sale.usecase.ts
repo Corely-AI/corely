@@ -42,6 +42,10 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     ctx: UseCaseContext
   ): Promise<Result<SyncPosSaleOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
+    const saleDate = this.normalizeSaleDate(input.saleDate);
+    if (isErr(saleDate)) {
+      return saleDate;
+    }
 
     // 1. Check idempotency - return cached result if duplicate
     const cached = await this.idempotencyStore.get(tenantId, input.idempotencyKey);
@@ -96,7 +100,7 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     // TODO: Use SalesApplication.recordPayment for each payment (for Sales Ledger)
 
     // Bridge to Cash Management: Record cash movements
-    const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate);
+    const receiptNumber = this.generateReceiptNumber(input.registerId, saleDate.value);
     const cashPayments = input.payments.filter((payment) => payment.method === "CASH");
 
     let cashDrawerId: string | null = null;
@@ -138,7 +142,7 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
         sourceType: CashEntrySourceType.SALES,
         description: `POS Sale #${receiptNumber}`,
         referenceId: input.posSaleId,
-        businessDate: input.saleDate.toISOString().split("T")[0],
+        businessDate: saleDate.value.toISOString().split("T")[0],
         idempotencyKey: `${input.idempotencyKey}:cash:${index}`,
       };
 
@@ -198,5 +202,19 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
       .toString()
       .padStart(3, "0");
     return `POS-${registerId.slice(0, 8)}-${dateStr}-${random}`;
+  }
+
+  private normalizeSaleDate(raw: SyncPosSaleInput["saleDate"]): Result<Date, ValidationError> {
+    const saleDate = raw instanceof Date ? raw : new Date(raw);
+    if (Number.isNaN(saleDate.getTime())) {
+      return err(
+        new ValidationError(
+          "Invalid saleDate provided for POS sale sync",
+          { saleDate: raw },
+          "Pos:InvalidSaleDate"
+        )
+      );
+    }
+    return ok(saleDate);
   }
 }
