@@ -7,6 +7,7 @@ export const platformAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Core platform features",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["platform.manage"],
   permissions: ["platform.apps.manage"],
   entitlement: {

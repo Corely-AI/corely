@@ -22,7 +22,8 @@ import {
   GetCashlessPaymentStatusInputSchema,
   StartCashlessPaymentInputSchema,
 } from "@corely/contracts";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { AllowSurfaces } from "@/shared/surface";
 import { CreateRegisterUseCase } from "../../application/use-cases/create-register.usecase";
 import { ListRegistersUseCase } from "../../application/use-cases/list-registers.usecase";
 import { OpenShiftUseCase } from "../../application/use-cases/open-shift.usecase";
@@ -37,6 +38,7 @@ import { resolveIdempotencyKey } from "../../../../shared/http/usecase-mappers";
 
 @ApiTags("POS")
 @ApiBearerAuth()
+@AllowSurfaces("platform", "pos")
 @Controller("pos")
 @UseGuards(AuthGuard)
 export class PosController {
@@ -52,18 +54,31 @@ export class PosController {
     private getCashlessPaymentStatus: GetCashlessPaymentStatusUseCase
   ) {}
 
+  private toPosUseCaseContext(req: any) {
+    const ctx = toUseCaseContext(req);
+    const workspaceId = ctx.workspaceId ?? ctx.tenantId;
+    return {
+      tenantId: workspaceId,
+      workspaceId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
+      correlationId: ctx.correlationId,
+      activeAppId: ctx.activeAppId,
+      roles: ctx.roles,
+      metadata: {
+        ...ctx.metadata,
+        platformTenantId: ctx.tenantId,
+      },
+    };
+  }
+
   @Post("registers")
   @ApiOperation({ summary: "Create a new POS register" })
   async createRegisterEndpoint(
     @Body() input: CreateRegisterInput,
     @Req() req: any
   ): Promise<CreateRegisterOutput> {
-    const ctx = toUseCaseContext(req);
-    const result = await this.createRegister.execute(input, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-    });
+    const result = await this.createRegister.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -78,12 +93,7 @@ export class PosController {
     @Query() input: ListRegistersInput,
     @Req() req: any
   ): Promise<ListRegistersOutput> {
-    const ctx = toUseCaseContext(req);
-    const result = await this.listRegisters.execute(input, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-    });
+    const result = await this.listRegisters.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -98,12 +108,7 @@ export class PosController {
     @Body() input: OpenShiftInput,
     @Req() req: any
   ): Promise<OpenShiftOutput> {
-    const ctx = toUseCaseContext(req);
-    const result = await this.openShift.execute(input, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-    });
+    const result = await this.openShift.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -118,12 +123,7 @@ export class PosController {
     @Body() input: CloseShiftInput,
     @Req() req: any
   ): Promise<CloseShiftOutput> {
-    const ctx = toUseCaseContext(req);
-    const result = await this.closeShift.execute(input, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-    });
+    const result = await this.closeShift.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -138,12 +138,7 @@ export class PosController {
     @Query() input: GetCurrentShiftInput,
     @Req() req: any
   ): Promise<GetCurrentShiftOutput> {
-    const ctx = toUseCaseContext(req);
-    const result = await this.getCurrentShift.execute(input, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-    });
+    const result = await this.getCurrentShift.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -158,12 +153,7 @@ export class PosController {
     @Body() input: SyncPosSaleInput,
     @Req() req: any
   ): Promise<SyncPosSaleOutput> {
-    const ctx = toUseCaseContext(req);
-    const result = await this.syncPosSale.execute(input, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-    });
+    const result = await this.syncPosSale.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -178,12 +168,7 @@ export class PosController {
     @Query() input: GetCatalogSnapshotInput,
     @Req() req: any
   ): Promise<GetCatalogSnapshotOutput> {
-    const ctx = toUseCaseContext(req);
-    const result = await this.getCatalogSnapshot.execute(input, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-    });
+    const result = await this.getCatalogSnapshot.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -204,14 +189,7 @@ export class PosController {
         (body as Record<string, unknown>)?.idempotencyKey ?? resolveIdempotencyKey(req),
     });
 
-    const ctx = toUseCaseContext(req);
-    const result = await this.startCashlessPayment.execute(parsed, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      workspaceId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-      correlationId: ctx.correlationId,
-    });
+    const result = await this.startCashlessPayment.execute(parsed, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;
@@ -227,14 +205,10 @@ export class PosController {
     @Req() req: any
   ): Promise<GetCashlessPaymentStatusOutput> {
     const parsed = GetCashlessPaymentStatusInputSchema.parse({ attemptId });
-    const ctx = toUseCaseContext(req);
-    const result = await this.getCashlessPaymentStatus.execute(parsed, {
-      tenantId: ctx.workspaceId ?? ctx.tenantId,
-      workspaceId: ctx.workspaceId ?? ctx.tenantId,
-      userId: ctx.userId,
-      requestId: ctx.requestId,
-      correlationId: ctx.correlationId,
-    });
+    const result = await this.getCashlessPaymentStatus.execute(
+      parsed,
+      this.toPosUseCaseContext(req)
+    );
 
     if ("error" in result) {
       throw result.error;

@@ -7,6 +7,7 @@ export const cmsAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Content management for posts and comments",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["cms.manage"],
   permissions: ["cms.posts.read", "cms.posts.manage", "cms.comments.moderate", "cms.posts.publish"],
   menu: [

@@ -123,6 +123,33 @@ export class HttpClient {
     return { response, body };
   }
 
+  async putJson(
+    pathname: string,
+    data: unknown,
+    idempotency: string,
+    options?: Omit<RequestOptions, "query">
+  ): Promise<{ response: APIResponse; body: unknown }> {
+    const headerInput: {
+      idempotencyKey?: string;
+      scope?: RequestScope;
+      extraHeaders?: Record<string, string>;
+      json?: boolean;
+    } = { idempotencyKey: idempotency };
+    if (options?.scope) {
+      headerInput.scope = options.scope;
+    }
+    if (options?.headers) {
+      headerInput.extraHeaders = options.headers;
+    }
+
+    const response = await this.request.put(buildUrl(pathname), {
+      headers: this.headers(headerInput),
+      data,
+    });
+    const body = await response.json();
+    return { response, body };
+  }
+
   async patchJson(
     pathname: string,
     data: unknown,

@@ -1,8 +1,10 @@
 import { Controller, Get, UseGuards } from "@nestjs/common";
 import { ChannelCatalogService } from "../../application/channel-catalog.service";
-import { AuthGuard } from "../../../identity";
-import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
+import { AllowSurfaces } from "@/shared/surface";
 
+@AllowSurfaces("platform", "crm")
 @Controller("crm/channels")
 @UseGuards(AuthGuard, RbacGuard)
 export class ChannelsHttpController {

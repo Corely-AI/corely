@@ -7,6 +7,7 @@ interface ComposeMenuInput {
   userId: string;
   permissions: Set<string>;
   scope: "web" | "pos";
+  surfaceId: "platform" | "pos" | "crm" | "shared";
   capabilityFilter?: Set<string>;
   capabilityKeys?: Set<string>;
 }

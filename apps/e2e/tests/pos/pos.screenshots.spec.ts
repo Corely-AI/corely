@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { POS_IDS, installPosApiMock } from "./helpers";
+import { POS_AUTH_TOKENS, POS_IDS, installPosApiMock } from "./helpers";
 
 const shouldCapture = process.env.POS_CAPTURE_SCREENS === "true";
 const baseURL =
@@ -176,8 +176,9 @@ function seedStorage(input: {
   selectedRegister: boolean;
   requireOpenShiftForSales: boolean;
   ids: typeof POS_IDS;
+  tokens: typeof POS_AUTH_TOKENS;
 }): void {
-  const { authenticated, selectedRegister, requireOpenShiftForSales, ids } = input;
+  const { authenticated, selectedRegister, requireOpenShiftForSales, ids, tokens } = input;
   const prefix = "corely-pos.secure.";
   const set = (key: string, value: string) => localStorage.setItem(`${prefix}${key}`, value);
 
@@ -186,8 +187,8 @@ function seedStorage(input: {
     return;
   }
 
-  set("accessToken", "pos-e2e-access-token");
-  set("refreshToken", "pos-e2e-refresh-token");
+  set("accessToken", tokens.accessToken);
+  set("refreshToken", tokens.refreshToken);
   set("activeWorkspaceId", ids.workspaceId);
   set("pos.require-open-shift-for-sales", requireOpenShiftForSales ? "true" : "false");
   if (selectedRegister) {
@@ -240,6 +241,7 @@ test.describe("POS screenshots", () => {
         selectedRegister: screen.selectedRegister === true,
         requireOpenShiftForSales: screen.requireOpenShiftForSales ?? true,
         ids: POS_IDS,
+        tokens: POS_AUTH_TOKENS,
       });
 
       await page.goto(new URL(screen.route, baseURL).toString());

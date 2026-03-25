@@ -7,6 +7,7 @@ export const directoryAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Manage public directory restaurants",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["directory.restaurants.manage"],
   permissions: ["directory.restaurants.manage"],
   entitlement: {

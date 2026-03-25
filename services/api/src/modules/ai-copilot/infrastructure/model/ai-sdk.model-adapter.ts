@@ -18,6 +18,7 @@ import { type WorkspaceKind, PromptRegistry } from "@corely/prompts";
 import { PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 import { copilotMessageMetadataSchema } from "../../application/validation/copilot-message-metadata.schema";
+import { type SurfaceId } from "@corely/contracts";
 
 const normalizePromptLanguage = (locale?: string): string => {
   const normalized = locale?.trim().toLowerCase();
@@ -30,6 +31,18 @@ const normalizePromptLanguage = (locale?: string): string => {
   }
 
   return "en";
+};
+
+const resolveSystemPromptId = (surfaceId?: SurfaceId, activeAppId?: string): string => {
+  if (surfaceId === "crm") {
+    return "crm.copilot.system";
+  }
+
+  if (surfaceId === "pos" || activeAppId === "restaurant") {
+    return "restaurant.copilot.system";
+  }
+
+  return "copilot.system";
 };
 
 @Injectable()
@@ -67,6 +80,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     workspaceKind?: WorkspaceKind;
     environment?: string;
     activeAppId?: string;
+    surfaceId?: SurfaceId;
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
     const toolTenantId = params.toolTenantId ?? params.tenantId;
@@ -94,14 +108,38 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       tenantId: toolTenantId,
       workspaceKind: params.workspaceKind,
       environmentOverride: params.environment,
+      surfaceId: params.surfaceId,
     });
 
-    const systemPrompt = this.promptRegistry.render("copilot.system", promptContext, {
-      CUSTOMER_SEARCH_TOOL: "customer_search",
-      INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
-      COLLECT_INPUTS_TOOL: "collect_inputs",
-      LANGUAGE: normalizePromptLanguage(params.locale),
-    });
+    const systemPromptId = resolveSystemPromptId(params.surfaceId, params.activeAppId);
+    const systemPromptVariables =
+      systemPromptId === "restaurant.copilot.system"
+        ? {
+            LANGUAGE: normalizePromptLanguage(params.locale),
+            SEARCH_MENU_TOOL: "restaurant_searchMenuItems",
+            BUILD_ORDER_DRAFT_TOOL: "restaurant_buildOrderDraft",
+            DRAFT_VOID_TOOL: "restaurant_draftVoidRequest",
+            DRAFT_DISCOUNT_TOOL: "restaurant_draftDiscountRequest",
+          }
+        : systemPromptId === "crm.copilot.system"
+          ? {
+              LANGUAGE: normalizePromptLanguage(params.locale),
+              CRM_CREATE_DEAL_TOOL: "crm_createDealFromText",
+              CRM_CREATE_PARTY_TOOL: "crm_createPartyFromText",
+              CRM_FOLLOW_UP_TOOL: "crm_generateFollowUps",
+              COLLECT_INPUTS_TOOL: "collect_inputs",
+            }
+          : {
+              CUSTOMER_SEARCH_TOOL: "customer_search",
+              INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
+              COLLECT_INPUTS_TOOL: "collect_inputs",
+              LANGUAGE: normalizePromptLanguage(params.locale),
+            };
+    const systemPrompt = this.promptRegistry.render(
+      systemPromptId,
+      promptContext,
+      systemPromptVariables
+    );
     this.observability.setAttributes(params.observability, {
       "prompt.id": systemPrompt.promptId,
       "prompt.version": systemPrompt.promptVersion,
@@ -116,7 +154,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       tenantId: toolTenantId,
       userId: params.userId,
       runId: params.runId,
-      purpose: "copilot.system",
+      purpose: systemPromptId,
     });
 
     const collectInputsDescription = this.promptRegistry.render(

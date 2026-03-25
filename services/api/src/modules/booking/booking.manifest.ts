@@ -7,6 +7,7 @@ export const bookingAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Manage bookings",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["booking.basic"],
   permissions: [],
   entitlement: {

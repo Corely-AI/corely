@@ -114,6 +114,9 @@ import { BillingModule } from "../billing/billing.module";
 import { CoachingEngagementsModule } from "../coaching-engagements";
 import { CoachingEngagementsApplication } from "../coaching-engagements/application/coaching-engagements.application";
 import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coaching.tools";
+import { RestaurantModule } from "../restaurant/restaurant.module";
+import { RestaurantAiApplication } from "../restaurant/application/restaurant-ai.application";
+import { buildRestaurantAiTools } from "../restaurant/adapters/tools/restaurant.tools";
 
 @Module({
   imports: [
@@ -132,6 +135,7 @@ import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coach
     CashManagementModule,
     BillingModule,
     CoachingEngagementsModule,
+    RestaurantModule,
     TaxModule,
     PlatformEntitlementsModule,
     PromptModule,
@@ -291,6 +295,7 @@ import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coach
         pollIncomeTaxDraftPdfExport: PollIncomeTaxDraftPdfExportUseCase,
         confirmIncomeTaxDraftSubmission: ConfirmIncomeTaxDraftSubmissionUseCase,
         coaching: CoachingEngagementsApplication,
+        restaurantAi: RestaurantAiApplication,
         chatStore: ChatStorePort,
         env: EnvService,
         promptRegistry: PromptRegistry,
@@ -375,6 +380,7 @@ import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coach
             })
           ),
           ...withAppId("coaching-engagements", buildCoachingTools(coaching)),
+          ...withAppId("restaurant", buildRestaurantAiTools(restaurantAi)),
         ];
       },
       inject: [
@@ -420,6 +426,7 @@ import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coach
         PollIncomeTaxDraftPdfExportUseCase,
         ConfirmIncomeTaxDraftSubmissionUseCase,
         CoachingEngagementsApplication,
+        RestaurantAiApplication,
         CHAT_STORE_PORT,
         EnvService,
         PromptRegistry,

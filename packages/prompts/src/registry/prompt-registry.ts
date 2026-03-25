@@ -95,6 +95,9 @@ export class PromptRegistry {
     const tenantMatches =
       !rule.when.tenantIds ||
       (context.tenantId ? rule.when.tenantIds.includes(context.tenantId) : false);
-    return envMatches && workspaceMatches && tenantMatches;
+    const surfaceMatches =
+      !rule.when.surfaces ||
+      (context.surfaceId ? rule.when.surfaces.includes(context.surfaceId) : false);
+    return envMatches && workspaceMatches && tenantMatches && surfaceMatches;
   }
 }

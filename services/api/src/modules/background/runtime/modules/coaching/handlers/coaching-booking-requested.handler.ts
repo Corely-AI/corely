@@ -65,7 +65,11 @@ export class CoachingBookingRequestedHandler implements EventHandler {
     if (engagement.offer.contractRequired) {
       const now = this.clock.now();
       const contractTemplate = engagement.offer.contractTemplate
-        ? resolveLocalizedText(engagement.offer.contractTemplate, engagement.locale, engagement.offer.localeDefault)
+        ? resolveLocalizedText(
+            engagement.offer.contractTemplate,
+            engagement.locale,
+            engagement.offer.localeDefault
+          )
         : null;
       const contractBody = contractTemplate ?? "No contract template has been configured.";
       let contractRequest = await this.repo.findLatestContractRequestByEngagement(

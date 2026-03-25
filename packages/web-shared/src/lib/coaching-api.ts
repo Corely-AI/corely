@@ -56,9 +56,13 @@ class CoachingApi {
   }
 
   async archiveOffer(id: string): Promise<ArchiveCoachingOfferOutput> {
-    return apiClient.post<ArchiveCoachingOfferOutput>(`/coaching-offers/${id}/archive`, {}, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
+    return apiClient.post<ArchiveCoachingOfferOutput>(
+      `/coaching-offers/${id}/archive`,
+      {},
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
   }
 
   async listEngagements(

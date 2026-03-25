@@ -43,6 +43,6 @@ import { PrismaApprovalsDomainEventRepository } from "./infrastructure/repositor
       useClass: PrismaApprovalsDomainEventRepository,
     },
   ],
-  exports: [ApprovalGateService, ApprovalPolicyService],
+  exports: [ApprovalGateService, ApprovalPolicyService, ApprovalRequestService],
 })
 export class ApprovalsModule {}

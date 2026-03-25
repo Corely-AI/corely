@@ -7,8 +7,10 @@ import {
   Inject,
   Put,
   Query,
+  Req,
   UseGuards,
 } from "@nestjs/common";
+import type { Request } from "express";
 import {
   GetMenuQuerySchema,
   UpdateMenuOverridesInputSchema,
@@ -28,6 +30,7 @@ import {
   type RolePermissionGrantRepositoryPort,
 } from "../../../identity/application/ports/role-permission-grant-repository.port";
 import { toAllowedPermissionKeys } from "../../../../shared/permissions/effective-permissions";
+import { resolveRequestContext } from "../../../../shared/request-context";
 
 @Controller("menu")
 @UseGuards(AuthGuard)
@@ -46,7 +49,8 @@ export class MenuController {
     @Query("workspaceId") workspaceId: string | undefined,
     @CurrentTenantId() tenantId: string,
     @CurrentUserId() userId: string,
-    @CurrentRoleIds() roleIds: string[]
+    @CurrentRoleIds() roleIds: string[],
+    @Req() req: Request
   ) {
     const validatedScope = this.parseScope(scope);
     if (!tenantId || !userId) {
@@ -66,6 +70,7 @@ export class MenuController {
       permissions,
       scope: validatedScope,
       workspaceId, // Include workspace ID for metadata
+      surfaceId: ((req as any).context ?? resolveRequestContext(req as any)).surfaceId,
     });
   }
 

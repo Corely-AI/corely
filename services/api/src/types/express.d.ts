@@ -1,5 +1,6 @@
 import type { RequestContext, RequestPrincipal } from "../shared/request-context";
 import type { PublicWorkspaceContext } from "../shared/public";
+import type { SurfaceId } from "@corely/contracts";
 
 declare module "express-serve-static-core" {
   interface Request {
@@ -7,6 +8,7 @@ declare module "express-serve-static-core" {
     user?: RequestPrincipal;
     tenantId?: string;
     workspaceId?: string | null;
+    surfaceId?: SurfaceId;
     roleIds?: string[];
     traceId?: string;
     id?: string;

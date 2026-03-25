@@ -29,7 +29,7 @@ export function expectZod<T>(schema: ZodLikeSchema<T>, value: unknown): T {
       return parsed.data;
     }
 
-    const issues = parsed.error.issues
+    const issues = (parsed as SafeParseFailure).error.issues
       .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
       .join("\n");
     expect(false, `Zod validation failed:\n${issues}`).toBe(true);

@@ -1,5 +1,12 @@
 import { v4 as uuidv4 } from "@lukeed/uuid";
-import type { OpenShiftInput, CloseShiftInput, SyncPosSaleInput } from "@corely/contracts";
+import type {
+  CloseShiftInput,
+  OpenRestaurantTableInput,
+  OpenShiftInput,
+  PutRestaurantDraftOrderInput,
+  SendRestaurantOrderToKitchenInput,
+  SyncPosSaleInput,
+} from "@corely/contracts";
 import type { OutboxCommand } from "@corely/offline-core";
 
 export const PosCommandTypes = {
@@ -7,6 +14,9 @@ export const PosCommandTypes = {
   ShiftOpen: "pos.shift.open",
   ShiftClose: "pos.shift.close",
   ShiftCashEvent: "pos.shift.cash-event",
+  RestaurantTableOpen: "restaurant.table.open",
+  RestaurantDraftReplace: "restaurant.order.draft-replace",
+  RestaurantSendToKitchen: "restaurant.order.send-to-kitchen",
 } as const;
 
 export type PosCommandType = (typeof PosCommandTypes)[keyof typeof PosCommandTypes];
@@ -27,13 +37,21 @@ export type PosCommandPayload =
   | SyncPosSaleInput
   | OpenShiftInput
   | CloseShiftInput
-  | ShiftCashEventCommandPayload;
+  | ShiftCashEventCommandPayload
+  | OpenRestaurantTableInput
+  | PutRestaurantDraftOrderInput
+  | SendRestaurantOrderToKitchenInput;
 
 export const buildDeterministicIdempotencyKey = {
   saleFinalize: (saleId: string) => `sale:${saleId}:finalize:v1`,
   shiftOpen: (sessionId: string) => `shift:${sessionId}:open:v1`,
   shiftClose: (sessionId: string) => `shift:${sessionId}:close:v1`,
   shiftCashEvent: (eventId: string) => `shift-cash:${eventId}:v1`,
+  restaurantTableOpen: (sessionId: string) => `restaurant:${sessionId}:open:v1`,
+  restaurantDraftReplace: (orderId: string, version: number) =>
+    `restaurant:${orderId}:draft:v${version}`,
+  restaurantSendToKitchen: (orderId: string, version: number) =>
+    `restaurant:${orderId}:send:v${version}`,
 };
 
 export function createPosOutboxCommand<TPayload>(

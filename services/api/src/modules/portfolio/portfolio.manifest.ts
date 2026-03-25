@@ -7,6 +7,7 @@ export const portfolioAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Public portfolio showcases, projects, and clients",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: ["portfolio.read", "portfolio.write", "portfolio.publish"],
   menu: [

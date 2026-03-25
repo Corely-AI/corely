@@ -186,7 +186,9 @@ const availabilityToWeeklySlots = (availability: AvailabilityState): CoachingAva
     endTime: availability[dayOfWeek].endTime,
   }));
 
-const weeklySlotsToAvailability = (weeklySlots: CoachingAvailabilitySlot[] | undefined): AvailabilityState => {
+const weeklySlotsToAvailability = (
+  weeklySlots: CoachingAvailabilitySlot[] | undefined
+): AvailabilityState => {
   const base = buildDefaultAvailability();
   for (const { dayOfWeek } of DAYS) {
     base[dayOfWeek].enabled = false;
@@ -247,10 +249,7 @@ export default function CoachingOfferEditorPage() {
       paymentRequired: offerQuery.data.paymentRequired,
       contractTemplate: getLocalizedValue(offerQuery.data.contractTemplate, localeDefault),
       prepQuestionsText: templateToQuestionText(offerQuery.data.prepFormTemplate, localeDefault),
-      debriefQuestionsText: templateToQuestionText(
-        offerQuery.data.debriefTemplate,
-        localeDefault
-      ),
+      debriefQuestionsText: templateToQuestionText(offerQuery.data.debriefTemplate, localeDefault),
     });
     setAvailability(weeklySlotsToAvailability(offerQuery.data.availabilityRule.weeklySlots));
   }, [form, offerQuery.data]);
@@ -337,7 +336,10 @@ export default function CoachingOfferEditorPage() {
     },
   });
 
-  const pageTitle = useMemo(() => (isEdit ? "Edit coaching offer" : "Create coaching offer"), [isEdit]);
+  const pageTitle = useMemo(
+    () => (isEdit ? "Edit coaching offer" : "Create coaching offer"),
+    [isEdit]
+  );
 
   const submit = form.handleSubmit(async (values) => {
     await saveMutation.mutateAsync(values);
@@ -490,7 +492,10 @@ export default function CoachingOfferEditorPage() {
                 {DAYS.map(({ label, dayOfWeek }) => {
                   const row = availability[dayOfWeek];
                   return (
-                    <div key={dayOfWeek} className="grid grid-cols-[80px_80px_1fr_1fr] gap-3 items-center">
+                    <div
+                      key={dayOfWeek}
+                      className="grid grid-cols-[80px_80px_1fr_1fr] gap-3 items-center"
+                    >
                       <span className="text-sm font-medium">{label}</span>
                       <label className="flex items-center gap-2 text-sm">
                         <Checkbox
@@ -545,11 +550,19 @@ export default function CoachingOfferEditorPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="offer-min-notice">Min notice (hours)</Label>
-                <Input id="offer-min-notice" inputMode="numeric" {...form.register("minNoticeHours")} />
+                <Input
+                  id="offer-min-notice"
+                  inputMode="numeric"
+                  {...form.register("minNoticeHours")}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="offer-max-advance">Max advance (days)</Label>
-                <Input id="offer-max-advance" inputMode="numeric" {...form.register("maxAdvanceDays")} />
+                <Input
+                  id="offer-max-advance"
+                  inputMode="numeric"
+                  {...form.register("maxAdvanceDays")}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="offer-buffer-before">Buffer before (minutes)</Label>

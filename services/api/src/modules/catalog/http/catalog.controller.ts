@@ -25,8 +25,8 @@ import {
   mapResultToHttp,
   resolveIdempotencyKey,
 } from "../../../shared/http/usecase-mappers";
-import { AuthGuard } from "../../identity";
-import { RbacGuard, RequirePermission } from "../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../platform";
 import { ArchiveCatalogItemUseCase } from "../application/use-cases/archive-item.usecase";
 import { ArchiveCatalogVariantUseCase } from "../application/use-cases/archive-variant.usecase";

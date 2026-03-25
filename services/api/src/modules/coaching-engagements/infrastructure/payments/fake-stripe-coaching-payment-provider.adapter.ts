@@ -99,8 +99,9 @@ export class FakeStripeCoachingPaymentProviderAdapter
       tenantId: this.pickString(metadata.tenantId),
       engagementId: this.pickString(metadata.engagementId),
       paymentId: this.pickString(metadata.paymentId),
-      checkoutSessionId:
-        event.type.startsWith("checkout.session") ? this.pickString(object.id) : null,
+      checkoutSessionId: event.type.startsWith("checkout.session")
+        ? this.pickString(object.id)
+        : null,
       paymentRef:
         this.pickString(object.payment_intent) ??
         this.pickString(object.paymentIntentId) ??
@@ -110,7 +111,8 @@ export class FakeStripeCoachingPaymentProviderAdapter
       failureCode: this.pickString(object.failure_code) ?? this.pickString(object.failureCode),
       failureMessage:
         this.pickString(object.failure_message) ?? this.pickString(object.failureMessage),
-      refundedAmountCents: this.pickNumber(object.amount_refunded) ?? this.pickNumber(object.amountRefunded),
+      refundedAmountCents:
+        this.pickNumber(object.amount_refunded) ?? this.pickNumber(object.amountRefunded),
       rawPayload: event,
     };
   }
@@ -127,9 +129,7 @@ export class FakeStripeCoachingPaymentProviderAdapter
     return part ? part.slice(3) : null;
   }
 
-  private mapStatus(
-    eventType: string
-  ): CoachingPaymentProviderWebhookEvent["status"] {
+  private mapStatus(eventType: string): CoachingPaymentProviderWebhookEvent["status"] {
     switch (eventType) {
       case "checkout.session.completed":
         return "captured";

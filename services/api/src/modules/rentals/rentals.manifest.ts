@@ -7,6 +7,7 @@ export const rentalsAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Manage vacation home rentals and availability",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["rentals.manage"],
   permissions: ["rentals.read", "rentals.write"],
   menu: [

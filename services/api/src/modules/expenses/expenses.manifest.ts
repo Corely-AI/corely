@@ -7,6 +7,7 @@ export const expensesAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Expense tracking",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: ["expenses.read", "expenses.write"],
   entitlement: {

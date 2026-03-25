@@ -5,6 +5,7 @@
 
 // App Manifest
 export * from "./app-manifest.schema";
+export * from "./surface.schema";
 
 // Template Definition
 export * from "./template-definition.schema";

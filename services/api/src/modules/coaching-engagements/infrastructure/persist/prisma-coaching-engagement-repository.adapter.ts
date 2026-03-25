@@ -249,7 +249,10 @@ export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngage
     return mapOffer(row);
   }
 
-  async updateOffer(offer: CoachingOfferRecord, tx?: TransactionContext): Promise<CoachingOfferRecord> {
+  async updateOffer(
+    offer: CoachingOfferRecord,
+    tx?: TransactionContext
+  ): Promise<CoachingOfferRecord> {
     const client = getPrismaClient(this.prisma, tx);
     const row = await client.coachingOffer.update({
       where: { id: offer.id },

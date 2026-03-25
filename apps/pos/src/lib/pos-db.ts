@@ -291,6 +291,23 @@ async function initializePosSchema(db: SQLite.SQLiteDatabase): Promise<void> {
     )`,
     `CREATE INDEX IF NOT EXISTS idx_shift_cash_events_local_session
       ON shift_cash_events_local(session_id, occurred_at)`,
+    `CREATE TABLE IF NOT EXISTS restaurant_order_aggregates_local (
+      order_id TEXT PRIMARY KEY,
+      workspace_id TEXT NOT NULL,
+      table_id TEXT NOT NULL,
+      table_session_id TEXT NOT NULL,
+      order_status TEXT NOT NULL,
+      session_status TEXT NOT NULL,
+      command_version INTEGER NOT NULL DEFAULT 0,
+      sync_status TEXT NOT NULL DEFAULT 'SYNCED',
+      last_error TEXT,
+      session_json TEXT NOT NULL,
+      order_json TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_restaurant_aggregates_table_status
+      ON restaurant_order_aggregates_local(table_id, session_status, updated_at)`,
     `CREATE TABLE IF NOT EXISTS sync_state (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,

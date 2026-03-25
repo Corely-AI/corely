@@ -1,5 +1,4 @@
-export const COACHING_PAYMENT_PROVIDER_REGISTRY =
-  "coaching-engagements/payment-provider-registry";
+export const COACHING_PAYMENT_PROVIDER_REGISTRY = "coaching-engagements/payment-provider-registry";
 export const COACHING_PAYMENT_PROVIDER_TEST_HOOKS =
   "coaching-engagements/payment-provider-test-hooks";
 
@@ -41,11 +40,7 @@ export interface CoachingPaymentProviderPort {
     checkoutUrl: string;
   }>;
 
-  refundPayment(input: {
-    paymentRef: string;
-    amountCents?: number;
-    reason?: string;
-  }): Promise<{
+  refundPayment(input: { paymentRef: string; amountCents?: number; reason?: string }): Promise<{
     refundRef: string;
     refundedAmountCents: number | null;
   }>;

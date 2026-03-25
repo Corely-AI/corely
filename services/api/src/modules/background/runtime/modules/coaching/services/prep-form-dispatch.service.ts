@@ -43,7 +43,11 @@ export class PrepFormDispatchService {
     now?: Date;
   }): Promise<"sent" | "not_due" | "skipped"> {
     const now = params.now ?? this.clock.now();
-    const session = await this.repo.findSessionById(params.tenantId, params.workspaceId, params.sessionId);
+    const session = await this.repo.findSessionById(
+      params.tenantId,
+      params.workspaceId,
+      params.sessionId
+    );
     if (!session || session.prepRequestedAt || session.prepSubmittedAt) {
       return "skipped";
     }

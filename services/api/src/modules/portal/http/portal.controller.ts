@@ -2,7 +2,8 @@ import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from "@nest
 import type { Request } from "express";
 import { PortalApplication } from "../application/portal.application";
 import { buildUseCaseContext, mapResultToHttp } from "../../../shared/http/usecase-mappers";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { PublicWorkspaceRoute } from "../../../shared/public";
 
 @Controller("portal")

@@ -1,5 +1,5 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from "@nestjs/common";
-import { APP_INTERCEPTOR } from "@nestjs/core";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { EnvModule } from "@corely/config";
 import { DataModule } from "@corely/data";
 import { AppController } from "./app.controller";
@@ -49,10 +49,11 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { BackgroundModule } from "./modules/background/background.module";
 import { OnboardingModule } from "./modules/onboarding";
 import { CoachingEngagementsModule } from "./modules/coaching-engagements";
-import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
+import { RestaurantModule } from "./modules/restaurant";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
 import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared/public";
+import { SurfaceGuard } from "./shared/surface";
 
 @Module({
   controllers: [AppController],
@@ -62,6 +63,10 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     {
       provide: APP_INTERCEPTOR,
       useClass: RequestContextInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: SurfaceGuard,
     },
   ],
   imports: [
@@ -102,6 +107,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     ClassesModule,
     BookingModule,
     CoachingEngagementsModule,
+    RestaurantModule,
     PortalModule,
     PortfolioModule,
     IssuesModule,

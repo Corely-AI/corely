@@ -1,4 +1,4 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -29,14 +29,29 @@ export default function SettingsScreen() {
   const { queueStats, autoSyncEnabled, toggleAutoSync } = useSyncEngine();
 
   const handleLogout = () => {
+    const runLogout = async () => {
+      try {
+        await logout();
+      } catch (error) {
+        Alert.alert(
+          t("settings.logoutTitle"),
+          error instanceof Error ? error.message : t("settings.logoutMessage")
+        );
+      }
+    };
+
+    if (Platform.OS === "web") {
+      void runLogout();
+      return;
+    }
+
     Alert.alert(t("settings.logoutTitle"), t("settings.logoutMessage"), [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: t("common.logout"),
         style: "destructive",
         onPress: async () => {
-          await logout();
-          router.replace("/login" as never);
+          await runLogout();
         },
       },
     ]);
@@ -63,6 +78,14 @@ export default function SettingsScreen() {
             }
             tone="info"
           />
+        </View>
+      </Card>
+
+      <Card>
+        <View testID="pos-settings-workspace-info">
+          <Text style={styles.sectionTitle}>Workspace</Text>
+          <ListRow title="Workspace ID" subtitle={user?.workspaceId ?? t("settings.noWorkspace")} />
+          <ListRow title="User ID" subtitle={user?.userId ?? t("settings.unknownUser")} />
         </View>
       </Card>
 

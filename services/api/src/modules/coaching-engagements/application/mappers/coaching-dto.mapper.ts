@@ -71,7 +71,9 @@ export const toCoachingSessionDto = (session: CoachingSessionRecord): CoachingSe
   updatedAt: session.updatedAt.toISOString(),
 });
 
-export const toCoachingBookingHoldDto = (hold: CoachingBookingHoldRecord): CoachingBookingHoldDto => ({
+export const toCoachingBookingHoldDto = (
+  hold: CoachingBookingHoldRecord
+): CoachingBookingHoldDto => ({
   id: hold.id,
   offerId: hold.offerId,
   coachUserId: hold.coachUserId,
@@ -225,7 +227,9 @@ export const toCoachingDetailDto = (params: {
     params.offer,
     params.exportedBundleDocumentId
   ),
-  contractRequest: params.contractRequest ? toCoachingContractRequestDto(params.contractRequest) : null,
+  contractRequest: params.contractRequest
+    ? toCoachingContractRequestDto(params.contractRequest)
+    : null,
   sessions: params.sessions.map(toCoachingSessionDto),
   payments: params.payments.map(toCoachingPaymentDto),
   artifacts: params.artifacts,

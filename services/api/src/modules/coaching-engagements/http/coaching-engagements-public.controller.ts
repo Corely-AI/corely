@@ -411,7 +411,8 @@ export class CoachingEngagementsPublicController {
       now: params.now,
     });
     return slots.find(
-      (slot) => slot.startAt === params.startAt.toISOString() && slot.endAt === params.endAt.toISOString()
+      (slot) =>
+        slot.startAt === params.startAt.toISOString() && slot.endAt === params.endAt.toISOString()
     );
   }
 
@@ -450,17 +451,26 @@ export class CoachingEngagementsPublicController {
     const earliestStart = new Date(
       now.getTime() + offer.bookingRules.minNoticeHours * 60 * 60 * 1000
     );
-    const latestStart = new Date(now.getTime() + offer.bookingRules.maxAdvanceDays * 24 * 60 * 60 * 1000);
+    const latestStart = new Date(
+      now.getTime() + offer.bookingRules.maxAdvanceDays * 24 * 60 * 60 * 1000
+    );
     const durationMs = offer.sessionDurationMinutes * 60 * 1000;
     const stepMs = durationMs;
-    const slots: Array<{ startAt: string; endAt: string; displayStart: string; displayEnd: string }> = [];
+    const slots: Array<{
+      startAt: string;
+      endAt: string;
+      displayStart: string;
+      displayEnd: string;
+    }> = [];
 
     let localDate = toIsoDateString(from, offerTimezone);
     const endLocalDate = toIsoDateString(to, offerTimezone);
 
     while (localDate <= endLocalDate && slots.length < MAX_SLOTS_PER_REQUEST) {
       const weekday = isoWeekdayToSundayZero(localDate, offerTimezone);
-      const daySlots = offer.availabilityRule.weeklySlots.filter((slot) => slot.dayOfWeek === weekday);
+      const daySlots = offer.availabilityRule.weeklySlots.filter(
+        (slot) => slot.dayOfWeek === weekday
+      );
 
       for (const weeklySlot of daySlots) {
         const startTime = parseTime(weeklySlot.startTime);
@@ -469,10 +479,7 @@ export class CoachingEngagementsPublicController {
           continue;
         }
 
-        const windowStart = fromZonedTime(
-          `${localDate}T${weeklySlot.startTime}:00`,
-          offerTimezone
-        );
+        const windowStart = fromZonedTime(`${localDate}T${weeklySlot.startTime}:00`, offerTimezone);
         const windowEnd = fromZonedTime(`${localDate}T${weeklySlot.endTime}:00`, offerTimezone);
         if (windowEnd <= windowStart) {
           continue;

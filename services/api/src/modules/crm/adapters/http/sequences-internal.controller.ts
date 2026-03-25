@@ -5,6 +5,7 @@ import { ServiceTokenGuard } from "../../../../shared/http/service-token.guard";
 import { RunSequenceStepsUseCase } from "../../application/use-cases/run-sequence-steps/run-sequence-steps.usecase";
 import { ExecuteSequenceStepUseCase } from "../../application/use-cases/execute-sequence-step/execute-sequence-step.usecase";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
+import { AllowSurfaces } from "@/shared/surface";
 import { z } from "zod";
 
 const ExecuteSequenceStepInputSchema = z.object({
@@ -13,6 +14,7 @@ const ExecuteSequenceStepInputSchema = z.object({
   expectedRunAt: z.string().datetime().optional(),
 });
 
+@AllowSurfaces("platform", "crm")
 @Controller("internal/crm/sequences")
 @UseGuards(ServiceTokenGuard)
 export class SequencesInternalController {

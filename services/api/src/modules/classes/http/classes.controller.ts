@@ -40,7 +40,8 @@ import {
 } from "@corely/contracts";
 import { parseListQuery } from "../../../shared/http/pagination";
 import { buildUseCaseContext, resolveIdempotencyKey } from "../../../shared/http/usecase-mappers";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { CreateClassGroupUseCase } from "../application/use-cases/create-class-group.usecase";
 import { UpdateClassGroupUseCase } from "../application/use-cases/update-class-group.usecase";
 import { ListClassGroupsUseCase } from "../application/use-cases/list-class-groups.usecase";

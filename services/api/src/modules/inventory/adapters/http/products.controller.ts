@@ -10,8 +10,8 @@ import {
 } from "@corely/contracts";
 import { ProductsApplication } from "../../application/products.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
-import { AuthGuard } from "../../../identity";
-import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../../platform";
 
 @Controller("inventory/products")

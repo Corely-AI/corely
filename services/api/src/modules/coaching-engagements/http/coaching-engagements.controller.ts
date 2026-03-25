@@ -24,7 +24,7 @@ import {
   ResendCoachingInvoiceInputSchema,
   RefundCoachingPaymentInputSchema,
 } from "@corely/contracts";
-import { AuthGuard } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { CoachingEngagementsApplication } from "../application/coaching-engagements.application";
 import { PrismaCoachingEngagementRepositoryAdapter } from "../infrastructure/persist/prisma-coaching-engagement-repository.adapter";
 import { toCoachingSessionDto } from "../application/mappers/coaching-dto.mapper";

@@ -28,7 +28,7 @@ import {
   useMoneyPad,
 } from "@/ui/components";
 import { posTheme } from "@/ui/theme";
-import { styles } from "./checkout.styles";
+import { styles } from "@/screens/checkout.styles";
 
 type PaymentMethod = PosSalePayment["method"];
 

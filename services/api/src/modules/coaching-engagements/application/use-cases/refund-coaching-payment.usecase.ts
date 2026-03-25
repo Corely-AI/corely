@@ -79,7 +79,8 @@ export class RefundCoachingPaymentUseCase extends BaseUseCase<
     });
 
     const now = this.deps.clock.now();
-    const refundedAmountCents = refund.refundedAmountCents ?? input.amountCents ?? payment.amountCents;
+    const refundedAmountCents =
+      refund.refundedAmountCents ?? input.amountCents ?? payment.amountCents;
     const updatedPayment = await this.deps.repo.updatePayment({
       ...payment,
       status: "refunded",

@@ -21,13 +21,11 @@ import type {
   FormSubmissionSummary,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
+import { defaultApiBaseUrl } from "./api-base-url";
 import { buildListQuery } from "./api-query-utils";
 import { request } from "@corely/api-client";
 
-export const resolveFormsApiBaseUrl = () =>
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? "/api" : "http://localhost:3000");
+export const resolveFormsApiBaseUrl = () => defaultApiBaseUrl;
 
 const requestPublic = async <T>(endpoint: string, opts?: { method?: string; body?: unknown }) => {
   return request<T>({

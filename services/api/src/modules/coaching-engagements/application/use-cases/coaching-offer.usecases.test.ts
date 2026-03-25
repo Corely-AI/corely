@@ -8,10 +8,7 @@ import {
   type TransactionContext,
   type UnitOfWorkPort,
 } from "@corely/kernel";
-import {
-  CreateCoachingOfferInputSchema,
-  type ArchiveCoachingOfferInput,
-} from "@corely/contracts";
+import { CreateCoachingOfferInputSchema, type ArchiveCoachingOfferInput } from "@corely/contracts";
 import { CreateCoachingOfferUseCase } from "./create-coaching-offer.usecase";
 import { UpdateCoachingOfferUseCase } from "./update-coaching-offer.usecase";
 import { ArchiveCoachingOfferUseCase } from "./archive-coaching-offer.usecase";
@@ -328,7 +325,10 @@ describe("coaching offer workflows", () => {
 
     const created = unwrap(await createOffer.execute(baseInput, ctx));
     const archived = unwrap(
-      await archiveOffer.execute({ offerId: created.offer.id } satisfies ArchiveCoachingOfferInput, ctx)
+      await archiveOffer.execute(
+        { offerId: created.offer.id } satisfies ArchiveCoachingOfferInput,
+        ctx
+      )
     );
     expect(archived.offer.archivedAt).toBeTruthy();
 

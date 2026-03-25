@@ -2,11 +2,13 @@ import { type z } from "zod";
 
 export type PromptEnvironment = "dev" | "stage" | "prod" | "test" | string;
 export type WorkspaceKind = "PERSONAL" | "COMPANY";
+export type PromptSurfaceId = "platform" | "pos" | "crm" | "shared";
 
 export interface PromptContext {
   environment: PromptEnvironment;
   workspaceKind?: WorkspaceKind;
   tenantId?: string;
+  surfaceId?: PromptSurfaceId;
 }
 
 export type PromptVariableKind = "text" | "block" | "json";
@@ -31,6 +33,7 @@ export interface PromptSelectionRule {
     environments?: PromptEnvironment[];
     workspaceKinds?: WorkspaceKind[];
     tenantIds?: string[];
+    surfaces?: PromptSurfaceId[];
   };
   version: string;
   priority?: number;

@@ -1,1 +1,1 @@
-export * from "@/ui/components/index";
+export * from "./components/index";

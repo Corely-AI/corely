@@ -8,9 +8,7 @@ import type {
 } from "../../application/ports/coaching-payment-provider.port";
 
 @Injectable()
-export class CoachingPaymentProviderRegistryService
-  implements CoachingPaymentProviderRegistryPort
-{
+export class CoachingPaymentProviderRegistryService implements CoachingPaymentProviderRegistryPort {
   constructor(
     private readonly stripeProvider: StripeCoachingPaymentProviderAdapter,
     private readonly fakeStripeProvider: FakeStripeCoachingPaymentProviderAdapter
@@ -29,9 +27,6 @@ export class CoachingPaymentProviderRegistryService
   }
 
   private useFakeMode(): boolean {
-    return (
-      process.env.NODE_ENV === "test" ||
-      process.env.COACHING_PAYMENT_PROVIDER_MODE === "fake"
-    );
+    return process.env.NODE_ENV === "test" || process.env.COACHING_PAYMENT_PROVIDER_MODE === "fake";
   }
 }

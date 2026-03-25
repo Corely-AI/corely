@@ -7,6 +7,7 @@ export const salesAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Sales quotes and projects",
   dependencies: ["parties"],
+  allowedSurfaces: ["platform"],
   capabilities: ["sales.quotes", "sales.projects"],
   permissions: ["sales.read", "sales.write"],
   menu: [

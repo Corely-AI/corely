@@ -7,6 +7,7 @@ export const purchasingAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Purchasing and supplier management",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["purchasing.purchaseOrders"],
   permissions: ["purchasing.read", "purchasing.write"],
   menu: [

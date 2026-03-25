@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
 import { cashManagementFeature } from "@corely/web-features";
-import { RequirePermission } from "@corely/web-shared/shared/permissions";
+import { RequirePermission, RequireSurface } from "@corely/web-shared/shared/permissions";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
@@ -12,54 +12,10 @@ import {
   InvoiceDetailPage,
   InvoiceAuditPage,
 } from "../../modules/invoices";
-import {
-  CustomersPage,
-  NewCustomerPage,
-  EditCustomerPage,
-  SuppliersPage,
-  NewSupplierPage,
-  EditSupplierPage,
-  StudentsPage,
-  NewStudentPage,
-  StudentDetailPage,
-  BirthdayRemindersPage,
-} from "../../modules/customers";
+import { NewStudentPage } from "../../modules/customers";
 import { FormsPage, NewFormPage, FormDetailPage } from "../../modules/forms";
 import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
-import {
-  ClassGroupsListPage,
-  ClassGroupEditorPage,
-  ClassGroupDetailPage,
-  CohortsListScreen,
-  CohortDetailScreen,
-  ProgramsListScreen,
-  ProgramDetailScreen,
-  SessionsPage,
-  SessionDetailPage,
-  ClassesBillingPage,
-  TeacherDashboardPage,
-} from "../../modules/classes";
-import {
-  CrmDashboardPage,
-  DealsPage,
-  NewDealPage,
-  DealDetailPage,
-  ActivitiesPage,
-  NewActivityPage,
-  LeadsPage,
-  NewLeadPage,
-  LeadDetailPage,
-  ContactsPage,
-  ContactFormPage,
-  ContactDetailPage,
-  SequencesPage,
-  NewSequencePage,
-  SequenceDetailPage,
-  CrmEmailSettingsPage,
-  AccountsPage,
-  AccountDetailPage,
-  AccountFormPage,
-} from "../../modules/crm";
+import { TeacherDashboardPage } from "../../modules/classes";
 import {
   AccountingDashboard,
   SetupWizard,
@@ -69,33 +25,10 @@ import {
 } from "../../modules/accounting/screens";
 import { CmsPostsPage, CmsPostEditorPage, CmsCommentsPage } from "../../modules/cms";
 import {
-  WebsiteSitesPage,
-  WebsiteSiteEditorPage,
-  WebsiteDomainsPage,
-  WebsitePagesPage,
-  WebsitePageEditorPage,
-  WebsiteMenusPage,
-  WebsiteFeedbackConfigPage,
-  WebsiteWallOfLovePage,
-} from "../../modules/website";
-import {
   RentalPropertiesPage,
   RentalPropertyEditorPage,
   RentalCategoriesPage,
 } from "../../modules/rentals";
-import {
-  ShowcasesPage,
-  ShowcaseEditorPage,
-  ShowcaseProfilePage,
-  ProjectsPage,
-  ProjectEditorPage,
-  ClientsPage,
-  ClientEditorPage,
-  ServicesPage,
-  ServiceEditorPage,
-  TeamPage,
-  TeamEditorPage,
-} from "../../modules/portfolio";
 import { directoryRoutes } from "../../modules/directory";
 import {
   TaxSettingsPage,
@@ -113,6 +46,14 @@ import { CopilotPage } from "../../routes/copilot";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
 import { RequireAuth } from "./require-auth";
 import { appSettingsRoutes } from "./app-settings-routes";
+import {
+  classRoutes,
+  crmRoutes,
+  customerRoutes,
+  portfolioRoutes,
+  restaurantRoutes,
+  websiteRoutes,
+} from "./app-shell-domain-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
 import { bookingRoutes } from "./booking-routes";
@@ -123,6 +64,17 @@ import { CoachingEngagementDetailPage } from "../../modules/coaching-engagements
 import { CoachingOffersPage } from "../../modules/coaching-engagements/screens/CoachingOffersPage";
 import CoachingOfferDetailPage from "../../modules/coaching-engagements/screens/CoachingOfferDetailPage";
 import CoachingOfferEditorPage from "../../modules/coaching-engagements/screens/CoachingOfferEditorPage";
+import { useSurfaceId } from "@corely/web-shared/shared/surface";
+
+const SurfaceAssistantPage = () => {
+  const surfaceId = useSurfaceId();
+
+  if (surfaceId === "pos") {
+    return <Navigate to="/restaurant/copilot" replace />;
+  }
+
+  return <AssistantPage activeModule={surfaceId === "crm" ? "crm" : "freelancer"} />;
+};
 
 const CashLegacyRedirect = () => {
   const { id } = useParams<{ id?: string }>();
@@ -156,23 +108,15 @@ export const appShellRoutes = (
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/assistant" element={<AssistantPage activeModule="freelancer" />} />
-      <Route path="/assistant/t/:threadId" element={<AssistantPage activeModule="freelancer" />} />
+      <Route path="/assistant" element={<SurfaceAssistantPage />} />
+      <Route path="/assistant/t/:threadId" element={<SurfaceAssistantPage />} />
       <Route path="/cms/posts" element={<CmsPostsPage />} />
       <Route path="/cms/posts/new" element={<CmsPostEditorPage />} />
       <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
       <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
       <Route path="/cms/comments" element={<CmsCommentsPage />} />
-      <Route path="/website/sites" element={<WebsiteSitesPage />} />
-      <Route path="/website/sites/new" element={<WebsiteSiteEditorPage />} />
-      <Route path="/website/sites/:siteId/edit" element={<WebsiteSiteEditorPage />} />
-      <Route path="/website/sites/:siteId/domains" element={<WebsiteDomainsPage />} />
-      <Route path="/website/sites/:siteId/menus" element={<WebsiteMenusPage />} />
-      <Route path="/website/sites/:siteId/feedback" element={<WebsiteFeedbackConfigPage />} />
-      <Route path="/website/sites/:siteId/wall-of-love" element={<WebsiteWallOfLovePage />} />
-      <Route path="/website/sites/:siteId/pages" element={<WebsitePagesPage />} />
-      <Route path="/website/sites/:siteId/pages/new" element={<WebsitePageEditorPage />} />
-      <Route path="/website/pages/:pageId/edit" element={<WebsitePageEditorPage />} />
+      {restaurantRoutes}
+      {websiteRoutes}
       <Route path="/rentals/properties" element={<RentalPropertiesPage />} />
       <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
       <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
@@ -188,52 +132,12 @@ export const appShellRoutes = (
           }
         />
       ))}
-      <Route path="/portfolio/showcases" element={<ShowcasesPage />} />
-      <Route path="/portfolio/showcases/new" element={<ShowcaseEditorPage />} />
-      <Route path="/portfolio/showcases/:id/edit" element={<ShowcaseEditorPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/profile" element={<ShowcaseProfilePage />} />
-      <Route path="/portfolio/showcases/:showcaseId/projects" element={<ProjectsPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/projects/new" element={<ProjectEditorPage />} />
-      <Route path="/portfolio/projects/:id/edit" element={<ProjectEditorPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/clients" element={<ClientsPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/clients/new" element={<ClientEditorPage />} />
-      <Route path="/portfolio/clients/:id/edit" element={<ClientEditorPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/services" element={<ServicesPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/services/new" element={<ServiceEditorPage />} />
-      <Route path="/portfolio/services/:id/edit" element={<ServiceEditorPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/team" element={<TeamPage />} />
-      <Route path="/portfolio/showcases/:showcaseId/team/new" element={<TeamEditorPage />} />
-      <Route path="/portfolio/team/:id/edit" element={<TeamEditorPage />} />
+      {portfolioRoutes}
       <Route path="/forms" element={<FormsPage />} />
       <Route path="/forms/new" element={<NewFormPage />} />
       <Route path="/forms/:id" element={<FormDetailPage />} />
       <Route path="/issues" element={<IssuesListPage />} />
-      <Route path="/class-groups" element={<ClassGroupsListPage />} />
-      <Route path="/class-groups/new" element={<ClassGroupEditorPage />} />
-      <Route path="/class-groups/:id" element={<ClassGroupDetailPage />} />
-      <Route path="/class-groups/:id/edit" element={<ClassGroupEditorPage />} />
-      <Route path="/classes/class-groups" element={<Navigate to="/classes/cohorts" replace />} />
-      <Route
-        path="/classes/class-groups/new"
-        element={<Navigate to="/classes/cohorts/new" replace />}
-      />
-      <Route path="/classes/class-groups/:id" element={<CohortDetailScreen />} />
-      <Route path="/classes/class-groups/:id/edit" element={<ClassGroupEditorPage />} />
-      <Route path="/classes/cohorts" element={<CohortsListScreen />} />
-      <Route path="/classes/cohorts/new" element={<ClassGroupEditorPage />} />
-      <Route path="/classes/cohorts/:id" element={<CohortDetailScreen />} />
-      <Route path="/classes/cohorts/:id/edit" element={<ClassGroupEditorPage />} />
-      <Route path="/programs" element={<ProgramsListScreen />} />
-      <Route path="/programs/new" element={<ProgramDetailScreen />} />
-      <Route path="/programs/:id" element={<ProgramDetailScreen />} />
-      <Route path="/programs/:id/edit" element={<ProgramDetailScreen />} />
-      <Route path="/classes/programs" element={<ProgramsListScreen />} />
-      <Route path="/classes/programs/new" element={<ProgramDetailScreen />} />
-      <Route path="/classes/programs/:id" element={<ProgramDetailScreen />} />
-      <Route path="/classes/programs/:id/edit" element={<ProgramDetailScreen />} />
-      <Route path="/sessions" element={<SessionsPage />} />
-      <Route path="/sessions/:id" element={<SessionDetailPage />} />
-      <Route path="/billing" element={<ClassesBillingPage />} />
+      {classRoutes}
       <Route path="/issues/new" element={<NewIssuePage />} />
       <Route path="/issues/:id" element={<IssueDetailPage />} />
       <Route path="/expenses" element={<ExpensesPage />} />
@@ -241,11 +145,36 @@ export const appShellRoutes = (
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />
       {cashManagementFeature.cashManagementRoutes().map((route) => (
-        <Route key={route.path} path={route.path} element={route.element} />
+        <Route
+          key={route.path}
+          path={route.path}
+          element={<RequireSurface surfaces={["platform", "pos"]}>{route.element}</RequireSurface>}
+        />
       ))}
-      <Route path="/cash-registers" element={<CashLegacyRedirect />} />
-      <Route path="/cash-registers/:id" element={<CashLegacyRedirect />} />
-      <Route path="/cash-registers/:id/daily-close" element={<CashLegacyDayCloseRedirect />} />
+      <Route
+        path="/cash-registers"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <CashLegacyRedirect />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/cash-registers/:id"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <CashLegacyRedirect />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/cash-registers/:id/daily-close"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <CashLegacyDayCloseRedirect />
+          </RequireSurface>
+        }
+      />
       <Route path="/invoices" element={<InvoicesPage />} />
       <Route path="/invoices/new" element={<NewInvoicePage />} />
       <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
@@ -308,105 +237,9 @@ export const appShellRoutes = (
         }
       />
       {capabilityRoutes}
-      <Route
-        path="/customers"
-        element={
-          <RequirePermission permission="party.customers.read">
-            <CustomersPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/customers/new"
-        element={
-          <RequirePermission permission="party.customers.manage">
-            <NewCustomerPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/customers/:id"
-        element={
-          <RequirePermission permission="party.customers.manage">
-            <EditCustomerPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/customers/:id/edit"
-        element={
-          <RequirePermission permission="party.customers.manage">
-            <EditCustomerPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/customers/birthdays"
-        element={
-          <RequirePermission permission="party.customers.read">
-            <BirthdayRemindersPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/suppliers"
-        element={
-          <RequirePermission permission="party.customers.read">
-            <SuppliersPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/suppliers/new"
-        element={
-          <RequirePermission permission="party.customers.manage">
-            <NewSupplierPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/suppliers/:id"
-        element={
-          <RequirePermission permission="party.customers.manage">
-            <EditSupplierPage />
-          </RequirePermission>
-        }
-      />
-      <Route
-        path="/suppliers/:id/edit"
-        element={
-          <RequirePermission permission="party.customers.manage">
-            <EditSupplierPage />
-          </RequirePermission>
-        }
-      />
-      <Route path="/students" element={<StudentsPage />} />
+      {customerRoutes}
       <Route path="/students/new" element={<NewStudentPage />} />
-      <Route path="/students/:id" element={<StudentDetailPage />} />
-      <Route path="/students/:id/edit" element={<StudentDetailPage />} />
-      <Route path="/crm" element={<CrmDashboardPage />} />
-      <Route path="/crm/overview" element={<Navigate to="/crm" replace />} />
-      <Route path="/crm/deals" element={<DealsPage />} />
-      <Route path="/crm/deals/new" element={<NewDealPage />} />
-      <Route path="/crm/deals/:id" element={<DealDetailPage />} />
-      <Route path="/crm/deals/:id/edit" element={<DealDetailPage />} />
-      <Route path="/crm/activities" element={<ActivitiesPage />} />
-      <Route path="/crm/activities/new" element={<NewActivityPage />} />
-      <Route path="/crm/leads" element={<LeadsPage />} />
-      <Route path="/crm/leads/new" element={<NewLeadPage />} />
-      <Route path="/crm/leads/:id" element={<LeadDetailPage />} />
-      <Route path="/crm/contacts" element={<ContactsPage />} />
-      <Route path="/crm/contacts/new" element={<ContactFormPage />} />
-      <Route path="/crm/contacts/:id" element={<ContactDetailPage />} />
-      <Route path="/crm/contacts/:id/edit" element={<ContactFormPage />} />
-      <Route path="/crm/sequences" element={<SequencesPage />} />
-      <Route path="/crm/sequences/new" element={<NewSequencePage />} />
-      <Route path="/crm/sequences/:id" element={<SequenceDetailPage />} />
-      <Route path="/crm/settings/email" element={<CrmEmailSettingsPage />} />
-      <Route path="/crm/accounts" element={<AccountsPage />} />
-      <Route path="/crm/accounts/new" element={<AccountFormPage />} />
-      <Route path="/crm/accounts/:id" element={<AccountDetailPage />} />
-      <Route path="/crm/accounts/:id/edit" element={<AccountFormPage />} />
+      {crmRoutes}
       <Route path="/accounting" element={<AccountingDashboard />} />
       <Route path="/accounting/setup" element={<SetupWizard />} />
       <Route path="/accounting/accounts" element={<ChartOfAccountsList />} />
@@ -414,7 +247,14 @@ export const appShellRoutes = (
       <Route path="/accounting/reports" element={<ReportsHub />} />
       {catalogRoutes}
       {bookingRoutes}
-      <Route path="/copilot" element={<CopilotPage />} />
+      <Route
+        path="/copilot"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <CopilotPage />
+          </RequireSurface>
+        }
+      />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/reports/eur" element={<TaxEurReportPage />} />
       <Route path="/tax/annual/:year" element={<TaxAnnualAssistantPage />} />

@@ -55,7 +55,9 @@ function readLockedTaxSnapshot(value: unknown):
   const lines = Array.isArray(snapshot.lines) ? snapshot.lines : [];
   const firstRateBps = lines
     .map((line) =>
-      typeof line === "object" && line && typeof (line as { rateBps?: unknown }).rateBps === "number"
+      typeof line === "object" &&
+      line &&
+      typeof (line as { rateBps?: unknown }).rateBps === "number"
         ? ((line as { rateBps: number }).rateBps ?? 0)
         : null
     )
@@ -202,7 +204,10 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     const serviceDate = issueDate ? `${issueDate} - ${issueDate}` : undefined;
 
     const lockedTaxSnapshot = readLockedTaxSnapshot((invoice as any).taxSnapshot);
-    let subtotalCents = invoice.lines.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
+    let subtotalCents = invoice.lines.reduce(
+      (sum, line) => sum + line.qty * line.unitPriceCents,
+      0
+    );
     let vatCents = lockedTaxSnapshot?.taxTotalAmountCents ?? 0;
     let totalCents = lockedTaxSnapshot?.totalAmountCents ?? subtotalCents;
     let vatRateBps = lockedTaxSnapshot?.vatRateBps ?? 0;

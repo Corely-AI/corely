@@ -11,6 +11,7 @@ export const crmAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Manage deals, activities, and customer relationships",
   dependencies: ["parties"],
+  allowedSurfaces: ["platform", "crm"],
   capabilities: ["crm.deals", "crm.activities"],
   permissions: [
     "crm.deals.read",
@@ -39,6 +40,7 @@ export const crmAppManifest: AppManifest = {
       route: "/assistant",
       icon: "Sparkles",
       order: 31,
+      allowedSurfaces: ["crm"],
     },
     {
       id: "crm-deals",

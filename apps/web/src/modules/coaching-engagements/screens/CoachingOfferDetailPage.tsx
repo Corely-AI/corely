@@ -186,12 +186,17 @@ export default function CoachingOfferDetailPage() {
               <div className="mt-2 space-y-2">
                 {offerQuery.data.availabilityRule.weeklySlots.length ? (
                   offerQuery.data.availabilityRule.weeklySlots.map((slot) => (
-                    <div key={`${slot.dayOfWeek}-${slot.startTime}`} className="text-sm text-muted-foreground">
+                    <div
+                      key={`${slot.dayOfWeek}-${slot.startTime}`}
+                      className="text-sm text-muted-foreground"
+                    >
                       Day {slot.dayOfWeek}: {slot.startTime} - {slot.endTime}
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No weekly availability configured.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No weekly availability configured.
+                  </p>
                 )}
               </div>
             </div>

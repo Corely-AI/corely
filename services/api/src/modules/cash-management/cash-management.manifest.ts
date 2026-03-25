@@ -8,6 +8,7 @@ export const cashManagementAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Cash registers and daily close",
   dependencies: [],
+  allowedSurfaces: ["platform", "pos"],
   capabilities: [],
   permissions: ["cash.read", "cash.write", "cash.close", "cash.export"],
   features: [

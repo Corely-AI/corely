@@ -5,7 +5,9 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useShiftStore } from "@/stores/shiftStore";
 import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
+import { RestaurantCopilotPanel } from "@/components/restaurant-copilot-panel";
 import { formatCurrencyFromCents, formatDateTime, formatTime } from "@/lib/formatters";
+import { runRestaurantCopilotPrompt } from "@/lib/restaurant-copilot";
 import {
   AppShell,
   Button,
@@ -219,6 +221,29 @@ export default function CloseShiftScreen() {
               loading={isLoading}
             />
           </Card>
+          <RestaurantCopilotPanel
+            title="Shift close copilot"
+            helperText="Summarize open tables, unpaid orders, approvals, and cash variance before final confirmation."
+            quickActions={[
+              {
+                label: "Generate shift summary",
+                buildPrompt: () =>
+                  [
+                    "Call restaurant_summarizeShiftClose with this exact JSON input and return the resulting tool card.",
+                    JSON.stringify({
+                      expectedCashCents,
+                      countedCashCents: closingCashCents,
+                      openTables: 0,
+                      sentOrders: 0,
+                      unpaidOrders: 0,
+                      pendingApprovals: 0,
+                    }),
+                  ].join("\n\n"),
+              },
+            ]}
+            runPrompt={async (prompt) => (await runRestaurantCopilotPrompt(prompt)).card}
+            testIdPrefix="pos-restaurant-shift-copilot"
+          />
         </ScrollView>
 
         <View style={styles.rightPane}>

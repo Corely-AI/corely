@@ -2,6 +2,7 @@ import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PostgresTestDb } from "@corely/testkit";
+import { randomUUID } from "crypto";
 import {
   createApiTestApp,
   createTestDb,
@@ -9,6 +10,10 @@ import {
   stopSharedContainer,
 } from "@corely/testkit";
 import { HEADER_TENANT_ID } from "@shared/request-context";
+import {
+  TENANT_APP_INSTALL_REPOSITORY_TOKEN,
+  type TenantAppInstallRepositoryPort,
+} from "../../platform/application/ports/tenant-app-install-repository.port";
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
@@ -18,6 +23,7 @@ describe("Workspaces API (E2E)", () => {
   let db: PostgresTestDb;
   let tenantId: string;
   let userId: string;
+  let appInstallRepo: TenantAppInstallRepositoryPort;
   const authedPost = (url: string) =>
     request(server).post(url).set(HEADER_TENANT_ID, tenantId).set("x-user-id", userId);
   const authedGet = (url: string) =>
@@ -29,6 +35,7 @@ describe("Workspaces API (E2E)", () => {
     db = await createTestDb();
     app = await createApiTestApp(db);
     server = app.getHttpServer();
+    appInstallRepo = app.get(TENANT_APP_INSTALL_REPOSITORY_TOKEN);
   });
 
   beforeEach(async () => {
@@ -216,6 +223,48 @@ describe("Workspaces API (E2E)", () => {
       expect(res.body.capabilities["sales.quotes"]).toBe(false);
       expect(res.body.terminology.partyLabel).toBe("Client");
       expect(Array.isArray(res.body.navigation.groups)).toBe(true);
+    });
+
+    it("returns the resolved surface in workspace config", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Surface Workspace",
+        kind: "COMPANY",
+        legalName: "Surface Workspace GmbH",
+        countryCode: "DE",
+        currency: "EUR",
+      });
+
+      const workspaceId = created.body.workspace.id;
+
+      for (const appId of ["core", "crm", "cash-management"]) {
+        await appInstallRepo.upsert({
+          id: randomUUID(),
+          tenantId,
+          appId,
+          enabled: true,
+          installedVersion: "1.0.0",
+          enabledAt: new Date(),
+          enabledByUserId: userId,
+        });
+      }
+
+      const posRes = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-forwarded-host", "pos.corely.one");
+      const crmRes = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-forwarded-host", "crm.corely.one");
+
+      expect(posRes.status).toBe(200);
+      expect(crmRes.status).toBe(200);
+      expect(posRes.body.surfaceId).toBe("pos");
+      expect(crmRes.body.surfaceId).toBe("crm");
+    });
+
+    it("rejects CRM API access from the POS surface", async () => {
+      const res = await authedGet("/crm/leads").set("x-forwarded-host", "pos.corely.one");
+
+      expect(res.status).toBe(403);
     });
   });
 

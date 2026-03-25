@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  SurfaceId,
   WorkspaceCapabilityKey,
   WorkspaceConfig,
   WorkspaceNavigationGroup,
@@ -9,11 +10,13 @@ import { filterNavigationGroups } from "./navigation";
 import { useWorkspace } from "./workspace-provider";
 import { workspacesApi } from "./workspaces-api";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
+import { useSurfaceId } from "../surface";
 
 interface WorkspaceConfigContextValue {
   config: WorkspaceConfig | null;
   isLoading: boolean;
   error: Error | null;
+  surfaceId: SurfaceId;
   hasCapability: (capability: WorkspaceCapabilityKey) => boolean;
   can: (capability: WorkspaceCapabilityKey) => boolean;
   refresh: () => Promise<void>;
@@ -26,6 +29,7 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
   const queryClient = useQueryClient();
   const { activeWorkspaceId, workspaces, isLoading: isWorkspacesLoading } = useWorkspace();
   const { isAuthenticated } = useAuth();
+  const surfaceId = useSurfaceId();
   const hasValidWorkspace =
     !!activeWorkspaceId && workspaces.some((w) => w.id === activeWorkspaceId);
   const enabled = isAuthenticated && hasValidWorkspace && !isWorkspacesLoading;
@@ -34,9 +38,8 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
     data: config,
     isFetching,
     error,
-    refetch,
   } = useQuery<WorkspaceConfig, Error>({
-    queryKey: ["workspace-config", activeWorkspaceId],
+    queryKey: ["workspace-config", activeWorkspaceId, "web", surfaceId],
     queryFn: () => {
       // Debug to verify which workspaceId is being used for config fetch
       if (process.env.NODE_ENV === "development") {
@@ -69,11 +72,14 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
     config: config ?? null,
     isLoading: isFetching,
     error: error ?? null,
+    surfaceId: config?.surfaceId ?? surfaceId,
     hasCapability,
     can: hasCapability,
     refresh: async () => {
       if (activeWorkspaceId) {
-        await queryClient.invalidateQueries({ queryKey: ["workspace-config", activeWorkspaceId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["workspace-config", activeWorkspaceId, "web", surfaceId],
+        });
       }
     },
     navigationGroups,

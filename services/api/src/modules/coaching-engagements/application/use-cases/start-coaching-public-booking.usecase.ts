@@ -16,7 +16,7 @@ import {
   type StartCoachingPublicBookingInput,
   type StartCoachingPublicBookingOutput,
 } from "@corely/contracts";
-import { PartyApplication } from "../../../party/application/party.application";
+import type { PartyApplication } from "../../../party/application/party.application";
 import {
   toCoachingEngagementDto,
   toCoachingPaymentDto,
@@ -24,7 +24,7 @@ import {
 } from "../mappers/coaching-dto.mapper";
 import { type CoachingEngagementRepositoryPort } from "../ports/coaching-engagement-repository.port";
 import { type CoachingPaymentProviderRegistryPort } from "../ports/coaching-payment-provider.port";
-import { BookCoachingEngagementUseCase } from "./book-coaching-engagement.usecase";
+import type { BookCoachingEngagementUseCase } from "./book-coaching-engagement.usecase";
 import { createCoachingPaymentSession } from "./coaching-payment-session.helpers";
 
 export class StartCoachingPublicBookingUseCase extends BaseUseCase<

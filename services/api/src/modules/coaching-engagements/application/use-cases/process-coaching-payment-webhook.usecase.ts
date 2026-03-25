@@ -111,11 +111,11 @@ export class ProcessCoachingPaymentWebhookUseCase {
       paymentStatus: "captured",
       stripeCheckoutSessionId:
         parsed.provider === "stripe"
-          ? parsed.checkoutSessionId ?? engagement.stripeCheckoutSessionId
+          ? (parsed.checkoutSessionId ?? engagement.stripeCheckoutSessionId)
           : engagement.stripeCheckoutSessionId,
       stripePaymentIntentId:
         parsed.provider === "stripe"
-          ? parsed.paymentRef ?? engagement.stripePaymentIntentId
+          ? (parsed.paymentRef ?? engagement.stripePaymentIntentId)
           : engagement.stripePaymentIntentId,
       status: resolveGatedStatus(engagement.offer, {
         paymentStatus: "captured",

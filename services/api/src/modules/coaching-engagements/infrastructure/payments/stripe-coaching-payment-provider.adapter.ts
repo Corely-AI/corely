@@ -109,7 +109,12 @@ export class StripeCoachingPaymentProviderAdapter implements CoachingPaymentProv
     };
   }
 
-  private parseEvent(event: Stripe.Event): Omit<CoachingPaymentProviderWebhookEvent, "provider" | "eventId" | "eventType" | "rawPayload"> {
+  private parseEvent(
+    event: Stripe.Event
+  ): Omit<
+    CoachingPaymentProviderWebhookEvent,
+    "provider" | "eventId" | "eventType" | "rawPayload"
+  > {
     const dataObject = event.data.object as unknown as Record<string, unknown> & {
       metadata?: Record<string, string | undefined>;
     };
@@ -122,8 +127,7 @@ export class StripeCoachingPaymentProviderAdapter implements CoachingPaymentProv
         engagementId: metadata.engagementId ?? null,
         paymentId: metadata.paymentId ?? null,
         checkoutSessionId: session.id,
-        paymentRef:
-          typeof session.payment_intent === "string" ? session.payment_intent : null,
+        paymentRef: typeof session.payment_intent === "string" ? session.payment_intent : null,
         refundRef: null,
         status: "captured",
         failureCode: null,
