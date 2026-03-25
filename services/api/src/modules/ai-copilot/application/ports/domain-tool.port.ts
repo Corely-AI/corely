@@ -1,6 +1,6 @@
 import { type z } from "zod";
 import { type ModelMessage } from "ai";
-import { type SurfaceId } from "@corely/contracts";
+import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
 
 export type ToolKind = "server" | "client-confirm" | "client-auto";
 export type ToolLocale = "en" | "de" | "vi";
@@ -12,6 +12,8 @@ export interface DomainToolPort {
   descriptions?: LocalizedToolText;
   appId?: string;
   allowedSurfaces?: SurfaceId[];
+  allowedVerticals?: PosVerticalId[];
+  requiredPermissions?: string[];
   inputSchema: z.ZodTypeAny;
   kind: ToolKind;
   needsApproval?: boolean;

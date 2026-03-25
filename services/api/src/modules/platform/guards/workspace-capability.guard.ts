@@ -6,12 +6,8 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { WorkspaceTemplateService } from "../application/services/workspace-template.service";
-import {
-  WORKSPACE_REPOSITORY_PORT,
-  type WorkspaceRepositoryPort,
-} from "../../workspaces/application/ports/workspace-repository.port";
-import { Inject } from "@nestjs/common";
+import { resolveRequestContext } from "../../../shared/request-context";
+import { WorkspaceExperienceResolverService } from "../application/services/workspace-experience-resolver.service";
 
 export const REQUIRE_WORKSPACE_CAPABILITY = "require_workspace_capability";
 
@@ -19,9 +15,7 @@ export const REQUIRE_WORKSPACE_CAPABILITY = "require_workspace_capability";
 export class WorkspaceCapabilityGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly templateService: WorkspaceTemplateService,
-    @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort
+    private readonly experienceResolver: WorkspaceExperienceResolverService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -35,9 +29,10 @@ export class WorkspaceCapabilityGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const tenantId = request.context?.tenantId ?? request.tenantId;
+    const requestContext = request.context ?? resolveRequestContext(request);
+    const tenantId = requestContext.tenantId ?? request.tenantId;
     const workspaceId =
-      request.context?.workspaceId ??
+      requestContext.workspaceId ??
       request.params?.workspaceId ??
       request.body?.workspaceId ??
       null;
@@ -50,16 +45,13 @@ export class WorkspaceCapabilityGuard implements CanActivate {
       throw new ForbiddenException("Workspace context not found");
     }
 
-    const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
+    const experience = await this.experienceResolver.resolve({
       tenantId,
-      workspaceId
-    );
-    if (!workspace || !workspace.legalEntity) {
-      throw new ForbiddenException("Workspace not found");
-    }
-
-    const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-    const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
+      userId: requestContext.userId ?? "system",
+      workspaceId,
+      surfaceId: requestContext.surfaceId,
+    });
+    const capabilities = experience.capabilities;
 
     if (!capabilities[requiredCapability as keyof typeof capabilities]) {
       throw new ForbiddenException(`Capability "${requiredCapability}" is not available`);

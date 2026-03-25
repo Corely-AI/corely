@@ -63,6 +63,7 @@ export class MenuController {
         ? await this.grantRepo.listByRoleIdsAndTenant(tenantId, requestedRoles)
         : [];
     const permissions = toAllowedPermissionKeys(grants);
+    const ctx = (req as any).context ?? resolveRequestContext(req as any);
 
     return await this.composeMenuUseCase.execute({
       tenantId,
@@ -70,7 +71,12 @@ export class MenuController {
       permissions,
       scope: validatedScope,
       workspaceId, // Include workspace ID for metadata
-      surfaceId: ((req as any).context ?? resolveRequestContext(req as any)).surfaceId,
+      surfaceId: ctx.surfaceId,
+      trustedSurfaceId: ctx.trustedSurfaceId,
+      declaredSurfaceId: ctx.declaredSurfaceId,
+      surfaceResolutionSource: ctx.surfaceResolutionSource,
+      surfaceHeaderMismatch: ctx.surfaceHeaderMismatch,
+      route: req.route?.path ?? req.originalUrl ?? req.url,
     });
   }
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MenuItemSchema } from "../platform/menu.schema";
 import { SurfaceIdSchema } from "../platform/surface.schema";
+import { PosVerticalIdSchema } from "../platform/experience-targeting.schema";
 import { WorkspaceKindSchema, WorkspaceMembershipRoleSchema } from "./workspace.types";
 
 export const WorkspaceCapabilitiesSchema = z.object({
@@ -90,6 +91,7 @@ export type WorkspaceNavigation = z.infer<typeof WorkspaceNavigationSchema>;
 export const WorkspaceConfigSchema = z.object({
   workspaceId: z.string(),
   surfaceId: SurfaceIdSchema,
+  verticalId: PosVerticalIdSchema.nullable().optional(),
   kind: WorkspaceKindSchema,
   capabilities: WorkspaceCapabilitiesSchema,
   terminology: WorkspaceTerminologySchema,

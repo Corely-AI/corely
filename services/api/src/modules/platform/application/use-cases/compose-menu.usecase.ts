@@ -1,11 +1,13 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { BadRequestException, Injectable, Inject, Logger } from "@nestjs/common";
 import type { MenuGroup, MenuItem, SurfaceId } from "@corely/contracts";
 import { MenuComposerService } from "../services/menu-composer.service";
+import { WorkspaceExperienceResolverService } from "../services/workspace-experience-resolver.service";
 import { WorkspaceTemplateService } from "../services/workspace-template.service";
 import {
-  WORKSPACE_REPOSITORY_PORT,
-  type WorkspaceRepositoryPort,
-} from "../../../workspaces/application/ports/workspace-repository.port";
+  buildSurfaceResolutionLogFields,
+  evaluateSurfaceAwareRequest,
+  type SurfaceResolutionSource,
+} from "../../../../shared/request-context/request-surface";
 import {
   TENANT_APP_INSTALL_REPOSITORY_TOKEN,
   type TenantAppInstallRepositoryPort,
@@ -20,6 +22,11 @@ export interface ComposeMenuInput {
   scope: "web" | "pos";
   workspaceId?: string; // Optional: if not provided, menu won't include workspace metadata
   surfaceId: SurfaceId;
+  trustedSurfaceId?: SurfaceId | null;
+  declaredSurfaceId?: string;
+  surfaceResolutionSource: SurfaceResolutionSource;
+  surfaceHeaderMismatch: boolean;
+  route: string;
 }
 
 export interface ComposeMenuOutput {
@@ -47,11 +54,12 @@ export interface ComposeMenuOutput {
 
 @Injectable()
 export class ComposeMenuUseCase {
+  private readonly logger = new Logger(ComposeMenuUseCase.name);
+
   constructor(
     private readonly menuComposer: MenuComposerService,
+    private readonly experienceResolver: WorkspaceExperienceResolverService,
     private readonly templateService: WorkspaceTemplateService,
-    @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort,
     @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
     private readonly appInstallRepo: TenantAppInstallRepositoryPort,
     @Inject(APP_REGISTRY_TOKEN)
@@ -59,30 +67,88 @@ export class ComposeMenuUseCase {
   ) {}
 
   async execute(input: ComposeMenuInput): Promise<ComposeMenuOutput> {
+    const surfaceLogFields = buildSurfaceResolutionLogFields({
+      requestContext: {
+        surfaceId: input.surfaceId,
+        trustedSurfaceId: input.trustedSurfaceId,
+        declaredSurfaceId: input.declaredSurfaceId,
+        surfaceResolutionSource: input.surfaceResolutionSource,
+        surfaceHeaderMismatch: input.surfaceHeaderMismatch,
+        workspaceId: input.workspaceId ?? null,
+      },
+      route: input.route,
+      workspaceId: input.workspaceId,
+    });
+    const surfacePolicy = evaluateSurfaceAwareRequest(
+      {
+        declaredSurfaceId: input.declaredSurfaceId,
+        surfaceHeaderMismatch: input.surfaceHeaderMismatch,
+        surfaceResolutionSource: input.surfaceResolutionSource,
+        trustedSurfaceId: input.trustedSurfaceId,
+      },
+      input.scope
+    );
+
+    if (!surfacePolicy.ok) {
+      this.logger.warn(
+        JSON.stringify({
+          event: "menu.surface-resolution-rejected",
+          ...surfaceLogFields,
+          reason: surfacePolicy.errorCode,
+        })
+      );
+      throw new BadRequestException(surfacePolicy.message);
+    }
+
+    const experience = await this.experienceResolver.resolve({
+      tenantId: input.tenantId,
+      userId: input.userId,
+      workspaceId: input.workspaceId,
+      surfaceId: input.surfaceId,
+      permissions: input.permissions,
+    });
+
+    if (experience.surfaceId === "pos" && !experience.verticalId) {
+      this.logger.warn(
+        JSON.stringify({
+          event: "menu.vertical-resolution-missing",
+          ...surfaceLogFields,
+          resolvedSurfaceId: experience.surfaceId,
+          resolvedVerticalId: experience.verticalId,
+          fallbackSurfaceResolution: input.surfaceResolutionSource !== "proxy-key",
+        })
+      );
+      throw new BadRequestException(
+        "POS menu composition requires a configured workspace vertical"
+      );
+    }
+
+    this.logger.log(
+      JSON.stringify({
+        event: "menu.surface-resolution",
+        ...surfaceLogFields,
+        resolvedSurfaceId: experience.surfaceId,
+        resolvedVerticalId: experience.verticalId,
+        fallbackSurfaceResolution: input.surfaceResolutionSource !== "proxy-key",
+      })
+    );
+
     // Ensure tenant has default apps installed; fall back to PERSONAL defaults if kind unknown
-    const workspace =
-      input.workspaceId &&
-      (await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(input.tenantId, input.workspaceId));
-    const workspaceKind = workspace?.legalEntity?.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
+    const workspace = experience.workspace;
+    const workspaceKind = experience.workspaceKind;
 
     await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind);
-
-    const defaultCapabilities = this.templateService.getDefaultCapabilities(workspaceKind);
-    const capabilityKeys = new Set(Object.keys(defaultCapabilities));
-    const capabilityFilter = new Set(
-      Object.entries(defaultCapabilities)
-        .filter(([, enabled]) => enabled)
-        .map(([key]) => key)
-    );
 
     const menu = await this.menuComposer.composeMenuTree({
       tenantId: input.tenantId,
       userId: input.userId,
-      permissions: new Set(input.permissions),
+      permissions: experience.permissions,
       scope: input.scope,
-      surfaceId: input.surfaceId,
-      capabilityFilter,
-      capabilityKeys,
+      surfaceId: experience.surfaceId,
+      verticalId: experience.verticalId,
+      entitlement: experience.entitlement,
+      capabilityFilter: experience.enabledCapabilities,
+      capabilityKeys: experience.capabilityKeys,
     });
 
     // Optionally include workspace metadata for server-driven UI
@@ -90,6 +156,7 @@ export class ComposeMenuUseCase {
 
     if (workspace && workspace.legalEntity) {
       const defaultTerminology = this.templateService.getDefaultTerminology(workspaceKind);
+      const defaultCapabilities = experience.capabilities;
 
       workspaceMetadata = {
         kind: workspaceKind,
@@ -111,7 +178,7 @@ export class ComposeMenuUseCase {
       items: menu.items,
       groups: menu.groups,
       computedAt: new Date().toISOString(),
-      surfaceId: input.surfaceId,
+      surfaceId: experience.surfaceId,
       workspace: workspaceMetadata,
     };
   }

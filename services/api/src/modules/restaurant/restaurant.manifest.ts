@@ -7,7 +7,8 @@ export const restaurantAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Restaurant floor, kitchen queue, modifiers, and operator copilot",
   dependencies: [],
-  allowedSurfaces: ["platform", "pos"],
+  allowedSurfaces: ["pos"],
+  allowedVerticals: ["restaurant"],
   capabilities: [],
   permissions: [],
   menu: [

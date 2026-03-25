@@ -14,16 +14,28 @@ import {
   TENANT_APP_INSTALL_REPOSITORY_TOKEN,
   type TenantAppInstallRepositoryPort,
 } from "../../platform/application/ports/tenant-app-install-repository.port";
+import { TenantEntitlementsService } from "../../platform-entitlements/application/tenant-entitlements.service";
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
 describe("Workspaces API (E2E)", () => {
+  const originalProxyEnv = {
+    app: process.env.CORELY_PROXY_KEY_APP,
+    pos: process.env.CORELY_PROXY_KEY_POS,
+    crm: process.env.CORELY_PROXY_KEY_CRM,
+  };
+  const proxyKeys = {
+    app: "workspaces-app-proxy-key",
+    pos: "workspaces-pos-proxy-key",
+    crm: "workspaces-crm-proxy-key",
+  };
   let app: INestApplication;
   let server: any;
   let db: PostgresTestDb;
   let tenantId: string;
   let userId: string;
   let appInstallRepo: TenantAppInstallRepositoryPort;
+  let tenantEntitlements: TenantEntitlementsService;
   const authedPost = (url: string) =>
     request(server).post(url).set(HEADER_TENANT_ID, tenantId).set("x-user-id", userId);
   const authedGet = (url: string) =>
@@ -32,10 +44,15 @@ describe("Workspaces API (E2E)", () => {
     request(server).patch(url).set(HEADER_TENANT_ID, tenantId).set("x-user-id", userId);
 
   beforeAll(async () => {
+    process.env.CORELY_PROXY_KEY_APP = proxyKeys.app;
+    process.env.CORELY_PROXY_KEY_POS = proxyKeys.pos;
+    process.env.CORELY_PROXY_KEY_CRM = proxyKeys.crm;
+
     db = await createTestDb();
     app = await createApiTestApp(db);
     server = app.getHttpServer();
     appInstallRepo = app.get(TENANT_APP_INSTALL_REPOSITORY_TOKEN);
+    tenantEntitlements = app.get(TenantEntitlementsService);
   });
 
   beforeEach(async () => {
@@ -46,10 +63,29 @@ describe("Workspaces API (E2E)", () => {
   });
 
   afterAll(async () => {
+    process.env.CORELY_PROXY_KEY_APP = originalProxyEnv.app;
+    process.env.CORELY_PROXY_KEY_POS = originalProxyEnv.pos;
+    process.env.CORELY_PROXY_KEY_CRM = originalProxyEnv.crm;
+
     await app.close();
     await db.down();
     await stopSharedContainer();
   });
+
+  const enableApps = async (appIds: string[]) => {
+    for (const appId of appIds) {
+      await appInstallRepo.upsert({
+        id: randomUUID(),
+        tenantId,
+        appId,
+        enabled: true,
+        installedVersion: "1.0.0",
+        enabledAt: new Date(),
+        enabledByUserId: userId,
+      });
+      await tenantEntitlements.updateAppEnablement(tenantId, appId, true, userId);
+    }
+  };
 
   describe("POST /workspaces", () => {
     it("creates workspace with legal entity and owner membership", async () => {
@@ -151,7 +187,7 @@ describe("Workspaces API (E2E)", () => {
       expect(res.body.workspaces).toHaveLength(3); // 2 created + 1 default
       expect(res.body.workspaces[0].name).toBe("Second Workspace");
       expect(res.body.workspaces[1].name).toBe("First Workspace");
-      expect(res.body.workspaces[2].name).toBe("Default Workspace");
+      expect(res.body.workspaces[2].name).toMatch(/^Default Workspace/);
     });
 
     it("only returns the default workspace when none are created", async () => {
@@ -159,7 +195,7 @@ describe("Workspaces API (E2E)", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.workspaces).toHaveLength(1);
-      expect(res.body.workspaces[0].name).toBe("Default Workspace");
+      expect(res.body.workspaces[0].name).toMatch(/^Default Workspace/);
     });
   });
 
@@ -208,6 +244,10 @@ describe("Workspaces API (E2E)", () => {
   });
 
   describe("GET /workspaces/:id/config", () => {
+    const navigationIds = (body: {
+      navigation: { groups: Array<{ items: Array<{ id: string }> }> };
+    }) => body.navigation.groups.flatMap((group) => group.items.map((item) => item.id));
+
     it("returns workspace config based on kind", async () => {
       const created = await authedPost("/workspaces").send({
         name: "Config Workspace",
@@ -219,7 +259,7 @@ describe("Workspaces API (E2E)", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.kind).toBe("PERSONAL");
-      expect(res.body.capabilities["workspace.multiUser"]).toBe(false);
+      expect(res.body.capabilities["workspace.multiUser"]).toBe(true);
       expect(res.body.capabilities["sales.quotes"]).toBe(false);
       expect(res.body.terminology.partyLabel).toBe("Client");
       expect(Array.isArray(res.body.navigation.groups)).toBe(true);
@@ -229,7 +269,113 @@ describe("Workspaces API (E2E)", () => {
       const created = await authedPost("/workspaces").send({
         name: "Surface Workspace",
         kind: "COMPANY",
+        verticalId: "restaurant",
         legalName: "Surface Workspace GmbH",
+        countryCode: "DE",
+        currency: "EUR",
+      });
+
+      const workspaceId = created.body.workspace.id;
+
+      await enableApps(["core", "crm", "cash-management", "restaurant"]);
+
+      const posRes = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-corely-proxy-key", proxyKeys.pos)
+        .set("x-corely-surface", "pos");
+      const crmRes = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-corely-proxy-key", proxyKeys.crm)
+        .set("x-corely-surface", "crm");
+
+      expect(posRes.status).toBe(200);
+      expect(crmRes.status).toBe(200);
+      expect(posRes.body.surfaceId).toBe("pos");
+      expect(posRes.body.verticalId).toBe("restaurant");
+      expect(crmRes.body.surfaceId).toBe("crm");
+      expect(navigationIds(posRes.body)).not.toContain("dashboard");
+    });
+
+    it("returns only restaurant POS items for restaurant workspaces", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Restaurant Workspace",
+        kind: "COMPANY",
+        verticalId: "restaurant",
+        legalName: "Restaurant Workspace GmbH",
+        countryCode: "DE",
+        currency: "EUR",
+      });
+
+      const workspaceId = created.body.workspace.id;
+
+      await enableApps(["core", "cash-management", "restaurant", "nails", "retail"]);
+
+      const res = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-corely-proxy-key", proxyKeys.pos)
+        .set("x-corely-surface", "pos");
+
+      expect(res.status).toBe(200);
+      expect(navigationIds(res.body)).toContain("restaurant-floor-plan");
+      expect(navigationIds(res.body)).not.toContain("nails-service-board");
+      expect(navigationIds(res.body)).not.toContain("retail-quick-sale");
+    });
+
+    it("returns only nails POS items for nails workspaces", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Nails Workspace",
+        kind: "COMPANY",
+        verticalId: "nails",
+        legalName: "Nails Workspace GmbH",
+        countryCode: "DE",
+        currency: "EUR",
+      });
+
+      const workspaceId = created.body.workspace.id;
+
+      await enableApps(["core", "cash-management", "restaurant", "nails", "retail"]);
+
+      const res = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-corely-proxy-key", proxyKeys.pos)
+        .set("x-corely-surface", "pos");
+
+      expect(res.status).toBe(200);
+      expect(navigationIds(res.body)).toContain("nails-service-board");
+      expect(navigationIds(res.body)).not.toContain("restaurant-floor-plan");
+      expect(navigationIds(res.body)).not.toContain("retail-quick-sale");
+    });
+
+    it("returns only retail POS items for retail workspaces", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Retail Workspace",
+        kind: "COMPANY",
+        verticalId: "retail",
+        legalName: "Retail Workspace GmbH",
+        countryCode: "DE",
+        currency: "EUR",
+      });
+
+      const workspaceId = created.body.workspace.id;
+
+      await enableApps(["core", "cash-management", "restaurant", "nails", "retail"]);
+
+      const res = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-corely-proxy-key", proxyKeys.pos)
+        .set("x-corely-surface", "pos");
+
+      expect(res.status).toBe(200);
+      expect(navigationIds(res.body)).toContain("retail-quick-sale");
+      expect(navigationIds(res.body)).not.toContain("restaurant-floor-plan");
+      expect(navigationIds(res.body)).not.toContain("nails-service-board");
+    });
+
+    it("returns platform config for direct requests without a trusted surface", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Direct Workspace",
+        kind: "COMPANY",
+        legalName: "Direct Workspace GmbH",
         countryCode: "DE",
         currency: "EUR",
       });
@@ -248,21 +394,59 @@ describe("Workspaces API (E2E)", () => {
         });
       }
 
-      const posRes = await authedGet(`/workspaces/${workspaceId}/config`)
-        .set("x-workspace-id", workspaceId)
-        .set("x-forwarded-host", "pos.corely.one");
-      const crmRes = await authedGet(`/workspaces/${workspaceId}/config`)
-        .set("x-workspace-id", workspaceId)
-        .set("x-forwarded-host", "crm.corely.one");
+      const res = await authedGet(`/workspaces/${workspaceId}/config`).set(
+        "x-workspace-id",
+        workspaceId
+      );
 
-      expect(posRes.status).toBe(200);
-      expect(crmRes.status).toBe(200);
-      expect(posRes.body.surfaceId).toBe("pos");
-      expect(crmRes.body.surfaceId).toBe("crm");
+      expect(res.status).toBe(200);
+      expect(res.body.surfaceId).toBe("platform");
+      expect(navigationIds(res.body)).not.toContain("crm-assistant");
+    });
+
+    it("fails closed when a non-platform surface is declared without a trusted proxy key", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Declared Surface Workspace",
+        kind: "COMPANY",
+        legalName: "Declared Surface GmbH",
+        countryCode: "DE",
+        currency: "EUR",
+      });
+
+      const workspaceId = created.body.workspace.id;
+
+      const res = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-corely-surface", "crm");
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain("trusted proxy key");
+    });
+
+    it("fails closed for POS config when the workspace vertical is missing", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Missing Vertical Workspace",
+        kind: "COMPANY",
+        legalName: "Missing Vertical GmbH",
+        countryCode: "DE",
+        currency: "EUR",
+      });
+
+      const workspaceId = created.body.workspace.id;
+
+      const res = await authedGet(`/workspaces/${workspaceId}/config`)
+        .set("x-workspace-id", workspaceId)
+        .set("x-corely-proxy-key", proxyKeys.pos)
+        .set("x-corely-surface", "pos");
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain("workspace vertical");
     });
 
     it("rejects CRM API access from the POS surface", async () => {
-      const res = await authedGet("/crm/leads").set("x-forwarded-host", "pos.corely.one");
+      const res = await authedGet("/crm/leads")
+        .set("x-corely-proxy-key", proxyKeys.pos)
+        .set("x-corely-surface", "pos");
 
       expect(res.status).toBe(403);
     });

@@ -21,6 +21,7 @@ import {
   CashManagementProductKey,
   ListCopilotThreadMessagesRequestSchema,
   ListCopilotThreadsRequestSchema,
+  type PosVerticalId,
   SearchCopilotThreadsRequestSchema,
   type SurfaceId,
 } from "@corely/contracts";
@@ -42,6 +43,7 @@ import { ListCopilotThreadMessagesUseCase } from "../../application/use-cases/li
 import { SearchCopilotMessagesUseCase } from "../../application/use-cases/search-copilot-messages.usecase";
 import { CreateCopilotThreadUseCase } from "../../application/use-cases/create-copilot-thread.usecase";
 import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
+import { WorkspaceExperienceResolverService } from "../../../platform/application/services/workspace-experience-resolver.service";
 
 type AuthedRequest = Request & { tenantId?: string; user?: { userId?: string }; traceId?: string };
 
@@ -60,6 +62,7 @@ export class CopilotController {
     private readonly searchMessagesUseCase: SearchCopilotMessagesUseCase,
     private readonly createThreadUseCase: CreateCopilotThreadUseCase,
     private readonly env: EnvService,
+    private readonly experienceResolver: WorkspaceExperienceResolverService,
     @Optional()
     @Inject(BILLING_ACCESS_PORT)
     private readonly billingAccess?: BillingAccessPort
@@ -163,6 +166,12 @@ export class CopilotController {
     }
 
     const context = this.resolveContext(req);
+    const experience = await this.experienceResolver.resolve({
+      tenantId: context.toolTenantId,
+      userId: context.userId,
+      workspaceId: context.workspaceId,
+      surfaceId: context.surfaceId ?? "platform",
+    });
     await this.assertAssistantAccess(
       context.toolTenantId,
       context.activeAppId ?? body.requestData?.activeModule
@@ -188,8 +197,9 @@ export class CopilotController {
       intent: context.activeAppId ?? body.requestData?.activeModule,
       requestId: context.requestId,
       workspaceId: context.workspaceId,
-      workspaceKind: "COMPANY",
-      surfaceId: context.surfaceId,
+      workspaceKind: experience.workspaceKind,
+      surfaceId: experience.surfaceId,
+      verticalId: experience.verticalId,
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,
@@ -281,6 +291,12 @@ export class CopilotController {
       throw new BadRequestException("Missing X-Idempotency-Key");
     }
     const context = this.resolveContext(req);
+    const experience = await this.experienceResolver.resolve({
+      tenantId: context.toolTenantId,
+      userId: context.userId,
+      workspaceId: context.workspaceId,
+      surfaceId: context.surfaceId ?? "platform",
+    });
     await this.getThreadUseCase.execute({
       tenantId: context.tenantId,
       userId: context.userId,
@@ -302,8 +318,9 @@ export class CopilotController {
       intent: context.activeAppId ?? body.requestData?.activeModule,
       requestId: context.requestId,
       workspaceId: context.workspaceId,
-      workspaceKind: "COMPANY",
-      surfaceId: context.surfaceId,
+      workspaceKind: experience.workspaceKind,
+      surfaceId: experience.surfaceId,
+      verticalId: experience.verticalId,
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,
@@ -320,6 +337,7 @@ export class CopilotController {
     workspaceId: string;
     activeAppId?: string;
     surfaceId?: SurfaceId;
+    verticalId?: PosVerticalId | null;
   } {
     const ctx = toUseCaseContext(req as ContextAwareRequest);
     const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;

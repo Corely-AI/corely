@@ -1,10 +1,12 @@
 import { z } from "zod";
 
-export const SurfaceIdSchema = z.enum(["platform", "pos", "crm", "shared"]);
+export const SurfaceIdSchema = z.enum(["platform", "app", "pos", "crm"]);
+export const SurfaceTargetIdSchema = z.union([SurfaceIdSchema, z.literal("shared")]);
 
 export type SurfaceId = z.infer<typeof SurfaceIdSchema>;
+export type SurfaceTargetId = z.infer<typeof SurfaceTargetIdSchema>;
 
-export const AllowedSurfacesSchema = z.array(SurfaceIdSchema);
+export const AllowedSurfacesSchema = z.array(SurfaceTargetIdSchema);
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const POS_SURFACE_ALIASES = new Set(["pos", "restaurant"]);
@@ -44,9 +46,29 @@ export const resolveSurface = (hostname: string): SurfaceId => {
   return "platform";
 };
 
+const matchesSurfaceAlias = (
+  surfaceId: SurfaceId,
+  allowedSurfaces: readonly SurfaceTargetId[]
+): boolean => {
+  if (allowedSurfaces.includes(surfaceId)) {
+    return true;
+  }
+
+  // Preserve compatibility while the platform/app naming is normalized incrementally.
+  if (surfaceId === "platform" && allowedSurfaces.includes("app")) {
+    return true;
+  }
+
+  if (surfaceId === "app" && allowedSurfaces.includes("platform")) {
+    return true;
+  }
+
+  return false;
+};
+
 export const isSurfaceAllowed = (
   surfaceId: SurfaceId,
-  allowedSurfaces?: readonly SurfaceId[] | null
+  allowedSurfaces?: readonly SurfaceTargetId[] | null
 ): boolean => {
   if (!allowedSurfaces || allowedSurfaces.length === 0) {
     return true;
@@ -56,5 +78,5 @@ export const isSurfaceAllowed = (
     return true;
   }
 
-  return allowedSurfaces.includes(surfaceId);
+  return matchesSurfaceAlias(surfaceId, allowedSurfaces);
 };

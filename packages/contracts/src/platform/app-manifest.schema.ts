@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AllowedSurfacesSchema } from "./surface.schema";
+import { AllowedVerticalsSchema } from "./experience-targeting.schema";
 
 /**
  * Menu Contribution - Defines a menu item contributed by an app
@@ -16,6 +17,9 @@ export const MenuContributionSchema = z.object({
   order: z.number().describe("Display order within section (lower = earlier)"),
   allowedSurfaces: AllowedSurfacesSchema.optional().describe(
     "Surface IDs where this menu item is allowed"
+  ),
+  allowedVerticals: AllowedVerticalsSchema.optional().describe(
+    "POS vertical IDs where this menu item is allowed"
   ),
   requiresApps: z.array(z.string()).optional().describe("Required app IDs"),
   requiresCapabilities: z.array(z.string()).optional().describe("Required capability strings"),
@@ -38,6 +42,9 @@ export const AppManifestSchema = z.object({
   dependencies: z.array(z.string()).describe("App IDs this app depends on"),
   allowedSurfaces: AllowedSurfacesSchema.optional().describe(
     "Surface IDs where this app is allowed"
+  ),
+  allowedVerticals: AllowedVerticalsSchema.optional().describe(
+    "POS vertical IDs where this app is allowed"
   ),
   capabilities: z
     .array(z.string())

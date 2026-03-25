@@ -124,6 +124,9 @@ export class UpdateWorkspaceUseCase {
     if (command.publicEnabled !== undefined) {
       workspaceUpdates.publicEnabled = command.publicEnabled;
     }
+    if (command.verticalId !== undefined) {
+      workspaceUpdates.verticalId = command.verticalId;
+    }
     if (command.publicModules !== undefined) {
       workspaceUpdates.publicModules = command.publicModules;
     }
@@ -151,6 +154,7 @@ export class UpdateWorkspaceUseCase {
         legalEntityId: updated!.legalEntityId,
         name: updated!.name,
         slug: updated!.slug,
+        verticalId: updated!.verticalId,
         publicEnabled: updated!.publicEnabled ?? false,
         publicModules: updated!.publicModules ?? undefined,
         kind: updated!.legalEntity?.kind as any,

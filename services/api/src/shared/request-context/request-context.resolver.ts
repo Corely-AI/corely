@@ -1,15 +1,17 @@
-import { randomUUID } from "crypto";
-import { normalizeSurfaceHostname, resolveSurface } from "@corely/contracts";
+import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import {
+  HEADER_APP_ID,
+  HEADER_CORELY_PROXY_KEY,
+  HEADER_CORELY_SURFACE,
   HEADER_CORRELATION_ID,
   HEADER_REQUEST_ID,
   HEADER_TENANT_ID,
   HEADER_TRACE_ID,
   HEADER_WORKSPACE_ID,
-  HEADER_APP_ID,
 } from "./request-context.headers";
 import type { ContextAwareRequest, RequestContext } from "./request-context.types";
 import { PUBLIC_CONTEXT_METADATA_KEY, type PublicWorkspaceContext } from "../public";
+import { mapDeclaredSurfaceToSurfaceId, normalizeDeclaredSurface } from "./request-surface";
 
 const isString = (value: unknown): value is string => typeof value === "string" && value.length > 0;
 
@@ -30,6 +32,41 @@ const pickHeader = (req: ContextAwareRequest, names: string[]): string | undefin
   return undefined;
 };
 
+const hashSecret = (value: string) => createHash("sha256").update(value).digest();
+
+const equalsSecret = (candidate: string | undefined, expected: string | undefined): boolean => {
+  if (!candidate || !expected) {
+    return false;
+  }
+  return timingSafeEqual(hashSecret(candidate), hashSecret(expected));
+};
+
+const resolveTrustedSurfaceId = (proxyKey: string | undefined) => {
+  const candidates = [
+    {
+      envKey: "CORELY_PROXY_KEY_APP",
+      surfaceId: "platform" as const,
+    },
+    {
+      envKey: "CORELY_PROXY_KEY_POS",
+      surfaceId: "pos" as const,
+    },
+    {
+      envKey: "CORELY_PROXY_KEY_CRM",
+      surfaceId: "crm" as const,
+    },
+  ];
+
+  let resolvedSurfaceId: "platform" | "pos" | "crm" | null = null;
+  for (const candidate of candidates) {
+    if (equalsSecret(proxyKey, process.env[candidate.envKey])) {
+      resolvedSurfaceId = candidate.surfaceId;
+    }
+  }
+
+  return resolvedSurfaceId;
+};
+
 export const resolveRequestContext = (req: ContextAwareRequest): RequestContext => {
   const debug =
     typeof (req as any).log?.child === "function"
@@ -41,12 +78,20 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const correlationHeader = pickHeader(req, [HEADER_CORRELATION_ID]);
   const traceId = req.traceId || traceIdHeader;
   const activeAppId = pickHeader(req, [HEADER_APP_ID]);
+  const proxyKey = pickHeader(req, [HEADER_CORELY_PROXY_KEY]);
+  const declaredSurfaceId = pickHeader(req, [HEADER_CORELY_SURFACE])?.trim().toLowerCase();
+  const trustedSurfaceId = resolveTrustedSurfaceId(proxyKey);
+  const normalizedDeclaredSurface = normalizeDeclaredSurface(declaredSurfaceId);
+  const declaredResolvedSurfaceId = normalizedDeclaredSurface
+    ? mapDeclaredSurfaceToSurfaceId(normalizedDeclaredSurface)
+    : null;
+  const surfaceHeaderMismatch = Boolean(
+    trustedSurfaceId && declaredResolvedSurfaceId && trustedSurfaceId !== declaredResolvedSurfaceId
+  );
 
   const requestId = headerRequestId || traceId || randomUUID();
   const correlationId = correlationHeader || requestId;
-  const trustedHost = pickHeader(req, ["x-forwarded-host", "host"]);
-  const normalizedHost = normalizeSurfaceHostname(trustedHost);
-  const surfaceId = resolveSurface(normalizedHost);
+  const surfaceId = trustedSurfaceId ?? "platform";
 
   // Principal
   const headerUserId = pickHeader(req, ["x-user-id"]);
@@ -120,6 +165,10 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
     tenantId,
     workspaceId,
     surfaceId,
+    trustedSurfaceId,
+    declaredSurfaceId,
+    surfaceResolutionSource: trustedSurfaceId ? "proxy-key" : "fallback",
+    surfaceHeaderMismatch,
     activeAppId,
     roles: roleIds,
     metadata,
@@ -146,11 +195,24 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
                 ? "user"
                 : undefined
         : undefined,
-      surfaceId: normalizedHost ? "header" : "inferred",
+      surfaceId: trustedSurfaceId ? "proxy" : "inferred",
+      trustedSurfaceId: trustedSurfaceId ? "proxy" : undefined,
+      declaredSurfaceId: declaredSurfaceId ? "header" : undefined,
       activeAppId: activeAppId ? "header" : undefined,
     },
     deprecated: {},
   };
+
+  if (surfaceHeaderMismatch && debug) {
+    debug.warn(
+      {
+        declaredSurfaceId,
+        trustedSurfaceId,
+        route: req.originalUrl ?? req.url,
+      },
+      "RequestContextResolver: x-corely-surface does not match trusted proxy key"
+    );
+  }
 
   if (!workspaceId && debug) {
     debug.warn(

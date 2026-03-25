@@ -227,4 +227,26 @@ describe("ToolRegistry", () => {
       "collect_helper",
     ]);
   });
+
+  it("filters POS tools by workspace vertical", async () => {
+    const registry = new ToolRegistry([
+      {
+        ...mockTool("restaurant_searchMenuItems", "restaurant"),
+        allowedVerticals: ["restaurant"],
+      },
+      {
+        ...mockTool("nails_getAppointments", "nails"),
+        allowedSurfaces: ["pos"],
+        allowedVerticals: ["nails"],
+      },
+      mockTool("collect_helper"),
+    ]);
+
+    const tools = await registry.listForTenant("tenant-1", undefined, "pos", "restaurant");
+
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "restaurant_searchMenuItems",
+      "collect_helper",
+    ]);
+  });
 });

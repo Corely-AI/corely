@@ -1,11 +1,13 @@
-import { type SurfaceId } from "@corely/contracts";
+import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
 import { type DomainToolPort } from "./domain-tool.port";
 
 export interface ToolRegistryPort {
   listForTenant(
     tenantId: string,
     activeAppId?: string,
-    surfaceId?: SurfaceId
+    surfaceId?: SurfaceId,
+    verticalId?: PosVerticalId | null,
+    permissions?: Iterable<string>
   ): DomainToolPort[] | Promise<DomainToolPort[]>;
 }
 

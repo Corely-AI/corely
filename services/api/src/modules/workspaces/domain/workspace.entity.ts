@@ -1,4 +1,4 @@
-import type { WorkspaceKind, WorkspaceOnboardingStatus } from "@corely/contracts";
+import type { PosVerticalId, WorkspaceKind, WorkspaceOnboardingStatus } from "@corely/contracts";
 
 export interface WorkspaceAddress {
   line1: string;
@@ -47,6 +47,7 @@ export interface Workspace {
   legalEntityId: string;
   name: string;
   slug?: string;
+  verticalId?: PosVerticalId;
   publicEnabled?: boolean;
   publicModules?: Record<string, boolean>;
   onboardingStatus: WorkspaceOnboardingStatus;

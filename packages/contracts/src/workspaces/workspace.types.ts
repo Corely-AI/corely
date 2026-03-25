@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
+import { PosVerticalIdSchema } from "../platform/experience-targeting.schema";
 
 export const WorkspaceKindSchema = z.enum(["PERSONAL", "COMPANY"]);
 export type WorkspaceKind = z.infer<typeof WorkspaceKindSchema>;
@@ -74,6 +75,7 @@ export const WorkspaceProfileSchema = z.object({
   website: z.union([z.string().url(), z.literal("")]).optional(),
   bankAccount: WorkspaceBankAccountSchema.optional(),
   invoiceSettings: WorkspaceInvoiceSettingsSchema.optional(),
+  verticalId: PosVerticalIdSchema.optional(),
   publicEnabled: z.boolean().optional(),
   publicModules: WorkspacePublicModulesSchema.optional(),
 });

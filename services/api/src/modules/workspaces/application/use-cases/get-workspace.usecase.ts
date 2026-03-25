@@ -43,6 +43,7 @@ export class GetWorkspaceUseCase {
         legalEntityId: workspace.legalEntityId,
         name: workspace.name,
         slug: workspace.slug,
+        verticalId: workspace.verticalId,
         publicEnabled: workspace.publicEnabled ?? false,
         publicModules: workspace.publicModules ?? undefined,
         kind: workspace.legalEntity?.kind as any,

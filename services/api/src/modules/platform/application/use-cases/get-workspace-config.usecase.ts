@@ -1,4 +1,11 @@
-import { ForbiddenException, Injectable, NotFoundException, Inject } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  Inject,
+  Logger,
+} from "@nestjs/common";
 import type {
   MenuGroup,
   SurfaceId,
@@ -6,8 +13,14 @@ import type {
   WorkspaceNavigationGroup,
   WorkspaceMembershipRole,
 } from "@corely/contracts";
-import { WorkspaceTemplateService } from "../services/workspace-template.service";
 import { MenuComposerService } from "../services/menu-composer.service";
+import { WorkspaceExperienceResolverService } from "../services/workspace-experience-resolver.service";
+import { WorkspaceTemplateService } from "../services/workspace-template.service";
+import {
+  buildSurfaceResolutionLogFields,
+  evaluateSurfaceAwareRequest,
+  type SurfaceResolutionSource,
+} from "../../../../shared/request-context/request-surface";
 import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
@@ -26,13 +39,21 @@ export interface GetWorkspaceConfigInput {
   permissions: string[];
   scope: "web" | "pos";
   surfaceId: SurfaceId;
+  trustedSurfaceId?: SurfaceId | null;
+  declaredSurfaceId?: string;
+  surfaceResolutionSource: SurfaceResolutionSource;
+  surfaceHeaderMismatch: boolean;
+  route: string;
 }
 
 @Injectable()
 export class GetWorkspaceConfigUseCase {
+  private readonly logger = new Logger(GetWorkspaceConfigUseCase.name);
+
   constructor(
-    private readonly templateService: WorkspaceTemplateService,
     private readonly menuComposer: MenuComposerService,
+    private readonly experienceResolver: WorkspaceExperienceResolverService,
+    private readonly templateService: WorkspaceTemplateService,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
     @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
@@ -42,6 +63,72 @@ export class GetWorkspaceConfigUseCase {
   ) {}
 
   async execute(input: GetWorkspaceConfigInput): Promise<WorkspaceConfig> {
+    const surfaceLogFields = buildSurfaceResolutionLogFields({
+      requestContext: {
+        surfaceId: input.surfaceId,
+        trustedSurfaceId: input.trustedSurfaceId,
+        declaredSurfaceId: input.declaredSurfaceId,
+        surfaceResolutionSource: input.surfaceResolutionSource,
+        surfaceHeaderMismatch: input.surfaceHeaderMismatch,
+        workspaceId: input.workspaceId,
+      },
+      route: input.route,
+      workspaceId: input.workspaceId,
+    });
+    const surfacePolicy = evaluateSurfaceAwareRequest(
+      {
+        declaredSurfaceId: input.declaredSurfaceId,
+        surfaceHeaderMismatch: input.surfaceHeaderMismatch,
+        surfaceResolutionSource: input.surfaceResolutionSource,
+        trustedSurfaceId: input.trustedSurfaceId,
+      },
+      input.scope
+    );
+
+    if (!surfacePolicy.ok) {
+      this.logger.warn(
+        JSON.stringify({
+          event: "workspace-config.surface-resolution-rejected",
+          ...surfaceLogFields,
+          reason: surfacePolicy.errorCode,
+        })
+      );
+      throw new BadRequestException(surfacePolicy.message);
+    }
+
+    const experience = await this.experienceResolver.resolve({
+      tenantId: input.tenantId,
+      userId: input.userId,
+      workspaceId: input.workspaceId,
+      surfaceId: input.surfaceId,
+      permissions: input.permissions,
+    });
+
+    if (experience.surfaceId === "pos" && !experience.verticalId) {
+      this.logger.warn(
+        JSON.stringify({
+          event: "workspace-config.vertical-resolution-missing",
+          ...surfaceLogFields,
+          resolvedSurfaceId: experience.surfaceId,
+          resolvedVerticalId: experience.verticalId,
+          fallbackSurfaceResolution: input.surfaceResolutionSource !== "proxy-key",
+        })
+      );
+      throw new BadRequestException(
+        "POS workspace configuration requires a configured workspace vertical"
+      );
+    }
+
+    this.logger.log(
+      JSON.stringify({
+        event: "workspace-config.surface-resolution",
+        ...surfaceLogFields,
+        resolvedSurfaceId: experience.surfaceId,
+        resolvedVerticalId: experience.verticalId,
+        fallbackSurfaceResolution: input.surfaceResolutionSource !== "proxy-key",
+      })
+    );
+
     const hasAccess = await this.workspaceRepo.checkUserHasWorkspaceAccess(
       input.tenantId,
       input.workspaceId,
@@ -51,36 +138,26 @@ export class GetWorkspaceConfigUseCase {
       throw new ForbiddenException("You do not have access to this workspace");
     }
 
-    const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
-      input.tenantId,
-      input.workspaceId
-    );
+    const workspace = experience.workspace;
     if (!workspace || !workspace.legalEntity) {
       throw new NotFoundException("Workspace not found");
     }
 
-    const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-    const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
-    const terminology = this.templateService.getDefaultTerminology(workspaceKind);
-    const homeWidgets = this.templateService.getDefaultHomeWidgets(workspaceKind);
+    const workspaceKind = experience.workspaceKind;
+    const capabilities = experience.capabilities;
 
     await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind);
-
-    const capabilityFilter = new Set(
-      Object.entries(capabilities)
-        .filter(([, enabled]) => enabled)
-        .map(([key]) => key)
-    );
-    const capabilityKeys = new Set(Object.keys(capabilities));
 
     const menu = await this.menuComposer.composeMenuTree({
       tenantId: input.tenantId,
       userId: input.userId,
-      permissions: new Set(input.permissions),
+      permissions: experience.permissions,
       scope: input.scope,
-      surfaceId: input.surfaceId,
-      capabilityFilter,
-      capabilityKeys,
+      surfaceId: experience.surfaceId,
+      verticalId: experience.verticalId,
+      entitlement: experience.entitlement,
+      capabilityFilter: experience.enabledCapabilities,
+      capabilityKeys: experience.capabilityKeys,
     });
 
     const membership = await this.workspaceRepo.getMembershipByUserAndWorkspace(
@@ -92,15 +169,16 @@ export class GetWorkspaceConfigUseCase {
 
     return {
       workspaceId: workspace.id,
-      surfaceId: input.surfaceId,
+      surfaceId: experience.surfaceId,
+      verticalId: experience.verticalId,
       kind: workspaceKind,
       capabilities,
-      terminology,
+      terminology: this.templateService.getDefaultTerminology(workspaceKind),
       navigation: {
         groups: this.buildNavigationGroups(menu.groups),
       },
       home: {
-        widgets: homeWidgets,
+        widgets: this.templateService.getDefaultHomeWidgets(workspaceKind),
       },
       currentUser: {
         membershipRole,
