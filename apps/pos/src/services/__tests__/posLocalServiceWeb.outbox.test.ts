@@ -101,6 +101,7 @@ describe("PosLocalServiceWeb outbox persistence", () => {
         registerId: "register-1",
         sessionId: "shift-1",
         workspaceId: "workspace-1",
+        receiptNumber: result.sale.receiptNumber,
       },
     });
   });

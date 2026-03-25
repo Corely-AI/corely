@@ -100,7 +100,8 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     // TODO: Use SalesApplication.recordPayment for each payment (for Sales Ledger)
 
     // Bridge to Cash Management: Record cash movements
-    const receiptNumber = this.generateReceiptNumber(input.registerId, saleDate.value);
+    const receiptNumber =
+      input.receiptNumber?.trim() || this.generateReceiptNumber(input.registerId, saleDate.value);
     const cashPayments = input.payments.filter((payment) => payment.method === "CASH");
 
     let cashDrawerId: string | null = null;
@@ -141,6 +142,10 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
         amountCents: payment.amountCents,
         sourceType: CashEntrySourceType.SALES,
         description: `POS Sale #${receiptNumber}`,
+        sourceDocument: {
+          reference: payment.reference?.trim() || receiptNumber,
+          kind: "POS_RECEIPT",
+        },
         referenceId: input.posSaleId,
         businessDate: saleDate.value.toISOString().split("T")[0],
         idempotencyKey: `${input.idempotencyKey}:cash:${index}`,
@@ -165,10 +170,12 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     // const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate); // Moved up
 
     // 8. Store idempotency mapping
+    const primaryPaymentId = input.payments[0]?.paymentId;
     const result: SyncPosSaleOutput = {
       ok: true,
-      serverInvoiceId: "mock-invoice-id", // TODO: invoiceResult.value.invoiceId,
-      serverPaymentId: "mock-payment-id", // TODO: paymentResult.value.paymentId,
+      // Temporary valid UUID placeholders until Sales/Payments are integrated.
+      serverInvoiceId: input.posSaleId,
+      serverPaymentId: primaryPaymentId,
       receiptNumber,
     };
 

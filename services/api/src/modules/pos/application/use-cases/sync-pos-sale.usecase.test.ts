@@ -23,6 +23,7 @@ const syncInput = {
   workspaceId: "workspace-1",
   sessionId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
   registerId: "11111111-1111-1111-1111-111111111111",
+  receiptNumber: "LOCAL-RECEIPT-001",
   saleDate: new Date("2026-03-25T12:00:00.000Z"),
   cashierEmployeePartyId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
   customerPartyId: null,
@@ -98,6 +99,10 @@ describe("SyncPosSaleUseCase", () => {
     expect(addCashEntry.execute).toHaveBeenCalledWith(
       expect.objectContaining({
         registerId: "cash-1",
+        sourceDocument: {
+          reference: "LOCAL-RECEIPT-001",
+          kind: "POS_RECEIPT",
+        },
         idempotencyKey: "sale-idem-1:cash:0",
       }),
       expect.objectContaining({
@@ -186,10 +191,72 @@ describe("SyncPosSaleUseCase", () => {
       throw new Error("Expected sync to succeed");
     }
 
-    expect(result.value.receiptNumber).toContain("20260325");
+    expect(result.value.receiptNumber).toBe("LOCAL-RECEIPT-001");
     expect(addCashEntry.execute).toHaveBeenCalledWith(
       expect.objectContaining({
         businessDate: "2026-03-25",
+        sourceDocument: {
+          reference: "LOCAL-RECEIPT-001",
+          kind: "POS_RECEIPT",
+        },
+      }),
+      expect.anything()
+    );
+  });
+
+  it("uses the cash payment reference as the supporting document when present", async () => {
+    const idempotencyStore: PosSaleIdempotencyPort = {
+      get: vi.fn().mockResolvedValue(null),
+      store: vi.fn().mockResolvedValue(undefined),
+    };
+    const addCashEntry = {
+      execute: vi.fn().mockResolvedValue(ok({ entry: { id: "entry-1" } })),
+    } satisfies Pick<AddEntryUseCase, "execute">;
+    const resolveCashDrawer = {
+      execute: vi.fn().mockResolvedValue(
+        ok({
+          cashDrawerId: "cash-1",
+          resolution: "bound" as const,
+          posRegister: { id: syncInput.registerId },
+          scope: {
+            posWorkspaceId: "workspace-1",
+            cashTenantId: "tenant-1",
+            cashManagementContext: {
+              ...createPosCtx(),
+              tenantId: "tenant-1",
+              workspaceId: "workspace-1",
+            },
+          },
+        })
+      ),
+    } satisfies Pick<ResolveCashDrawerForPosRegisterService, "execute">;
+
+    const useCase = new SyncPosSaleUseCase(
+      idempotencyStore,
+      addCashEntry as unknown as AddEntryUseCase,
+      resolveCashDrawer as unknown as ResolveCashDrawerForPosRegisterService
+    );
+
+    const result = await useCase.execute(
+      {
+        ...syncInput,
+        payments: [
+          {
+            ...syncInput.payments[0],
+            reference: "terminal-slip-001",
+          },
+        ],
+      },
+      createPosCtx()
+    );
+
+    expect(result.ok).toBe(true);
+    expect(addCashEntry.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceDocument: {
+          reference: "terminal-slip-001",
+          kind: "POS_RECEIPT",
+        },
       }),
       expect.anything()
     );

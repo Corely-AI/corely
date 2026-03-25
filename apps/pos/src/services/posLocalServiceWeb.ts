@@ -121,6 +121,7 @@ export class PosLocalServiceWeb {
 
     const posSaleId = uuidv4();
     const saleDate = new Date();
+    const receiptNumber = this.generateReceiptNumber(input.registerId, saleDate, posSaleId);
     const idempotencyKey = buildDeterministicIdempotencyKey.saleFinalize(posSaleId);
 
     const lineItems: PosSaleLineItem[] = input.lineItems.map((line) => {
@@ -157,6 +158,7 @@ export class PosLocalServiceWeb {
       workspaceId: input.workspaceId,
       sessionId: input.sessionId,
       registerId: input.registerId,
+      receiptNumber,
       saleDate,
       cashierEmployeePartyId: input.cashierEmployeePartyId,
       customerPartyId: input.customerPartyId,
@@ -184,7 +186,7 @@ export class PosLocalServiceWeb {
       saleDate,
       cashierEmployeePartyId: input.cashierEmployeePartyId,
       customerPartyId: input.customerPartyId,
-      receiptNumber: this.generateReceiptNumber(input.registerId, saleDate, posSaleId),
+      receiptNumber,
       cartDiscountCents: input.cartDiscountCents,
       subtotalCents,
       taxCents: input.taxCents,

@@ -69,6 +69,7 @@ export async function createSaleAndEnqueue(
     workspaceId: input.workspaceId,
     sessionId: input.sessionId,
     registerId: input.registerId,
+    receiptNumber,
     saleDate,
     cashierEmployeePartyId: input.cashierEmployeePartyId,
     customerPartyId: input.customerPartyId,
