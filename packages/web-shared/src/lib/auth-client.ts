@@ -6,6 +6,7 @@
 import { AuthClient } from "@corely/auth-client";
 import { setActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
 import { WebStorageAdapter } from "./storage-adapter";
+import { defaultApiBaseUrl } from "./api-base-url";
 
 // Re-export types from shared package
 export type {
@@ -15,13 +16,11 @@ export type {
   CurrentUserResponse,
 } from "@corely/auth-client";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
-
 const storage = new WebStorageAdapter();
 
 // Create auth client with web storage adapter
 const sharedAuthClient = new AuthClient({
-  apiUrl: API_URL,
+  apiUrl: defaultApiBaseUrl,
   storage,
 });
 

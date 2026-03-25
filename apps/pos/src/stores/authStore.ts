@@ -131,7 +131,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { authClient } = get();
 
     if (authClient) {
-      await authClient.signout();
+      try {
+        await authClient.signout();
+      } catch (error) {
+        console.error("POS logout signout failed:", error);
+      }
     }
 
     await secureDeleteItem("user");
@@ -139,12 +143,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({
       user: null,
       isAuthenticated: false,
+      isLoading: false,
     });
 
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace("/login" as never);
-    }
+    router.replace("/login" as never);
   },
 }));

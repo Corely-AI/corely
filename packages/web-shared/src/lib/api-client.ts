@@ -6,8 +6,7 @@
 import { ApiClient } from "@corely/auth-client";
 import { authClient } from "./auth-client";
 import { WebStorageAdapter } from "./storage-adapter";
-
-const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+import { defaultApiBaseUrl } from "./api-base-url";
 
 const storage = new WebStorageAdapter();
 
@@ -16,7 +15,7 @@ const sharedAuthClient = authClient.client;
 
 // Create shared API client
 const sharedApiClient = new ApiClient({
-  apiUrl: API_URL,
+  apiUrl: defaultApiBaseUrl,
   authClient: sharedAuthClient,
   storage,
   onAuthError: () => {

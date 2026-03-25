@@ -48,4 +48,19 @@ test.describe("POS app", () => {
     await expect(page.getByTestId("pos-sync-retry-failed")).toBeVisible();
     await expect(page.getByTestId("pos-sync-export-logs")).toBeVisible();
   });
+
+  test("logs out from settings on web", async ({ page }) => {
+    autoAcceptNativeDialogs(page);
+    await installPosApiMock(page, { startWithOpenShift: true });
+
+    await bootstrapAuthenticatedPos(page, { requireOpenShiftForSales: false });
+    await selectRegister(page);
+    await expect(page.getByTestId("pos-home-screen")).toBeVisible({ timeout: 20_000 });
+
+    await page.goto("/settings");
+    await expect(page.getByTestId("pos-settings-screen")).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("button", { name: /logout/i }).click();
+
+    await expect(page).toHaveURL(/\/login$/, { timeout: 20_000 });
+  });
 });
