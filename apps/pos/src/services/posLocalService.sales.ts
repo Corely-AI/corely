@@ -7,6 +7,7 @@ import {
   createPosOutboxCommand,
   PosCommandTypes,
 } from "@/offline/posOutbox";
+import { requestSyncFlush } from "@/lib/offline/syncTrigger";
 import { insertOutboxCommandTransactional, runInTransaction } from "@/lib/pos-db";
 import { generateReceiptNumber, mapSale } from "@/services/posLocalService.mappers";
 import type {
@@ -192,6 +193,7 @@ export async function createSaleAndEnqueue(
     throw new Error("Sale was written locally but could not be reloaded");
   }
 
+  requestSyncFlush(`outbox:${command.type}`);
   return { sale, command };
 }
 

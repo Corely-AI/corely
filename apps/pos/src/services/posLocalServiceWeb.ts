@@ -47,6 +47,7 @@ import {
   sendRestaurantOrderAndEnqueueWeb,
   upsertRestaurantAggregateWeb,
 } from "@/services/posLocalServiceWeb.restaurant";
+import { requestSyncFlush } from "@/lib/offline/syncTrigger";
 
 const saleBuilder = new SaleBuilder();
 
@@ -64,6 +65,7 @@ export class PosLocalServiceWeb {
   private async persistOutboxCommand(command: OutboxCommand): Promise<void> {
     const outboxStore = await getOutboxStore();
     await outboxStore.enqueue(command);
+    requestSyncFlush(`outbox:${command.type}`);
   }
 
   async replaceCatalogSnapshot(

@@ -29,20 +29,28 @@ type TransportDeps = {
   apiClient: PosApiClient;
   engagementService?: EngagementService | null;
   posLocalService?: PosLocalService | null;
+  onCommandSyncStart?: (command: OutboxCommand) => void | Promise<void>;
+  onCommandSyncResult?: (
+    command: OutboxCommand,
+    result: CommandResult,
+    meta?: { error?: unknown }
+  ) => void | Promise<void>;
 };
 
 export class PosSyncTransport implements SyncTransport {
   constructor(private readonly deps: TransportDeps) {}
 
   async executeCommand(command: OutboxCommand): Promise<CommandResult> {
+    await this.deps.onCommandSyncStart?.(command);
     try {
+      let result: CommandResult;
       switch (command.type) {
         case PosCommandTypes.SaleFinalize: {
           const payload = command.payload as SyncPosSaleInput;
           const output = await this.deps.apiClient.syncPosSale(payload);
           if (!output.ok) {
             if (output.code?.toUpperCase().includes("CONFLICT")) {
-              return {
+              result = {
                 status: "CONFLICT",
                 conflict: {
                   message: output.message ?? "Sale conflict",
@@ -52,11 +60,15 @@ export class PosSyncTransport implements SyncTransport {
                   },
                 },
               };
+              await this.deps.onCommandSyncResult?.(command, result);
+              return result;
             }
-            return {
+            result = {
               status: "FATAL_ERROR",
               error: output.message ?? output.code ?? "Sale sync rejected",
             };
+            await this.deps.onCommandSyncResult?.(command, result);
+            return result;
           }
 
           if (this.deps.posLocalService) {
@@ -72,17 +84,23 @@ export class PosSyncTransport implements SyncTransport {
             }
             await this.deps.posLocalService.markSaleSynced(payload.posSaleId, syncResult);
           }
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         case PosCommandTypes.ShiftOpen: {
           const payload = command.payload as OpenShiftInput;
           await this.deps.apiClient.openShift(payload);
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         case PosCommandTypes.ShiftClose: {
           const payload = command.payload as CloseShiftInput;
           await this.deps.apiClient.closeShift(payload);
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         case PosCommandTypes.ShiftCashEvent: {
           const payload = command.payload as ShiftCashEventCommandPayload;
@@ -105,7 +123,9 @@ export class PosSyncTransport implements SyncTransport {
           if (this.deps.posLocalService) {
             await this.deps.posLocalService.markShiftCashEventSynced(payload.eventId);
           }
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         case PosCommandTypes.RestaurantTableOpen: {
           const payload = command.payload as OpenRestaurantTableInput;
@@ -118,7 +138,9 @@ export class PosSyncTransport implements SyncTransport {
               order: output.order,
             });
           }
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         case PosCommandTypes.RestaurantDraftReplace: {
           const payload = command.payload as PutRestaurantDraftOrderInput;
@@ -130,7 +152,9 @@ export class PosSyncTransport implements SyncTransport {
               order: output.order,
             });
           }
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         case PosCommandTypes.RestaurantSendToKitchen: {
           const payload = command.payload as SendRestaurantOrderToKitchenInput;
@@ -142,7 +166,9 @@ export class PosSyncTransport implements SyncTransport {
               order: output.order,
             });
           }
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         case EngagementCommandTypes.CreateCheckIn: {
           const payload = command.payload as CreateCheckInEventInput;
@@ -153,15 +179,21 @@ export class PosSyncTransport implements SyncTransport {
               result.pointsAwarded ?? null
             );
           }
-          return { status: "OK" };
+          const syncResult: CommandResult = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, syncResult);
+          return syncResult;
         }
         case EngagementCommandTypes.CreateLoyaltyEarn: {
           const payload = command.payload as CreateLoyaltyEarnEntryInput;
           await this.deps.apiClient.createLoyaltyEarn(payload, command.idempotencyKey);
-          return { status: "OK" };
+          result = { status: "OK" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
         }
         default:
-          return { status: "FATAL_ERROR", error: "Unknown command type" };
+          result = { status: "FATAL_ERROR", error: "Unknown command type" };
+          await this.deps.onCommandSyncResult?.(command, result);
+          return result;
       }
     } catch (error) {
       if (command.type === PosCommandTypes.SaleFinalize && this.deps.posLocalService) {
@@ -202,26 +234,41 @@ export class PosSyncTransport implements SyncTransport {
       }
       if (error instanceof HttpError) {
         if (error.status === 409) {
-          return {
+          const result: CommandResult = {
             status: "CONFLICT",
             conflict: {
               message: "Conflict from server",
               serverState: error.body,
             },
           };
+          await this.deps.onCommandSyncResult?.(command, result, { error });
+          return result;
         }
         if (error.status === 429) {
-          return { status: "RETRYABLE_ERROR", error: error.body };
+          const result: CommandResult = { status: "RETRYABLE_ERROR", error: error.body };
+          await this.deps.onCommandSyncResult?.(command, result, { error });
+          return result;
         }
         if (error.status && error.status >= 500) {
-          return { status: "RETRYABLE_ERROR", error: error.body };
+          const result: CommandResult = { status: "RETRYABLE_ERROR", error: error.body };
+          await this.deps.onCommandSyncResult?.(command, result, { error });
+          return result;
         }
         if (error.status === null) {
-          return { status: "RETRYABLE_ERROR", error: error.body };
+          const result: CommandResult = { status: "RETRYABLE_ERROR", error: error.body };
+          await this.deps.onCommandSyncResult?.(command, result, { error });
+          return result;
         }
-        return { status: "FATAL_ERROR", error: error.body };
+        const result: CommandResult = { status: "FATAL_ERROR", error: error.body };
+        await this.deps.onCommandSyncResult?.(command, result, { error });
+        return result;
       }
-      return { status: "RETRYABLE_ERROR", error: error instanceof Error ? error.message : error };
+      const result: CommandResult = {
+        status: "RETRYABLE_ERROR",
+        error: error instanceof Error ? error.message : error,
+      };
+      await this.deps.onCommandSyncResult?.(command, result, { error });
+      return result;
     }
   }
 }

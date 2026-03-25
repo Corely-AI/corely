@@ -23,6 +23,7 @@ import {
   type PosOutboxStore,
   writeSyncStateWeb,
 } from "@/lib/offline/webOutboxStore";
+import { subscribeSyncFlush } from "@/lib/offline/syncTrigger";
 
 let syncEngineInstance: SyncEngine | null = null;
 let outboxStoreInstance: PosOutboxStore | null = null;
@@ -145,6 +146,49 @@ export function useSyncEngine() {
         apiClient: currentApiClient,
         engagementService: engagementService ?? null,
         posLocalService,
+        onCommandSyncStart: async (command) => {
+          await log("INFO", "Sync command started", {
+            workspaceId: command.workspaceId,
+            commandId: command.commandId,
+            commandType: command.type,
+            attempts: command.attempts,
+            idempotencyKey: command.idempotencyKey,
+          });
+        },
+        onCommandSyncResult: async (command, result, meta) => {
+          const baseMeta = {
+            workspaceId: command.workspaceId,
+            commandId: command.commandId,
+            commandType: command.type,
+            status: result.status,
+            attempts: command.attempts,
+            idempotencyKey: command.idempotencyKey,
+          };
+          if (result.status === "OK") {
+            await log("INFO", "Sync command succeeded", baseMeta);
+            return;
+          }
+          if (result.status === "CONFLICT") {
+            await log("WARN", "Sync command conflicted", {
+              ...baseMeta,
+              conflict: result.conflict,
+            });
+            return;
+          }
+          if (result.status === "RETRYABLE_ERROR") {
+            await log("WARN", "Sync command will retry", {
+              ...baseMeta,
+              error: result.error,
+              cause: meta?.error instanceof Error ? meta.error.message : meta?.error,
+            });
+            return;
+          }
+          await log("ERROR", "Sync command failed", {
+            ...baseMeta,
+            error: result.error,
+            cause: meta?.error instanceof Error ? meta.error.message : meta?.error,
+          });
+        },
       });
 
       syncEngineInstance = new SyncEngine(
@@ -180,7 +224,7 @@ export function useSyncEngine() {
     await refreshCommands();
     setIsReady(true);
     return syncEngineInstance;
-  }, [engagementService, handleSyncEvent, refreshCommands]);
+  }, [engagementService, handleSyncEvent, log, refreshCommands]);
 
   const initializeSync = useCallback(async () => {
     const authState = useAuthStore.getState();
@@ -195,7 +239,7 @@ export function useSyncEngine() {
     }
   }, [ensureSyncEngine]);
 
-  const triggerSync = useCallback(async () => {
+  const triggerSyncWithReason = useCallback(async (reason: string) => {
     const workspaceId = useAuthStore.getState().user?.workspaceId;
     const attemptedAt = new Date();
     const engine = await ensureSyncEngine();
@@ -209,7 +253,8 @@ export function useSyncEngine() {
         retried: 0,
       });
       await refreshCommands();
-      await log("WARN", "Manual sync requested before sync engine was ready", {
+      await log("WARN", "Sync requested before sync engine was ready", {
+        reason,
         hasEngine: Boolean(engine),
         hasWorkspaceId: Boolean(workspaceId),
       });
@@ -217,21 +262,30 @@ export function useSyncEngine() {
     }
     if (!isOnline && autoSyncEnabled) {
       setLastSyncAt(attemptedAt);
-      await log("WARN", "Manual sync skipped while offline", {
+      await log("WARN", "Sync skipped while offline", {
         workspaceId,
+        reason,
       });
       return;
     }
 
     setSyncStatus("syncing");
     try {
+      await log("INFO", "Sync request started", {
+        workspaceId,
+        reason,
+        autoSyncEnabled,
+        online: isOnline,
+      });
       const stats = await engine.flush(workspaceId);
       setLastSyncAt(attemptedAt);
       setLastSyncStats(stats);
       await refreshCommands();
-      await log("INFO", "Manual sync completed", { workspaceId, stats });
+      await log("INFO", "Sync request completed", { workspaceId, reason, stats });
     } catch (error) {
       await log("ERROR", "Sync failed", {
+        workspaceId,
+        reason,
         error: error instanceof Error ? error.message : String(error),
       });
       console.error("Sync failed:", error);
@@ -239,6 +293,10 @@ export function useSyncEngine() {
       setSyncStatus("idle");
     }
   }, [autoSyncEnabled, ensureSyncEngine, isOnline, log, refreshCommands]);
+
+  const triggerSync = useCallback(async () => {
+    await triggerSyncWithReason("manual");
+  }, [triggerSyncWithReason]);
 
   useEffect(() => {
     if (!useAuthStore.getState().apiClient) {
@@ -252,8 +310,22 @@ export function useSyncEngine() {
     if (!autoSyncEnabled || !isOnline || !workspaceId) {
       return;
     }
-    void triggerSync();
-  }, [autoSyncEnabled, isOnline, triggerSync, user?.workspaceId]);
+    void triggerSyncWithReason("auto:state-change");
+  }, [autoSyncEnabled, isOnline, triggerSyncWithReason, user?.workspaceId]);
+
+  useEffect(() => {
+    return subscribeSyncFlush(async (request) => {
+      await refreshCommands();
+
+      if (!autoSyncEnabled || !isOnline || !useAuthStore.getState().user?.workspaceId) {
+        await log("INFO", "Queued command is waiting for next eligible auto sync", request);
+        return;
+      }
+
+      await log("INFO", "Immediate auto sync requested", request);
+      await triggerSyncWithReason(`auto:${request.reason}`);
+    });
+  }, [autoSyncEnabled, isOnline, log, refreshCommands, triggerSyncWithReason]);
 
   const retryFailedCommand = useCallback(
     async (commandId: string) => {
@@ -262,9 +334,9 @@ export function useSyncEngine() {
       }
       await outboxStoreInstance.resetToPending(commandId);
       await log("INFO", "Command reset to pending", { commandId });
-      await triggerSync();
+      await triggerSyncWithReason("manual:retry-command");
     },
-    [log, triggerSync]
+    [log, triggerSyncWithReason]
   );
 
   const retryFailedCommands = useCallback(async () => {
@@ -276,8 +348,8 @@ export function useSyncEngine() {
       await outboxStoreInstance.resetToPending(command.commandId);
     }
     await log("INFO", "Bulk retry requested", { count: failed.length });
-    await triggerSync();
-  }, [commands, log, triggerSync]);
+    await triggerSyncWithReason("manual:retry-failed");
+  }, [commands, log, triggerSyncWithReason]);
 
   const dropCommand = useCallback(
     async (commandId: string) => {
