@@ -116,6 +116,10 @@ export const styles = StyleSheet.create({
     gap: posTheme.spacing.sm,
     marginTop: posTheme.spacing.md,
   },
+  actionHint: {
+    color: posTheme.colors.textMuted,
+    marginTop: posTheme.spacing.sm,
+  },
   modalBody: {
     gap: posTheme.spacing.md,
   },

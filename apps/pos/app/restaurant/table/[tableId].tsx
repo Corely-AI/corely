@@ -212,6 +212,17 @@ export default function RestaurantTableOrderScreen() {
     );
   }
 
+  const hasUnsentItems = activeOrder.items.some(
+    (item) => item.sentQuantity === 0 && !item.voidedAt
+  );
+  const isClosedOrder = activeOrder.status === "CLOSED";
+  const canTakePayment = activeOrder.items.length > 0 && !hasUnsentItems && !isClosedOrder;
+  const paymentBlockReason = hasUnsentItems
+    ? "Send all draft items to kitchen before taking payment."
+    : isClosedOrder
+      ? "This order has already been settled."
+      : null;
+
   return (
     <AppShell
       title={`Table ${tableId?.slice(0, 8) ?? ""}`}
@@ -341,9 +352,12 @@ export default function RestaurantTableOrderScreen() {
                   testID="pos-restaurant-take-payment"
                   label="Take payment"
                   onPress={() => router.push(`/restaurant/payment/${activeOrder.id}` as never)}
-                  disabled={activeOrder.items.length === 0}
+                  disabled={!canTakePayment || isMutating}
                 />
               </View>
+              {paymentBlockReason ? (
+                <Text style={styles.actionHint}>{paymentBlockReason}</Text>
+              ) : null}
             </Card>
             <RestaurantCopilotPanel
               title="Order copilot"
