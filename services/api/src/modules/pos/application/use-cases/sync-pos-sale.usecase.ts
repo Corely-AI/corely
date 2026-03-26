@@ -16,6 +16,10 @@ import {
   POS_SALE_IDEMPOTENCY_PORT,
   type PosSaleIdempotencyPort,
 } from "../ports/pos-sale-idempotency.port";
+import {
+  POS_SALE_REPOSITORY_PORT,
+  type PosSaleRepositoryPort,
+} from "../ports/pos-sale-repository.port";
 
 // Note: In production, inject SalesApplication for creating invoices/payments
 // For now, this is a placeholder structure showing the integration pattern
@@ -23,12 +27,14 @@ import {
 import { AddEntryUseCase } from "../../../cash-management/application/use-cases/add-entry.usecase";
 import { CreateCashEntry, CashEntryType, CashEntrySourceType } from "@corely/contracts";
 import { ResolveCashDrawerForPosRegisterService } from "../services/resolve-cash-drawer-for-pos-register.service";
+import { PosSaleRecord } from "../../domain/pos-sale-record.entity";
 
 @RequireTenant()
 @Injectable()
 export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSaleOutput> {
   constructor(
     @Inject(POS_SALE_IDEMPOTENCY_PORT) private idempotencyStore: PosSaleIdempotencyPort,
+    @Inject(POS_SALE_REPOSITORY_PORT) private readonly posSaleRepo: PosSaleRepositoryPort,
     private readonly addCashEntryUC: AddEntryUseCase,
     private readonly resolveCashDrawer: ResolveCashDrawerForPosRegisterService
     // TODO: Inject SalesApplication, InventoryApplication (for product validation)
@@ -178,6 +184,33 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
       serverPaymentId: primaryPaymentId,
       receiptNumber,
     };
+
+    await this.posSaleRepo.upsert(
+      new PosSaleRecord(
+        input.posSaleId,
+        tenantId,
+        input.sessionId,
+        input.registerId,
+        null,
+        receiptNumber,
+        saleDate.value,
+        input.cashierEmployeePartyId,
+        input.customerPartyId,
+        input.subtotalCents,
+        input.taxCents,
+        input.totalCents,
+        "EUR",
+        "SYNCED",
+        input.lineItems,
+        input.payments,
+        input.idempotencyKey,
+        result.serverInvoiceId ?? null,
+        result.serverPaymentId ?? null,
+        new Date(),
+        new Date(),
+        new Date()
+      )
+    );
 
     await this.idempotencyStore.store(tenantId, input.idempotencyKey, input.posSaleId, result);
 

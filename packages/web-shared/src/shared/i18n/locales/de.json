@@ -288,7 +288,8 @@
     "catalogItems": "Katalogartikel",
     "pos": {
       "catalog": "Katalog",
-      "catalogQuickAdd": "Artikel schnell anlegen"
+      "catalogQuickAdd": "Artikel schnell anlegen",
+      "transactions": "Transaktionen"
     },
     "importShipments": "Sendungen",
     "suppliers": "Lieferanten",

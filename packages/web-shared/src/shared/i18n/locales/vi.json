@@ -288,7 +288,8 @@
     "catalogItems": "Mặt hàng danh mục",
     "pos": {
       "catalog": "Danh mục POS",
-      "catalogQuickAdd": "Thêm nhanh món"
+      "catalogQuickAdd": "Thêm nhanh món",
+      "transactions": "Giao dịch"
     },
     "importShipments": "Lô hàng",
     "suppliers": "Nhà cung cấp",

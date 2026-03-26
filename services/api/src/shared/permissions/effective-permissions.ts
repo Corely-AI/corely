@@ -12,7 +12,7 @@ export interface EffectivePermissionSet {
 }
 
 const PERMISSION_COMPATIBILITY_ALIASES: Record<string, readonly string[]> = {
-  "cash.read": ["pos.registers.read"],
+  "cash.read": ["pos.registers.read", "pos.transactions.read"],
   "cash.write": ["pos.registers.manage"],
   "catalog.quick-write": ["catalog.quickwrite"],
 };

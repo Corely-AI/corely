@@ -41,10 +41,12 @@ describe("Effective permission computations", () => {
     expect(hasPermission(set, "cash.read")).toBe(true);
     expect(hasPermission(set, "cash.write")).toBe(true);
     expect(hasPermission(set, "pos.registers.read")).toBe(true);
+    expect(hasPermission(set, "pos.transactions.read")).toBe(true);
     expect(hasPermission(set, "pos.registers.manage")).toBe(true);
 
     const allowed = new Set(toAllowedPermissionKeys(grants));
     expect(allowed.has("pos.registers.read")).toBe(true);
+    expect(allowed.has("pos.transactions.read")).toBe(true);
     expect(allowed.has("pos.registers.manage")).toBe(true);
   });
 

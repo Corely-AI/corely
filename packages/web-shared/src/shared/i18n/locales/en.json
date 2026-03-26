@@ -293,7 +293,8 @@
     "catalogItems": "Catalog Items",
     "pos": {
       "catalog": "Catalog",
-      "catalogQuickAdd": "Quick Add Item"
+      "catalogQuickAdd": "Quick Add Item",
+      "transactions": "Transactions"
     },
     "importShipments": "Shipments",
     "suppliers": "Suppliers",

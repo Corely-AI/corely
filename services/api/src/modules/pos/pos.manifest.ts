@@ -12,7 +12,7 @@ export const posAdminAppManifest: AppManifest = {
     defaultEnabled: true,
   },
   capabilities: [],
-  permissions: ["pos.registers.read", "pos.registers.manage"],
+  permissions: ["pos.registers.read", "pos.registers.manage", "pos.transactions.read"],
   menu: [
     {
       id: "pos-admin-registers",
@@ -24,6 +24,17 @@ export const posAdminAppManifest: AppManifest = {
       icon: "MonitorSmartphone",
       order: 20,
       requiresPermissions: ["pos.registers.read"],
+    },
+    {
+      id: "pos-admin-transactions",
+      scope: "web",
+      section: "pos",
+      labelKey: "nav.pos.transactions",
+      defaultLabel: "Transactions",
+      route: "/pos/admin/transactions",
+      icon: "ReceiptText",
+      order: 30,
+      requiresPermissions: ["pos.transactions.read"],
     },
   ],
 };

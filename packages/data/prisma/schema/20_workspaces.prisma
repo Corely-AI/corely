@@ -65,6 +65,7 @@ model Workspace {
   registers              Register[]
   shiftSessions          ShiftSession[]
   posSaleIdempotency     PosSaleIdempotency[]
+  posSaleRecords         PosSaleRecord[]
   paymentAttempts        PaymentAttempt[]
   cashRegisters          CashRegister[]
   cashEntries            CashEntry[]

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ok, type UseCaseContext } from "@corely/kernel";
 import type { SyncPosSaleOutput } from "@corely/contracts";
 import type { PosSaleIdempotencyPort } from "../ports/pos-sale-idempotency.port";
+import type { PosSaleRepositoryPort } from "../ports/pos-sale-repository.port";
 import { SyncPosSaleUseCase } from "./sync-pos-sale.usecase";
 import { AddEntryUseCase } from "../../../cash-management/application/use-cases/add-entry.usecase";
 import { ResolveCashDrawerForPosRegisterService } from "../services/resolve-cash-drawer-for-pos-register.service";
@@ -60,6 +61,11 @@ describe("SyncPosSaleUseCase", () => {
       get: vi.fn().mockResolvedValue(null),
       store: vi.fn().mockResolvedValue(undefined),
     };
+    const posSaleRepo: PosSaleRepositoryPort = {
+      upsert: vi.fn().mockResolvedValue(undefined),
+      list: vi.fn(),
+      findById: vi.fn(),
+    };
     const addCashEntry = {
       execute: vi.fn().mockResolvedValue(ok({ entry: { id: "entry-1" } })),
     } satisfies Pick<AddEntryUseCase, "execute">;
@@ -84,6 +90,7 @@ describe("SyncPosSaleUseCase", () => {
 
     const useCase = new SyncPosSaleUseCase(
       idempotencyStore,
+      posSaleRepo,
       addCashEntry as unknown as AddEntryUseCase,
       resolveCashDrawer as unknown as ResolveCashDrawerForPosRegisterService
     );
@@ -111,6 +118,7 @@ describe("SyncPosSaleUseCase", () => {
       })
     );
     expect(idempotencyStore.store).toHaveBeenCalledTimes(1);
+    expect(posSaleRepo.upsert).toHaveBeenCalledTimes(1);
   });
 
   it("returns the cached idempotent result without touching cash drawer resolution", async () => {
@@ -124,6 +132,11 @@ describe("SyncPosSaleUseCase", () => {
       get: vi.fn().mockResolvedValue(cached),
       store: vi.fn().mockResolvedValue(undefined),
     };
+    const posSaleRepo: PosSaleRepositoryPort = {
+      upsert: vi.fn().mockResolvedValue(undefined),
+      list: vi.fn(),
+      findById: vi.fn(),
+    };
     const addCashEntry = {
       execute: vi.fn(),
     } satisfies Pick<AddEntryUseCase, "execute">;
@@ -133,6 +146,7 @@ describe("SyncPosSaleUseCase", () => {
 
     const useCase = new SyncPosSaleUseCase(
       idempotencyStore,
+      posSaleRepo,
       addCashEntry as unknown as AddEntryUseCase,
       resolveCashDrawer as unknown as ResolveCashDrawerForPosRegisterService
     );
@@ -143,12 +157,18 @@ describe("SyncPosSaleUseCase", () => {
     expect(resolveCashDrawer.execute).not.toHaveBeenCalled();
     expect(addCashEntry.execute).not.toHaveBeenCalled();
     expect(idempotencyStore.store).not.toHaveBeenCalled();
+    expect(posSaleRepo.upsert).not.toHaveBeenCalled();
   });
 
   it("accepts an HTTP-style saleDate string and normalizes it before receipt generation", async () => {
     const idempotencyStore: PosSaleIdempotencyPort = {
       get: vi.fn().mockResolvedValue(null),
       store: vi.fn().mockResolvedValue(undefined),
+    };
+    const posSaleRepo: PosSaleRepositoryPort = {
+      upsert: vi.fn().mockResolvedValue(undefined),
+      list: vi.fn(),
+      findById: vi.fn(),
     };
     const addCashEntry = {
       execute: vi.fn().mockResolvedValue(ok({ entry: { id: "entry-1" } })),
@@ -174,6 +194,7 @@ describe("SyncPosSaleUseCase", () => {
 
     const useCase = new SyncPosSaleUseCase(
       idempotencyStore,
+      posSaleRepo,
       addCashEntry as unknown as AddEntryUseCase,
       resolveCashDrawer as unknown as ResolveCashDrawerForPosRegisterService
     );
@@ -209,6 +230,11 @@ describe("SyncPosSaleUseCase", () => {
       get: vi.fn().mockResolvedValue(null),
       store: vi.fn().mockResolvedValue(undefined),
     };
+    const posSaleRepo: PosSaleRepositoryPort = {
+      upsert: vi.fn().mockResolvedValue(undefined),
+      list: vi.fn(),
+      findById: vi.fn(),
+    };
     const addCashEntry = {
       execute: vi.fn().mockResolvedValue(ok({ entry: { id: "entry-1" } })),
     } satisfies Pick<AddEntryUseCase, "execute">;
@@ -233,6 +259,7 @@ describe("SyncPosSaleUseCase", () => {
 
     const useCase = new SyncPosSaleUseCase(
       idempotencyStore,
+      posSaleRepo,
       addCashEntry as unknown as AddEntryUseCase,
       resolveCashDrawer as unknown as ResolveCashDrawerForPosRegisterService
     );
