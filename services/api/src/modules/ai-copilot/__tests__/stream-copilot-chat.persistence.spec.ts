@@ -228,7 +228,7 @@ describe("StreamCopilotChatUseCase persistence", () => {
         workspaceId: "workspace-1",
       })
     );
-    expect(listForTenant).toHaveBeenCalledWith("tenant-1", undefined, undefined);
+    expect(listForTenant).toHaveBeenCalledWith("tenant-1", undefined, undefined, undefined);
 
     const savedToolResult = saveCalls.some((call) =>
       call.messages.some((message) =>
