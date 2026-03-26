@@ -184,6 +184,7 @@ const DEMO_ROLE_PERMISSION_KEYS = [
   "cash.export",
   "pos.registers.read",
   "pos.registers.manage",
+  "pos.transactions.read",
   "catalog.read",
   "catalog.quickwrite",
 ] as const;

@@ -66,29 +66,29 @@ enum CoachingExportBundleStatus {
 }
 
 model CoachingOffer {
-  id                     String   @id @default(cuid())
-  tenantId               String
-  workspaceId            String?
-  coachUserId            String?
-  titleJson              Json     @db.JsonB
-  descriptionJson        Json?    @db.JsonB
-  currency               String   @db.VarChar(3)
-  priceCents             Int
-  sessionDurationMinutes Int
-  meetingType            String   @default("video") @db.VarChar(32)
-  availabilityRuleJson   Json     @default("{}") @db.JsonB
-  bookingRulesJson       Json     @default("{}") @db.JsonB
-  contractRequired       Boolean  @default(true)
-  paymentRequired        Boolean  @default(true)
-  localeDefault          String   @default("en")
-  contractTemplateJson   Json?    @db.JsonB
-  contractLabelJson      Json?    @db.JsonB
-  prepFormTemplateJson   Json?    @db.JsonB
+  id                             String    @id @default(cuid())
+  tenantId                       String
+  workspaceId                    String?
+  coachUserId                    String?
+  titleJson                      Json      @db.JsonB
+  descriptionJson                Json?     @db.JsonB
+  currency                       String    @db.VarChar(3)
+  priceCents                     Int
+  sessionDurationMinutes         Int
+  meetingType                    String    @default("video") @db.VarChar(32)
+  availabilityRuleJson           Json      @default("{}") @db.JsonB
+  bookingRulesJson               Json      @default("{}") @db.JsonB
+  contractRequired               Boolean   @default(true)
+  paymentRequired                Boolean   @default(true)
+  localeDefault                  String    @default("en")
+  contractTemplateJson           Json?     @db.JsonB
+  contractLabelJson              Json?     @db.JsonB
+  prepFormTemplateJson           Json?     @db.JsonB
   prepFormSendHoursBeforeSession Int?
-  debriefTemplateJson    Json?    @db.JsonB
-  archivedAt             DateTime? @db.Timestamptz(6)
-  createdAt              DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime @updatedAt @db.Timestamptz(6)
+  debriefTemplateJson            Json?     @db.JsonB
+  archivedAt                     DateTime? @db.Timestamptz(6)
+  createdAt                      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt                      DateTime  @updatedAt @db.Timestamptz(6)
 
   engagements CoachingEngagement[]
   holds       CoachingBookingHold[]
@@ -98,38 +98,38 @@ model CoachingOffer {
 }
 
 model CoachingEngagement {
-  id                     String                   @id @default(cuid())
-  tenantId               String
-  workspaceId            String
-  offerId                String
-  clientPartyId          String
-  coachPartyId           String?
-  coachUserId            String
-  locale                 String                   @default("en")
-  status                 CoachingEngagementStatus @default(draft)
-  paymentStatus          CoachingPaymentStatus    @default(pending)
-  contractStatus         CoachingContractStatus   @default(pending)
-  legalEntityId          String?
-  paymentMethodId        String?
-  invoiceId              String?
-  stripeCheckoutSessionId String?
-  stripeCheckoutUrl      String?
-  stripePaymentIntentId  String?
-  contractAccessTokenHash String?
-  contractRequestedAt    DateTime?                @db.Timestamptz(6)
-  contractSignedAt       DateTime?                @db.Timestamptz(6)
-  contractDraftDocumentId String?
+  id                       String                   @id @default(cuid())
+  tenantId                 String
+  workspaceId              String
+  offerId                  String
+  clientPartyId            String
+  coachPartyId             String?
+  coachUserId              String
+  locale                   String                   @default("en")
+  status                   CoachingEngagementStatus @default(draft)
+  paymentStatus            CoachingPaymentStatus    @default(pending)
+  contractStatus           CoachingContractStatus   @default(pending)
+  legalEntityId            String?
+  paymentMethodId          String?
+  invoiceId                String?
+  stripeCheckoutSessionId  String?
+  stripeCheckoutUrl        String?
+  stripePaymentIntentId    String?
+  contractAccessTokenHash  String?
+  contractRequestedAt      DateTime?                @db.Timestamptz(6)
+  contractSignedAt         DateTime?                @db.Timestamptz(6)
+  contractDraftDocumentId  String?
   signedContractDocumentId String?
-  latestSummary          String?
-  archivedAt             DateTime?                @db.Timestamptz(6)
-  createdAt              DateTime                 @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime                 @updatedAt @db.Timestamptz(6)
+  latestSummary            String?
+  archivedAt               DateTime?                @db.Timestamptz(6)
+  createdAt                DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime                 @updatedAt @db.Timestamptz(6)
 
-  offer         CoachingOffer            @relation(fields: [offerId], references: [id], onDelete: Restrict)
-  sessions      CoachingSession[]
-  payments      CoachingPayment[]
-  timeline      CoachingEngagementEvent[]
-  exportBundles CoachingArtifactBundle[]
+  offer            CoachingOffer             @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  sessions         CoachingSession[]
+  payments         CoachingPayment[]
+  timeline         CoachingEngagementEvent[]
+  exportBundles    CoachingArtifactBundle[]
   contractRequests CoachingContractRequest[]
 
   @@unique([tenantId, stripeCheckoutSessionId])
@@ -141,30 +141,30 @@ model CoachingEngagement {
 }
 
 model CoachingContractRequest {
-  id                 String                        @id @default(cuid())
-  tenantId           String
-  workspaceId        String
-  engagementId       String
-  clientPartyId      String
-  provider           String                        @default("corely-internal") @db.VarChar(32)
-  status             CoachingContractRequestStatus @default(pending)
-  requestToken       String
-  requestTokenHash   String
-  templateLocale     String
-  contractTitle      String
-  contractBody       String                        @db.Text
-  recipientName      String?
-  recipientEmail     String?
-  signerName         String?
-  signerEmail        String?
-  requestedAt        DateTime                      @db.Timestamptz(6)
-  deliveredAt        DateTime?                     @db.Timestamptz(6)
-  viewedAt           DateTime?                     @db.Timestamptz(6)
-  completedAt        DateTime?                     @db.Timestamptz(6)
-  draftDocumentId    String
-  signedDocumentId   String?
-  createdAt          DateTime                      @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime                      @updatedAt @db.Timestamptz(6)
+  id               String                        @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  engagementId     String
+  clientPartyId    String
+  provider         String                        @default("corely-internal") @db.VarChar(32)
+  status           CoachingContractRequestStatus @default(pending)
+  requestToken     String
+  requestTokenHash String
+  templateLocale   String
+  contractTitle    String
+  contractBody     String                        @db.Text
+  recipientName    String?
+  recipientEmail   String?
+  signerName       String?
+  signerEmail      String?
+  requestedAt      DateTime                      @db.Timestamptz(6)
+  deliveredAt      DateTime?                     @db.Timestamptz(6)
+  viewedAt         DateTime?                     @db.Timestamptz(6)
+  completedAt      DateTime?                     @db.Timestamptz(6)
+  draftDocumentId  String
+  signedDocumentId String?
+  createdAt        DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                      @updatedAt @db.Timestamptz(6)
 
   engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
 
@@ -176,29 +176,29 @@ model CoachingContractRequest {
 }
 
 model CoachingSession {
-  id                    String               @id @default(cuid())
-  tenantId              String
-  workspaceId           String
-  engagementId          String
-  status                CoachingSessionStatus @default(scheduled)
-  sequenceNo            Int                  @default(1)
-  startAt               DateTime             @db.Timestamptz(6)
-  endAt                 DateTime             @db.Timestamptz(6)
-  meetingProvider       String?
-  meetingLink           String?
-  meetingIssuedAt       DateTime?            @db.Timestamptz(6)
-  prepAccessToken       String?
-  prepAccessTokenHash   String?
-  prepRequestedAt       DateTime?            @db.Timestamptz(6)
-  prepSubmittedAt       DateTime?            @db.Timestamptz(6)
-  prepDocumentId        String?
+  id                     String                @id @default(cuid())
+  tenantId               String
+  workspaceId            String
+  engagementId           String
+  status                 CoachingSessionStatus @default(scheduled)
+  sequenceNo             Int                   @default(1)
+  startAt                DateTime              @db.Timestamptz(6)
+  endAt                  DateTime              @db.Timestamptz(6)
+  meetingProvider        String?
+  meetingLink            String?
+  meetingIssuedAt        DateTime?             @db.Timestamptz(6)
+  prepAccessToken        String?
+  prepAccessTokenHash    String?
+  prepRequestedAt        DateTime?             @db.Timestamptz(6)
+  prepSubmittedAt        DateTime?             @db.Timestamptz(6)
+  prepDocumentId         String?
   debriefAccessTokenHash String?
-  debriefRequestedAt    DateTime?            @db.Timestamptz(6)
-  debriefSubmittedAt    DateTime?            @db.Timestamptz(6)
-  debriefDocumentId     String?
-  completedAt           DateTime?            @db.Timestamptz(6)
-  createdAt             DateTime             @default(now()) @db.Timestamptz(6)
-  updatedAt             DateTime             @updatedAt @db.Timestamptz(6)
+  debriefRequestedAt     DateTime?             @db.Timestamptz(6)
+  debriefSubmittedAt     DateTime?             @db.Timestamptz(6)
+  debriefDocumentId      String?
+  completedAt            DateTime?             @db.Timestamptz(6)
+  createdAt              DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime              @updatedAt @db.Timestamptz(6)
 
   engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
 
@@ -210,19 +210,19 @@ model CoachingSession {
 }
 
 model CoachingBookingHold {
-  id           String   @id @default(cuid())
-  offerId      String
-  coachUserId  String
-  tenantId     String
-  workspaceId  String?
-  status       String   @default("active") @db.VarChar(20)
-  startAt      DateTime @db.Timestamptz(6)
-  endAt        DateTime @db.Timestamptz(6)
-  expiresAt    DateTime @db.Timestamptz(6)
-  bookedByName String?
+  id            String   @id @default(cuid())
+  offerId       String
+  coachUserId   String
+  tenantId      String
+  workspaceId   String?
+  status        String   @default("active") @db.VarChar(20)
+  startAt       DateTime @db.Timestamptz(6)
+  endAt         DateTime @db.Timestamptz(6)
+  expiresAt     DateTime @db.Timestamptz(6)
+  bookedByName  String?
   bookedByEmail String?
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
 
   offer CoachingOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
 
@@ -232,29 +232,29 @@ model CoachingBookingHold {
 }
 
 model CoachingPayment {
-  id                       String                     @id @default(cuid())
-  tenantId                 String
-  workspaceId              String?
-  engagementId             String
-  sessionId                String?
-  provider                 String                     @db.VarChar(32)
-  status                   CoachingPaymentRecordStatus @default(pending)
-  amountCents              Int
-  refundedAmountCents      Int                        @default(0)
-  currency                 String                     @db.VarChar(3)
-  customerEmail            String?
+  id                        String                      @id @default(cuid())
+  tenantId                  String
+  workspaceId               String?
+  engagementId              String
+  sessionId                 String?
+  provider                  String                      @db.VarChar(32)
+  status                    CoachingPaymentRecordStatus @default(pending)
+  amountCents               Int
+  refundedAmountCents       Int                         @default(0)
+  currency                  String                      @db.VarChar(3)
+  customerEmail             String?
   providerCheckoutSessionId String?
-  providerCheckoutUrl      String?
-  providerPaymentRef       String?
-  providerRefundRef        String?
-  failureCode              String?
-  failureMessage           String?
-  checkoutCreatedAt        DateTime?                  @db.Timestamptz(6)
-  capturedAt               DateTime?                  @db.Timestamptz(6)
-  failedAt                 DateTime?                  @db.Timestamptz(6)
-  refundedAt               DateTime?                  @db.Timestamptz(6)
-  createdAt                DateTime                   @default(now()) @db.Timestamptz(6)
-  updatedAt                DateTime                   @updatedAt @db.Timestamptz(6)
+  providerCheckoutUrl       String?
+  providerPaymentRef        String?
+  providerRefundRef         String?
+  failureCode               String?
+  failureMessage            String?
+  checkoutCreatedAt         DateTime?                   @db.Timestamptz(6)
+  capturedAt                DateTime?                   @db.Timestamptz(6)
+  failedAt                  DateTime?                   @db.Timestamptz(6)
+  refundedAt                DateTime?                   @db.Timestamptz(6)
+  createdAt                 DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt                 DateTime                    @updatedAt @db.Timestamptz(6)
 
   engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
 
@@ -282,17 +282,17 @@ model CoachingPaymentProviderEvent {
 }
 
 model CoachingEngagementEvent {
-  id         String                    @id @default(cuid())
-  tenantId   String
-  workspaceId String
+  id           String                    @id @default(cuid())
+  tenantId     String
+  workspaceId  String
   engagementId String
-  eventType  String
-  stateFrom  CoachingEngagementStatus?
-  stateTo    CoachingEngagementStatus?
-  actorUserId String?
-  metadataJson Json?                  @db.JsonB
-  occurredAt DateTime                 @db.Timestamptz(6)
-  createdAt  DateTime                 @default(now()) @db.Timestamptz(6)
+  eventType    String
+  stateFrom    CoachingEngagementStatus?
+  stateTo      CoachingEngagementStatus?
+  actorUserId  String?
+  metadataJson Json?                     @db.JsonB
+  occurredAt   DateTime                  @db.Timestamptz(6)
+  createdAt    DateTime                  @default(now()) @db.Timestamptz(6)
 
   engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
 
@@ -301,18 +301,18 @@ model CoachingEngagementEvent {
 }
 
 model CoachingArtifactBundle {
-  id               String                    @id @default(cuid())
-  tenantId         String
-  workspaceId      String
-  engagementId     String
-  status           CoachingExportBundleStatus @default(pending)
-  documentId       String?
+  id                String                     @id @default(cuid())
+  tenantId          String
+  workspaceId       String
+  engagementId      String
+  status            CoachingExportBundleStatus @default(pending)
+  documentId        String?
   requestedByUserId String
-  requestedAt      DateTime                  @db.Timestamptz(6)
-  completedAt      DateTime?                 @db.Timestamptz(6)
-  errorMessage     String?
-  createdAt        DateTime                  @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime                  @updatedAt @db.Timestamptz(6)
+  requestedAt       DateTime                   @db.Timestamptz(6)
+  completedAt       DateTime?                  @db.Timestamptz(6)
+  errorMessage      String?
+  createdAt         DateTime                   @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime                   @updatedAt @db.Timestamptz(6)
 
   engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
 
