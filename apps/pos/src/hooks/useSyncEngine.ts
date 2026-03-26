@@ -239,60 +239,63 @@ export function useSyncEngine() {
     }
   }, [ensureSyncEngine]);
 
-  const triggerSyncWithReason = useCallback(async (reason: string) => {
-    const workspaceId = useAuthStore.getState().user?.workspaceId;
-    const attemptedAt = new Date();
-    const engine = await ensureSyncEngine();
-    if (!engine || !workspaceId) {
-      setLastSyncAt(attemptedAt);
-      setLastSyncStats({
-        processed: 0,
-        succeeded: 0,
-        failed: 0,
-        conflicts: 0,
-        retried: 0,
-      });
-      await refreshCommands();
-      await log("WARN", "Sync requested before sync engine was ready", {
-        reason,
-        hasEngine: Boolean(engine),
-        hasWorkspaceId: Boolean(workspaceId),
-      });
-      return;
-    }
-    if (!isOnline && autoSyncEnabled) {
-      setLastSyncAt(attemptedAt);
-      await log("WARN", "Sync skipped while offline", {
-        workspaceId,
-        reason,
-      });
-      return;
-    }
+  const triggerSyncWithReason = useCallback(
+    async (reason: string) => {
+      const workspaceId = useAuthStore.getState().user?.workspaceId;
+      const attemptedAt = new Date();
+      const engine = await ensureSyncEngine();
+      if (!engine || !workspaceId) {
+        setLastSyncAt(attemptedAt);
+        setLastSyncStats({
+          processed: 0,
+          succeeded: 0,
+          failed: 0,
+          conflicts: 0,
+          retried: 0,
+        });
+        await refreshCommands();
+        await log("WARN", "Sync requested before sync engine was ready", {
+          reason,
+          hasEngine: Boolean(engine),
+          hasWorkspaceId: Boolean(workspaceId),
+        });
+        return;
+      }
+      if (!isOnline && autoSyncEnabled) {
+        setLastSyncAt(attemptedAt);
+        await log("WARN", "Sync skipped while offline", {
+          workspaceId,
+          reason,
+        });
+        return;
+      }
 
-    setSyncStatus("syncing");
-    try {
-      await log("INFO", "Sync request started", {
-        workspaceId,
-        reason,
-        autoSyncEnabled,
-        online: isOnline,
-      });
-      const stats = await engine.flush(workspaceId);
-      setLastSyncAt(attemptedAt);
-      setLastSyncStats(stats);
-      await refreshCommands();
-      await log("INFO", "Sync request completed", { workspaceId, reason, stats });
-    } catch (error) {
-      await log("ERROR", "Sync failed", {
-        workspaceId,
-        reason,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      console.error("Sync failed:", error);
-    } finally {
-      setSyncStatus("idle");
-    }
-  }, [autoSyncEnabled, ensureSyncEngine, isOnline, log, refreshCommands]);
+      setSyncStatus("syncing");
+      try {
+        await log("INFO", "Sync request started", {
+          workspaceId,
+          reason,
+          autoSyncEnabled,
+          online: isOnline,
+        });
+        const stats = await engine.flush(workspaceId);
+        setLastSyncAt(attemptedAt);
+        setLastSyncStats(stats);
+        await refreshCommands();
+        await log("INFO", "Sync request completed", { workspaceId, reason, stats });
+      } catch (error) {
+        await log("ERROR", "Sync failed", {
+          workspaceId,
+          reason,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        console.error("Sync failed:", error);
+      } finally {
+        setSyncStatus("idle");
+      }
+    },
+    [autoSyncEnabled, ensureSyncEngine, isOnline, log, refreshCommands]
+  );
 
   const triggerSync = useCallback(async () => {
     await triggerSyncWithReason("manual");
