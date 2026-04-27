@@ -99,10 +99,14 @@ jobs:
           flags: --port=3000 --allow-unauthenticated --cpu=0.5 --memory=1024Mi --min-instances=0 --max-instances=2 --cpu-throttling --concurrency=1
           env_vars: |
             NODE_ENV=production
+            DATABASE_URL=${{ env.DATABASE_URL }}
             WORKFLOW_QUEUE_DRIVER=memory
             INTERNAL_WORKER_URL=${{ env.WORKER_BASE_URL }}
             INTERNAL_WORKER_KEY=${{ secrets.INTERNAL_WORKER_KEY }}
-            API_BASE_URL=${{ env.WORKER_BASE_URL }}
+            API_BASE_URL=${{ env.API_BASE_URL }}
+            CORELY_PROXY_KEY_APP=${{ secrets.CORELY_PROXY_KEY_APP }}
+            CORELY_PROXY_KEY_POS=${{ secrets.CORELY_PROXY_KEY_POS }}
+            CORELY_PROXY_KEY_CRM=${{ secrets.CORELY_PROXY_KEY_CRM }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
