@@ -160,7 +160,7 @@ export const TodayStatusStep = ({
               </div>
               <div className="space-y-2">
                 <span className="font-black text-orange-400 uppercase tracking-widest text-sm block">
-                  {t("onboarding.status.receiptReminder") || "Receipt Reminder"}
+                  {t("onboarding.status.receiptReminder")}
                 </span>
                 <p className="font-medium italic">{t("onboarding.status.receiptMissing")}</p>
               </div>

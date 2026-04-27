@@ -145,7 +145,7 @@ export const CASH_MANAGEMENT_JOURNEY: OnboardingJourneyConfig = {
       id: "opening-balance",
       type: "opening-balance",
       title: {
-        en: "What's your current cash flow?",
+        en: "How much cash do you have right now?",
         de: "Wie hoch ist Ihr aktueller Kassenbestand?",
         vi: "Số dư tiền mặt hiện tại của bạn là bao nhiêu?",
       },
@@ -164,14 +164,14 @@ export const CASH_MANAGEMENT_JOURNEY: OnboardingJourneyConfig = {
       id: "first-entries",
       type: "first-entries",
       title: {
-        en: "Let's log a transaction",
+        en: "Let's log a cash transaction",
         de: "Protokollieren wir eine Transaktion",
         vi: "Hãy ghi lại một giao dịch",
       },
       description: {
         en: "You paid for coffee supplies or made a cash sale? Add it here. This will adjust your expected cash balance instantly.",
         de: "Sie haben Kaffeebedarf bezahlt oder einen Barverkauf getätigt? Fügen Sie ihn hier hinzu. Dadurch wird Ihr erwarteter Kassenstatus sofort angepasst.",
-        vi: "Bạn đã trả tiền cho nguồn cà phê hoặc đã bán hàng bằng tiền mặt? Thêm nó ở đây. Điều này sẽ điều chỉnh số lượng tiền mặt dự tính của bạn ngay lập tức.",
+        vi: "Bạn vừa chi tiền mua vật tư hoặc bán hàng bằng tiền mặt? Hãy thêm giao dịch đó tại đây. Số dư tiền mặt dự kiến sẽ được cập nhật ngay lập tức.",
       },
       skippable: false,
       optional: false,

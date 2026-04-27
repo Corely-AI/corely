@@ -235,4 +235,33 @@ describe("Sign Up integration (Postgres)", () => {
     });
     expect(user?.name).toBe("John Doe");
   });
+
+  it("creates a unique tenant slug when the derived slug already exists", async () => {
+    const first = await useCase.execute(
+      buildSignUpInput({
+        email: "slug-one@example.com",
+        password: "password123",
+        tenantName: "Acme Team",
+        idempotencyKey: "slug-test-1",
+      })
+    );
+
+    const second = await useCase.execute(
+      buildSignUpInput({
+        email: "slug-two@example.com",
+        password: "password123",
+        tenantName: "Acme Team",
+        idempotencyKey: "slug-test-2",
+      })
+    );
+
+    const tenants = await prisma.tenant.findMany({
+      where: { id: { in: [first.tenantId, second.tenantId] } },
+      orderBy: { createdAt: "asc" },
+    });
+
+    expect(tenants).toHaveLength(2);
+    expect(tenants[0]?.slug).toBe("acmeteam");
+    expect(tenants[1]?.slug).toBe("acmeteam-2");
+  });
 });

@@ -66,7 +66,7 @@ export const DailyClosingStep = ({
         </div>
         <img
           src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2811&auto=format&fit=crop"
-          alt="Closing register"
+          alt={t("onboarding.closing.previewAlt")}
           className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
         />
 
