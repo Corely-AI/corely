@@ -274,7 +274,8 @@ export function validateEnv(env: NodeJS.ProcessEnv = process.env): Env {
   const cleanedEnv = Object.entries(env).reduce<Record<string, string | undefined>>(
     (acc, [key, value]) => {
       if (typeof value === "string") {
-        acc[key] = value.replace(/^["'](.+)["']$/, "$1");
+        const normalizedValue = value.replace(/^["'](.+)["']$/, "$1");
+        acc[key] = normalizedValue.trim() === "" ? undefined : normalizedValue;
       } else {
         acc[key] = value;
       }
