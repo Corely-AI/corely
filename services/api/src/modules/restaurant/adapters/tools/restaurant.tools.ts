@@ -22,6 +22,7 @@ export const buildRestaurantAiTools = (app: RestaurantAiApplication): DomainTool
     description: "Summarize which restaurant tables need attention based on floor-plan status.",
     kind: "server",
     appId: "restaurant",
+    allowedVerticals: ["restaurant"],
     inputSchema: RestaurantSummarizeFloorPlanAttentionInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = RestaurantSummarizeFloorPlanAttentionInputSchema.safeParse(input);
@@ -82,6 +83,7 @@ export const buildRestaurantAiTools = (app: RestaurantAiApplication): DomainTool
     description: "Summarize delayed or blocked kitchen tickets from observable ticket state.",
     kind: "server",
     appId: "restaurant",
+    allowedVerticals: ["restaurant"],
     inputSchema: RestaurantSummarizeKitchenDelaysInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = RestaurantSummarizeKitchenDelaysInputSchema.safeParse(input);
@@ -145,6 +147,7 @@ export const buildRestaurantAiTools = (app: RestaurantAiApplication): DomainTool
       "Summarize pending and recently applied restaurant approval requests for managers.",
     kind: "server",
     appId: "restaurant",
+    allowedVerticals: ["restaurant"],
     inputSchema: RestaurantSummarizeManagerApprovalsInputSchema,
     execute: async ({ tenantId, workspaceId, input }) => {
       const parsed = RestaurantSummarizeManagerApprovalsInputSchema.safeParse(input);
@@ -196,6 +199,7 @@ export const buildRestaurantAiTools = (app: RestaurantAiApplication): DomainTool
     description: "Summarize end-of-shift restaurant activity, exceptions, and variance hints.",
     kind: "server",
     appId: "restaurant",
+    allowedVerticals: ["restaurant"],
     inputSchema: RestaurantSummarizeShiftCloseInputSchema,
     execute: async ({ tenantId, workspaceId, input }) => {
       const parsed = RestaurantSummarizeShiftCloseInputSchema.safeParse(input);

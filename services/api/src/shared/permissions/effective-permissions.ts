@@ -11,6 +11,17 @@ export interface EffectivePermissionSet {
   denied: Set<string>;
 }
 
+const PERMISSION_COMPATIBILITY_ALIASES: Record<string, readonly string[]> = {
+  "cash.read": ["pos.registers.read", "pos.transactions.read"],
+  "cash.write": ["pos.registers.manage"],
+  "catalog.quick-write": ["catalog.quickwrite"],
+};
+
+const expandPermissionKey = (key: string): string[] => [
+  key,
+  ...(PERMISSION_COMPATIBILITY_ALIASES[key] ?? []),
+];
+
 export const computeEffectivePermissionSet = (
   grants: RolePermissionGrant[]
 ): EffectivePermissionSet => {
@@ -24,15 +35,17 @@ export const computeEffectivePermissionSet = (
       continue;
     }
 
-    if (grant.effect === "DENY") {
-      denied.add(grant.key);
-      allowed.delete(grant.key);
-      continue;
-    }
+    for (const expandedKey of expandPermissionKey(grant.key)) {
+      if (grant.effect === "DENY") {
+        denied.add(expandedKey);
+        allowed.delete(expandedKey);
+        continue;
+      }
 
-    if (grant.effect === "ALLOW") {
-      if (!denied.has(grant.key)) {
-        allowed.add(grant.key);
+      if (grant.effect === "ALLOW") {
+        if (!denied.has(expandedKey)) {
+          allowed.add(expandedKey);
+        }
       }
     }
   }

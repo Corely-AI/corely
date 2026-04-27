@@ -111,16 +111,21 @@
     }
   },
   "onboarding": {
+    "title": "Onboarding",
+    "progressTitle": "Fortschritt",
     "allSet": "Alles bereit!",
     "redirectingToDashboard": "Weiterleitung zum Dashboard...",
     "saveAndExit": "Speichern & Beenden",
     "goBack": "Zurück",
+    "skipForNow": "Vorerst überspringen",
     "loading": "Onboarding wird geladen...",
     "aiAssistant": "KI-Assistent",
     "aiTipTitle": "Hilfreicher Assistent",
     "aiHelpTitle": "Brauchen Sie Hilfe?",
     "aiHelpPrompt": "Brauchen Sie Hilfe bei diesem Schritt? Fragen Sie unseren KI-Assistenten nach Erklärungen oder Vorschlägen.",
     "askAssistant": "Assistent fragen",
+    "sidebarHelpTitle": "Brauchen Sie Hilfe?",
+    "sidebarHelpDescription": "Unser KI-Assistent unterstützt Sie in jedem Schritt bei der Einrichtung von Corely.",
     "businessName": "Unternehmensname",
     "businessNamePlaceholder": "z.B. Bella Beauty Studio",
     "businessNameRequired": "Unternehmensname ist erforderlich",
@@ -148,6 +153,9 @@
     "workflow": {
       "insightTitle": "Personalisierter Einblick",
       "selectHint": "Wählen Sie Ihren bisherigen Ablauf"
+    },
+    "language": {
+      "defaultHint": "Standardsprache"
     },
     "welcome": {
       "badge": "Neue Erfahrung",
@@ -198,7 +206,11 @@
     },
     "closing": {
       "watchTutorial": "30s Tutorial ansehen",
+      "previewAlt": "Kasse abschließen",
       "skipLabel": "Ich mache das später"
+    },
+    "errors": {
+      "missingStepComponent": "Schrittkomponente für Typ {{type}} nicht gefunden"
     },
     "postValue": {
       "inviteTitle": "Team einladen",
@@ -286,6 +298,11 @@
     "inventoryReorder": "Inventar - Nachbestellung",
     "inventoryCopilot": "Inventar - Copilot",
     "catalogItems": "Katalogartikel",
+    "pos": {
+      "catalog": "Katalog",
+      "catalogQuickAdd": "Artikel schnell anlegen",
+      "transactions": "Transaktionen"
+    },
     "importShipments": "Sendungen",
     "suppliers": "Lieferanten",
     "coaching": {

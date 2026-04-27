@@ -1,10 +1,11 @@
 import { Inject, Injectable } from "@nestjs/common";
 import {
-  isSurfaceAllowed,
+  isExperienceTargetVisible,
   type MenuContribution,
   type MenuGroup,
   type MenuItem,
   type MenuOverrides,
+  type PosVerticalId,
   type SurfaceId,
 } from "@corely/contracts";
 import { TenantEntitlementService } from "./tenant-entitlement.service";
@@ -22,6 +23,8 @@ export interface BuildMenuInput {
   permissions: Set<string>;
   scope: "web" | "pos";
   surfaceId: SurfaceId;
+  verticalId?: PosVerticalId | null;
+  entitlement?: TenantEntitlement;
   capabilityFilter?: Set<string>;
   capabilityKeys?: Set<string>;
 }
@@ -62,7 +65,8 @@ export class MenuBuilderService {
   ) {}
 
   async build(input: BuildMenuInput): Promise<BuildMenuOutput> {
-    const entitlement = await this.entitlementService.getTenantEntitlement(input.tenantId);
+    const entitlement =
+      input.entitlement ?? (await this.entitlementService.getTenantEntitlement(input.tenantId));
     const contributionsByApp: ManifestContributionGroup[] = [];
 
     for (const appId of entitlement.getEnabledApps()) {
@@ -70,7 +74,18 @@ export class MenuBuilderService {
       if (!manifest) {
         continue;
       }
-      if (!isSurfaceAllowed(input.surfaceId, manifest.allowedSurfaces)) {
+      if (
+        !isExperienceTargetVisible(
+          {
+            allowedSurfaces: manifest.allowedSurfaces,
+            allowedVerticals: manifest.allowedVerticals,
+          },
+          {
+            surfaceId: input.surfaceId,
+            verticalId: input.verticalId,
+          }
+        )
+      ) {
         continue;
       }
 
@@ -79,6 +94,7 @@ export class MenuBuilderService {
           item,
           input.scope,
           input.surfaceId,
+          input.verticalId,
           input.permissions,
           entitlement,
           input.capabilityFilter,
@@ -150,12 +166,26 @@ export class MenuBuilderService {
     item: MenuContribution,
     scope: string,
     surfaceId: SurfaceId,
+    verticalId: PosVerticalId | null | undefined,
     permissions: Set<string>,
     entitlement: TenantEntitlement,
     capabilityFilter?: Set<string>,
     capabilityKeys?: Set<string>
   ): boolean {
-    if (!isSurfaceAllowed(surfaceId, item.allowedSurfaces)) {
+    if (
+      !isExperienceTargetVisible(
+        {
+          allowedSurfaces: item.allowedSurfaces,
+          allowedVerticals: item.allowedVerticals,
+          requiredPermissions: item.requiresPermissions,
+        },
+        {
+          surfaceId,
+          verticalId,
+          permissions,
+        }
+      )
+    ) {
       return false;
     }
 
@@ -182,14 +212,6 @@ export class MenuBuilderService {
           capabilityFilter &&
           !capabilityFilter.has(requiredCapability)
         ) {
-          return false;
-        }
-      }
-    }
-
-    if (item.requiresPermissions) {
-      for (const requiredPermission of item.requiresPermissions) {
-        if (!permissions.has(requiredPermission)) {
           return false;
         }
       }

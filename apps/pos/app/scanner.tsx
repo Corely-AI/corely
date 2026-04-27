@@ -4,6 +4,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useCatalogStore } from "@/stores/catalogStore";
 import { useCartStore } from "@/stores/cartStore";
 import { Button, EmptyState, Snackbar } from "@/ui/components";
@@ -12,6 +13,7 @@ import { posTheme } from "@/ui/theme";
 export default function ScannerScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)");
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [flashEnabled, setFlashEnabled] = useState(false);
@@ -46,7 +48,7 @@ export default function ScannerScreen() {
             label: t("scanner.grantPermission"),
             onPress: () => void requestPermission(),
           }}
-          secondaryAction={{ label: t("common.notNow"), onPress: () => router.back() }}
+          secondaryAction={{ label: t("common.notNow"), onPress: goBack }}
         />
       </View>
     );
@@ -85,7 +87,7 @@ export default function ScannerScreen() {
         t("scanner.productNotFoundMessage", { barcode: data }),
         [
           { text: t("common.tryAgain"), onPress: () => setScanned(false) },
-          { text: t("common.cancel"), onPress: () => router.back() },
+          { text: t("common.cancel"), onPress: goBack },
         ]
       );
     }
@@ -105,7 +107,7 @@ export default function ScannerScreen() {
           <Button
             label={t("common.close")}
             variant="ghost"
-            onPress={() => router.back()}
+            onPress={goBack}
             align="stretch"
             labelLines={1}
           />

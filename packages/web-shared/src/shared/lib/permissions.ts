@@ -5,11 +5,11 @@ import { identityApi } from "@corely/web-shared/lib/identity-api";
 
 export const useIsHostScope = () => {
   const { user } = useAuth();
-  return user?.activeTenantId === null;
+  return user != null && user.activeTenantId === null && user.activeWorkspaceId === null;
 };
 
 export const isHostScope = (user: ReturnType<typeof useAuth>["user"]) =>
-  user?.activeTenantId === null;
+  user != null && user.activeTenantId === null && user.activeWorkspaceId === null;
 
 export const useEffectivePermissions = () => {
   const { user, isLoading: isAuthLoading } = useAuth();

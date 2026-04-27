@@ -1,5 +1,1 @@
-import { Redirect } from "expo-router";
-
-export default function KioskTabRedirect() {
-  return <Redirect href="/kiosk" />;
-}
+export { default } from "@/screens/kiosk/KioskWelcomeScreen";

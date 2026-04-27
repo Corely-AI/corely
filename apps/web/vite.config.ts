@@ -1,10 +1,44 @@
-import { defineConfig } from "vite";
+import type { IncomingMessage } from "http";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { createBaseViteConfig } from "@corely/vite-config";
 
 // https://vitejs.dev/config/
-export default defineConfig(() => {
+const getFirstHostLabel = (value: string | undefined): string => {
+  if (!value) {
+    return "";
+  }
+
+  return value.split(",")[0]?.trim().replace(/:\d+$/, "").split(".")[0]?.toLowerCase() ?? "";
+};
+
+const resolveSurfaceProxyHeaders = (
+  hostHeader: string | undefined,
+  env: Record<string, string>
+): { declaredSurface: string; proxyKey: string } | null => {
+  const firstLabel = getFirstHostLabel(hostHeader);
+
+  if (firstLabel === "app") {
+    const proxyKey = env.CORELY_PROXY_KEY_APP?.trim();
+    return proxyKey ? { declaredSurface: "app", proxyKey } : null;
+  }
+
+  if (firstLabel === "pos" || firstLabel === "restaurant") {
+    const proxyKey = env.CORELY_PROXY_KEY_POS?.trim();
+    return proxyKey ? { declaredSurface: "pos", proxyKey } : null;
+  }
+
+  if (firstLabel === "crm") {
+    const proxyKey = env.CORELY_PROXY_KEY_CRM?.trim();
+    return proxyKey ? { declaredSurface: "crm", proxyKey } : null;
+  }
+
+  return null;
+};
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, path.resolve(__dirname, "../.."), "");
   const baseConfig = createBaseViteConfig({
     port: 8080,
     plugins: [
@@ -33,8 +67,35 @@ export default defineConfig(() => {
     },
   });
 
+  const apiProxy = {
+    target: "http://localhost:3000",
+    changeOrigin: true,
+    xfwd: true,
+    rewrite: (requestPath: string) => requestPath.replace(/^\/api/, ""),
+    configure: (proxy: {
+      on: (event: "proxyReq", handler: (proxyReq: any, req: IncomingMessage) => void) => void;
+    }) => {
+      proxy.on("proxyReq", (proxyReq, req) => {
+        const headers = resolveSurfaceProxyHeaders(req.headers.host, env);
+        if (!headers) {
+          return;
+        }
+
+        proxyReq.setHeader("x-corely-proxy-key", headers.proxyKey);
+        proxyReq.setHeader("x-corely-surface", headers.declaredSurface);
+      });
+    },
+  };
+
   return {
     ...baseConfig,
+    server: {
+      ...baseConfig.server,
+      proxy: {
+        ...(baseConfig.server?.proxy ?? {}),
+        "/api": apiProxy,
+      },
+    },
     build: {
       ...baseConfig.build,
       rollupOptions: {

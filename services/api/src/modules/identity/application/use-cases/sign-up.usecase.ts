@@ -110,11 +110,7 @@ export class SignUpUseCase {
     }
 
     const tenantId = this.idGenerator.newId();
-    const slug = this.generateSlug(input.tenantName);
-    const existingTenant = await this.tenantRepo.findBySlug(slug);
-    if (existingTenant) {
-      throw new ConflictError("Tenant with this slug already exists");
-    }
+    const slug = await this.resolveUniqueTenantSlug(input.tenantName, tenantId);
 
     const tenant = Tenant.create(tenantId, input.tenantName, slug);
     await this.tenantRepo.create(tenant);
@@ -200,6 +196,20 @@ export class SignUpUseCase {
       .replace(/\\s+/g, "-")
       .replace(/-+/g, "-")
       .substring(0, 50);
+  }
+
+  private async resolveUniqueTenantSlug(name: string, tenantId: string): Promise<string> {
+    const baseSlug = this.generateSlug(name);
+    const fallbackSlug = baseSlug || `tenant-${tenantId.slice(-6)}`;
+    let candidate = fallbackSlug;
+    let suffix = 1;
+
+    while (await this.tenantRepo.findBySlug(candidate)) {
+      suffix += 1;
+      candidate = `${fallbackSlug}-${suffix}`;
+    }
+
+    return candidate;
   }
 
   private async emitOutboxEvents(

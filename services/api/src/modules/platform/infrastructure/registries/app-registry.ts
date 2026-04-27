@@ -27,6 +27,9 @@ import { bookingAppManifest } from "../../../booking/booking.manifest";
 import { formsAppManifest } from "../../../forms/forms.manifest";
 import { coachingEngagementsAppManifest } from "../../../coaching-engagements";
 import { restaurantAppManifest } from "../../../restaurant/restaurant.manifest";
+import { posAdminAppManifest } from "../../../pos/pos.manifest";
+import { nailsPosAppManifest } from "../../vertical-packs/nails.manifest";
+import { retailPosAppManifest } from "../../vertical-packs/retail.manifest";
 
 /**
  * App Registry
@@ -121,5 +124,8 @@ export class AppRegistry implements AppRegistryPort {
     this.register(formsAppManifest);
     this.register(coachingEngagementsAppManifest);
     this.register(restaurantAppManifest);
+    this.register(posAdminAppManifest);
+    this.register(nailsPosAppManifest);
+    this.register(retailPosAppManifest);
   }
 }

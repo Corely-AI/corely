@@ -5,5 +5,6 @@ export * as cashManagementFeature from "./features/cash-management";
 export * as crmFeature from "./features/crm";
 export * as expensesFeature from "./features/expenses";
 export * as invoicesFeature from "./features/invoices";
+export * as posAdminFeature from "./features/pos-admin";
 export * as taxFeature from "./features/tax";
 export * as portfolioFeature from "./features/portfolio";

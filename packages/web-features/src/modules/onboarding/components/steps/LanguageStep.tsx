@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import { Button, RadioGroup, RadioGroupItem, Label, cn } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, CheckCircle2, Languages } from "lucide-react";
 import type { StepComponentProps } from "../OnboardingStepRenderer";
 
-const SUPPORTED_LANGUAGES = [
-  { code: "de", label: "Deutsch", flag: "🇩🇪", hint: "Voreingestellte Sprache" },
-  { code: "en", label: "English", flag: "🇬🇧", hint: "Default language" },
-  { code: "vi", label: "Tiếng Việt", flag: "🇻🇳", hint: "Ngôn ngữ mặc định" },
-];
-
 export const LanguageStep = ({ config, locale, onAdvance, isSaving }: StepComponentProps) => {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState(locale || "en");
+  const supportedLanguages = [
+    { code: "de", label: "Deutsch", flag: "🇩🇪", hint: t("onboarding.language.defaultHint") },
+    { code: "en", label: "English", flag: "🇬🇧", hint: t("onboarding.language.defaultHint") },
+    { code: "vi", label: "Tiếng Việt", flag: "🇻🇳", hint: t("onboarding.language.defaultHint") },
+  ] as const;
 
   const title = config.title[selected] || config.title["en"];
   const desc = config.description[selected] || config.description["en"];
-  const cta = config.ctaLabel?.[selected] || config.ctaLabel?.["en"] || "Continue";
+  const cta = config.ctaLabel?.[selected] || config.ctaLabel?.["en"] || t("common.next");
 
   return (
     <div
@@ -45,7 +46,7 @@ export const LanguageStep = ({ config, locale, onAdvance, isSaving }: StepCompon
         onValueChange={setSelected}
         className="grid grid-cols-1 gap-6 max-w-xl mb-16"
       >
-        {SUPPORTED_LANGUAGES.map((lang) => {
+        {supportedLanguages.map((lang) => {
           const isSelected = selected === lang.code;
           return (
             <Label

@@ -1,9 +1,10 @@
 import React from "react";
 import { Progress, cn } from "@corely/ui";
-import { Check, CheckCircle2, Circle } from "lucide-react";
+import { Check } from "lucide-react";
 import type { OnboardingJourneyConfig } from "@corely/contracts";
 import { useOnboarding } from "../engine/use-onboarding";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export interface OnboardingChecklistProps {
   config: OnboardingJourneyConfig;
@@ -16,6 +17,7 @@ export const OnboardingChecklist = ({
   className,
   onItemClick,
 }: OnboardingChecklistProps) => {
+  const { t } = useTranslation();
   const { progress, isLoaded, percentComplete, isComplete, currentStepConfig } = useOnboarding({
     config,
   });
@@ -42,7 +44,9 @@ export const OnboardingChecklist = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            {config.title[locale] || config.title[config.defaultLocale] || "Progress"}
+            {config.title[locale] ||
+              config.title[config.defaultLocale] ||
+              t("onboarding.progressTitle")}
           </h3>
           <span
             className="text-[11px] font-bold text-accent/80 tabular-nums"

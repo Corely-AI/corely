@@ -141,6 +141,53 @@ describe("MenuBuilderService", () => {
     expect(result.items).toEqual([]);
   });
 
+  it("shows POS admin registers only on the POS surface with the read permission", async () => {
+    manifests["pos-admin"] = {
+      ...createManifest("pos-admin", [
+        createMenuItem({
+          id: "pos-admin-registers",
+          route: "/pos/admin/registers",
+          requiresPermissions: ["pos.registers.read"],
+        }),
+      ]),
+      allowedSurfaces: ["pos"],
+      permissions: ["pos.registers.read", "pos.registers.manage"],
+    };
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["pos-admin"]), new Set())
+    );
+
+    const withoutPermission = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+      surfaceId: "pos",
+      verticalId: "restaurant",
+    });
+
+    const withPermission = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(["pos.registers.read"]),
+      scope: "web",
+      surfaceId: "pos",
+      verticalId: "restaurant",
+    });
+
+    const wrongSurface = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(["pos.registers.read"]),
+      scope: "web",
+      surfaceId: "platform",
+    });
+
+    expect(withoutPermission.items).toEqual([]);
+    expect(withPermission.items.map((item) => item.id)).toEqual(["pos-admin-registers"]);
+    expect(wrongSurface.items).toEqual([]);
+  });
+
   it("hides platform menu for normal users without host platform permission", async () => {
     manifests["platform"] = createManifest("platform", [
       createMenuItem({
@@ -241,6 +288,33 @@ describe("MenuBuilderService", () => {
     expect(result.items).toEqual([]);
   });
 
+  it("filters POS vertical-only apps when the workspace vertical does not match", async () => {
+    manifests["restaurant"] = {
+      ...createManifest("restaurant", [createMenuItem({ id: "restaurant-floor" })]),
+      allowedSurfaces: ["pos"],
+      allowedVerticals: ["restaurant"],
+    };
+    manifests["nails"] = {
+      ...createManifest("nails", [createMenuItem({ id: "nails-service-board" })]),
+      allowedSurfaces: ["pos"],
+      allowedVerticals: ["nails"],
+    };
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["restaurant", "nails"]), new Set())
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+      surfaceId: "pos",
+      verticalId: "restaurant",
+    });
+
+    expect(result.items.map((item) => item.id)).toEqual(["restaurant-floor"]);
+  });
+
   it("hides menu items whose surface restriction excludes the current host", async () => {
     manifests["crm"] = createManifest("crm", [
       createMenuItem({
@@ -266,6 +340,33 @@ describe("MenuBuilderService", () => {
     });
 
     expect(result.items.map((item) => item.id)).toEqual(["crm-dashboard"]);
+  });
+
+  it("excludes platform-only dashboard items on the POS surface", async () => {
+    manifests["core"] = {
+      ...createManifest("core", [createMenuItem({ id: "dashboard", route: "/dashboard" })]),
+      allowedSurfaces: ["platform"],
+    };
+    manifests["cash-management"] = {
+      ...createManifest("cash-management", [
+        createMenuItem({ id: "cash-management", route: "/cash/registers" }),
+      ]),
+      allowedSurfaces: ["platform", "pos"],
+    };
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["core", "cash-management"]), new Set())
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+      surfaceId: "pos",
+    });
+
+    expect(result.groups.map((group) => group.appId)).toEqual(["cash-management"]);
+    expect(result.items.map((item) => item.id)).toEqual(["cash-management"]);
   });
 
   it("sorts settings items last within each app group", async () => {

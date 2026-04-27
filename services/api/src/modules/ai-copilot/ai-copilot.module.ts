@@ -117,6 +117,7 @@ import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coach
 import { RestaurantModule } from "../restaurant/restaurant.module";
 import { RestaurantAiApplication } from "../restaurant/application/restaurant-ai.application";
 import { buildRestaurantAiTools } from "../restaurant/adapters/tools/restaurant.tools";
+import { PlatformModule } from "../platform/platform.module";
 
 @Module({
   imports: [
@@ -138,6 +139,7 @@ import { buildRestaurantAiTools } from "../restaurant/adapters/tools/restaurant.
     RestaurantModule,
     TaxModule,
     PlatformEntitlementsModule,
+    PlatformModule,
     PromptModule,
   ],
   controllers: [CopilotController],

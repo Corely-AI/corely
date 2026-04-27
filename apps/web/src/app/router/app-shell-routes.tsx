@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
-import { cashManagementFeature } from "@corely/web-features";
+import { cashManagementFeature, posAdminFeature } from "@corely/web-features";
 import { RequirePermission, RequireSurface } from "@corely/web-shared/shared/permissions";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
@@ -101,6 +101,18 @@ const CashLegacyDayCloseRedirect = () => {
   );
 };
 
+const PosPackPlaceholderPage = ({ title, description }: { title: string; description: string }) => (
+  <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-6 py-10">
+    <div className="space-y-2">
+      <p className="text-sm font-medium uppercase tracking-[0.24em] text-muted-foreground">
+        POS Vertical Pack
+      </p>
+      <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
+      <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>
+    </div>
+  </div>
+);
+
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
     <Route element={<AppShell />}>
@@ -151,6 +163,13 @@ export const appShellRoutes = (
           element={<RequireSurface surfaces={["platform", "pos"]}>{route.element}</RequireSurface>}
         />
       ))}
+      {posAdminFeature.posAdminRoutes().map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={<RequireSurface surfaces={["pos"]}>{route.element}</RequireSurface>}
+        />
+      ))}
       <Route
         path="/cash-registers"
         element={
@@ -172,6 +191,50 @@ export const appShellRoutes = (
         element={
           <RequireSurface surfaces={["platform", "pos"]}>
             <CashLegacyDayCloseRedirect />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/pos/nails/service-board"
+        element={
+          <RequireSurface surfaces={["pos"]}>
+            <PosPackPlaceholderPage
+              title="Nails Service Board"
+              description="Vertical-specific POS pack entry point for technician flow and service-board operations."
+            />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/pos/nails/appointments"
+        element={
+          <RequireSurface surfaces={["pos"]}>
+            <PosPackPlaceholderPage
+              title="Nails Appointments"
+              description="Vertical-specific POS pack entry point for appointments and front-desk scheduling."
+            />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/pos/retail/quick-sale"
+        element={
+          <RequireSurface surfaces={["pos"]}>
+            <PosPackPlaceholderPage
+              title="Retail Quick Sale"
+              description="Vertical-specific POS pack entry point for fast checkout and barcode-led selling."
+            />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/pos/retail/catalog"
+        element={
+          <RequireSurface surfaces={["pos"]}>
+            <PosPackPlaceholderPage
+              title="Retail Catalog Lookup"
+              description="Vertical-specific POS pack entry point for catalog and item lookup on the retail surface."
+            />
           </RequireSurface>
         }
       />

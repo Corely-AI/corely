@@ -9,6 +9,7 @@ Purpose: single source of truth for request identity/context (requestId, tenant/
 - `userId`: **only** from authenticated principal (`req.user.userId`).
 - `tenantId`: **only** from authenticated principal (`req.user.tenantId`); header `x-tenant-id` is considered only when the principal is missing.
 - `workspaceId`: **header `x-workspace-id` first**, then route param `workspaceId`, then principal (`req.user.workspaceId`), then `null`. This ensures active-workspace switches via header are honored even when routes include tenant/workspace ids.
+- `surfaceId`: **trusted Vercel proxy key only**. `x-corely-proxy-key` is compared against `CORELY_PROXY_KEY_APP|POS|CRM` using constant-time comparison. `x-corely-surface` is logged for observability and mismatch detection only. When no trusted key is present, request context falls back to `platform`.
 - Roles/scopes: from `req.user.roleIds` (array) when present.
 
 ### Integration

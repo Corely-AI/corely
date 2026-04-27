@@ -23,7 +23,7 @@ export const WelcomeStep = ({ config, locale, onAdvance, isSaving }: StepCompone
       <div className="space-y-8 mb-16">
         <div className="space-y-3">
           <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-accent border border-accent/20">
-            {t("onboarding.welcome.badge") || "New Experience"}
+            {t("onboarding.welcome.badge")}
           </span>
           <h1
             className="text-6xl font-black tracking-tight sm:text-7xl lg:text-8xl bg-gradient-to-br from-foreground via-foreground to-foreground/40 bg-clip-text text-transparent leading-[0.95]"
@@ -56,7 +56,7 @@ export const WelcomeStep = ({ config, locale, onAdvance, isSaving }: StepCompone
       <div className="mt-16 flex items-center gap-4 text-muted-foreground/40">
         <div className="h-px w-12 bg-current" />
         <span className="text-xs font-bold uppercase tracking-[0.2em]">
-          {t("onboarding.welcome.footer") || "Powered by Corely AI"}
+          {t("onboarding.welcome.footer")}
         </span>
       </div>
     </div>

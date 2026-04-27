@@ -4,6 +4,7 @@ import {
   ArchiveCatalogItemInputSchema,
   ArchiveCatalogVariantInputSchema,
   CreateCatalogItemInputSchema,
+  CreatePosQuickCatalogItemInputSchema,
   GetCatalogItemInputSchema,
   ListCatalogCategoriesInputSchema,
   ListCatalogItemsInputSchema,
@@ -12,6 +13,7 @@ import {
   ListCatalogTaxProfilesInputSchema,
   ListCatalogUomsInputSchema,
   UpdateCatalogItemInputSchema,
+  UpdatePosQuickCatalogItemInputSchema,
   UpsertCatalogCategoryInputSchema,
   UpsertCatalogPriceInputSchema,
   UpsertCatalogPriceListInputSchema,
@@ -31,6 +33,8 @@ import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../plat
 import { ArchiveCatalogItemUseCase } from "../application/use-cases/archive-item.usecase";
 import { ArchiveCatalogVariantUseCase } from "../application/use-cases/archive-variant.usecase";
 import { CreateCatalogItemUseCase } from "../application/use-cases/create-item.usecase";
+import { CreatePosQuickCatalogItemUseCase } from "../application/use-cases/create-pos-quick-item.usecase";
+import { UpdatePosQuickCatalogItemUseCase } from "../application/use-cases/update-pos-quick-item.usecase";
 import { GetCatalogItemUseCase } from "../application/use-cases/get-item.usecase";
 import { ListCatalogCategoriesUseCase } from "../application/use-cases/list-categories.usecase";
 import { ListCatalogItemsUseCase } from "../application/use-cases/list-items.usecase";
@@ -52,6 +56,8 @@ import { UpsertCatalogVariantUseCase } from "../application/use-cases/upsert-var
 export class CatalogController {
   constructor(
     private readonly createItem: CreateCatalogItemUseCase,
+    private readonly createPosQuickItem: CreatePosQuickCatalogItemUseCase,
+    private readonly updatePosQuickItem: UpdatePosQuickCatalogItemUseCase,
     private readonly updateItem: UpdateCatalogItemUseCase,
     private readonly archiveItem: ArchiveCatalogItemUseCase,
     private readonly getItem: GetCatalogItemUseCase,
@@ -94,6 +100,36 @@ export class CatalogController {
           ...parsed,
           idempotencyKey: resolveIdempotencyKey(req as any) ?? parsed.idempotencyKey,
         },
+        buildUseCaseContext(req as any)
+      )
+    );
+  }
+
+  @Post("pos/quick-items")
+  @RequirePermission("catalog.quickwrite")
+  async createPosQuickCatalogItem(@Body() body: unknown, @Req() req: Request) {
+    const parsed = CreatePosQuickCatalogItemInputSchema.parse(body);
+    return mapResultToHttp(
+      await this.createPosQuickItem.execute(
+        {
+          ...parsed,
+          idempotencyKey: resolveIdempotencyKey(req as any) ?? parsed.idempotencyKey,
+        },
+        buildUseCaseContext(req as any)
+      )
+    );
+  }
+
+  @Patch("pos/quick-items/:itemId")
+  @RequirePermission("catalog.quickwrite")
+  async patchPosQuickCatalogItem(
+    @Param("itemId") itemId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    return mapResultToHttp(
+      await this.updatePosQuickItem.execute(
+        UpdatePosQuickCatalogItemInputSchema.parse({ itemId, ...(body as object) }),
         buildUseCaseContext(req as any)
       )
     );

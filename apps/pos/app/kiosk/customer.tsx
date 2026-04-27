@@ -3,6 +3,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useAuthStore } from "@/stores/authStore";
 import { useEngagementService } from "@/hooks/useEngagementService";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
@@ -18,6 +19,7 @@ type LedgerEntry = {
 export default function KioskCustomerScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/kiosk");
   const { customerId } = useLocalSearchParams<{ customerId: string }>();
   const { apiClient } = useAuthStore();
   const { engagementService } = useEngagementService();
@@ -75,7 +77,7 @@ export default function KioskCustomerScreen() {
     <AppShell
       title={t("kiosk.customerProfile")}
       subtitle={customerName}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={980}
     >
       <Card>

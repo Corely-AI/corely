@@ -3,5 +3,7 @@ export { default as CatalogItemEditorPage } from "./screens/CatalogItemEditorPag
 export { default as CatalogUomsPage } from "./screens/CatalogUomsPage";
 export { default as CatalogTaxProfilesPage } from "./screens/CatalogTaxProfilesPage";
 export { default as CatalogCategoriesPage } from "./screens/CatalogCategoriesPage";
+export { default as PosCatalogLookupPage } from "./screens/PosCatalogLookupPage";
+export { default as PosQuickCatalogItemPage } from "./screens/PosQuickCatalogItemPage";
 
 export * from "./queries";

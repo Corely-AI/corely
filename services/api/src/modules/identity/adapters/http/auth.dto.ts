@@ -46,6 +46,7 @@ export class SignUpResponseDto extends AuthTokensResponseDto {
 
 export class SignInResponseDto extends AuthTokensResponseDto {
   userId: string;
+  partyId: string | null;
   email: string;
   tenantId: string | null;
   memberships?: Array<{
@@ -57,6 +58,7 @@ export class SignInResponseDto extends AuthTokensResponseDto {
 
 export class CurrentUserResponseDto {
   userId: string;
+  partyId: string | null;
   email: string;
   name: string | null;
   activeTenantId: string | null;

@@ -111,16 +111,21 @@
     }
   },
   "onboarding": {
+    "title": "Thiết lập",
+    "progressTitle": "Tiến độ",
     "allSet": "Tất cả đã sẵn sàng!",
     "redirectingToDashboard": "Đang chuyển hướng đến bảng điều khiển...",
     "saveAndExit": "Lưu & Thoát",
     "goBack": "Quay lại",
+    "skipForNow": "Bỏ qua lúc này",
     "loading": "Đang tải quá trình thiết lập...",
     "aiAssistant": "Trợ lý AI",
     "aiTipTitle": "Trợ lý hỗ trợ",
     "aiHelpTitle": "Bạn cần trợ giúp?",
     "aiHelpPrompt": "Cần trợ giúp với bước này? Hãy hỏi trợ lý AI của chúng tôi để giải thích hoặc gợi ý bước tiếp theo.",
     "askAssistant": "Hỏi trợ lý",
+    "sidebarHelpTitle": "Cần trợ giúp?",
+    "sidebarHelpDescription": "Trợ lý AI luôn sẵn sàng ở mỗi bước để giúp bạn thiết lập Corely hiệu quả.",
     "businessName": "Tên doanh nghiệp",
     "businessNamePlaceholder": "v.đ. Bella Beauty Studio",
     "businessNameRequired": "Tên doanh nghiệp là bắt buộc",
@@ -148,6 +153,9 @@
     "workflow": {
       "insightTitle": "Thông tin cá nhân hóa",
       "selectHint": "Chọn quy trình trước đây của bạn"
+    },
+    "language": {
+      "defaultHint": "Ngôn ngữ mặc định"
     },
     "welcome": {
       "badge": "Trải nghiệm mới",
@@ -198,7 +206,11 @@
     },
     "closing": {
       "watchTutorial": "Xem hướng dẫn 30 giây",
+      "previewAlt": "Đóng sổ quỹ",
       "skipLabel": "Tôi sẽ làm sau"
+    },
+    "errors": {
+      "missingStepComponent": "Không tìm thấy thành phần cho bước loại: {{type}}"
     },
     "postValue": {
       "inviteTitle": "Mời nhóm của bạn",
@@ -286,6 +298,11 @@
     "inventoryReorder": "Kho - Đặt hàng",
     "inventoryCopilot": "Kho - Trợ lý",
     "catalogItems": "Mặt hàng danh mục",
+    "pos": {
+      "catalog": "Danh mục POS",
+      "catalogQuickAdd": "Thêm nhanh món",
+      "transactions": "Giao dịch"
+    },
     "importShipments": "Lô hàng",
     "suppliers": "Nhà cung cấp",
     "coaching": {

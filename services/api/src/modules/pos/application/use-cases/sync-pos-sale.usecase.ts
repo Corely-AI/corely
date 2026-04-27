@@ -3,10 +3,11 @@ import type { SyncPosSaleInput, SyncPosSaleOutput } from "@corely/contracts";
 import {
   BaseUseCase,
   NoopLogger,
+  ValidationError,
+  isErr,
   type Result,
   type UseCaseContext,
   type UseCaseError,
-  ValidationError,
   err,
   ok,
   RequireTenant,
@@ -15,21 +16,27 @@ import {
   POS_SALE_IDEMPOTENCY_PORT,
   type PosSaleIdempotencyPort,
 } from "../ports/pos-sale-idempotency.port";
+import {
+  POS_SALE_REPOSITORY_PORT,
+  type PosSaleRepositoryPort,
+} from "../ports/pos-sale-repository.port";
 
 // Note: In production, inject SalesApplication for creating invoices/payments
 // For now, this is a placeholder structure showing the integration pattern
 
 import { AddEntryUseCase } from "../../../cash-management/application/use-cases/add-entry.usecase";
-import { CreateRegisterUseCase } from "../../../cash-management/application/use-cases/create-register.usecase";
 import { CreateCashEntry, CashEntryType, CashEntrySourceType } from "@corely/contracts";
+import { ResolveCashDrawerForPosRegisterService } from "../services/resolve-cash-drawer-for-pos-register.service";
+import { PosSaleRecord } from "../../domain/pos-sale-record.entity";
 
 @RequireTenant()
 @Injectable()
 export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSaleOutput> {
   constructor(
     @Inject(POS_SALE_IDEMPOTENCY_PORT) private idempotencyStore: PosSaleIdempotencyPort,
+    @Inject(POS_SALE_REPOSITORY_PORT) private readonly posSaleRepo: PosSaleRepositoryPort,
     private readonly addCashEntryUC: AddEntryUseCase,
-    private readonly createCashRegisterUC: CreateRegisterUseCase
+    private readonly resolveCashDrawer: ResolveCashDrawerForPosRegisterService
     // TODO: Inject SalesApplication, InventoryApplication (for product validation)
     // TODO: Inject PartyApplication (for customer validation)
   ) {
@@ -41,6 +48,10 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     ctx: UseCaseContext
   ): Promise<Result<SyncPosSaleOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
+    const saleDate = this.normalizeSaleDate(input.saleDate);
+    if (isErr(saleDate)) {
+      return saleDate;
+    }
 
     // 1. Check idempotency - return cached result if duplicate
     const cached = await this.idempotencyStore.get(tenantId, input.idempotencyKey);
@@ -95,43 +106,60 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     // TODO: Use SalesApplication.recordPayment for each payment (for Sales Ledger)
 
     // Bridge to Cash Management: Record cash movements
-    const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate);
+    const receiptNumber =
+      input.receiptNumber?.trim() || this.generateReceiptNumber(input.registerId, saleDate.value);
+    const cashPayments = input.payments.filter((payment) => payment.method === "CASH");
 
-    for (const payment of input.payments) {
-      if (payment.method === "CASH") {
-        const entryData: CreateCashEntry = {
-          tenantId,
-          registerId: input.registerId,
-          type: CashEntryType.IN,
-          amountCents: payment.amountCents,
-          sourceType: CashEntrySourceType.SALES,
-          description: `POS Sale #${receiptNumber}`,
-          referenceId: input.posSaleId,
-          businessDate: input.saleDate.toISOString().split("T")[0],
-        };
+    let cashDrawerId: string | null = null;
+    let cashManagementContext: UseCaseContext | null = null;
+    if (cashPayments.length > 0) {
+      const cashDrawerResult = await this.resolveCashDrawer.execute(
+        {
+          posRegisterId: input.registerId,
+          autoCreate: true,
+          cashDrawerName: `Cash Drawer ${input.registerId.slice(0, 8)}`,
+          location: "POS",
+          currency: "EUR",
+          idempotencyKey: `pos-register-cash-drawer:${tenantId}:${input.registerId}`,
+        },
+        ctx
+      );
+      if (isErr(cashDrawerResult)) {
+        return err(cashDrawerResult.error);
+      }
+      cashDrawerId = cashDrawerResult.value.cashDrawerId;
+      cashManagementContext = cashDrawerResult.value.scope.cashManagementContext;
+    }
 
-        try {
-          await this.addCashEntryUC.execute(entryData, ctx);
-        } catch (error: unknown) {
-          // If register not found, auto-create it (Bridge Legacy POS -> New Cash Mgmt)
-          const err = error as Error;
-          if (err?.message === "Cash Register not found") {
-            // Create register
-            await this.createCashRegisterUC.execute(
-              {
-                tenantId,
-                name: `POS Register ${input.registerId.slice(0, 8)}`,
-                currency: "EUR", // Default, or infer from input
-                location: "Main Store",
-              },
-              ctx
-            );
-            // Retry adding entry
-            await this.addCashEntryUC.execute(entryData, ctx);
-          } else {
-            throw error;
-          }
-        }
+    for (const [index, payment] of cashPayments.entries()) {
+      if (!cashDrawerId || !cashManagementContext) {
+        return err(
+          new ValidationError(
+            "Cash drawer resolution missing for cash sale sync",
+            { posRegisterId: input.registerId },
+            "Pos:RegisterCashDrawerNotBound"
+          )
+        );
+      }
+
+      const entryData: CreateCashEntry = {
+        registerId: cashDrawerId,
+        type: CashEntryType.IN,
+        amountCents: payment.amountCents,
+        sourceType: CashEntrySourceType.SALES,
+        description: `POS Sale #${receiptNumber}`,
+        sourceDocument: {
+          reference: payment.reference?.trim() || receiptNumber,
+          kind: "POS_RECEIPT",
+        },
+        referenceId: input.posSaleId,
+        businessDate: saleDate.value.toISOString().split("T")[0],
+        idempotencyKey: `${input.idempotencyKey}:cash:${index}`,
+      };
+
+      const addEntryResult = await this.addCashEntryUC.execute(entryData, cashManagementContext);
+      if (isErr(addEntryResult)) {
+        return err(addEntryResult.error);
       }
     }
 
@@ -148,12 +176,41 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     // const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate); // Moved up
 
     // 8. Store idempotency mapping
+    const primaryPaymentId = input.payments[0]?.paymentId;
     const result: SyncPosSaleOutput = {
       ok: true,
-      serverInvoiceId: "mock-invoice-id", // TODO: invoiceResult.value.invoiceId,
-      serverPaymentId: "mock-payment-id", // TODO: paymentResult.value.paymentId,
+      // Temporary valid UUID placeholders until Sales/Payments are integrated.
+      serverInvoiceId: input.posSaleId,
+      serverPaymentId: primaryPaymentId,
       receiptNumber,
     };
+
+    await this.posSaleRepo.upsert(
+      new PosSaleRecord(
+        input.posSaleId,
+        tenantId,
+        input.sessionId,
+        input.registerId,
+        null,
+        receiptNumber,
+        saleDate.value,
+        input.cashierEmployeePartyId,
+        input.customerPartyId,
+        input.subtotalCents,
+        input.taxCents,
+        input.totalCents,
+        "EUR",
+        "SYNCED",
+        input.lineItems,
+        input.payments,
+        input.idempotencyKey,
+        result.serverInvoiceId ?? null,
+        result.serverPaymentId ?? null,
+        new Date(),
+        new Date(),
+        new Date()
+      )
+    );
 
     await this.idempotencyStore.store(tenantId, input.idempotencyKey, input.posSaleId, result);
 
@@ -185,5 +242,19 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
       .toString()
       .padStart(3, "0");
     return `POS-${registerId.slice(0, 8)}-${dateStr}-${random}`;
+  }
+
+  private normalizeSaleDate(raw: SyncPosSaleInput["saleDate"]): Result<Date, ValidationError> {
+    const saleDate = raw instanceof Date ? raw : new Date(raw);
+    if (Number.isNaN(saleDate.getTime())) {
+      return err(
+        new ValidationError(
+          "Invalid saleDate provided for POS sale sync",
+          { saleDate: raw },
+          "Pos:InvalidSaleDate"
+        )
+      );
+    }
+    return ok(saleDate);
   }
 }

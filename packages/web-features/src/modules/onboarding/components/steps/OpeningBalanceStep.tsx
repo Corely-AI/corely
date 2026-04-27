@@ -122,7 +122,7 @@ export const OpeningBalanceStep = ({ config, locale, onAdvance, isSaving }: Step
             </div>
             <div className="space-y-2">
               <p className="text-base font-bold text-foreground/90 uppercase tracking-wider">
-                {t("onboarding.openingBalance.importantTip") || "Important Tip"}
+                {t("onboarding.openingBalance.importantTip")}
               </p>
               <p className="text-lg text-muted-foreground/70 leading-relaxed font-medium">
                 {t("onboarding.openingBalance.hint")}

@@ -20,23 +20,23 @@ describe("resolveApiBaseUrl", () => {
     expect(resolveApiBaseUrl({ isDev: false })).toBe("http://localhost:3000");
   });
 
-  it("forces local surface hosts back through the dev proxy when override points remote", () => {
+  it("keeps remote overrides for local surface hosts", () => {
     expect(
       resolveApiBaseUrl({
         apiBaseUrl: "https://api.corely.one",
         isDev: true,
         browserHostname: "pos.localhost",
       })
-    ).toBe("/api");
+    ).toBe("https://api.corely.one");
   });
 
-  it("keeps local overrides for local surface hosts", () => {
+  it("forces local overrides for local surface hosts back through the dev proxy", () => {
     expect(
       resolveApiBaseUrl({
         apiBaseUrl: "http://localhost:3000",
         isDev: true,
         browserHostname: "crm.localhost",
       })
-    ).toBe("http://localhost:3000");
+    ).toBe("/api");
   });
 });

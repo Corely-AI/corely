@@ -64,6 +64,11 @@ export class WorkspaceConfigController {
       permissions,
       scope: validatedScope,
       surfaceId: ctx.surfaceId,
+      trustedSurfaceId: ctx.trustedSurfaceId,
+      declaredSurfaceId: ctx.declaredSurfaceId,
+      surfaceResolutionSource: ctx.surfaceResolutionSource,
+      surfaceHeaderMismatch: ctx.surfaceHeaderMismatch,
+      route: req.route?.path ?? req.originalUrl ?? req.url,
     });
   }
 

@@ -6,6 +6,7 @@ import { z } from "zod";
 export const RegisterSchema = z.object({
   registerId: z.string().uuid(),
   workspaceId: z.string().uuid(),
+  cashDrawerId: z.string().nullable(),
   name: z.string().min(1).max(100),
   defaultWarehouseId: z.string().uuid().nullable(),
   defaultBankAccountId: z.string().uuid().nullable(),

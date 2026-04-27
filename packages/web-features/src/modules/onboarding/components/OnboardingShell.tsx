@@ -14,9 +14,17 @@ export interface OnboardingShellProps {
 }
 
 export const OnboardingShell = ({ config, onCompleted, onExit }: OnboardingShellProps) => {
-  const { t } = useTranslation();
-  const { isLoaded, isComplete, currentStepConfig } = useOnboarding({ config, onCompleted });
+  const { t, i18n } = useTranslation();
+  const { isLoaded, isComplete, progress } = useOnboarding({ config, onCompleted });
   const hasRedirectedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const nextLocale = progress?.locale || config.defaultLocale;
+    if (!nextLocale || i18n.resolvedLanguage === nextLocale || i18n.language === nextLocale) {
+      return;
+    }
+    void i18n.changeLanguage(nextLocale);
+  }, [config.defaultLocale, i18n, progress?.locale]);
 
   React.useEffect(() => {
     if (!isComplete || hasRedirectedRef.current) {
@@ -63,10 +71,10 @@ export const OnboardingShell = ({ config, onCompleted, onExit }: OnboardingShell
 
           <div className="p-8 border-t border-white/5 bg-black/20">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground/40 font-bold mb-1">
-              Need help?
+              {t("onboarding.sidebarHelpTitle")}
             </p>
             <p className="text-xs text-muted-foreground/60 leading-relaxed">
-              Our AI assistant is available at every step to help you set up Corely effectively.
+              {t("onboarding.sidebarHelpDescription")}
             </p>
           </div>
         </aside>

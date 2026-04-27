@@ -457,6 +457,18 @@ export class EnvService {
     return this.config.PASSWORD_RESET_TOKEN_TTL_MINUTES;
   }
 
+  get CORELY_PROXY_KEY_APP(): string | undefined {
+    return this.config.CORELY_PROXY_KEY_APP;
+  }
+
+  get CORELY_PROXY_KEY_POS(): string | undefined {
+    return this.config.CORELY_PROXY_KEY_POS;
+  }
+
+  get CORELY_PROXY_KEY_CRM(): string | undefined {
+    return this.config.CORELY_PROXY_KEY_CRM;
+  }
+
   // ============================================================================
   // HELPER METHODS
   // ============================================================================

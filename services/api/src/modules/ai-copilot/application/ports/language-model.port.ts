@@ -3,7 +3,7 @@ import { type DomainToolPort } from "./domain-tool.port";
 import { type ObservabilitySpanRef } from "@corely/kernel";
 import { type WorkspaceKind } from "@corely/prompts";
 import { type LanguageModelUsage, type StreamTextResult } from "ai";
-import { type SurfaceId } from "@corely/contracts";
+import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
 
 export interface LanguageModelPort {
   streamChat(params: {
@@ -19,6 +19,7 @@ export interface LanguageModelPort {
     environment?: string;
     activeAppId?: string;
     surfaceId?: SurfaceId;
+    verticalId?: PosVerticalId | null;
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }>;
 }

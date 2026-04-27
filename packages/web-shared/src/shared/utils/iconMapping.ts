@@ -31,9 +31,14 @@ import {
   Settings2,
   Cpu,
   Coins,
+  MonitorSmartphone,
   Home,
   Bot,
   Scale,
+  Map,
+  ChefHat,
+  UtensilsCrossed,
+  ListFilter,
 } from "lucide-react";
 
 /**
@@ -72,9 +77,14 @@ export const iconMap: Record<string, LucideIcon> = {
   Settings2,
   Cpu,
   Coins,
+  MonitorSmartphone,
   Home,
   Bot,
   Scale,
+  Map,
+  ChefHat,
+  UtensilsCrossed,
+  ListFilter,
 };
 
 /**

@@ -132,4 +132,45 @@ describe("POS offline sync fallback", () => {
     expect(failedSale?.status).toBe("FAILED");
     expect(failedSale?.syncError).toContain("Conflict");
   });
+
+  it("treats client-side programming errors as fatal instead of infinitely retryable", async () => {
+    const localService = new PosLocalServiceWeb();
+    const { sale, command } = await createQueuedLocalSale(localService);
+    const syncPosSale = vi.fn(async () => {
+      throw new TypeError("payload.totalCents is undefined");
+    });
+
+    const transport = new PosSyncTransport({
+      apiClient: createApiClientStub({ syncPosSale }),
+      posLocalService: localService as unknown as PosLocalService,
+    });
+
+    const result = await transport.executeCommand(command);
+
+    expect(result.status).toBe("FATAL_ERROR");
+    expect(result.error).toContain("payload.totalCents is undefined");
+
+    const failedSale = await localService.getSaleById(sale.posSaleId);
+    expect(failedSale?.status).toBe("FAILED");
+    expect(failedSale?.syncError).toContain("payload.totalCents is undefined");
+  });
+
+  it("keeps 5xx server failures retryable", async () => {
+    const localService = new PosLocalServiceWeb();
+    const { command } = await createQueuedLocalSale(localService);
+    const syncPosSale = vi.fn(async () => {
+      throw new HttpError("Service Unavailable", 503, {
+        code: "Common:ServiceUnavailable",
+      });
+    });
+
+    const transport = new PosSyncTransport({
+      apiClient: createApiClientStub({ syncPosSale }),
+      posLocalService: localService as unknown as PosLocalService,
+    });
+
+    const result = await transport.executeCommand(command);
+
+    expect(result.status).toBe("RETRYABLE_ERROR");
+  });
 });

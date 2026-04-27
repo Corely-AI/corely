@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type {
@@ -8,6 +8,7 @@ import type {
   RestaurantModifierGroup,
   RestaurantOrderProposalCard,
 } from "@corely/contracts";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useCatalogStore } from "@/stores/catalogStore";
 import { useRestaurantStore } from "@/stores/restaurantStore";
 import { RestaurantCopilotPanel } from "@/components/restaurant-copilot-panel";
@@ -15,7 +16,7 @@ import { runRestaurantCopilotPrompt } from "@/lib/restaurant-copilot";
 import { AppShell, Button, Card, EmptyState, ModalSheet, TextField } from "@/ui/components";
 import { formatCurrencyFromCents } from "@/lib/formatters";
 import { posTheme } from "@/ui/theme";
-import { styles } from "./table-order.styles";
+import { styles } from "@/screens/restaurant-table-order.styles";
 
 type PendingModifierSelection = {
   product: ProductSnapshot;
@@ -25,6 +26,7 @@ type PendingModifierSelection = {
 
 export default function RestaurantTableOrderScreen() {
   const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)/restaurant");
   const { tableId } = useLocalSearchParams<{ tableId: string }>();
   const { products, initialize, searchProducts } = useCatalogStore();
   const {
@@ -202,7 +204,7 @@ export default function RestaurantTableOrderScreen() {
 
   if (!activeOrder) {
     return (
-      <AppShell title="Table order" subtitle="Loading active check..." onBack={() => router.back()}>
+      <AppShell title="Table order" subtitle="Loading active check..." onBack={goBack}>
         <View style={styles.emptyWrap}>
           <EmptyState title="Loading table" description="Opening or resuming the selected table." />
         </View>
@@ -210,126 +212,164 @@ export default function RestaurantTableOrderScreen() {
     );
   }
 
+  const hasUnsentItems = activeOrder.items.some(
+    (item) => item.sentQuantity === 0 && !item.voidedAt
+  );
+  const isClosedOrder = activeOrder.status === "CLOSED";
+  const canTakePayment = activeOrder.items.length > 0 && !hasUnsentItems && !isClosedOrder;
+  const paymentBlockReason = hasUnsentItems
+    ? "Send all draft items to kitchen before taking payment."
+    : isClosedOrder
+      ? "This order has already been settled."
+      : null;
+
   return (
     <AppShell
       title={`Table ${tableId?.slice(0, 8) ?? ""}`}
       subtitle={`Order ${activeOrder.id.slice(0, 8)} · ${activeOrder.status}`}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={1200}
     >
-      <View testID="pos-restaurant-table-screen" style={styles.layout}>
-        <View style={styles.catalogPane}>
-          <Card>
-            <TextField
-              testID="pos-restaurant-menu-search"
-              value={query}
-              onChangeText={onSearch}
-              placeholder="Search menu items"
-            />
-          </Card>
-          <FlatList
-            data={visibleProducts}
-            keyExtractor={(item) => item.productId}
-            contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => (
-              <Pressable
-                testID={`pos-restaurant-product-${item.productId}`}
-                style={styles.productRow}
-                onPress={() => onSelectProduct(item)}
-              >
-                <View style={styles.productMain}>
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.productMeta}>{item.sku}</Text>
-                </View>
-                <Text style={styles.productPrice}>{formatCurrencyFromCents(item.priceCents)}</Text>
-              </Pressable>
-            )}
-          />
-        </View>
-
-        <View style={styles.orderPane}>
-          <Card>
-            <Text testID="pos-restaurant-order-title" style={styles.sectionTitle}>
-              Current order
-            </Text>
-            {activeOrder.items.length === 0 ? (
-              <Text testID="pos-restaurant-order-empty" style={styles.emptyHint}>
-                Add menu items to start the check.
-              </Text>
-            ) : (
-              activeOrder.items.map((item) => (
-                <View
-                  key={item.id}
-                  testID={`pos-restaurant-order-item-${item.id}`}
-                  style={styles.orderRow}
+      <ScrollView
+        testID="pos-restaurant-table-screen"
+        style={styles.screenScroll}
+        contentContainerStyle={styles.screenScrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.layout}>
+          <View style={styles.catalogPane}>
+            <Card>
+              <TextField
+                testID="pos-restaurant-menu-search"
+                value={query}
+                onChangeText={onSearch}
+                placeholder="Search menu items"
+              />
+            </Card>
+            <FlatList
+              data={visibleProducts}
+              keyExtractor={(item) => item.productId}
+              contentContainerStyle={styles.listContent}
+              scrollEnabled={false}
+              renderItem={({ item }) => (
+                <Pressable
+                  testID={`pos-restaurant-product-${item.productId}`}
+                  style={styles.productRow}
+                  onPress={() => onSelectProduct(item)}
                 >
-                  <View style={styles.orderMain}>
-                    <Text
-                      testID={`pos-restaurant-order-item-name-${item.id}`}
-                      style={styles.orderName}
-                    >
-                      {item.itemName}
-                    </Text>
-                    <Text
-                      testID={`pos-restaurant-order-item-meta-${item.id}`}
-                      style={styles.orderMeta}
-                    >
-                      {item.modifiers.map((modifier) => modifier.optionName).join(", ") ||
-                        "No modifiers"}
-                    </Text>
+                  <View style={styles.productMain}>
+                    <Text style={styles.productName}>{item.name}</Text>
+                    <Text style={styles.productMeta}>{item.sku}</Text>
                   </View>
-                  <View style={styles.qtyCluster}>
-                    <Pressable
-                      onPress={() => void changeQuantity(item.id, Math.max(0, item.quantity - 1))}
+                  <Text style={styles.productPrice}>
+                    {formatCurrencyFromCents(item.priceCents)}
+                  </Text>
+                </Pressable>
+              )}
+            />
+          </View>
+
+          <View style={styles.orderPane}>
+            <Card>
+              <Text testID="pos-restaurant-order-title" style={styles.sectionTitle}>
+                Current order
+              </Text>
+              {activeOrder.items.length === 0 ? (
+                <Text testID="pos-restaurant-order-empty" style={styles.emptyHint}>
+                  Add menu items to start the check.
+                </Text>
+              ) : (
+                <ScrollView
+                  style={styles.orderItemsScroll}
+                  contentContainerStyle={styles.orderItemsContent}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled
+                >
+                  {activeOrder.items.map((item) => (
+                    <View
+                      key={item.id}
+                      testID={`pos-restaurant-order-item-${item.id}`}
+                      style={styles.orderRow}
                     >
-                      <Ionicons
-                        name="remove-circle-outline"
-                        size={20}
-                        color={posTheme.colors.text}
-                      />
-                    </Pressable>
-                    <Text style={styles.qtyText}>{item.quantity}</Text>
-                    <Pressable onPress={() => void changeQuantity(item.id, item.quantity + 1)}>
-                      <Ionicons name="add-circle-outline" size={20} color={posTheme.colors.text} />
-                    </Pressable>
-                  </View>
-                </View>
-              ))
-            )}
-            <View testID="pos-restaurant-order-summary" style={styles.summaryBlock}>
-              <SummaryRow
-                label="Subtotal"
-                value={formatCurrencyFromCents(activeOrder.subtotalCents)}
-              />
-              <SummaryRow label="Tax" value={formatCurrencyFromCents(activeOrder.taxCents)} />
-              <SummaryRow label="Total" value={formatCurrencyFromCents(activeOrder.totalCents)} />
-            </View>
-            <View style={styles.actionRow}>
-              <Button
-                testID="pos-restaurant-send-to-kitchen"
-                label="Send to kitchen"
-                variant="secondary"
-                onPress={() => void sendToKitchen()}
-                disabled={activeOrder.items.length === 0 || isMutating}
-              />
-              <Button
-                testID="pos-restaurant-take-payment"
-                label="Take payment"
-                onPress={() => router.push(`/restaurant/payment/${activeOrder.id}` as never)}
-                disabled={activeOrder.items.length === 0}
-              />
-            </View>
-          </Card>
-          <RestaurantCopilotPanel
-            title="Order copilot"
-            helperText="Parse order instructions into explicit proposal cards. Apply still uses the normal restaurant commands."
-            placeholder='Try: "2 margherita, 1 coke, extra cheese"'
-            runPrompt={runOrderCopilot}
-            onApplyOrderProposal={applyOrderProposal}
-            testIdPrefix="pos-restaurant-order-copilot"
-          />
+                      <View style={styles.orderMain}>
+                        <Text
+                          testID={`pos-restaurant-order-item-name-${item.id}`}
+                          style={styles.orderName}
+                        >
+                          {item.itemName}
+                        </Text>
+                        <Text
+                          testID={`pos-restaurant-order-item-meta-${item.id}`}
+                          style={styles.orderMeta}
+                        >
+                          {item.modifiers.map((modifier) => modifier.optionName).join(", ") ||
+                            "No modifiers"}
+                        </Text>
+                      </View>
+                      <View style={styles.qtyCluster}>
+                        <Pressable
+                          onPress={() =>
+                            void changeQuantity(item.id, Math.max(0, item.quantity - 1))
+                          }
+                        >
+                          <Ionicons
+                            name="remove-circle-outline"
+                            size={20}
+                            color={posTheme.colors.text}
+                          />
+                        </Pressable>
+                        <Text style={styles.qtyText}>{item.quantity}</Text>
+                        <Pressable onPress={() => void changeQuantity(item.id, item.quantity + 1)}>
+                          <Ionicons
+                            name="add-circle-outline"
+                            size={20}
+                            color={posTheme.colors.text}
+                          />
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
+              <View testID="pos-restaurant-order-summary" style={styles.summaryBlock}>
+                <SummaryRow
+                  label="Subtotal"
+                  value={formatCurrencyFromCents(activeOrder.subtotalCents)}
+                />
+                <SummaryRow label="Tax" value={formatCurrencyFromCents(activeOrder.taxCents)} />
+                <SummaryRow label="Total" value={formatCurrencyFromCents(activeOrder.totalCents)} />
+              </View>
+              <View style={styles.actionRow}>
+                <Button
+                  testID="pos-restaurant-send-to-kitchen"
+                  label="Send to kitchen"
+                  variant="secondary"
+                  onPress={() => void sendToKitchen()}
+                  disabled={activeOrder.items.length === 0 || isMutating}
+                />
+                <Button
+                  testID="pos-restaurant-take-payment"
+                  label="Take payment"
+                  onPress={() => router.push(`/restaurant/payment/${activeOrder.id}` as never)}
+                  disabled={!canTakePayment || isMutating}
+                />
+              </View>
+              {paymentBlockReason ? (
+                <Text style={styles.actionHint}>{paymentBlockReason}</Text>
+              ) : null}
+            </Card>
+            <RestaurantCopilotPanel
+              title="Order copilot"
+              helperText="Parse order instructions into explicit proposal cards. Apply still uses the normal restaurant commands."
+              placeholder='Try: "2 margherita, 1 coke, extra cheese"'
+              runPrompt={runOrderCopilot}
+              onApplyOrderProposal={applyOrderProposal}
+              testIdPrefix="pos-restaurant-order-copilot"
+            />
+          </View>
         </View>
-      </View>
+      </ScrollView>
 
       <ModalSheet
         visible={Boolean(pendingModifierSelection)}

@@ -18,7 +18,7 @@ import { type WorkspaceKind, PromptRegistry } from "@corely/prompts";
 import { PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 import { copilotMessageMetadataSchema } from "../../application/validation/copilot-message-metadata.schema";
-import { type SurfaceId } from "@corely/contracts";
+import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
 
 const normalizePromptLanguage = (locale?: string): string => {
   const normalized = locale?.trim().toLowerCase();
@@ -33,12 +33,20 @@ const normalizePromptLanguage = (locale?: string): string => {
   return "en";
 };
 
-const resolveSystemPromptId = (surfaceId?: SurfaceId, activeAppId?: string): string => {
+const resolveSystemPromptId = (
+  surfaceId?: SurfaceId,
+  activeAppId?: string,
+  verticalId?: PosVerticalId | null
+): string => {
   if (surfaceId === "crm") {
     return "crm.copilot.system";
   }
 
-  if (surfaceId === "pos" || activeAppId === "restaurant") {
+  if (surfaceId === "pos" && verticalId === "restaurant") {
+    return "restaurant.copilot.system";
+  }
+
+  if (activeAppId === "restaurant") {
     return "restaurant.copilot.system";
   }
 
@@ -81,6 +89,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     environment?: string;
     activeAppId?: string;
     surfaceId?: SurfaceId;
+    verticalId?: PosVerticalId | null;
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
     const toolTenantId = params.toolTenantId ?? params.tenantId;
@@ -111,7 +120,11 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       surfaceId: params.surfaceId,
     });
 
-    const systemPromptId = resolveSystemPromptId(params.surfaceId, params.activeAppId);
+    const systemPromptId = resolveSystemPromptId(
+      params.surfaceId,
+      params.activeAppId,
+      params.verticalId
+    );
     const systemPromptVariables =
       systemPromptId === "restaurant.copilot.system"
         ? {

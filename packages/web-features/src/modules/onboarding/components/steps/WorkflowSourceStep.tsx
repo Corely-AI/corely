@@ -133,7 +133,7 @@ export const WorkflowSourceStep = ({ config, locale, onAdvance, isSaving }: Step
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-2xl font-black text-accent tracking-tight">
-                    {t("onboarding.workflow.insightTitle") || "Personalized Insight"}
+                    {t("onboarding.workflow.insightTitle")}
                   </h3>
                   <p className="text-lg text-muted-foreground/80 leading-relaxed font-medium italic">
                     {t(
@@ -146,7 +146,7 @@ export const WorkflowSourceStep = ({ config, locale, onAdvance, isSaving }: Step
           ) : (
             <div className="h-full rounded-[2.5rem] border-2 border-dashed border-white/5 flex items-center justify-center p-12 text-center group">
               <p className="text-muted-foreground/30 font-black uppercase tracking-[0.2em] group-hover:text-muted-foreground/40 transition-colors">
-                {t("onboarding.workflow.selectHint") || "Select your previous flow"}
+                {t("onboarding.workflow.selectHint")}
               </p>
             </div>
           )}

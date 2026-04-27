@@ -52,6 +52,7 @@ export class CreateRegisterUseCase extends BaseUseCase<CreateRegisterInput, Crea
     const register = new Register(
       this.idGenerator.newId(),
       tenantId,
+      null,
       input.name,
       input.defaultWarehouseId || null,
       input.defaultBankAccountId || null,
@@ -66,6 +67,7 @@ export class CreateRegisterUseCase extends BaseUseCase<CreateRegisterInput, Crea
     return ok({
       registerId: register.id,
       workspaceId: register.workspaceId,
+      cashDrawerId: register.cashDrawerId,
       name: register.name,
       status: register.status,
       defaultWarehouseId: register.defaultWarehouseId,

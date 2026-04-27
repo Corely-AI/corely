@@ -84,7 +84,7 @@ model DiningRoom {
 }
 
 model RestaurantTable {
-  id                 String                           @id @default(cuid())
+  id                 String                            @id @default(cuid())
   tenantId           String
   workspaceId        String
   diningRoomId       String
@@ -92,13 +92,13 @@ model RestaurantTable {
   capacity           Int?
   posX               Int?
   posY               Int?
-  shape              RestaurantTableShape            @default(SQUARE)
+  shape              RestaurantTableShape              @default(SQUARE)
   availabilityStatus RestaurantTableAvailabilityStatus @default(AVAILABLE)
-  createdAt          DateTime                         @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime                         @updatedAt @db.Timestamptz(6)
+  createdAt          DateTime                          @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                          @updatedAt @db.Timestamptz(6)
 
-  diningRoom     DiningRoom           @relation(fields: [diningRoomId], references: [id], onDelete: Cascade)
-  sessions RestaurantTableSession[]
+  diningRoom DiningRoom               @relation(fields: [diningRoomId], references: [id], onDelete: Cascade)
+  sessions   RestaurantTableSession[]
 
   @@unique([tenantId, workspaceId, diningRoomId, name])
   @@index([tenantId, workspaceId, diningRoomId])
@@ -164,22 +164,22 @@ model RestaurantMenuItemModifierGroup {
 }
 
 model RestaurantTableSession {
-  id             String                      @id
+  id             String                       @id
   tenantId       String
   workspaceId    String
   tableId        String
   registerId     String?
   shiftSessionId String?
   openedByUserId String
-  openedAt       DateTime                    @db.Timestamptz(6)
-  closedAt       DateTime?                   @db.Timestamptz(6)
+  openedAt       DateTime                     @db.Timestamptz(6)
+  closedAt       DateTime?                    @db.Timestamptz(6)
   status         RestaurantTableSessionStatus @default(OPEN)
-  transferCount  Int                         @default(0)
+  transferCount  Int                          @default(0)
   notes          String?
-  createdAt      DateTime                    @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime                    @updatedAt @db.Timestamptz(6)
+  createdAt      DateTime                     @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime                     @updatedAt @db.Timestamptz(6)
 
-  table  RestaurantTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+  table  RestaurantTable   @relation(fields: [tableId], references: [id], onDelete: Restrict)
   orders RestaurantOrder[]
 
   @@index([tenantId, workspaceId, tableId, status])
@@ -205,7 +205,7 @@ model RestaurantOrder {
   createdAt      DateTime              @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime              @updatedAt @db.Timestamptz(6)
 
-  session          RestaurantTableSession @relation(fields: [tableSessionId], references: [id], onDelete: Restrict)
+  session          RestaurantTableSession      @relation(fields: [tableSessionId], references: [id], onDelete: Restrict)
   items            RestaurantOrderItem[]
   payments         RestaurantOrderPayment[]
   kitchenTickets   KitchenTicket[]
@@ -235,7 +235,7 @@ model RestaurantOrderPayment {
 }
 
 model RestaurantOrderItem {
-  id                String   @id
+  id                String    @id
   tenantId          String
   workspaceId       String
   orderId           String
@@ -243,20 +243,20 @@ model RestaurantOrderItem {
   itemName          String
   sku               String
   quantity          Int
-  sentQuantity      Int      @default(0)
+  sentQuantity      Int       @default(0)
   unitPriceCents    Int
-  taxRateBps        Int      @default(0)
-  taxCents          Int      @default(0)
+  taxRateBps        Int       @default(0)
+  taxCents          Int       @default(0)
   lineSubtotalCents Int
   lineTotalCents    Int
   voidedAt          DateTime? @db.Timestamptz(6)
-  createdAt         DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
 
-  order             RestaurantOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  modifiers         RestaurantOrderItemModifier[]
+  order              RestaurantOrder               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  modifiers          RestaurantOrderItemModifier[]
   kitchenTicketItems KitchenTicketItem[]
-  approvalRequests  RestaurantApprovalRequest[]
+  approvalRequests   RestaurantApprovalRequest[]
 
   @@index([tenantId, workspaceId, orderId])
   @@index([tenantId, workspaceId, catalogItemId])
@@ -301,7 +301,7 @@ model KitchenStation {
 }
 
 model KitchenTicket {
-  id             String             @id @default(cuid())
+  id             String              @id @default(cuid())
   tenantId       String
   workspaceId    String
   orderId        String
@@ -315,8 +315,8 @@ model KitchenTicket {
   createdAt      DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime            @updatedAt @db.Timestamptz(6)
 
-  order   RestaurantOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  station KitchenStation? @relation(fields: [stationId], references: [id], onDelete: SetNull)
+  order   RestaurantOrder     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  station KitchenStation?     @relation(fields: [stationId], references: [id], onDelete: SetNull)
   items   KitchenTicketItem[]
 
   @@unique([tenantId, workspaceId, sendKey, stationId])

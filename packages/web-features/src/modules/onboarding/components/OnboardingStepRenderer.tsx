@@ -8,6 +8,7 @@ import type {
 import { useOnboarding } from "../engine/use-onboarding";
 import { OnboardingAIHelper } from "./OnboardingAIHelper";
 import { cn } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 
 // Generic props for any step component
 export interface StepComponentProps {
@@ -30,6 +31,7 @@ export interface OnboardingStepRendererProps {
 }
 
 export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRendererProps) => {
+  const { t } = useTranslation();
   const { currentStepConfig, progress, isLoaded, upsertStep, isSaving } = useOnboarding({
     config,
     onCompleted,
@@ -135,9 +137,9 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
   if (!Component) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground animate-in fade-in duration-500">
-        <p>Step component not found for type: {currentStepConfig.type}</p>
+        <p>{t("onboarding.errors.missingStepComponent", { type: currentStepConfig.type })}</p>
         <button className="mt-4 text-accent underline" onClick={() => handleSkip()}>
-          Skip for now
+          {t("onboarding.skipForNow")}
         </button>
       </div>
     );

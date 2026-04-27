@@ -1,17 +1,27 @@
 import { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useRegisterStore } from "@/stores/registerStore";
 import { useShiftStore } from "@/stores/shiftStore";
 import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
-import { AppShell, Button, Card, MoneyInput, NumericKeypad, useMoneyPad } from "@/ui/components";
+import {
+  AppShell,
+  Button,
+  Card,
+  EmptyState,
+  MoneyInput,
+  NumericKeypad,
+  useMoneyPad,
+} from "@/ui/components";
 import { posTheme } from "@/ui/theme";
 
 export default function OpenShiftScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)");
   const { isTablet } = useAdaptiveLayout();
   const { openShift, isLoading } = useShiftStore();
   const { selectedRegister } = useRegisterStore();
@@ -37,6 +47,13 @@ export default function OpenShiftScreen() {
         registerId: selectedRegister.registerId,
         startingCashCents,
       });
+
+      if (Platform.OS === "web") {
+        Alert.alert(t("shift.openedTitle"), t("shift.openedMessage"));
+        router.replace("/(main)");
+        return;
+      }
+
       Alert.alert(t("shift.openedTitle"), t("shift.openedMessage"), [
         {
           text: t("common.confirm"),
@@ -53,46 +70,68 @@ export default function OpenShiftScreen() {
     <AppShell
       title={t("shift.openTitle")}
       subtitle={t("shift.openDescription")}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={980}
     >
-      <View testID="pos-shift-open-screen" style={[styles.layout, isTablet && styles.layoutTablet]}>
-        <Card>
-          <View style={styles.cardBody}>
-            <View style={styles.iconWrap}>
-              <Ionicons name="time-outline" size={46} color={posTheme.colors.primary} />
+      {!selectedRegister ? (
+        <View testID="pos-shift-open-missing-register" style={styles.centered}>
+          <EmptyState
+            icon={<Ionicons name="desktop-outline" size={40} color={posTheme.colors.textMuted} />}
+            title={t("register.noRegisterTitle")}
+            description={t("shift.openRegisterRequiredMessage")}
+            primaryAction={{
+              label: t("register.selectRegister"),
+              onPress: () => router.push("/register-selection"),
+              testID: "pos-shift-open-go-select-register",
+            }}
+          />
+        </View>
+      ) : (
+        <View
+          testID="pos-shift-open-screen"
+          style={[styles.layout, isTablet && styles.layoutTablet]}
+        >
+          <Card>
+            <View style={styles.cardBody}>
+              <View style={styles.iconWrap}>
+                <Ionicons name="time-outline" size={46} color={posTheme.colors.primary} />
+              </View>
+              <MoneyInput
+                testID="pos-shift-open-starting-cash"
+                label={t("shift.startingCashOptional")}
+                value={pad.value}
+                onChange={(value) => {
+                  setInputError(null);
+                  pad.setValue(value);
+                }}
+                help={t("shift.startingCashHint")}
+                {...(inputError ? { error: inputError } : {})}
+              />
+              <Button
+                testID="pos-shift-open-submit"
+                label={t("shift.openShift")}
+                onPress={handleOpenShift}
+                loading={isLoading}
+              />
             </View>
-            <MoneyInput
-              testID="pos-shift-open-starting-cash"
-              label={t("shift.startingCashOptional")}
-              value={pad.value}
-              onChange={(value) => {
-                setInputError(null);
-                pad.setValue(value);
-              }}
-              help={t("shift.startingCashHint")}
-              {...(inputError ? { error: inputError } : {})}
-            />
-            <Button
-              testID="pos-shift-open-submit"
-              label={t("shift.openShift")}
-              onPress={handleOpenShift}
-              loading={isLoading}
-            />
-          </View>
-        </Card>
+          </Card>
 
-        {isTablet ? (
-          <NumericKeypad onKey={pad.append} onBackspace={pad.backspace} onClear={pad.clear} />
-        ) : (
-          <Text style={styles.mobileHint}>{t("shift.mobileHint")}</Text>
-        )}
-      </View>
+          {isTablet ? (
+            <NumericKeypad onKey={pad.append} onBackspace={pad.backspace} onClear={pad.clear} />
+          ) : (
+            <Text style={styles.mobileHint}>{t("shift.mobileHint")}</Text>
+          )}
+        </View>
+      )}
     </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+  },
   layout: {
     flex: 1,
     gap: posTheme.spacing.md,

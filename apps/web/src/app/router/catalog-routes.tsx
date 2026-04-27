@@ -6,8 +6,11 @@ import {
   CatalogUomsPage,
   CatalogTaxProfilesPage,
   CatalogCategoriesPage,
+  PosCatalogLookupPage,
+  PosQuickCatalogItemPage,
 } from "../../modules/catalog";
 import { RequireCapability } from "@corely/web-shared/shared/workspaces/RequireCapability";
+import { RequirePermission, RequireSurface } from "@corely/web-shared/shared/permissions";
 
 export const catalogRoutes = (
   <>
@@ -65,6 +68,42 @@ export const catalogRoutes = (
         <RequireCapability capability="catalog.basic">
           <CatalogCategoriesPage />
         </RequireCapability>
+      }
+    />
+    <Route
+      path="/pos/catalog"
+      element={
+        <RequireSurface surfaces={["pos"]}>
+          <RequireCapability capability="catalog.basic">
+            <RequirePermission permission="catalog.read">
+              <PosCatalogLookupPage />
+            </RequirePermission>
+          </RequireCapability>
+        </RequireSurface>
+      }
+    />
+    <Route
+      path="/pos/catalog/new"
+      element={
+        <RequireSurface surfaces={["pos"]}>
+          <RequireCapability capability="catalog.basic">
+            <RequirePermission permission="catalog.quickwrite">
+              <PosQuickCatalogItemPage />
+            </RequirePermission>
+          </RequireCapability>
+        </RequireSurface>
+      }
+    />
+    <Route
+      path="/pos/catalog/:id/edit"
+      element={
+        <RequireSurface surfaces={["pos"]}>
+          <RequireCapability capability="catalog.basic">
+            <RequirePermission permission="catalog.quickwrite">
+              <PosQuickCatalogItemPage />
+            </RequirePermission>
+          </RequireCapability>
+        </RequireSurface>
       }
     />
   </>

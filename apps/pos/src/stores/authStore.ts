@@ -1,12 +1,14 @@
 import { create } from "zustand";
 import { AuthClient } from "@corely/auth-client";
 import { PosApiClient } from "@/lib/pos-api-client";
+import { resolveActiveWorkspaceId } from "@/lib/resolve-active-workspace";
 import { NativeStorageAdapter } from "@/lib/storage-adapter";
 import { secureDeleteItem, secureGetItem, secureSetItem } from "@/lib/secure-store";
 import { router } from "expo-router";
 
 interface User {
   userId: string;
+  partyId: string | null;
   workspaceId: string;
   email: string;
 }
@@ -61,9 +63,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const userJson = await secureGetItem("user");
 
       if (accessToken && userJson) {
-        const user = JSON.parse(userJson);
+        const user = JSON.parse(userJson) as User;
+        let nextUser = {
+          ...user,
+          partyId: user.partyId ?? null,
+        };
+        if (!nextUser.partyId) {
+          try {
+            const currentUser = await authClient.getCurrentUser();
+            nextUser = {
+              ...nextUser,
+              partyId: currentUser.partyId ?? null,
+            };
+          } catch (error) {
+            console.error("Failed to backfill POS partyId from auth/me:", error);
+          }
+        }
+        const resolvedWorkspaceId = await resolveActiveWorkspaceId(apiClient, user.workspaceId);
+        const nextResolvedUser =
+          resolvedWorkspaceId && resolvedWorkspaceId !== nextUser.workspaceId
+            ? { ...nextUser, workspaceId: resolvedWorkspaceId }
+            : nextUser;
+
+        if (resolvedWorkspaceId !== user.workspaceId || nextUser.partyId !== user.partyId) {
+          await storage.setActiveWorkspaceId(resolvedWorkspaceId);
+          await secureSetItem("user", JSON.stringify(nextResolvedUser));
+        }
+
         set({
-          user,
+          user: nextResolvedUser,
           isAuthenticated: true,
           initialized: true,
           authClient,
@@ -107,13 +135,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const data = await authClient.signin({ email, password });
+      const apiClient = get().apiClient;
+      const fallbackWorkspaceId = data.workspaceId || data.tenantId || "";
+      const workspaceId = apiClient
+        ? ((await resolveActiveWorkspaceId(apiClient, fallbackWorkspaceId)) ?? fallbackWorkspaceId)
+        : fallbackWorkspaceId;
 
       const user: User = {
         userId: data.userId,
-        workspaceId: data.workspaceId || data.tenantId || "",
+        partyId: data.partyId ?? null,
+        workspaceId,
         email: data.email,
       };
 
+      await storage.setActiveWorkspaceId(workspaceId);
       await secureSetItem("user", JSON.stringify(user));
 
       set({

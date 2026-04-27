@@ -436,14 +436,68 @@ export async function loginToPos(page: Page): Promise<void> {
   await expect(page.getByTestId("pos-home-guard-no-register")).toBeVisible({ timeout: 20_000 });
 }
 
+export async function loginToLivePos(
+  page: Page,
+  input: {
+    email: string;
+    password: string;
+    baseUrl?: string;
+  }
+): Promise<void> {
+  const baseUrl = input.baseUrl ?? process.env.POS_BASE_URL ?? "http://pos.localhost:6080";
+
+  await page.goto(new URL("/login", baseUrl).toString());
+  await page.getByTestId("pos-login-email").fill(input.email);
+  await page.getByTestId("pos-login-password").fill(input.password);
+  await page.getByTestId("pos-login-submit").click();
+
+  await expect(page.getByTestId("pos-home-guard-no-register")).toBeVisible({ timeout: 20_000 });
+}
+
 export async function selectRegister(page: Page): Promise<void> {
   await page.getByTestId("pos-home-select-register").click();
   await expect(page.getByTestId("pos-register-selection-screen")).toBeVisible({ timeout: 20_000 });
   await page.getByTestId(`pos-register-item-${POS_IDS.registerId}`).click();
 }
 
+export async function selectRegisterById(page: Page, registerId: string): Promise<void> {
+  await page.getByTestId("pos-home-select-register").click();
+  await expect(page.getByTestId("pos-register-selection-screen")).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId(`pos-register-item-${registerId}`).click();
+}
+
+export async function selectRegisterByName(page: Page, registerName: string): Promise<void> {
+  await page.getByTestId("pos-home-select-register").click();
+  await expect(page.getByTestId("pos-register-selection-screen")).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: new RegExp(`Use register ${registerName}`, "i") }).click();
+}
+
 export async function openShiftFromGuard(page: Page): Promise<void> {
   await expect(page.getByTestId("pos-home-guard-open-shift")).toBeVisible({ timeout: 20_000 });
   await page.getByTestId("pos-home-open-shift").click();
   await expect(page.getByTestId("pos-shift-open-screen")).toBeVisible({ timeout: 20_000 });
+}
+
+export async function openShiftFromGuardAndSubmit(
+  page: Page,
+  input?: { startingCash?: string }
+): Promise<void> {
+  await openShiftFromGuard(page);
+
+  if (input?.startingCash) {
+    await page.getByTestId("pos-shift-open-starting-cash").fill(input.startingCash);
+  }
+
+  await page.getByTestId("pos-shift-open-submit").click();
+  const homeScreenVisible = await page
+    .getByTestId("pos-home-screen")
+    .isVisible({ timeout: 5_000 })
+    .catch(() => false);
+
+  if (homeScreenVisible) {
+    await expect(page.getByTestId("pos-home-screen")).toBeVisible({ timeout: 20_000 });
+    return;
+  }
+
+  await expect(page.getByRole("tab", { name: /sell/i })).toBeVisible({ timeout: 20_000 });
 }

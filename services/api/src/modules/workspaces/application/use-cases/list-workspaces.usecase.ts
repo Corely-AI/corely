@@ -27,6 +27,7 @@ export class ListWorkspacesUseCase {
         legalEntityId: ws.legalEntityId,
         name: ws.name,
         slug: ws.slug,
+        verticalId: ws.verticalId,
         publicEnabled: ws.publicEnabled ?? false,
         publicModules: ws.publicModules ?? undefined,
         kind: ws.legalEntity?.kind as any,

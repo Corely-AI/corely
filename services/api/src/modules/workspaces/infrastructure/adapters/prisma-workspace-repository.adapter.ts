@@ -82,13 +82,14 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
   // === Workspace Operations ===
 
   async createWorkspace(input: CreateWorkspaceInput): Promise<Workspace> {
-    const workspace = await this.prisma.workspace.create({
+    const workspace = await (this.prisma.workspace as any).create({
       data: {
         id: input.id,
         tenantId: input.tenantId,
         legalEntityId: input.legalEntityId,
         name: input.name,
         slug: input.slug,
+        verticalId: input.verticalId,
         publicEnabled: input.publicEnabled ?? false,
         publicModules: input.publicModules ?? null,
         onboardingStatus: (input.onboardingStatus || "NEW") as any,
@@ -164,11 +165,12 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     id: string,
     input: UpdateWorkspaceInput
   ): Promise<Workspace> {
-    const workspace = await this.prisma.workspace.update({
+    const workspace = await (this.prisma.workspace as any).update({
       where: { id, tenantId, deletedAt: null } as any,
       data: {
         name: input.name,
         slug: input.slug,
+        verticalId: input.verticalId,
         publicEnabled: input.publicEnabled,
         publicModules: input.publicModules,
         onboardingStatus: input.onboardingStatus as any,
@@ -339,6 +341,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
       legalEntityId: workspace.legalEntityId,
       name: workspace.name,
       slug: workspace.slug ?? undefined,
+      verticalId: workspace.verticalId ?? undefined,
       publicEnabled: workspace.publicEnabled ?? false,
       publicModules: (workspace.publicModules as Record<string, boolean> | null) ?? undefined,
       onboardingStatus: workspace.onboardingStatus,

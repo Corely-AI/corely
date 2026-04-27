@@ -8,6 +8,7 @@ import {
   type ShiftCashEventCommandPayload,
   type ShiftCashEventType,
 } from "@/offline/posOutbox";
+import { requestSyncFlush } from "@/lib/offline/syncTrigger";
 import { insertOutboxCommandTransactional, runInTransaction } from "@/lib/pos-db";
 import { mapShift, mapShiftCashEvent } from "@/services/posLocalService.mappers";
 import type {
@@ -158,6 +159,7 @@ export async function openShiftAndEnqueue(
     throw new Error("Shift was created locally but could not be reloaded");
   }
 
+  requestSyncFlush(`outbox:${command.type}`);
   return session;
 }
 
@@ -232,6 +234,7 @@ export async function closeShiftAndEnqueue(
     throw new Error("Closed shift could not be reloaded");
   }
 
+  requestSyncFlush(`outbox:${command.type}`);
   return mapShift(closed);
 }
 
@@ -291,6 +294,8 @@ export async function createShiftCashEventAndEnqueue(
 
     await insertOutboxCommandTransactional(db, command);
   });
+
+  requestSyncFlush(`outbox:${command.type}`);
 }
 
 export async function markShiftCashEventSynced(

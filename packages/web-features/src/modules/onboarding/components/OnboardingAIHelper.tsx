@@ -42,17 +42,16 @@ export const OnboardingAIHelper = ({ step, locale, className }: OnboardingAIHelp
         <div className="flex items-center gap-2 text-accent">
           <Sparkles className="h-4 w-4" />
           <span className="text-[10px] font-bold uppercase tracking-wider">
-            {t("onboarding.aiTipTitle") || "Helpful Assistant"}
+            {t("onboarding.aiTipTitle")}
           </span>
         </div>
 
         <div className="space-y-2">
           <h4 className="text-sm font-semibold text-foreground/90 leading-tight">
-            {t("onboarding.aiHelpTitle") || "Need help with this step?"}
+            {t("onboarding.aiHelpTitle")}
           </h4>
           <p className="text-xs text-muted-foreground/80 leading-relaxed">
-            {t("onboarding.aiHelpPrompt") ||
-              "Ask our AI to explain what to enter or how this impacts your setup."}
+            {t("onboarding.aiHelpPrompt")}
           </p>
         </div>
 

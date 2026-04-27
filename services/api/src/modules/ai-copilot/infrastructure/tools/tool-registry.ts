@@ -1,5 +1,10 @@
 import { Inject, Injectable, Optional } from "@nestjs/common";
-import { isSurfaceAllowed, type SurfaceId } from "@corely/contracts";
+import {
+  isExperienceTargetVisible,
+  type PosVerticalId,
+  type SurfaceId,
+  type SurfaceTargetId,
+} from "@corely/contracts";
 import type { DomainToolPort } from "../../application/ports/domain-tool.port";
 import { ToolRegistryPort, COPILOT_TOOLS } from "../../application/ports/tool-registry.port";
 import {
@@ -14,7 +19,7 @@ const APP_DEFAULT_SURFACES: Record<string, SurfaceId[]> = {
   "cash-management": ["platform", "pos"],
 };
 
-const resolveAllowedSurfaces = (tool: DomainToolPort): readonly SurfaceId[] | undefined => {
+const resolveAllowedSurfaces = (tool: DomainToolPort): readonly SurfaceTargetId[] | undefined => {
   if (tool.allowedSurfaces && tool.allowedSurfaces.length > 0) {
     return tool.allowedSurfaces;
   }
@@ -40,7 +45,9 @@ export class ToolRegistry implements ToolRegistryPort {
   async listForTenant(
     tenantId: string,
     activeAppId?: string,
-    surfaceId: SurfaceId = "platform"
+    surfaceId: SurfaceId = "platform",
+    verticalId: PosVerticalId | null = null,
+    permissions?: Iterable<string>
   ): Promise<DomainToolPort[]> {
     const flatTools =
       Array.isArray(this.tools) && Array.isArray(this.tools[0])
@@ -76,7 +83,18 @@ export class ToolRegistry implements ToolRegistryPort {
     }
 
     availableTools = availableTools.filter((tool) =>
-      isSurfaceAllowed(surfaceId, resolveAllowedSurfaces(tool))
+      isExperienceTargetVisible(
+        {
+          allowedSurfaces: resolveAllowedSurfaces(tool),
+          allowedVerticals: tool.allowedVerticals,
+          requiredPermissions: tool.requiredPermissions,
+        },
+        {
+          surfaceId,
+          verticalId,
+          permissions,
+        }
+      )
     );
 
     return availableTools;

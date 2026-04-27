@@ -3,6 +3,7 @@ import { resolveSurface, type SurfaceId } from "@corely/contracts";
 
 const CRM_SURFACE_PREFIXES = ["/crm", "/assistant", "/notifications", "/onboarding"] as const;
 const POS_SURFACE_PREFIXES = [
+  "/pos",
   "/restaurant",
   "/cash",
   "/cash-registers",
@@ -25,10 +26,12 @@ export const useSurfaceId = (): SurfaceId => {
 
 export const getDefaultRouteForSurface = (surfaceId: SurfaceId): string => {
   switch (surfaceId) {
+    case "app":
+      return "/dashboard";
     case "crm":
       return "/crm";
     case "pos":
-      return "/restaurant/floor-plan";
+      return "/cash/registers";
     default:
       return "/dashboard";
   }
@@ -38,7 +41,7 @@ const matchesSurfacePrefixes = (pathname: string, prefixes: readonly string[]) =
   prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
 export const isRouteAllowedForSurface = (surfaceId: SurfaceId, pathname: string): boolean => {
-  if (surfaceId === "platform" || surfaceId === "shared") {
+  if (surfaceId === "platform" || surfaceId === "app") {
     return true;
   }
 

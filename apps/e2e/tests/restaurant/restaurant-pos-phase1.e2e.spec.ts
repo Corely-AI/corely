@@ -7,6 +7,12 @@ import { startBillingTrial } from "../helpers/billing-fixtures";
 import { resetTenantDataForE2e, seedIsolatedTestData } from "../helpers/db-reset";
 import { HttpClient } from "../helpers/http-client";
 import {
+  autoAcceptNativeDialogs,
+  loginToLivePos,
+  openShiftFromGuardAndSubmit,
+  selectRegisterByName,
+} from "../pos/helpers";
+import {
   approveRestaurantApproval,
   closeRestaurantTable,
   closeRestaurantPrisma,
@@ -41,6 +47,12 @@ import {
 } from "../helpers/restaurant-fixtures";
 
 const prisma = process.env.DATABASE_URL ? createRestaurantPrisma() : null;
+const POS_BROWSER_BASE_URL = process.env.POS_BASE_URL ?? "http://pos.localhost:6080";
+const POS_BROWSER_DEMO_EMAIL =
+  process.env.CORELY_RESTAURANT_DEMO_CASHIER_EMAIL ?? "cashier.linh@corely.local";
+const POS_BROWSER_DEMO_PASSWORD = process.env.CORELY_RESTAURANT_DEMO_PASSWORD ?? "Password123!";
+const POS_BROWSER_DEMO_REGISTER_NAME = "POS Front Counter";
+const POS_BROWSER_DEMO_TABLE_NAME = "Table 5";
 
 function requirePrisma(): PrismaClient {
   if (!prisma) {
@@ -4777,6 +4789,42 @@ test.describe("Restaurant POS Phase 1 API E2E", () => {
         },
       })
     ).toBe(1);
+  });
+
+  test("runs a real cashier flow through the POS app on pos.localhost with live demo data", async ({
+    page,
+  }) => {
+    test.skip(
+      !POS_BROWSER_BASE_URL.includes("localhost"),
+      "This smoke test is intended for a local POS host such as pos.localhost:6080."
+    );
+
+    autoAcceptNativeDialogs(page);
+
+    await loginToLivePos(page, {
+      email: POS_BROWSER_DEMO_EMAIL,
+      password: POS_BROWSER_DEMO_PASSWORD,
+      baseUrl: POS_BROWSER_BASE_URL,
+    });
+    await selectRegisterByName(page, POS_BROWSER_DEMO_REGISTER_NAME);
+
+    const restaurantTabVisible = await page
+      .getByRole("tab", { name: /restaurant/i })
+      .isVisible({ timeout: 5_000 })
+      .catch(() => false);
+    if (!restaurantTabVisible) {
+      await openShiftFromGuardAndSubmit(page);
+    }
+
+    await page.getByRole("tab", { name: /restaurant/i }).click();
+    await expect(page.getByTestId("pos-restaurant-floor-screen")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("Table 2")).toBeVisible();
+    await expect(page.getByText(POS_BROWSER_DEMO_TABLE_NAME)).toBeVisible();
+    await expect(page.getByText("Table 7")).toBeVisible();
+
+    await page.getByText(POS_BROWSER_DEMO_TABLE_NAME, { exact: true }).click();
+    await expect(page.getByTestId("pos-restaurant-table-screen")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("pos-restaurant-order-title")).toBeVisible();
   });
 });
 

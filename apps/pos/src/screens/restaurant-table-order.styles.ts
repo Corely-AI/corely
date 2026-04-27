@@ -2,16 +2,23 @@ import { StyleSheet } from "react-native";
 import { posTheme } from "@/ui/theme";
 
 export const styles = StyleSheet.create({
-  layout: {
+  screenScroll: {
     flex: 1,
+  },
+  screenScrollContent: {
+    paddingBottom: posTheme.spacing.xl,
+  },
+  layout: {
     gap: posTheme.spacing.md,
   },
   catalogPane: {
     flex: 1.2,
     gap: posTheme.spacing.sm,
+    minHeight: 0,
   },
   orderPane: {
     flex: 1,
+    minHeight: 0,
   },
   listContent: {
     gap: posTheme.spacing.sm,
@@ -70,6 +77,12 @@ export const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
+  orderItemsScroll: {
+    maxHeight: 320,
+  },
+  orderItemsContent: {
+    paddingRight: posTheme.spacing.xs,
+  },
   orderName: {
     color: posTheme.colors.text,
     fontWeight: "700",
@@ -102,6 +115,10 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     gap: posTheme.spacing.sm,
     marginTop: posTheme.spacing.md,
+  },
+  actionHint: {
+    color: posTheme.colors.textMuted,
+    marginTop: posTheme.spacing.sm,
   },
   modalBody: {
     gap: posTheme.spacing.md,

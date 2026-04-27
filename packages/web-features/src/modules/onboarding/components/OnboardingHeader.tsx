@@ -33,7 +33,7 @@ export const OnboardingHeader = ({
         <div className="flex items-center gap-4 border-r pr-6 border-border/50">
           <Logo size="sm" showText={false} />
           <span className="text-sm font-semibold tracking-tight text-foreground/90 uppercase">
-            Onboarding
+            {t("onboarding.title")}
           </span>
         </div>
 
@@ -48,7 +48,7 @@ export const OnboardingHeader = ({
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="text-xs font-medium uppercase tracking-wider hidden sm:inline">
-              {t("onboarding.back")}
+              {t("onboarding.goBack")}
             </span>
           </Button>
         )}

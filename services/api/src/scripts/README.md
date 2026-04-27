@@ -72,3 +72,11 @@ Creates the 3-step lead-to-won nails email sequence using the CRM `CreateSequenc
 ```bash
 pnpm --filter @corely/api seed:crm:nails-sequence -- --tenant-id <tenant-id>
 ```
+
+### `seed-restaurant-demo.ts`
+
+Creates or refreshes a dedicated POS restaurant demo tenant/workspace for `pos.localhost`.
+
+```bash
+pnpm --filter @corely/api seed:restaurant-demo
+```

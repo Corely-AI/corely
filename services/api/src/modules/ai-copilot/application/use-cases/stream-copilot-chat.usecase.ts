@@ -18,7 +18,7 @@ import { type ObservabilityPort } from "@corely/kernel";
 import { type CopilotContextBuilder } from "../services/copilot-context.builder";
 import { type CopilotTaskStateTracker } from "../services/copilot-task-state.service";
 import { type WorkspaceKind } from "@corely/prompts";
-import { type SurfaceId } from "@corely/contracts";
+import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
 import {
   extractAssistantText,
   extractLatestUserInput,
@@ -59,6 +59,7 @@ export class StreamCopilotChatUseCase {
     workspaceKind?: WorkspaceKind;
     intent?: string;
     surfaceId?: SurfaceId;
+    verticalId?: PosVerticalId | null;
     environment: string;
     modelId?: string;
     modelProvider?: string;
@@ -120,7 +121,8 @@ export class StreamCopilotChatUseCase {
     const tools = await this.toolRegistry.listForTenant(
       params.toolTenantId ?? tenantId,
       params.intent,
-      params.surfaceId
+      params.surfaceId,
+      params.verticalId
     );
 
     const turnSpan = this.observability.startTurnTrace({
@@ -276,6 +278,7 @@ export class StreamCopilotChatUseCase {
               environment: params.environment,
               activeAppId: params.intent,
               surfaceId: params.surfaceId,
+              verticalId: params.verticalId,
               observability: modelSpan,
             });
 

@@ -3,8 +3,11 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import type {
   CreateRegisterInput,
   CreateRegisterOutput,
+  GetPosTransactionOutput,
   ListRegistersInput,
   ListRegistersOutput,
+  ListPosTransactionsInput,
+  ListPosTransactionsOutput,
   OpenShiftInput,
   OpenShiftOutput,
   CloseShiftInput,
@@ -19,10 +22,13 @@ import type {
   GetCashlessPaymentStatusOutput,
 } from "@corely/contracts";
 import {
+  GetPosTransactionInputSchema,
   GetCashlessPaymentStatusInputSchema,
+  ListPosTransactionsInputSchema,
   StartCashlessPaymentInputSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { AllowSurfaces } from "@/shared/surface";
 import { CreateRegisterUseCase } from "../../application/use-cases/create-register.usecase";
 import { ListRegistersUseCase } from "../../application/use-cases/list-registers.usecase";
@@ -30,6 +36,8 @@ import { OpenShiftUseCase } from "../../application/use-cases/open-shift.usecase
 import { CloseShiftUseCase } from "../../application/use-cases/close-shift.usecase";
 import { GetCurrentShiftUseCase } from "../../application/use-cases/get-current-shift.usecase";
 import { SyncPosSaleUseCase } from "../../application/use-cases/sync-pos-sale.usecase";
+import { ListPosTransactionsUseCase } from "../../application/use-cases/list-pos-transactions.usecase";
+import { GetPosTransactionUseCase } from "../../application/use-cases/get-pos-transaction.usecase";
 import { GetCatalogSnapshotUseCase } from "../../application/use-cases/get-catalog-snapshot.usecase";
 import { StartCashlessPaymentUseCase } from "../../application/use-cases/start-cashless-payment.usecase";
 import { GetCashlessPaymentStatusUseCase } from "../../application/use-cases/get-cashless-payment-status.usecase";
@@ -40,7 +48,7 @@ import { resolveIdempotencyKey } from "../../../../shared/http/usecase-mappers";
 @ApiBearerAuth()
 @AllowSurfaces("platform", "pos")
 @Controller("pos")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard)
 export class PosController {
   constructor(
     private createRegister: CreateRegisterUseCase,
@@ -49,6 +57,8 @@ export class PosController {
     private closeShift: CloseShiftUseCase,
     private getCurrentShift: GetCurrentShiftUseCase,
     private syncPosSale: SyncPosSaleUseCase,
+    private listPosTransactions: ListPosTransactionsUseCase,
+    private getPosTransaction: GetPosTransactionUseCase,
     private getCatalogSnapshot: GetCatalogSnapshotUseCase,
     private startCashlessPayment: StartCashlessPaymentUseCase,
     private getCashlessPaymentStatus: GetCashlessPaymentStatusUseCase
@@ -74,6 +84,7 @@ export class PosController {
 
   @Post("registers")
   @ApiOperation({ summary: "Create a new POS register" })
+  @RequirePermission("pos.registers.manage")
   async createRegisterEndpoint(
     @Body() input: CreateRegisterInput,
     @Req() req: any
@@ -89,6 +100,7 @@ export class PosController {
 
   @Get("registers")
   @ApiOperation({ summary: "List POS registers" })
+  @RequirePermission("pos.registers.read")
   async listRegistersEndpoint(
     @Query() input: ListRegistersInput,
     @Req() req: any
@@ -154,6 +166,40 @@ export class PosController {
     @Req() req: any
   ): Promise<SyncPosSaleOutput> {
     const result = await this.syncPosSale.execute(input, this.toPosUseCaseContext(req));
+
+    if ("error" in result) {
+      throw result.error;
+    }
+
+    return result.value;
+  }
+
+  @Get("admin/transactions")
+  @ApiOperation({ summary: "List POS transactions for admin review" })
+  @RequirePermission("pos.transactions.read")
+  async listPosTransactionsEndpoint(
+    @Query() query: Record<string, unknown>,
+    @Req() req: any
+  ): Promise<ListPosTransactionsOutput> {
+    const input = ListPosTransactionsInputSchema.parse(query) as ListPosTransactionsInput;
+    const result = await this.listPosTransactions.execute(input, this.toPosUseCaseContext(req));
+
+    if ("error" in result) {
+      throw result.error;
+    }
+
+    return result.value;
+  }
+
+  @Get("admin/transactions/:transactionId")
+  @ApiOperation({ summary: "Get a POS transaction detail for admin review" })
+  @RequirePermission("pos.transactions.read")
+  async getPosTransactionEndpoint(
+    @Param("transactionId") transactionId: string,
+    @Req() req: any
+  ): Promise<GetPosTransactionOutput> {
+    const input = GetPosTransactionInputSchema.parse({ transactionId });
+    const result = await this.getPosTransaction.execute(input, this.toPosUseCaseContext(req));
 
     if ("error" in result) {
       throw result.error;

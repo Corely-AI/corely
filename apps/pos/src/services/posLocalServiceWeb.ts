@@ -19,6 +19,7 @@ import {
   type ShiftCashEventCommandPayload,
   type ShiftCashEventType,
 } from "@/offline/posOutbox";
+import { getOutboxStore } from "@/lib/offline/outboxStore";
 import type {
   CreateSaleAndEnqueueInput,
   RestaurantAggregateState,
@@ -46,6 +47,7 @@ import {
   sendRestaurantOrderAndEnqueueWeb,
   upsertRestaurantAggregateWeb,
 } from "@/services/posLocalServiceWeb.restaurant";
+import { requestSyncFlush } from "@/lib/offline/syncTrigger";
 
 const saleBuilder = new SaleBuilder();
 
@@ -56,9 +58,15 @@ export class PosLocalServiceWeb {
   private openShiftsByRegister = new Map<string, ShiftSession>();
   private shiftsById = new Map<string, ShiftSession>();
   private shiftCashEvents = new Map<string, ShiftCashEventRow[]>();
-  private restaurantFloorPlan: FloorPlanRoom[] = [];
-  private restaurantModifierGroups: RestaurantModifierGroup[] = [];
-  private restaurantAggregatesByOrderId = new Map<string, RestaurantAggregateState>();
+  public restaurantFloorPlan: FloorPlanRoom[] = [];
+  public restaurantModifierGroups: RestaurantModifierGroup[] = [];
+  public restaurantAggregatesByOrderId = new Map<string, RestaurantAggregateState>();
+
+  private async persistOutboxCommand(command: OutboxCommand): Promise<void> {
+    const outboxStore = await getOutboxStore();
+    await outboxStore.enqueue(command);
+    requestSyncFlush(`outbox:${command.type}`);
+  }
 
   async replaceCatalogSnapshot(
     products: ProductSnapshot[],
@@ -113,6 +121,7 @@ export class PosLocalServiceWeb {
 
     const posSaleId = uuidv4();
     const saleDate = new Date();
+    const receiptNumber = this.generateReceiptNumber(input.registerId, saleDate, posSaleId);
     const idempotencyKey = buildDeterministicIdempotencyKey.saleFinalize(posSaleId);
 
     const lineItems: PosSaleLineItem[] = input.lineItems.map((line) => {
@@ -149,6 +158,7 @@ export class PosLocalServiceWeb {
       workspaceId: input.workspaceId,
       sessionId: input.sessionId,
       registerId: input.registerId,
+      receiptNumber,
       saleDate,
       cashierEmployeePartyId: input.cashierEmployeePartyId,
       customerPartyId: input.customerPartyId,
@@ -176,7 +186,7 @@ export class PosLocalServiceWeb {
       saleDate,
       cashierEmployeePartyId: input.cashierEmployeePartyId,
       customerPartyId: input.customerPartyId,
-      receiptNumber: this.generateReceiptNumber(input.registerId, saleDate, posSaleId),
+      receiptNumber,
       cartDiscountCents: input.cartDiscountCents,
       subtotalCents,
       taxCents: input.taxCents,
@@ -214,6 +224,8 @@ export class PosLocalServiceWeb {
         }
       }
     }
+
+    await this.persistOutboxCommand(command);
 
     return { sale, command };
   }
@@ -275,6 +287,18 @@ export class PosLocalServiceWeb {
   async openShiftAndEnqueue(input: ShiftOpenInput): Promise<ShiftSession> {
     const now = new Date();
     const sessionId = uuidv4();
+    const command = createPosOutboxCommand(
+      input.workspaceId,
+      PosCommandTypes.ShiftOpen,
+      {
+        sessionId,
+        registerId: input.registerId,
+        openedByEmployeePartyId: input.openedByEmployeePartyId,
+        startingCashCents: input.startingCashCents,
+        notes: input.notes,
+      },
+      buildDeterministicIdempotencyKey.shiftOpen(sessionId)
+    );
 
     const session: ShiftSession = {
       sessionId,
@@ -297,6 +321,7 @@ export class PosLocalServiceWeb {
 
     this.shiftsById.set(sessionId, session);
     this.openShiftsByRegister.set(input.registerId, session);
+    await this.persistOutboxCommand(command);
 
     return session;
   }
@@ -323,6 +348,17 @@ export class PosLocalServiceWeb {
     const varianceCents =
       input.closingCashCents === null ? null : input.closingCashCents - expectedCashCents;
 
+    const command = createPosOutboxCommand(
+      input.workspaceId,
+      PosCommandTypes.ShiftClose,
+      {
+        sessionId: input.sessionId,
+        closingCashCents: input.closingCashCents,
+        notes: input.notes,
+      },
+      buildDeterministicIdempotencyKey.shiftClose(input.sessionId)
+    );
+
     const closed: ShiftSession = {
       ...session,
       status: "CLOSED",
@@ -336,6 +372,7 @@ export class PosLocalServiceWeb {
 
     this.shiftsById.set(closed.sessionId, closed);
     this.openShiftsByRegister.delete(closed.registerId);
+    await this.persistOutboxCommand(command);
 
     return closed;
   }
@@ -358,8 +395,7 @@ export class PosLocalServiceWeb {
       occurredAt: occurredAt.toISOString(),
     };
 
-    // Keep deterministic key generation parity with native service.
-    void createPosOutboxCommand(
+    const command = createPosOutboxCommand(
       input.workspaceId,
       PosCommandTypes.ShiftCashEvent,
       payload,
@@ -378,6 +414,7 @@ export class PosLocalServiceWeb {
       lastError: null,
     });
     this.shiftCashEvents.set(input.sessionId, events);
+    await this.persistOutboxCommand(command);
   }
 
   async markShiftCashEventSynced(eventId: string): Promise<void> {

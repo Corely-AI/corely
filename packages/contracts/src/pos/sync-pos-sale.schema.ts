@@ -9,6 +9,7 @@ export const SyncPosSaleInputSchema = z.object({
   workspaceId: z.string().uuid(),
   sessionId: z.string().uuid().nullable(),
   registerId: z.string().uuid(),
+  receiptNumber: z.string().min(1).optional(),
   saleDate: z.coerce.date(),
   cashierEmployeePartyId: z.string().uuid(),
   customerPartyId: z.string().uuid().nullable(),

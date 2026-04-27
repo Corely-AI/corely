@@ -1,9 +1,14 @@
 import { useMemo, useState } from "react";
-import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Platform, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
 import { formatDateTime } from "@/lib/formatters";
+import {
+  deriveSyncBadgeStatus,
+  matchesSyncFilter,
+  type SyncFilterKey,
+} from "@/lib/offline/sync-status";
 import { posTheme } from "@/ui/theme";
 import {
   Badge,
@@ -16,8 +21,6 @@ import {
   SegmentedControl,
 } from "@/ui/components";
 import type { OutboxCommand } from "@corely/offline-core";
-
-type FilterKey = "ALL" | "PENDING" | "FAILED" | "CONFLICT" | "SUCCEEDED";
 
 export default function SyncScreen() {
   const { t } = useTranslation();
@@ -33,28 +36,32 @@ export default function SyncScreen() {
     lastSyncAt,
   } = useSyncEngine();
 
-  const [filter, setFilter] = useState<FilterKey>("ALL");
+  const [filter, setFilter] = useState<SyncFilterKey>("ALL");
   const [selectedCommand, setSelectedCommand] = useState<OutboxCommand | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const filtered = useMemo(() => {
-    if (filter === "ALL") {
-      return commands;
-    }
-    return commands.filter((command) => command.status === filter);
+    return commands.filter((command) => matchesSyncFilter(command, filter));
   }, [commands, filter]);
 
   const filterCounts = useMemo(
     () => ({
       ALL: commands.length,
-      PENDING: commands.filter(
-        (command) => command.status === "PENDING" || command.status === "IN_FLIGHT"
-      ).length,
+      PENDING: commands.filter((command) => matchesSyncFilter(command, "PENDING")).length,
       FAILED: commands.filter((command) => command.status === "FAILED").length,
       CONFLICT: commands.filter((command) => command.status === "CONFLICT").length,
       SUCCEEDED: commands.filter((command) => command.status === "SUCCEEDED").length,
     }),
     [commands]
+  );
+
+  const headerStatus = useMemo(
+    () =>
+      deriveSyncBadgeStatus({
+        syncStatus,
+        queueStats,
+      }),
+    [queueStats, syncStatus]
   );
 
   const onRefresh = async () => {
@@ -68,13 +75,44 @@ export default function SyncScreen() {
     Alert.alert(t("sync.logsCopiedTitle"), t("sync.logsCopiedMessage", { count: len }));
   };
 
+  const confirmDropSelectedCommand = () => {
+    if (!selectedCommand) {
+      return;
+    }
+
+    const executeDrop = () => {
+      void dropCommand(selectedCommand.commandId);
+      setSelectedCommand(null);
+    };
+
+    if (Platform.OS === "web" && typeof globalThis.confirm === "function") {
+      if (globalThis.confirm(t("sync.dropCommandMessage"))) {
+        executeDrop();
+      }
+      return;
+    }
+
+    Alert.alert(t("sync.dropCommandTitle"), t("sync.dropCommandMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.drop"),
+        style: "destructive",
+        onPress: executeDrop,
+      },
+    ]);
+  };
+
   return (
     <View testID="pos-sync-screen" style={styles.container}>
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.commandId}
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          Platform.OS === "web" ? undefined : (
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          )
+        }
         ListHeaderComponent={
           <View style={styles.headerBlock}>
             <Card>
@@ -90,7 +128,7 @@ export default function SyncScreen() {
                       : t("sync.lastSyncNever")}
                   </Text>
                 </View>
-                <StatusBadge status={syncStatus === "syncing" ? "IN_FLIGHT" : "SUCCEEDED"} />
+                <StatusBadge status={headerStatus} />
               </View>
 
               <View style={styles.metricsRow}>
@@ -219,23 +257,13 @@ export default function SyncScreen() {
                   }}
                 />
               ) : null}
-              <Button
-                label={t("sync.dropCommand")}
-                variant="destructive"
-                onPress={() => {
-                  Alert.alert(t("sync.dropCommandTitle"), t("sync.dropCommandMessage"), [
-                    { text: t("common.cancel"), style: "cancel" },
-                    {
-                      text: t("common.drop"),
-                      style: "destructive",
-                      onPress: () => {
-                        void dropCommand(selectedCommand.commandId);
-                        setSelectedCommand(null);
-                      },
-                    },
-                  ]);
-                }}
-              />
+              {selectedCommand.status !== "SUCCEEDED" ? (
+                <Button
+                  label={t("sync.dropCommand")}
+                  variant="destructive"
+                  onPress={confirmDropSelectedCommand}
+                />
+              ) : null}
             </CenteredActions>
           </View>
         ) : null}

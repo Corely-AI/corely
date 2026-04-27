@@ -27,6 +27,7 @@ export interface CreateWorkspaceInput {
   legalEntityId: string;
   name: string;
   slug?: string;
+  verticalId?: string;
   publicEnabled?: boolean;
   publicModules?: Record<string, boolean> | null;
   onboardingStatus?: string;
@@ -36,6 +37,7 @@ export interface CreateWorkspaceInput {
 export interface UpdateWorkspaceInput {
   name?: string;
   slug?: string;
+  verticalId?: string;
   publicEnabled?: boolean;
   publicModules?: Record<string, boolean> | null;
   onboardingStatus?: string;

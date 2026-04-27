@@ -4,6 +4,7 @@
 model Register {
   id                   String   @id @default(uuid()) @db.Uuid
   workspaceId          String   @map("workspace_id")
+  cashDrawerId         String?  @map("cash_drawer_id")
   name                 String   @db.VarChar(100)
   defaultWarehouseId   String?  @map("default_warehouse_id") @db.Uuid
   defaultBankAccountId String?  @map("default_bank_account_id") @db.Uuid
@@ -13,6 +14,7 @@ model Register {
 
   workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   shiftSessions   ShiftSession[]
+  posSaleRecords  PosSaleRecord[]
   paymentAttempts PaymentAttempt[]
 
   @@unique([workspaceId, name])
@@ -80,6 +82,40 @@ model PosSaleIdempotency {
   @@index([workspaceId])
   @@index([posSaleId])
   @@map("pos_sale_idempotency")
+  @@schema("commerce")
+}
+
+model PosSaleRecord {
+  id                     String   @id @db.Uuid
+  workspaceId            String   @map("workspace_id")
+  sessionId              String?  @map("session_id") @db.Uuid
+  registerId             String   @map("register_id") @db.Uuid
+  receiptNumber          String   @map("receipt_number") @db.VarChar(100)
+  saleDate               DateTime @map("sale_date") @db.Timestamptz
+  cashierEmployeePartyId String   @map("cashier_employee_party_id") @db.Uuid
+  customerPartyId        String?  @map("customer_party_id") @db.Uuid
+  subtotalCents          Int      @map("subtotal_cents")
+  taxCents               Int      @map("tax_cents")
+  totalCents             Int      @map("total_cents")
+  currency               String   @db.VarChar(3)
+  status                 String   @default("SYNCED") @db.VarChar(20)
+  lineItemsJson          Json     @map("line_items_json")
+  paymentsJson           Json     @map("payments_json")
+  idempotencyKey         String   @map("idempotency_key") @db.VarChar(255)
+  serverInvoiceId        String?  @map("server_invoice_id") @db.Uuid
+  serverPaymentId        String?  @map("server_payment_id") @db.Uuid
+  syncedAt               DateTime @map("synced_at") @db.Timestamptz
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  register  Register  @relation(fields: [registerId], references: [id], onDelete: Restrict)
+
+  @@unique([workspaceId, idempotencyKey], map: "pos_sale_records_workspace_idempotency")
+  @@index([workspaceId, saleDate, status])
+  @@index([workspaceId, registerId, saleDate])
+  @@index([workspaceId, receiptNumber])
+  @@map("pos_sale_records")
   @@schema("commerce")
 }
 

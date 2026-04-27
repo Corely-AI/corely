@@ -14,6 +14,7 @@ export class SyncCommandMapper {
       workspaceId: posSale.workspaceId,
       sessionId: posSale.sessionId,
       registerId: posSale.registerId,
+      receiptNumber: posSale.receiptNumber,
       saleDate: posSale.saleDate,
       cashierEmployeePartyId: posSale.cashierEmployeePartyId,
       customerPartyId: posSale.customerPartyId,

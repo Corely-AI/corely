@@ -11,6 +11,53 @@ import { runRestaurantCopilotPrompt } from "@/lib/restaurant-copilot";
 import { Badge, Card, EmptyState, SegmentedControl } from "@/ui/components";
 import { posTheme } from "@/ui/theme";
 
+const tableStatusMeta = {
+  AVAILABLE: {
+    label: "Available",
+    tone: "success" as const,
+    icon: "checkmark-circle-outline" as const,
+    iconColor: posTheme.colors.success,
+    helperText: "Tap to open check",
+    cardStyle: {
+      backgroundColor: posTheme.colors.statusSuccessSoft,
+      borderColor: posTheme.colors.success,
+    },
+  },
+  OCCUPIED: {
+    label: "Occupied",
+    tone: "info" as const,
+    icon: "restaurant-outline" as const,
+    iconColor: posTheme.colors.info,
+    helperText: "Tap to resume check",
+    cardStyle: {
+      backgroundColor: posTheme.colors.statusInfoSoft,
+      borderColor: posTheme.colors.info,
+    },
+  },
+  DIRTY: {
+    label: "Dirty",
+    tone: "warning" as const,
+    icon: "sparkles-outline" as const,
+    iconColor: posTheme.colors.warning,
+    helperText: "Needs reset before next seating",
+    cardStyle: {
+      backgroundColor: posTheme.colors.statusWarningSoft,
+      borderColor: posTheme.colors.warning,
+    },
+  },
+  OUT_OF_SERVICE: {
+    label: "Out of service",
+    tone: "danger" as const,
+    icon: "close-circle-outline" as const,
+    iconColor: posTheme.colors.danger,
+    helperText: "Blocked from service",
+    cardStyle: {
+      backgroundColor: posTheme.colors.statusDangerSoft,
+      borderColor: posTheme.colors.danger,
+    },
+  },
+};
+
 export default function RestaurantFloorScreen() {
   const router = useRouter();
   const { isTablet } = useAdaptiveLayout();
@@ -78,6 +125,12 @@ export default function RestaurantFloorScreen() {
         ]}
       />
 
+      <View style={styles.legendRow}>
+        {Object.values(tableStatusMeta).map((status) => (
+          <Badge key={status.label} label={status.label} tone={status.tone} />
+        ))}
+      </View>
+
       <RestaurantCopilotPanel
         title="Floor plan copilot"
         helperText="Summarize occupied, dirty, or blocked tables without interrupting manual floor usage."
@@ -108,44 +161,39 @@ export default function RestaurantFloorScreen() {
             <Badge label={`${room.tables.length} tables`} />
           </View>
           <View style={[styles.tablesGrid, isTablet && styles.tablesGridTablet]}>
-            {room.tables.map((table) => (
-              <Pressable
-                key={table.id}
-                testID={`pos-restaurant-table-card-${table.id}`}
-                style={[
-                  styles.tableCard,
-                  table.availabilityStatus === "OCCUPIED" && styles.tableCardOccupied,
-                ]}
-                onPress={async () => {
-                  try {
-                    await openOrResumeTable(table.id);
-                    router.push(`/restaurant/table/${table.id}` as never);
-                  } catch (error) {
-                    Alert.alert(
-                      "Unable to open table",
-                      error instanceof Error ? error.message : "Unknown error"
-                    );
-                  }
-                }}
-              >
-                <View style={styles.tableHeader}>
-                  <Text style={styles.tableName}>{table.name}</Text>
-                  <Ionicons
-                    name={
-                      table.availabilityStatus === "OCCUPIED" ? "restaurant" : "ellipse-outline"
+            {room.tables.map((table) => {
+              const statusMeta = tableStatusMeta[table.availabilityStatus];
+
+              return (
+                <Pressable
+                  key={table.id}
+                  testID={`pos-restaurant-table-card-${table.id}`}
+                  style={[styles.tableCard, statusMeta.cardStyle]}
+                  onPress={async () => {
+                    try {
+                      await openOrResumeTable(table.id);
+                      router.push(`/restaurant/table/${table.id}` as never);
+                    } catch (error) {
+                      Alert.alert(
+                        "Unable to open table",
+                        error instanceof Error ? error.message : "Unknown error"
+                      );
                     }
-                    size={18}
-                    color={posTheme.colors.text}
-                  />
-                </View>
-                <Text style={styles.tableMeta}>
-                  {table.availabilityStatus} · seats {table.capacity ?? "?"}
-                </Text>
-                <Text style={styles.tableMeta}>
-                  {table.activeOrderId ? "Tap to resume check" : "Tap to open check"}
-                </Text>
-              </Pressable>
-            ))}
+                  }}
+                >
+                  <View style={styles.tableHeader}>
+                    <Text style={styles.tableName}>{table.name}</Text>
+                    <Ionicons name={statusMeta.icon} size={18} color={statusMeta.iconColor} />
+                  </View>
+                  <Text style={styles.tableMeta}>
+                    {statusMeta.label} · seats {table.capacity ?? "?"}
+                  </Text>
+                  <Text style={styles.tableMeta}>
+                    {table.activeOrderId ? "Tap to resume check" : statusMeta.helperText}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </Card>
       ))}
@@ -180,6 +228,11 @@ const styles = StyleSheet.create({
     color: posTheme.colors.textMuted,
     fontSize: 14,
   },
+  legendRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: posTheme.spacing.xs,
+  },
   muted: {
     color: posTheme.colors.textMuted,
   },
@@ -209,9 +262,6 @@ const styles = StyleSheet.create({
     padding: posTheme.spacing.md,
     minWidth: 180,
     gap: 6,
-  },
-  tableCardOccupied: {
-    backgroundColor: posTheme.colors.primaryMuted,
   },
   tableHeader: {
     flexDirection: "row",

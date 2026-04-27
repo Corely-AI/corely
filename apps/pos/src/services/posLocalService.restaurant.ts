@@ -16,6 +16,7 @@ import {
   createPosOutboxCommand,
   PosCommandTypes,
 } from "@/offline/posOutbox";
+import { requestSyncFlush } from "@/lib/offline/syncTrigger";
 import {
   insertOutboxCommandTransactional,
   readSyncState,
@@ -170,6 +171,7 @@ export async function openRestaurantTableAndEnqueue(
     await insertOutboxCommandTransactional(db, command);
   });
 
+  requestSyncFlush(`outbox:${command.type}`);
   return {
     session: state.session,
     order: state.order,
@@ -209,6 +211,7 @@ export async function replaceRestaurantDraftAndEnqueue(
     await insertOutboxCommandTransactional(db, command);
   });
 
+  requestSyncFlush(`outbox:${command.type}`);
   return {
     session: next.session,
     order: next.order,
@@ -241,6 +244,7 @@ export async function sendRestaurantOrderAndEnqueue(
     await insertOutboxCommandTransactional(db, command);
   });
 
+  requestSyncFlush(`outbox:${command.type}`);
   return {
     session: next.session,
     order: next.order,

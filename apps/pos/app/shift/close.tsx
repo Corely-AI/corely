@@ -3,6 +3,7 @@ import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { usePosBackNavigation } from "@/hooks/usePosBackNavigation";
 import { useShiftStore } from "@/stores/shiftStore";
 import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
 import { RestaurantCopilotPanel } from "@/components/restaurant-copilot-panel";
@@ -25,6 +26,7 @@ import { posTheme } from "@/ui/theme";
 export default function CloseShiftScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = usePosBackNavigation("/(main)/settings");
   const { isTablet } = useAdaptiveLayout();
   const { currentShift, cashEvents, closeShift, addCashEvent, isLoading } = useShiftStore();
   const [cashEventAmount, setCashEventAmount] = useState("");
@@ -36,7 +38,7 @@ export default function CloseShiftScreen() {
       <AppShell
         title={t("shift.closeTitle")}
         subtitle={t("settings.noActiveShift")}
-        onBack={() => router.back()}
+        onBack={goBack}
         maxWidth={760}
       >
         <View style={styles.empty}>
@@ -46,7 +48,7 @@ export default function CloseShiftScreen() {
             }
             title={t("settings.noActiveShift")}
             description={t("shift.noActiveDescription")}
-            primaryAction={{ label: t("common.back"), onPress: () => router.back() }}
+            primaryAction={{ label: t("common.back"), onPress: goBack }}
           />
         </View>
       </AppShell>
@@ -135,7 +137,7 @@ export default function CloseShiftScreen() {
     <AppShell
       title={t("shift.closeTitle")}
       subtitle={t("shift.closeSubtitle")}
-      onBack={() => router.back()}
+      onBack={goBack}
       maxWidth={1120}
     >
       <View

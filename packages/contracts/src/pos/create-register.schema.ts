@@ -18,6 +18,7 @@ export type CreateRegisterInput = z.infer<typeof CreateRegisterInputSchema>;
 export const CreateRegisterOutputSchema = RegisterSchema.pick({
   registerId: true,
   workspaceId: true,
+  cashDrawerId: true,
   name: true,
   status: true,
   defaultWarehouseId: true,

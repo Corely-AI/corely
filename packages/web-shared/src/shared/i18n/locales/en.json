@@ -113,16 +113,21 @@
     }
   },
   "onboarding": {
+    "title": "Onboarding",
+    "progressTitle": "Progress",
     "allSet": "You're all set!",
     "redirectingToDashboard": "Redirecting to your dashboard...",
     "saveAndExit": "Save & Exit",
     "goBack": "Go back",
+    "skipForNow": "Skip for now",
     "loading": "Loading onboarding...",
     "aiAssistant": "AI Assistant",
     "aiTipTitle": "Helpful Assistant",
     "aiHelpTitle": "Need help with this step?",
     "aiHelpPrompt": "Need help with this step? Ask our AI assistant to explain or suggest what to do next.",
     "askAssistant": "Ask Assistant",
+    "sidebarHelpTitle": "Need help?",
+    "sidebarHelpDescription": "Our AI assistant is available at every step to help you set up Corely effectively.",
     "businessName": "Business Name",
     "businessNamePlaceholder": "e.g. Bella Beauty Studio",
     "businessNameRequired": "Business name is required",
@@ -150,6 +155,9 @@
     "workflow": {
       "insightTitle": "Personalized Insight",
       "selectHint": "Select your previous flow"
+    },
+    "language": {
+      "defaultHint": "Default language"
     },
     "welcome": {
       "badge": "New Experience",
@@ -200,7 +208,11 @@
     },
     "closing": {
       "watchTutorial": "Watch 30s tutorial",
+      "previewAlt": "Closing register",
       "skipLabel": "I'll do this later"
+    },
+    "errors": {
+      "missingStepComponent": "Step component not found for type: {{type}}"
     },
     "postValue": {
       "inviteTitle": "Invite your team",
@@ -291,6 +303,11 @@
     "inventoryReorder": "Inventory - Reorder",
     "inventoryCopilot": "Inventory - Copilot",
     "catalogItems": "Catalog Items",
+    "pos": {
+      "catalog": "Catalog",
+      "catalogQuickAdd": "Quick Add Item",
+      "transactions": "Transactions"
+    },
     "importShipments": "Shipments",
     "suppliers": "Suppliers",
     "automation": "Automation",

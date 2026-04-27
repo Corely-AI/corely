@@ -67,6 +67,12 @@ pnpm install
 pnpm --filter @corely/pos start
 ```
 
+Local dev server:
+
+```txt
+http://localhost:6080
+```
+
 ## Validation
 
 ```bash
