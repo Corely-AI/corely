@@ -6,6 +6,7 @@ import {
   UseGuards,
   BadRequestException,
   Headers,
+  Header,
   Req,
   Inject,
 } from "@nestjs/common";
@@ -243,6 +244,7 @@ export class AuthController {
    * TODO: Implement with proper repository injection
    */
   @Get("me")
+  @Header("Cache-Control", "no-store")
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async getMe(
@@ -285,7 +287,7 @@ export class AuthController {
       email: user.getEmail().getValue(),
       name: user.getName(),
       activeTenantId: tenantId ?? null,
-      activeWorkspaceId: workspaceId ?? undefined,
+      activeWorkspaceId: tenantId === null ? undefined : (workspaceId ?? undefined),
       memberships: membershipDtos,
     };
   }

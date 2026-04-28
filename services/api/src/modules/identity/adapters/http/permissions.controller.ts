@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, UseGuards, HttpException, Req } from "@nestjs/common";
+import { Controller, Get, Inject, UseGuards, HttpException, Req, Header } from "@nestjs/common";
 import type { Request } from "express";
 import { AuthGuard } from "./auth.guard";
 import { RbacGuard, RequirePermission } from "./rbac.guard";
@@ -29,6 +29,7 @@ export class PermissionsController {
   }
 
   @Get("effective")
+  @Header("Cache-Control", "no-store")
   async getEffectivePermissions(@Req() req: Request) {
     try {
       const ctx = buildUseCaseContext(req);
