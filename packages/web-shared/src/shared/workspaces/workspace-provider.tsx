@@ -22,6 +22,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const { isAuthenticated, user } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId());
   const isHostScope = user?.activeTenantId === null;
+  const shouldLoadWorkspaces = isAuthenticated && !isHostScope;
 
   console.debug("[WorkspaceProvider] init", {
     isAuthenticated,
@@ -35,7 +36,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   } = useQuery<WorkspaceDto[]>({
     queryKey: ["workspaces"],
     queryFn: () => workspacesApi.listWorkspaces(),
-    enabled: isAuthenticated,
+    enabled: shouldLoadWorkspaces,
     staleTime: 30_000,
   });
 

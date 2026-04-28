@@ -58,6 +58,23 @@ describe("RequireAuth surface gating", () => {
     expect(screen.getByText("CRM Landing")).toBeInTheDocument();
   });
 
+  it("redirects host dashboard traffic to tenant settings", () => {
+    workspaceState = { workspaces: [], isLoading: false, isHostScope: true };
+
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <Routes>
+          <Route element={<RequireAuth />}>
+            <Route path="/settings/tenants" element={<div>Tenant Settings</div>} />
+            <Route path="/dashboard" element={<div>Dashboard</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("Tenant Settings")).toBeInTheDocument();
+  });
+
   it("shows not found when a route is disallowed for the active surface", () => {
     surfaceIdState = "crm";
 
