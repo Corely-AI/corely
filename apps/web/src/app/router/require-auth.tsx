@@ -28,6 +28,10 @@ export const RequireAuth: React.FC = () => {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 
+  if (isHostScope && location.pathname === "/dashboard") {
+    return <Navigate to="/settings/tenants" replace />;
+  }
+
   if (surfaceId !== "platform" && location.pathname === "/dashboard") {
     return <Navigate to={getDefaultRouteForSurface(surfaceId)} replace />;
   }
