@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { ensureDefaultWorkspace } from "@corely/web-shared";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useTranslation } from "react-i18next";
 import { normalizeError } from "@corely/api-client";
+import { pingApi } from "../../lib/ping-api";
 
 export const SignupPage = () => {
   const navigate = useNavigate();
@@ -21,6 +22,10 @@ export const SignupPage = () => {
       : i18n.resolvedLanguage?.startsWith("vi") || i18n.language?.startsWith("vi")
         ? "vi"
         : "en";
+
+  useEffect(() => {
+    pingApi("signup");
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
