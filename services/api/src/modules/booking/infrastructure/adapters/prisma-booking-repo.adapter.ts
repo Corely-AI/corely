@@ -93,6 +93,9 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
     // Create using a nested transaction
     const created = await this.prisma.$transaction(
       async (tx) => {
+        for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
+          await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${booking.tenantId}:${resourceId}`}, 0))::text`;
+        }
         // 1. Conflict check inside TX to guarantee no race double bookings
         for (const alloc of allocations) {
           // Explicitly check inside TX
@@ -148,8 +151,8 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
           include: { allocations: true },
         });
       },
-      { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead }
-    ); // Need stable reads for conflict check
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+    ); // Re-read after resource lock acquisition
 
     return this.mapToDomain(created);
   }
@@ -238,6 +241,9 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
   ): Promise<void> {
     await this.prisma.$transaction(
       async (tx) => {
+        for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
+          await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${tenantId}:${resourceId}`}, 0))::text`;
+        }
         // Delete old
         await tx.bookingAllocation.deleteMany({
           where: { bookingId, tenantId },
@@ -276,7 +282,7 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
           });
         }
       },
-      { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead }
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
     );
   }
 }

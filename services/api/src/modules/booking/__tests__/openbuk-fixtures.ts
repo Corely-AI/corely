@@ -1,0 +1,21 @@
+import type { OpenBukStudio } from "@corely/contracts";
+export const studioFixture = (overrides: Partial<OpenBukStudio> = {}): OpenBukStudio => ({
+  studioName: "Test studio",
+  slug: "test-studio",
+  timezone: "Europe/Berlin",
+  locale: "en",
+  currency: "EUR",
+  serviceId: "service",
+  staffId: "staff",
+  serviceName: "Manicure",
+  staffName: "Anna",
+  durationMinutes: 45,
+  priceCents: 3500,
+  bufferBeforeMinutes: 0,
+  bufferAfterMinutes: 15,
+  minimumNoticeMinutes: 0,
+  maximumAdvanceDays: 180,
+  weeklyHours: [{ dayOfWeek: 1, startTime: "09:00", endTime: "18:00" }],
+  blockedTimes: [],
+  ...overrides,
+});

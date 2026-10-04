@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 /**
  * Extension Storage Ports
  *
@@ -51,8 +52,8 @@ export interface KvEntry {
 }
 
 export interface ExtKvPort {
-  get(input: KvGetInput): Promise<KvEntry | null>;
-  set(input: KvSetInput): Promise<KvEntry>;
+  get(input: KvGetInput, tx?: TransactionContext): Promise<KvEntry | null>;
+  set(input: KvSetInput, tx?: TransactionContext): Promise<KvEntry>;
   delete(input: KvDeleteInput): Promise<void>;
   list(input: KvListInput): Promise<KvEntry[]>;
 }

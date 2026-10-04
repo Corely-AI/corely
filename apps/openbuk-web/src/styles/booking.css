@@ -1,0 +1,138 @@
+.public-page {
+  min-height: 100vh;
+  background: #f2f4ec;
+  padding-bottom: 35px;
+}
+.booking-shell {
+  max-width: 620px;
+  margin: 42px auto 25px;
+  background: white;
+  border-radius: 17px;
+  overflow: hidden;
+  box-shadow: 0 12px 50px #233b3210;
+  border: 1px solid var(--line);
+}
+.booking-banner {
+  text-align: center;
+  background: #e1e9d9;
+  padding: 30px;
+}
+.booking-banner .petal {
+  display: block;
+  margin-bottom: 17px;
+}
+.booking-banner h1 {
+  font-size: 2.15rem;
+  margin: 12px 0;
+}
+.booking-banner p:last-child {
+  font-size: 12px;
+  margin: 0;
+}
+.booking-body {
+  padding: 30px 40px;
+}
+.selected-service {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 20px;
+  margin-bottom: 25px;
+}
+.selected-service h2 {
+  font-size: 20px;
+  margin-bottom: 9px;
+}
+.selected-service p {
+  font-size: 12px;
+  margin: 0;
+}
+.selected-service > strong {
+  font-size: 20px;
+  white-space: nowrap;
+}
+.booking-body h3 {
+  font-size: 14px;
+  letter-spacing: 0;
+  margin-top: 25px;
+}
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+}
+.slot-grid button {
+  padding: 12px 6px;
+  border: 1px solid #d4ddcd;
+  border-radius: 6px;
+  background: white;
+  color: var(--green);
+  min-height: 48px;
+  font-size: 13px;
+}
+.slot-grid small {
+  display: block;
+  font-size: 8px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+.customer-form {
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 1px solid var(--line);
+}
+.customer-form h2 {
+  font-size: 20px;
+}
+.consent {
+  align-items: flex-start;
+  margin: 15px 0 24px;
+  font-size: 11px;
+}
+.consent input {
+  margin-top: 3px;
+}
+.booking-footer {
+  text-align: center;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 10px 20px;
+}
+.confirmation {
+  text-align: center;
+  padding: 40px;
+}
+.confirmation h1 {
+  font-size: 2.4rem;
+}
+.success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dfebd7;
+  color: #42663a;
+  width: 60px;
+  height: 60px;
+  font-size: 27px;
+  border-radius: 50%;
+  margin-bottom: 25px;
+}
+.receipt {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 25px;
+  margin-top: 25px;
+}
+.receipt h2 {
+  font-size: 21px;
+}
+.receipt p {
+  font-size: 13px;
+}
+.receipt .reference {
+  font-family: monospace;
+  font-size: 16px;
+  margin-bottom: 0;
+}

@@ -1,0 +1,230 @@
+.hero {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 50px;
+  padding-top: 54px;
+  padding-bottom: 86px;
+  align-items: center;
+}
+.hero-copy > .eyebrow {
+  margin-bottom: 27px;
+}
+.hero h1 {
+  margin-bottom: 23px;
+}
+.hero-sub {
+  font-size: 18px;
+  margin-bottom: 9px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hero .actions {
+  margin-top: 30px;
+}
+.micro {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 20px;
+}
+.hero-art {
+  position: relative;
+  padding: 24px 18px 18px 36px;
+}
+.art-circle {
+  position: absolute;
+  inset: -10px -30px 20px -10px;
+  background: #e8ecdf;
+  border-radius: 49% 49% 40% 44%;
+  transform: rotate(-8deg);
+}
+.preview-card {
+  position: relative;
+  border-radius: 16px;
+  background: white;
+  overflow: hidden;
+  max-width: 390px;
+  margin: auto;
+  box-shadow: 0 18px 48px #223c3320;
+  transform: rotate(3deg);
+  border: 6px solid #ffffff99;
+}
+.preview-banner {
+  background: #d2dcce;
+  padding: 24px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: Manrope, sans-serif;
+  font-size: 23px;
+}
+.preview-banner small {
+  font-family: "DM Sans", sans-serif;
+  font-size: 10px;
+}
+.petal {
+  font-size: 39px;
+  font-weight: 400;
+  color: #698b60;
+  line-height: 1;
+}
+.preview-content {
+  padding: 26px 24px;
+}
+.preview-content .eyebrow {
+  font-size: 8px;
+  color: var(--muted);
+}
+.sample-service {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding: 13px 0 18px;
+  margin-bottom: 22px;
+  font-size: 13px;
+}
+.sample-service p {
+  font-size: 10px;
+  margin: 6px 0 0;
+}
+.sample-days,
+.sample-times {
+  display: flex;
+  gap: 8px;
+  margin: 13px 0;
+}
+.sample-days span,
+.sample-times span {
+  flex: 1;
+  text-align: center;
+  padding: 12px 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.sample-times span {
+  font-size: 10px;
+}
+.selected {
+  background: var(--green) !important;
+  color: #fff !important;
+  border-color: var(--green) !important;
+}
+.preview-button {
+  background: var(--green);
+  color: white;
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 13px;
+  text-align: center;
+  margin-top: 20px;
+}
+.art-caption {
+  position: relative;
+  font-size: 9px;
+  text-align: center;
+  margin: 29px 0 0;
+  color: var(--muted);
+}
+.sparkle {
+  position: absolute;
+  right: -6px;
+  bottom: 40px;
+  color: #af966c;
+  font-size: 65px;
+  transform: rotate(15deg);
+}
+.promise-strip {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #f1f3eb;
+}
+.promise-strip .wrap {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  font-size: 12px;
+}
+.section {
+  padding-top: 83px;
+  padding-bottom: 85px;
+}
+.section > .eyebrow {
+  color: var(--muted);
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 60px;
+  margin-top: 42px;
+}
+.feature-grid article {
+  border-top: 1px solid #c9d2c4;
+  padding-top: 24px;
+}
+.step-number {
+  font-size: 11px;
+  color: #809879;
+  display: block;
+  margin-bottom: 24px;
+}
+.feature-grid p {
+  font-size: 14px;
+}
+.ownership {
+  margin: 0 auto;
+  background: #e9eee2;
+  border-radius: 16px;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1172px;
+}
+.ownership div:first-child {
+  max-width: 650px;
+}
+.ownership p:last-child {
+  font-size: 16px;
+  max-width: 520px;
+  margin-bottom: 0;
+}
+.ownership-symbol {
+  font-size: 130px;
+  line-height: 1;
+  color: #aab69b;
+  font-family: Georgia;
+}
+.final-cta {
+  text-align: center;
+}
+.final-cta h2 {
+  font-size: 2.8rem;
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 30px !important;
+  padding-bottom: 35px !important;
+  border-top: 1px solid var(--line);
+}
+footer p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+footer .logo {
+  font-size: 22px;
+}

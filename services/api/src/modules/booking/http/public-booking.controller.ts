@@ -38,6 +38,7 @@ import {
   type ResourceRepositoryPort,
   type ServiceRepositoryPort,
 } from "../application/ports/booking-repo.ports";
+import { OpenBukStudioUseCase } from "../application/use-cases/openbuk-studio.usecase";
 import { CreateHoldUseCase } from "../application/use-cases/create-hold.usecase";
 import { CreateBookingUseCase } from "../application/use-cases/create-booking.usecase";
 import { GetBookingUseCase } from "../application/use-cases/get-booking.usecase";
@@ -164,7 +165,8 @@ export class PublicBookingController {
     private readonly createBooking: CreateBookingUseCase,
     private readonly getBooking: GetBookingUseCase,
     @Inject(BOOKING_NOTIFICATION_PORT)
-    private readonly bookingNotifications: BookingNotificationPort
+    private readonly bookingNotifications: BookingNotificationPort,
+    private readonly openBuk: OpenBukStudioUseCase
   ) {}
 
   @Get("pages/:slug")
@@ -595,6 +597,8 @@ export class PublicBookingController {
     if (!ctx.tenantId || !ctx.workspaceId) {
       throw new NotFoundException("Public workspace not resolved");
     }
+
+    await this.openBuk.assertLegacyPublicBookingAllowed(ctx);
 
     const workspace = await this.prisma.workspace.findFirst({
       where: {

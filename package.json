@@ -66,7 +66,8 @@
     "test:unit": "vitest run --workspace ./vitest.workspace.ts",
     "test:int": "pnpm prisma:generate && vitest run --workspace ./vitest.workspace.int.ts",
     "test:watch": "vitest --workspace ./vitest.workspace.ts --watch",
-    "coverage": "vitest run --workspace ./vitest.workspace.ts --coverage"
+    "coverage": "vitest run --workspace ./vitest.workspace.ts --coverage",
+    "dev:openbuk": "pnpm --filter @corely/openbuk-web dev"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
