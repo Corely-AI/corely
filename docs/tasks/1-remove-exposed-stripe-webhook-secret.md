@@ -4,6 +4,7 @@
 
 - Tracking: [secret-scanning alert 1](https://github.com/Corely-AI/corely/security/secret-scanning/1), not GitHub issue 1.
 - Branch: `1-remove-exposed-stripe-webhook-secret`; PR base: `development`.
+- Draft PR: [#367](https://github.com/Corely-AI/corely/pull/367).
 - Inspected base: `4ed3292a2c556cff9d13b2cb6c85672be48fb2f3` on 7 November 2026.
 - Goal: remove the reported credential from both current test files without changing fake-provider coverage.
 - Exclusions: secret rotation/revocation, local environment changes, merging, deployment, history rewriting, and unrelated audit work.
