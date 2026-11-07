@@ -42,9 +42,10 @@ dependencies/context. Reuse existing work, including verified completed work. A 
 `not_planned` issue is not completion evidence. Split oversized work into coherent outcomes;
 keep ordinary tests and UI evidence with the behavior they verify.
 
-Use `codex/<issue-number>-<short-summary>` for a new ticket branch. Verify the actual base and
-remote before branching or publishing. The observed default is `development` and remote is
-`corely`; these are observations, not permanent configuration. Do not substitute the later PR
+Use `<issue-number>-<short-summary>` for a new ticket branch. Never use `codex/` as a branch
+prefix. Verify the actual base and remote before branching or publishing. The observed default
+is `development` and remote is `corely`; these are observations, not permanent configuration.
+Do not substitute the later PR
 number for the issue number, rename existing branches or overwrite unrelated work.
 
 Parentage alone does not authorize an epic branch. Prefer independent delivery. If a prerequisite

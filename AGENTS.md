@@ -7,10 +7,11 @@ maintainer/agent workflow and the [skills catalog](docs/ai/skills-management.md)
 for task-specific procedures under `.agents/skills/`. Load only relevant skills.
 They support these instructions and do not expand task authorization.
 
-Deliver each implemented ticket on its own `codex/<issue>-<summary>` branch and
-linked Draft PR, honoring explicit local-only/no-commit/no-push limits. Verify the
-actual base and remote; do not assume `main`. Read-only/planning work does not
-need empty PRs. Use the [PR template](.github/pull_request_template.md).
+Deliver each implemented ticket on its own `<issue-number>-<short-summary>` branch
+and linked Draft PR. Never use `codex/` as a branch prefix. Honor explicit
+local-only/no-commit/no-push limits. Verify the actual base and remote; do not
+assume `main`. Read-only/planning work does not need empty PRs. Use the
+[PR template](.github/pull_request_template.md).
 
 For interface changes, inspect the rendered flow and include screenshots or a
 recording plus relevant UI/UX states/viewports in the PR before requesting review.

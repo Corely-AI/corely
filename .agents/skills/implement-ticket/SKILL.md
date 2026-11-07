@@ -21,9 +21,9 @@ Use the [product strategy](../../../docs/products/corely/README.md),
    assign a person, or rewrite existing scope merely to satisfy workflow bookkeeping.
 2. Verify the working tree, repository, remote and intended base. The observed remote is `corely`
    and default branch `development`; rediscover them before branching or publishing. Use a separate
-   `codex/<issue-number>-<short-summary>` branch per implemented ticket, from the approved current
-   base. Preserve unrelated changes; use an isolated worktree when needed. Parentage alone does
-   not authorize an epic integration branch or a different base.
+   `<issue-number>-<short-summary>` branch per implemented ticket, from the approved current base.
+   Never use `codex/` as a branch prefix. Preserve unrelated changes; use an isolated worktree
+   when needed. Parentage alone does not authorize an epic integration branch or a different base.
 3. For substantial work keep `docs/tasks/<issue-number>-<short-summary>.md` using the
    [task record](references/task-template.md). Record the actual issue, parent/dependencies, branch,
    intended PR base, scoped plan and actual verification. A PR number is not an issue number.
