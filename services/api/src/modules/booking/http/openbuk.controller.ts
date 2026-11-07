@@ -14,6 +14,7 @@ import {
 import type { Request } from "express";
 import {
   OpenBukSetupSchema,
+  OpenBukSetupDraftSchema,
   OpenBukBookSchema,
   OpenBukAvailabilityQuerySchema,
 } from "@corely/contracts";
@@ -27,12 +28,27 @@ import { OpenBukStudioUseCase } from "../application/use-cases/openbuk-studio.us
 export class OpenBukAdminController {
   constructor(private readonly app: OpenBukStudioUseCase) {}
   @Get("studio")
+  @Header("Cache-Control", "no-store")
   studio(@Req() req: Request) {
     return this.app.getStudio(buildUseCaseContext(req));
+  }
+  @Get("setup")
+  @Header("Cache-Control", "no-store")
+  setup(@Req() req: Request) {
+    return this.app.getSetup(buildUseCaseContext(req));
+  }
+  @Put("setup")
+  @Header("Cache-Control", "no-store")
+  saveSetup(@Body() body: unknown, @Req() req: Request) {
+    return this.app.saveSetup(OpenBukSetupDraftSchema.parse(body), buildUseCaseContext(req));
   }
   @Put("studio")
   configure(@Body() body: unknown, @Req() req: Request) {
     return this.app.configure(OpenBukSetupSchema.parse(body), buildUseCaseContext(req));
+  }
+  @Post("studio/publish")
+  publish(@Body() body: unknown, @Req() req: Request) {
+    return this.app.publishSetup(OpenBukSetupSchema.parse(body), buildUseCaseContext(req));
   }
   @Get("bookings")
   bookings(@Query() query: Record<string, unknown>, @Req() req: Request) {

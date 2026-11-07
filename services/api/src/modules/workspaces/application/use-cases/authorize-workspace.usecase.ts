@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import {
   WORKSPACE_REPOSITORY_PORT,
@@ -14,15 +15,18 @@ export class AuthorizeWorkspaceUseCase {
       "getWorkspaceById" | "getMembershipByUserAndWorkspace"
     >
   ) {}
-  async execute(input: {
-    tenantId: string;
-    workspaceId: string;
-    userId: string;
-    manage?: boolean;
-  }) {
-    const workspace = await this.repo.getWorkspaceById(input.tenantId, input.workspaceId);
+  async execute(
+    input: {
+      tenantId: string;
+      workspaceId: string;
+      userId: string;
+      manage?: boolean;
+    },
+    tx?: TransactionContext
+  ): Promise<{ slug?: string; name: string; canManage?: boolean }> {
+    const workspace = await this.repo.getWorkspaceById(input.tenantId, input.workspaceId, tx);
     const membership = workspace
-      ? await this.repo.getMembershipByUserAndWorkspace(input.workspaceId, input.userId)
+      ? await this.repo.getMembershipByUserAndWorkspace(input.workspaceId, input.userId, tx)
       : null;
     if (
       !workspace ||
@@ -32,6 +36,10 @@ export class AuthorizeWorkspaceUseCase {
     ) {
       throw new ForbiddenException("Workspace access denied");
     }
-    return { slug: workspace.slug, name: workspace.name };
+    return {
+      slug: workspace.slug,
+      name: workspace.name,
+      canManage: ["OWNER", "ADMIN"].includes(membership.role),
+    };
   }
 }

@@ -10,6 +10,30 @@ const isLocale = (value: string | null): value is OpenBukLocale =>
   value === "en" || value === "de" || value === "vi";
 
 const en = {
+  dismissInvite: "Continue without joining",
+  saveDraft: "Save draft",
+  draftSaved:
+    "Draft saved. You can leave and resume here. Your booking page has not been published by this action.",
+  draftHelp:
+    "Save your progress privately at any time. Complete the service and hours before publishing. Saving does not send messages or change an existing live page.",
+  invalidTimezone: "Enter a valid IANA time zone, such as Europe/Berlin.",
+  inviteStaff: "Invite staff",
+  inviteHelp:
+    "Create a member invitation and share its link privately with the intended recipient. No email is sent. Accounts, employee profiles and bookable staff are separate.",
+  staffEmail: "Staff email",
+  createInvite: "Create invitation link",
+  inviteReady: "Invitation ready. No email was sent. Expires:",
+  inviteLink: "Private invitation link",
+  joinStudio: "Join a workspace",
+  acceptHelp:
+    "Sign in with the invited email address, then accept to join the workspace as a member.",
+  acceptInvite: "Accept invitation",
+  inviteError:
+    "This invitation could not be accepted. Use the invited email address or ask the owner for a current link.",
+  staffJoined: "Workspace membership is active",
+  staffAccess:
+    "Your account is linked. This initial schedule requires owner or admin access. Employee self-service is not available yet.",
+
   tagline: "Open-source booking for salons & studios.",
   hero: "A little more calm.\nA lot less scheduling.",
   intro: "Let clients book directly. Give your time back to the work you love.",
@@ -125,6 +149,30 @@ const en = {
 };
 type Key = keyof typeof en;
 const de: Record<Key, string> = {
+  dismissInvite: "Ohne Beitritt fortfahren",
+  saveDraft: "Entwurf speichern",
+  draftSaved:
+    "Entwurf gespeichert. Du kannst später hier fortfahren. Die Buchungsseite wurde dadurch nicht veröffentlicht.",
+  draftHelp:
+    "Speichere deinen Fortschritt privat. Vervollständige Leistung und Zeiten vor der Veröffentlichung. Speichern sendet keine Nachrichten und ändert keine bestehende öffentliche Seite.",
+  invalidTimezone: "Gib eine gültige IANA-Zeitzone ein, zum Beispiel Europe/Berlin.",
+  inviteStaff: "Team einladen",
+  inviteHelp:
+    "Erstelle eine Mitgliedseinladung und teile den Link privat mit der vorgesehenen Person. Es wird keine E-Mail gesendet. Konto, Mitarbeiterprofil und buchbare Person sind getrennt.",
+  staffEmail: "E-Mail der Person",
+  createInvite: "Einladungslink erstellen",
+  inviteReady: "Einladung erstellt. Keine E-Mail gesendet. Gültig bis:",
+  inviteLink: "Privater Einladungslink",
+  joinStudio: "Einem Arbeitsbereich beitreten",
+  acceptHelp:
+    "Melde dich mit der eingeladenen E-Mail-Adresse an und bestätige den Beitritt als Mitglied.",
+  acceptInvite: "Einladung annehmen",
+  inviteError:
+    "Die Einladung konnte nicht angenommen werden. Nutze die eingeladene E-Mail-Adresse oder bitte um einen aktuellen Link.",
+  staffJoined: "Mitgliedschaft ist aktiv",
+  staffAccess:
+    "Dein Konto ist verknüpft. Dieser erste Kalender erfordert Inhaber- oder Adminrechte. Mitarbeiter-Self-Service ist noch nicht verfügbar.",
+
   tagline: "Open-Source-Buchungen für Salons & Studios.",
   hero: "Mehr Ruhe.\nWeniger Terminplanung.",
   intro: "Lass Kunden direkt buchen. Mehr Zeit für die Arbeit, die du liebst.",
@@ -239,6 +287,29 @@ const de: Record<Key, string> = {
   withStaff: "Bei",
 };
 const vi: Record<Key, string> = {
+  dismissInvite: "Tiếp tục mà không tham gia",
+  saveDraft: "Lưu bản nháp",
+  draftSaved:
+    "Đã lưu bản nháp. Bạn có thể quay lại để tiếp tục. Thao tác này chưa công khai trang đặt lịch.",
+  draftHelp:
+    "Lưu tiến độ riêng tư bất cứ lúc nào. Hoàn tất dịch vụ và giờ làm trước khi công khai. Lưu không gửi tin nhắn hay thay đổi trang đang công khai.",
+  invalidTimezone: "Nhập múi giờ IANA hợp lệ, ví dụ Asia/Ho_Chi_Minh.",
+  inviteStaff: "Mời nhân viên",
+  inviteHelp:
+    "Tạo lời mời thành viên và chia sẻ liên kết riêng với đúng người. Không gửi email. Tài khoản, hồ sơ nhân viên và nhân viên có thể đặt lịch là riêng biệt.",
+  staffEmail: "Email nhân viên",
+  createInvite: "Tạo liên kết mời",
+  inviteReady: "Đã tạo lời mời. Không gửi email. Hết hạn:",
+  inviteLink: "Liên kết mời riêng tư",
+  joinStudio: "Tham gia không gian làm việc",
+  acceptHelp: "Đăng nhập bằng email được mời, rồi xác nhận tham gia với vai trò thành viên.",
+  acceptInvite: "Chấp nhận lời mời",
+  inviteError:
+    "Không thể chấp nhận lời mời. Hãy dùng email được mời hoặc yêu cầu chủ sở hữu cấp liên kết còn hiệu lực.",
+  staffJoined: "Tư cách thành viên đã có hiệu lực",
+  staffAccess:
+    "Tài khoản đã được liên kết. Lịch ban đầu yêu cầu quyền chủ sở hữu hoặc quản trị viên. Tự phục vụ dành cho nhân viên chưa khả dụng.",
+
   tagline: "Đặt lịch mã nguồn mở cho salon và studio.",
   hero: "Thêm chút thảnh thơi.\nBớt lo xếp lịch.",
   intro: "Để khách hàng đặt lịch trực tiếp. Dành thời gian cho công việc bạn yêu thích.",

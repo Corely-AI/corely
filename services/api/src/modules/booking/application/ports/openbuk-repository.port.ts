@@ -3,6 +3,7 @@ import type {
   OpenBukBook,
   OpenBukReceipt,
   OpenBukSetup,
+  OpenBukSetupDraft,
   OpenBukStudio,
 } from "@corely/contracts";
 import type { TransactionContext } from "@corely/kernel";
@@ -13,6 +14,8 @@ export type BookingReceiptRecord = { fingerprint: string; receipt: OpenBukReceip
 export const OPENBUK_REPOSITORY = Symbol("OPENBUK_REPOSITORY");
 export interface OpenBukRepositoryPort {
   lock(scope: StudioScope, key: string, tx: TransactionContext): Promise<void>;
+  draft(scope: StudioScope, tx?: TransactionContext): Promise<OpenBukSetupDraft | null>;
+  saveDraft(scope: StudioScope, input: OpenBukSetupDraft, tx: TransactionContext): Promise<void>;
   isRegistered(scope: StudioScope): Promise<boolean>;
   studio(scope: StudioScope, tx?: TransactionContext): Promise<OpenBukStudio | null>;
   configure(

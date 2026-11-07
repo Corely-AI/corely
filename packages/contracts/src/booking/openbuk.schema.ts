@@ -30,6 +30,9 @@ export const OpenBukSetupSchema = z
       .string()
       .max(64)
       .refine((v) => {
+        if (/^[+-]/.test(v)) {
+          return false;
+        }
         try {
           new Intl.DateTimeFormat("en", { timeZone: v });
           return true;
@@ -51,6 +54,14 @@ export const OpenBukSetupSchema = z
     maximumAdvanceDays: z.number().int().min(1).max(180),
   })
   .strict();
+export const OpenBukSetupDraftSchema = OpenBukSetupSchema.partial().extend({
+  weeklyHours: z.array(OpenBukHoursSchema).max(28).optional(),
+});
+export const OpenBukSetupDraftResponseSchema = z.object({
+  draft: OpenBukSetupDraftSchema.nullable(),
+});
+export type OpenBukSetupDraftResponse = z.infer<typeof OpenBukSetupDraftResponseSchema>;
+export type OpenBukSetupDraft = z.infer<typeof OpenBukSetupDraftSchema>;
 export type OpenBukSetup = z.infer<typeof OpenBukSetupSchema>;
 export const OpenBukStudioSchema = OpenBukSetupSchema.extend({
   serviceId: z.string(),
@@ -59,6 +70,11 @@ export const OpenBukStudioSchema = OpenBukSetupSchema.extend({
   effectiveFrom: z.string().datetime().nullable().optional(),
   effectiveTo: z.string().datetime().nullable().optional(),
 });
+export const OpenBukStudioResponseSchema = z.object({
+  studio: OpenBukStudioSchema.nullable(),
+  canManage: z.boolean(),
+});
+export type OpenBukStudioResponse = z.infer<typeof OpenBukStudioResponseSchema>;
 export type OpenBukStudio = z.infer<typeof OpenBukStudioSchema>;
 export const OpenBukPublicStudioSchema = OpenBukStudioSchema.omit({
   blockedTimes: true,

@@ -146,6 +146,7 @@ General developer guides and references.
 
 - [Operational access and private-data policy](./platform/operational-access.md) — shared foundation acceptance, current membership, conversation/file access, workspace caches and linked People owner requirements.
 - [Platform Menu API](./platform/menu.md)
+- [Resumable pilot setup](./platform/pilot-setup.md) — private OpenBuk checkpoints, explicit publication and manually shared staff invitations
 - [Operational package configuration](./platform/operational-package.md) — existing OpenBuk client, manifest composition and independent access gates
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)

@@ -299,3 +299,17 @@ legend {
   width: 100%;
   text-align: left;
 }
+
+.staff-invitations {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+.staff-invitations form {
+  display: grid;
+  gap: 1rem;
+  max-width: 32rem;
+}
+.staff-invitations input {
+  max-width: 100%;
+}

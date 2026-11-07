@@ -77,6 +77,13 @@ is made in the transaction. Public receipts contain no tenant/workspace identifi
 endpoints reject registered OpenBuk studios, including inactive ones, so older checkout
 paths cannot bypass the OpenBuk availability policy.
 
+## Pilot setup
+
+[Resumable pilot setup](../../platform/pilot-setup.md) adds private saved checkpoints,
+atomic explicit publication and manually shared member invitation links in this client.
+It preserves Booking ownership and normal Identity accounts. No invitation email is sent;
+member accounts do not yet gain employee self-service or bookable-resource associations.
+
 ## Next increments / release gates
 
 The [Corely pilot adoption decision](../corely/pilot-booking-decision.md) selects

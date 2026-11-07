@@ -24,7 +24,14 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 export function ErrorMessage({
   message = "requestFailed",
 }: {
-  message?: "requestFailed" | "slotConflict" | "setupError" | "loginError" | "signupError";
+  message?:
+    | "inviteError"
+    | "invalidTimezone"
+    | "requestFailed"
+    | "slotConflict"
+    | "setupError"
+    | "loginError"
+    | "signupError";
 }) {
   const { t } = useLanguage();
   return (

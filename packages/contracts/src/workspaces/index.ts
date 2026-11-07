@@ -10,3 +10,4 @@ export * from "./workspace-config.schema";
 export * from "./upgrade-workspace.schema";
 export * from "./workspace-domains.schema";
 export * from "./delete-workspace.schema";
+export * from "./pilot-setup.schema";

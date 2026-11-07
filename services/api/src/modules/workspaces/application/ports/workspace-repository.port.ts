@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 import type {
   Workspace,
   WorkspaceMembership,
@@ -80,7 +81,11 @@ export interface WorkspaceRepositoryPort {
   // Workspace operations
   createWorkspace(input: CreateWorkspaceInput): Promise<Workspace>;
   getWorkspaceBySlug(slug: string): Promise<Workspace | null>;
-  getWorkspaceById(tenantId: string, id: string): Promise<Workspace | null>;
+  getWorkspaceById(
+    tenantId: string,
+    id: string,
+    tx?: TransactionContext
+  ): Promise<Workspace | null>;
   getWorkspaceByIdWithLegalEntity(tenantId: string, id: string): Promise<Workspace | null>;
   listWorkspacesByTenant(tenantId: string, userId: string): Promise<Workspace[]>;
   updateWorkspace(tenantId: string, id: string, input: UpdateWorkspaceInput): Promise<Workspace>;
@@ -90,7 +95,8 @@ export interface WorkspaceRepositoryPort {
   createMembership(input: CreateMembershipInput): Promise<WorkspaceMembership>;
   getMembershipByUserAndWorkspace(
     workspaceId: string,
-    userId: string
+    userId: string,
+    tx?: TransactionContext
   ): Promise<WorkspaceMembership | null>;
   listMembershipsByWorkspace(workspaceId: string): Promise<WorkspaceMembership[]>;
   checkUserHasWorkspaceAccess(
