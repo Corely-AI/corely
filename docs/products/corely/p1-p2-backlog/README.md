@@ -9,6 +9,11 @@ The [STR-01 capability reuse inventory](capability-reuse-inventory.md) maps all 
 68 feature keys to existing owners/candidates, source evidence, closure reasons and residual gaps.
 Its [structured view](capability-reuse-inventory.json) is static evidence, not a readiness claim.
 
+The [STR-03 pilot decision](../pilot-booking-decision.md) selects Corely/OpenBuk
+replacement, its existing staff surface and a controlled import path. It records
+synthetic adoption constraints and remaining delivery/cutover gates; the original
+planning inputs and static inventory below remain historical evidence.
+
 Imported on 7 November 2026 for the existing [Corely organization project](https://github.com/orgs/Corely-AI/projects/1/views/1).
 The source specification contains 85 logical entries. The import creates 84 repository
 issues and maps `STR-02` to the existing [documentation alignment commit](https://github.com/Corely-AI/corely/commit/26d611e510c785ccad78341f6564ecdcf05de770).

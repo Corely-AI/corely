@@ -28,17 +28,24 @@ but are not required for adoption. Accounting must not be a prerequisite. Existi
 defaults/dependencies require an audit before claiming every current configuration
 already meets that target.
 
-## Adoption and system of record: choose before a pilot
+## Adoption and system of record
+
+[STR-03's decision](pilot-booking-decision.md) selects **Corely/OpenBuk replacement**
+and the existing OpenBuk `/app` staff surface. A controlled one-time import is the
+selected path for existing future bookings; provider sync is out of implementation
+scope. The record defines authority, source constraints, cutover/recovery and a
+synthetic review. No real team migration or pilot readiness is established.
 
 | Option                                           | Authority                                                                                                | Evidence required                                                                                                                                                                 |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1. Corely/OpenBuk replaces booking               | Booking is authoritative for reservations and occupancy; map staff to resources explicitly               | Migration/reconciliation, pilot-critical booking essentials, public journey, cancellation/rescheduling, notification policy, conflict/concurrency handling, recovery and rollback |
 | 2. Corely complements an existing booking system | Chosen provider is authoritative for defined booking fields; Corely owns only agreed operational records | One verified integration: source IDs and ownership, freshness timestamps, permitted writes, conflict handling, retries, outages, reconciliation, revocation and recovery          |
 
-Do not endorse duplicate manual schedule maintenance. Select one model with a
-pilot team and verify feasibility; do not promise both broadly. No provider
-integration or migration readiness is established by this inspection. Preserve
-the existing public booking journey under either assessment.
+Do not endorse duplicate manual schedule maintenance. The table retains the
+alternatives considered; only replacement is selected. Qualify a pilot team's
+actual export, freeze/write authority and migration feasibility before cutover.
+If replacement is infeasible, record a revised decision before implementing a
+provider connection. Preserve the existing public booking journey.
 
 ## Reference workflows (illustrative targets)
 

@@ -79,6 +79,11 @@ paths cannot bypass the OpenBuk availability policy.
 
 ## Next increments / release gates
 
+The [Corely pilot adoption decision](../corely/pilot-booking-decision.md) selects
+OpenBuk replacement and this client's existing staff surface. It defines import,
+authority and cutover/recovery gates; it does not implement the missing team,
+lifecycle or migration capabilities or establish pilot readiness.
+
 This is the first vertical slice, not the complete production MVP. Next: Catalog-linked
 service editing, multiple staff and service capabilities, add-ons and physical resources,
 Party customer resolution/history, full lifecycle and day/week calendar, secure revocable

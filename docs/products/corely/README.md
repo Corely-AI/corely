@@ -27,7 +27,7 @@ adoption; preserve the existing public booking journey.
 | Agreed direction for documentation and future scoped work | Internal operations first; connected apps; optional finance; preserve modular monolith and existing domains; expand on customer evidence.                              |
 | Recommendation to validate                                | One operational package with Schedule, Team, and Daily Work; Knowledge as a small approved content layer.                                                              |
 | Audience hypothesis                                       | Germany-first beauty/wellness teams with approximately 5–30 staff and one to three locations. No customer evidence supplied establishes this segment or geography.     |
-| Open adoption decision                                    | Replace booking with Corely/OpenBuk, or complement an existing system through one verified integration. Neither model is broadly promised.                             |
+| Initial adoption decision                                 | [Replace booking with Corely/OpenBuk](pilot-booking-decision.md), using its existing staff client. A team's migration and pilot readiness remain unverified.           |
 | Unvalidated commercial questions                          | Pricing, acquisition channels, willingness to pay/switch, support cost, and product-market fit. No approved prices or per-app subscription terms are established here. |
 
 Segment numbers are hypotheses, not market statistics. Base.vn is inspiration
@@ -99,6 +99,8 @@ one-location/service/staff slice, English/German/Vietnamese support, historical
 verification and release gates. Its focused client, Corely admin booking, and
 legacy public booking coexist; registered OpenBuk studios use the OpenBuk public
 policy. Preserve these journeys and do not infer that the broader package exists.
+The [pilot decision](pilot-booking-decision.md) selects replacement and the existing
+OpenBuk staff surface, with one controlled import path and explicit cutover gates.
 
 ## Non-goals and expansion
 
