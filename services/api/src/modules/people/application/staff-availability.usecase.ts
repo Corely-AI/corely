@@ -77,9 +77,12 @@ export class StaffAvailabilityUseCase {
       profileVersion: profile.version,
       resourceId: profile.resourceId,
       evaluatedAt: now.toISOString(),
-      affectedCommitments: commitments.filter(
-        (c) => profile.archivedAt || !staffCovers(schedule, new Date(c.startAt), new Date(c.endAt))
-      ),
+      affectedCommitments: commitments.filter((c) => {
+        // Preparation may already be underway for an upcoming appointment.
+        // Check its remaining occupancy without re-evaluating elapsed history.
+        const remainingStart = new Date(Math.max(now.getTime(), Date.parse(c.startAt)));
+        return profile.archivedAt || !staffCovers(schedule, remainingStart, new Date(c.endAt));
+      }),
     };
   }
   async detail(id: string, ctx: UseCaseContext) {

@@ -56,7 +56,7 @@ changes. Other pending dates remain scheduled. Managers can inspect published
 patterns and use them as templates. The bounded extension record supports 256
 effective snapshots, 56 weekly ranges and 366 exception dates per snapshot.
 Availability queries for linked staff accept positive ranges up to 62 days;
-longer existing commitments are conservatively flagged for review.
+commitments with more than 62 remaining days are conservatively flagged for review.
 
 ## Commands, authorization and impacts
 
@@ -82,8 +82,11 @@ their existing resource-locked transactions, resolving actual resource workspace
 ownership. Hold confirmation and consumption are atomic with booking creation:
 a staff change rejecting confirmation leaves the hold active.
 
-Each manager read and publication derives current future conflicts from Booking
-allocation intervals and unexpired active holds. Publication also records their
+Each manager read and publication derives conflicts from Booking allocations and
+unexpired active holds whose occupancy has not ended. This includes a future
+appointment whose preparation buffer has already started and ongoing commitments.
+Only the remaining interval at or after the evaluation clock is checked; elapsed
+history and fully ended commitments do not produce conflicts. Publication records their
 neutral IDs in its transactional audit/outbox metadata. Managers review them in
 Booking; no booking is moved, cancelled or rewritten, and no private reason is
 recorded. This is a live impact projection, not a second reservation store or an

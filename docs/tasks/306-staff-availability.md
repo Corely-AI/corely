@@ -106,3 +106,45 @@ claimed. The ticket stays open and its PR remains Draft; no merge or deployment.
 Normal commit hooks passed; branch push used the pre-push hook's documented
 `HUSKY=0` escape after scoped verification because broader gates remain blocked.
 The task-owned PostgreSQL cluster and Vite server were stopped after verification.
+
+## Review correction — 8 November 2026
+
+Reviewed PR #375 at `23f20f816` against `development` (`426954b77`), including
+scope/permission checks, contracts, timeline/DST rules, resource locks, impact
+retrieval, replay/rollback, Booking write paths, client lifetimes and UI evidence.
+
+One confirmed P2 finding: the commitment query required allocation/hold `startAt`
+to be at or after the evaluation clock. An appointment starting at 10:00 with a
+09:45 preparation buffer disappeared from impact reporting at 09:55, even when
+a newly published closure conflicted with its remaining occupancy. Ongoing active
+holds were omitted for the same reason.
+
+The owner query now selects occupancy ending after the evaluation clock, retaining
+tenant/workspace, status and expiry predicates. The People projection checks only
+the remaining interval from `max(startAt, now)`. This includes underway buffers
+and holds while excluding fully ended commitments and past-only differences.
+Original booking/hold intervals and statuses are preserved.
+
+Regression proof on the task-owned PostgreSQL cluster: two new cases failed on
+the reviewed implementation (missing booking and hold IDs), then passed after
+the fix. A third case verifies that publishing a valid pattern during a legacy
+booking does not flag its elapsed, pre-pattern history.
+
+Fresh checks:
+
+- The API command recorded above, including both Workspaces test files and the
+  new `staff-availability-review.int.test.ts` via the People test directory:
+  **77 tests / 9 files passed, no skips**.
+- `pnpm --filter @corely/api typecheck` and `pnpm --filter @corely/api build`: passed.
+- Changed production-file ESLint, changed-file Prettier, local documentation
+  references and whitespace checks: passed. API integration tests retain their
+  existing configured ESLint exclusion and were executed with Vitest.
+- Backend projection correction only: no new screen/copy/interaction change;
+  original rendered evidence remains applicable. The 15 UI and 10 DI passes above
+  are initial-delivery results, not fresh review runs.
+
+Inspected CI for the reviewed head: quality/unit checks fail on the missing
+generated Prisma client; browser CI invokes the absent `e2e:smoke` script. Cash
+integration passed and Vercel reported deployment-rate limits. These workflow/
+generation/script paths are unchanged by this PR; no CI repair or deployment is
+included. The PR remains Draft with the existing broader verification limits.

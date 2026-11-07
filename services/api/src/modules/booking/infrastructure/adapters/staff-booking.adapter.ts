@@ -25,7 +25,6 @@ export class StaffBookingAdapter {
           tenantId: scope.tenantId,
           resourceId,
           endAt: { gt: from },
-          startAt: { gte: from },
           booking: {
             workspaceId: scope.workspaceId,
             status: { in: ["CONFIRMED", "HOLD"] },
@@ -40,7 +39,7 @@ export class StaffBookingAdapter {
           resourceIds: { has: resourceId },
           status: "ACTIVE",
           expiresAt: { gt: from },
-          startAt: { gte: from },
+          endAt: { gt: from },
         },
         select: { id: true, startAt: true, endAt: true },
       }),
