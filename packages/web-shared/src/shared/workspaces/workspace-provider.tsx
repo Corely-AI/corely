@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { WorkspaceDto } from "@corely/contracts";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type Query } from "@tanstack/react-query";
 import { workspacesApi } from "./workspaces-api";
 import { getActiveWorkspaceId, setActiveWorkspaceId, subscribeWorkspace } from "./workspace-store";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
@@ -21,6 +29,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const queryClient = useQueryClient();
   const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId());
+  const activeIdRef = useRef(activeId);
   const isHostScope = user?.activeTenantId === null;
   const shouldLoadWorkspaces = isAuthenticated && !isAuthLoading && !isHostScope;
 
@@ -41,10 +50,29 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     staleTime: 30_000,
   });
 
-  // keep local and persisted workspace id in sync
+  const adoptWorkspace = useCallback(
+    (id: string | null) => {
+      if (activeIdRef.current === id) {
+        return;
+      }
+      activeIdRef.current = id;
+      // Invalidation retains old payloads while fetching. Discard them at the scope boundary.
+      const oldPayloads = {
+        predicate: (query: Query) =>
+          !(query.queryKey[0] === "workspaces" && query.queryKey[1] === user?.activeTenantId),
+      };
+      void queryClient.cancelQueries(oldPayloads);
+      queryClient.removeQueries(oldPayloads);
+      queryClient.getMutationCache().clear();
+      setActiveId(id);
+    },
+    [queryClient, user?.activeTenantId]
+  );
+
+  // Also cover bootstrap repairs and external changes through the shared store.
   useEffect(() => {
-    return subscribeWorkspace((id) => setActiveId(id));
-  }, []);
+    return subscribeWorkspace(adoptWorkspace);
+  }, [adoptWorkspace]);
 
   // Log when workspaces are fetched
   useEffect(() => {
@@ -66,10 +94,10 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
       const fallbackId = workspaces[0]?.id ?? null;
       if (fallbackId !== activeId) {
         setActiveWorkspaceId(fallbackId);
-        setActiveId(fallbackId);
+        adoptWorkspace(fallbackId);
       }
     }
-  }, [activeId, workspaces, shouldLoadWorkspaces, isFetching, isSuccess]);
+  }, [activeId, workspaces, shouldLoadWorkspaces, isFetching, isSuccess, adoptWorkspace]);
 
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === activeId) ?? null,
@@ -79,17 +107,11 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const setWorkspace = (workspaceId: string) => {
     const previousWorkspaceId = activeId;
     setActiveWorkspaceId(workspaceId);
-    setActiveId(workspaceId);
+    adoptWorkspace(workspaceId);
     console.debug("[WorkspaceProvider] workspace switched", {
       from: previousWorkspaceId,
       to: workspaceId,
     });
-
-    // CRITICAL: Invalidate ALL queries when switching workspaces
-    // This prevents data from the previous workspace from appearing
-    // in the new workspace context. The queries will refetch with
-    // the new workspaceId header.
-    void queryClient.invalidateQueries();
   };
 
   const value: WorkspaceContextValue = {
@@ -104,7 +126,11 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     },
   };
 
-  return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
+  return (
+    <WorkspaceContext.Provider value={value}>
+      <React.Fragment key={activeId ?? "no-workspace"}>{children}</React.Fragment>
+    </WorkspaceContext.Provider>
+  );
 };
 
 export const useWorkspace = (): WorkspaceContextValue => {

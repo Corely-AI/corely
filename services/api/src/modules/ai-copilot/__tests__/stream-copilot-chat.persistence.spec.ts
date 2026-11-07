@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { StreamCopilotChatUseCase } from "../application/use-cases/stream-copilot-chat.usecase";
+import { AgentRun } from "../domain/entities/agent-run.entity";
 import { CopilotContextBuilder } from "../application/services/copilot-context.builder";
 import { CopilotTaskStateTracker } from "../application/services/copilot-task-state.service";
 import { type CopilotUIMessage } from "../domain/types/ui-message";
@@ -129,7 +130,16 @@ describe("StreamCopilotChatUseCase persistence", () => {
     };
 
     const agentRuns: AgentRunRepositoryPort = {
-      create: vi.fn(async () => ({ id: "run-1" }) as any),
+      create: vi.fn(
+        async (params) =>
+          new AgentRun(
+            params.id,
+            params.tenantId,
+            params.createdByUserId,
+            params.status,
+            new Date()
+          )
+      ),
       updateStatus: vi.fn(async () => undefined),
       findById: vi.fn(async () => null),
     };

@@ -108,7 +108,7 @@ export class PrismaMessageRepository implements MessageRepositoryPort {
   }): Promise<void> {
     const existing = await this.prisma.message.findUnique({
       where: { id: message.id },
-      select: { tenantId: true },
+      select: { tenantId: true, runId: true },
     });
 
     if (!existing) {
@@ -116,8 +116,8 @@ export class PrismaMessageRepository implements MessageRepositoryPort {
       return;
     }
 
-    if (existing.tenantId !== message.tenantId) {
-      throw new Error("Message tenant mismatch");
+    if (existing.tenantId !== message.tenantId || existing.runId !== message.runId) {
+      throw new Error("Message scope mismatch");
     }
 
     await this.prisma.message.update({

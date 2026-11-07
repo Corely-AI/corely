@@ -157,8 +157,9 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     },
     {
       provide: ListMessagesUseCase,
-      useFactory: (messages: PrismaMessageRepository) => new ListMessagesUseCase(messages),
-      inject: [PrismaMessageRepository],
+      useFactory: (messages: PrismaMessageRepository, getRun: GetRunUseCase) =>
+        new ListMessagesUseCase(messages, getRun),
+      inject: [PrismaMessageRepository, GetRunUseCase],
     },
     {
       provide: CHAT_STORE_PORT,
