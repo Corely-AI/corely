@@ -26,8 +26,8 @@ export default function InvitePage() {
     setPending(true);
     setError(false);
     try {
-      // Do not carry another workspace selector into cross-tenant invitation acceptance.
-      await storage.setActiveWorkspaceId(null);
+      // Omit the selector for this account-level request without changing the
+      // saved workspace unless acceptance and the tenant switch succeed.
       const result = await api.request<AcceptPilotWorkspaceInviteOutput>(
         "/workspaces/pilot-setup/invites/accept",
         json("POST", { token }),

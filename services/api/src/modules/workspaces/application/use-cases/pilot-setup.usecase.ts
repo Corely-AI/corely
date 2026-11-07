@@ -88,7 +88,7 @@ export class PilotSetupUseCase {
       throw new BadRequestException("Select a workspace");
     }
     await this.repo.lock(`publication:${ctx.workspaceId}`, tx);
-    await this.authorize.execute({ ...actor, workspaceId: ctx.workspaceId, manage: true });
+    await this.authorize.execute({ ...actor, workspaceId: ctx.workspaceId, manage: true }, tx);
     if (await this.repo.publishBooking(actor.tenantId, ctx.workspaceId, tx)) {
       await this.record("workspace.booking.published", ctx.workspaceId, actor, tx);
     }
@@ -99,8 +99,8 @@ export class PilotSetupUseCase {
     await this.authorize.execute({ ...actor, workspaceId, manage: true });
     return this.uow.withinTransaction(async (tx) => {
       await this.repo.lock(`invite:${workspaceId}:${input.email}`, tx);
-      // Revalidate after waiting; a stale owner action must not create an invitation.
-      await this.authorize.execute({ ...actor, workspaceId, manage: true });
+      // Revalidate on the transaction connection after waiting for the lock.
+      await this.authorize.execute({ ...actor, workspaceId, manage: true }, tx);
       const now = this.clock.now();
       const previous = await this.repo.pendingInvite(workspaceId, input.email, now, tx);
       if (previous) {

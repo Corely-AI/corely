@@ -7,7 +7,12 @@ import {
   PrismaOutboxAdapter,
   PrismaExtKvAdapter,
 } from "@corely/data";
-import type { OutboxPort, UseCaseContext } from "@corely/kernel";
+import type {
+  OutboxPort,
+  UseCaseContext,
+  UnitOfWorkPort,
+  TransactionContext,
+} from "@corely/kernel";
 import { OpenBukSetupDraftSchema } from "@corely/contracts";
 import { PrismaUserRepository } from "../../identity/infrastructure/adapters/prisma-user-repository.adapter";
 import { PrismaInvitedAccountAdapter } from "../../identity/infrastructure/adapters/prisma-invited-account.adapter";
@@ -41,12 +46,15 @@ describe.skipIf(!enabled)("Pilot setup PostgreSQL boundaries", () => {
   const email = `${staff}@example.test`;
   const now = new Date("2026-11-07T12:00:00Z");
   const input = { name: `Pilot ${tenantId}`, countryCode: "DE", currency: "EUR" };
-  function build(outbox: OutboxPort = new PrismaOutboxAdapter(prisma)) {
+  function build(
+    outbox: OutboxPort = new PrismaOutboxAdapter(prisma),
+    uow: UnitOfWorkPort = new PrismaUnitOfWork(prisma)
+  ) {
     const repo = new PrismaWorkspaceRepository(prisma);
     const audit = new PrismaAuditAdapter(prisma);
     return new PilotSetupUseCase(
       new PrismaPilotSetupRepository(prisma),
-      new PrismaUnitOfWork(prisma),
+      uow,
       audit,
       outbox,
       { now: () => now },
@@ -309,4 +317,52 @@ describe.skipIf(!enabled)("Pilot setup PostgreSQL boundaries", () => {
       app.accept(invite.invite.token, { ...staffCtx, userId: rollbackStaff })
     ).resolves.toHaveProperty("membershipId");
   });
+  it.each(["draft", "publish", "invite"] as const)(
+    "completes %s permission revalidation when the database pool is saturated",
+    async (operation) => {
+      // PrismaService's pg pool has ten connections. Hold every transaction open
+      // before starting work, so authorization cannot borrow an eleventh one.
+      const concurrent = 10;
+      let entered = 0;
+      let release = () => {};
+      const ready = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const real = new PrismaUnitOfWork(prisma);
+      const uow: UnitOfWorkPort = {
+        withinTransaction: <T>(work: (tx: TransactionContext) => Promise<T>) =>
+          real.withinTransaction(async (tx) => {
+            entered += 1;
+            if (entered === concurrent) {
+              release();
+            }
+            await ready;
+            return work(tx);
+          }),
+      };
+      const pilot = build(new PrismaOutboxAdapter(prisma), uow);
+      const studio = new OpenBukStudioUseCase(
+        new PrismaOpenBukRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma)),
+        uow,
+        new PrismaAuditAdapter(prisma),
+        new PrismaOutboxAdapter(prisma),
+        { now: () => now },
+        new AuthorizeWorkspaceUseCase(new PrismaWorkspaceRepository(prisma)),
+        pilot
+      );
+      const { slug, serviceId, staffId, ...setup } = studioFixture();
+      const results = await Promise.allSettled(
+        Array.from({ length: concurrent }, () => {
+          if (operation === "invite") {
+            return pilot.invite(workspaceId, `${randomUUID()}@example.test`, ctx);
+          }
+          if (operation === "publish") {
+            return studio.publishSetup(setup, { ...ctx, workspaceId });
+          }
+          return studio.saveSetup({ studioName: "Concurrent draft" }, { ...ctx, workspaceId });
+        })
+      );
+      expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(concurrent);
+    }
+  );
 });

@@ -102,3 +102,43 @@ Husky shims are absent in this isolated checkout, so the equivalent staged check
 explicitly: `NODE_OPTIONS=--max-old-space-size=12288 pnpm exec lint-staged --diff HEAD^
 --concurrent false` passed without modifications, and the staged line-limit/whitespace checks
 passed. Full-root tests, the broad pre-push pipeline and hosted CI are not claimed.
+
+## Review follow-up — 7 November 2026
+
+Reviewed PR #374 at `27f512112` against `development` (`dac9007605`). No posted review
+threads existed. Two P2 findings were reproduced and corrected in this PR:
+
+1. **Authorization could exhaust the connection pool inside transactions.** Setup draft,
+   publication and invitation commands held a transaction connection, then rechecked permission
+   through the base Prisma client. With all ten connections occupied by transactions, every
+   command waited for an eleventh connection until timeout. A deterministic PostgreSQL regression
+   holds all ten transactions at a barrier before executing each command. Before the correction,
+   all three cases completed **0/10** commands successfully. After propagating the optional
+   transaction through the public Workspaces authorization interface and its owning repository,
+   all three complete **10/10**. Role/tenant checks remain in place, after the command lock.
+2. **A rejected invitation discarded the selected workspace.** The invitation page cleared
+   selection before sending the request even though `workspaceScope: "none"` already omits that
+   header. The browser regression observed `null` after a wrong-account rejection. Selection now
+   changes only after a successful tenant switch; the test verifies the header is absent, the
+   prior selection survives rejection, and dismissal returns to the existing schedule.
+
+Fresh follow-up verification (the earlier delivery results above remain historical):
+
+- OpenBuk API suite: **32 tests across four files passed, zero skips**, including the three
+  new saturated-pool cases and existing authorization, isolation, rollback and replay tests.
+- Both real-API Playwright journeys passed against the freshly rebuilt API, including wrong-account
+  rejection, selection preservation and dismissal. Error-state captures at 1440 × 1000 and
+  390 × 844 were inspected and added to the canonical guide; no token is visible.
+- API and OpenBuk typechecks and production builds passed. Targeted lint passed with zero errors
+  and existing warnings in legacy files. Contracts were unchanged and were not rebuilt for this
+  follow-up. Changed-file formatting, local links, whitespace and line-limit checks apply.
+- Pre-review hosted run `42417435551`: quality/unit jobs fail because the generated Prisma client
+  is absent, and browser CI invokes the absent `e2e:smoke` script. The workflow and related package
+  scripts are identical to the PR base. Cash integration passed; Vercel preview checks report
+  deployment rate limits. These are recorded CI setup/provider limits, not passing checks.
+
+Environment: a separate temporary PostgreSQL cluster on port 55437 with only
+`openbuk_test_304_review`, API 3044 and frontend 8096. Background dispatch/scheduling remained
+explicitly disabled, with test-only provider placeholders. The previously running cluster on
+55435 and all unrelated services were left untouched. Stopped this follow-up's API/frontend/cluster and removed its temporary database directory after
+acceptance. No shared database was reset and no unrelated process was stopped.

@@ -28,7 +28,7 @@ describe("OpenBuk workspace access policy", () => {
       getMembershipByUserAndWorkspace: async () => member,
     });
     expect(await app.execute(command)).toEqual({ name: "Studio", slug: "studio", canManage: true });
-    expect(getWorkspaceById).toHaveBeenCalledWith("t", "w");
+    expect(getWorkspaceById).toHaveBeenCalledWith("t", "w", undefined);
   });
   it.each(["MEMBER", "VIEWER", "ACCOUNTANT"] as const)(
     "rejects configuration by %s",

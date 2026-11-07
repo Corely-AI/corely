@@ -56,12 +56,12 @@ export class OpenBukStudioUseCase {
     }
     return { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId };
   }
-  private async admin(ctx: UseCaseContext, manage = false) {
+  private async admin(ctx: UseCaseContext, manage = false, tx?: TransactionContext) {
     const scope = this.scope(ctx);
     if (!ctx.userId) {
       throw new BadRequestException("Authentication required");
     }
-    const workspace = await this.authorize.execute({ ...scope, userId: ctx.userId, manage });
+    const workspace = await this.authorize.execute({ ...scope, userId: ctx.userId, manage }, tx);
     return { scope, workspace };
   }
   private publicScope(ctx: UseCaseContext) {
@@ -84,7 +84,7 @@ export class OpenBukStudioUseCase {
     const draft = OpenBukSetupDraftSchema.parse(input);
     return this.uow.withinTransaction(async (tx) => {
       await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
-      await this.admin(ctx, true);
+      await this.admin(ctx, true, tx);
       await this.repo.saveDraft(scope, draft, tx);
       await this.audit.log(
         {
@@ -110,7 +110,7 @@ export class OpenBukStudioUseCase {
     }
     return this.uow.withinTransaction(async (tx) => {
       await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
-      await this.admin(ctx, true);
+      await this.admin(ctx, true, tx);
       const studio = await this.repo.configure(scope, input, workspace.slug!, tx);
       await this.repo.saveDraft(scope, input, tx);
       if (publish) {

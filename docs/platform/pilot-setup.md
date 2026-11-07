@@ -30,7 +30,9 @@ its current live settings until publication. Draft saves use the last successful
 saved checkpoint; simultaneous editor revisions have no merge/version UI.
 
 Owner/admin workspace membership is required for drafts, configuration, publication
-and invitation creation. Publication permission is checked before the legacy workspace
+and invitation creation. Permission revalidation inside a state-changing transaction
+uses that transaction's connection, so concurrent setup requests cannot exhaust the pool
+by waiting for extra authorization connections. Publication permission is checked before the legacy workspace
 response cache and again in the application layer. Ordinary members receive an explicit
 access explanation in OpenBuk; hiding controls is not the backend access check.
 
@@ -46,7 +48,8 @@ The recipient opens `/invite#<token>`, signs in with the invited email and expli
 accepts. Existing users log in; a new user uses normal Identity signup, which retains
 its existing account/tenant behavior. Do not sign up again for an existing account.
 The invitation is retained in session storage only for the sign-in round trip, and is
-removed after successful acceptance. The token stays in the URL fragment, outside the
+removed after successful acceptance. A rejected invitation preserves the current workspace
+selection; continuing without joining returns to it. The token stays in the URL fragment, outside the
 HTTP request path and referrer. Do not paste links into logs or screenshots.
 
 Workspaces validates the invitation and delegates account association to Identity's
@@ -97,6 +100,7 @@ Screenshots use synthetic test accounts and omit invitation tokens:
 - [Settings and empty invitation form, 1440 × 1000](./images/304-settings-desktop.png).
 - [Invitation form before link creation](./images/304-invite-form.png).
 - [Member access explanation](./images/304-member-access.png).
+- Rejected invitation preserving workspace context: [desktop](./images/304-invitation-rejected.png) and [phone](./images/304-invitation-rejected-mobile.png).
 
 These checks do not establish customer adoption, production readiness, successful import,
 notification delivery, People self-service or deployment.

@@ -122,6 +122,28 @@ test("private setup resumes, publishes explicitly, and repeated staff invitation
   expect(inviteResponse.status()).toBe(201);
   const { invite } = (await inviteResponse.json()) as CreateWorkspaceInviteOutput;
   expect(new URL(link).hash).toBe(`#${invite.token}`);
+  // An authenticated owner rejects an invitation addressed to a different account.
+  // The account-level request must omit its active workspace selector, while
+  // failure and dismissal must preserve that existing selection.
+  await page.goto(link);
+  const rejectedInvite = page.waitForRequest((request) =>
+    request.url().endsWith("/pilot-setup/invites/accept")
+  );
+  await page.getByRole("button", { name: "Accept invitation", exact: true }).click();
+  expect((await rejectedInvite).headers()["x-workspace-id"]).toBeUndefined();
+  await expect(page.getByRole("alert")).toContainText("invitation could not be accepted");
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem("openbuk:workspace")))
+    .toBe(workspace.id);
+  await page.screenshot({ path: testInfo.outputPath("invitation-rejected.png"), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: testInfo.outputPath("invitation-rejected-mobile.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("link", { name: "Continue without joining" }).click();
+  await expect(page.getByText("Your booking page is ready", { exact: true })).toBeVisible();
   const cacheKey = `pilot-publication-${run}`;
   const { tenantId } = JSON.parse(
     Buffer.from(ownerHeaders.Authorization.split(".")[1], "base64url").toString()
