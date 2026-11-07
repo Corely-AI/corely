@@ -130,10 +130,8 @@ export class CreateBookingUseCase {
     // Provide the booking and its allocations to the repo.
     // The repo MUST use a transaction and check for overlaps!
     try {
-      if (hold) {
-        hold.confirm(bookingId);
-        await this.holdRepo.update(hold); // Note: We should Ideally do this in a tx with bookingRepo.create
-      }
+      // The repository confirms the hold atomically after rechecking availability.
+      // A newly closed staff pattern must not consume a hold on failed confirmation.
       await this.bookingRepo.create(booking, allocations);
     } catch (err: any) {
       // Re-throw known conflicts

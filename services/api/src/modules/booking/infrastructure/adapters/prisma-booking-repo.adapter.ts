@@ -1,3 +1,5 @@
+import type { TransactionContext } from "@corely/kernel";
+import { BookingStaffConstraintAdapter } from "./booking-staff-constraint.adapter";
 import { Injectable, ConflictException } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type {
@@ -19,7 +21,10 @@ import {
 
 @Injectable()
 export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly staff: BookingStaffConstraintAdapter
+  ) {}
 
   private mapAllocations(rows: any[]): BookingAllocation[] {
     if (!rows) {
@@ -96,8 +101,36 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
         for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
           await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${booking.tenantId}:${resourceId}`}, 0))::text`;
         }
+        if (booking.holdId) {
+          const hold = await tx.bookingHold.findFirst({
+            where: {
+              id: booking.holdId,
+              tenantId: booking.tenantId,
+              workspaceId: booking.workspaceId,
+              status: "ACTIVE",
+              expiresAt: { gt: new Date() },
+            },
+          });
+          if (
+            !hold ||
+            hold.startAt.getTime() !== booking.startAt.getTime() ||
+            hold.endAt.getTime() !== booking.endAt.getTime() ||
+            JSON.stringify([...new Set(hold.resourceIds)].sort()) !==
+              JSON.stringify([...new Set(allocations.map((a) => a.resourceId))].sort())
+          ) {
+            throw new ConflictException("Booking:HoldUnavailable");
+          }
+        }
         // 1. Conflict check inside TX to guarantee no race double bookings
         for (const alloc of allocations) {
+          await this.staff.assertAvailable(
+            booking.tenantId,
+            booking.workspaceId,
+            alloc.resourceId,
+            alloc.startAt,
+            alloc.endAt,
+            tx as unknown as TransactionContext
+          );
           // Explicitly check inside TX
           const overlapping = await tx.bookingAllocation.findFirst({
             where: {
@@ -114,7 +147,7 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
         }
 
         // 2. Insert booking with nested allocations
-        return tx.booking.create({
+        const created = await tx.booking.create({
           data: {
             id: booking.id,
             tenantId: booking.tenantId,
@@ -150,6 +183,21 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
           },
           include: { allocations: true },
         });
+        if (booking.holdId) {
+          const result = await tx.bookingHold.updateMany({
+            where: {
+              id: booking.holdId,
+              tenantId: booking.tenantId,
+              status: "ACTIVE",
+              expiresAt: { gt: new Date() },
+            },
+            data: { status: "CONFIRMED", confirmedBookingId: booking.id },
+          });
+          if (result.count !== 1) {
+            throw new ConflictException("Booking:HoldUnavailable");
+          }
+        }
+        return created;
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
     ); // Re-read after resource lock acquisition
@@ -243,6 +291,20 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
       async (tx) => {
         for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
           await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${tenantId}:${resourceId}`}, 0))::text`;
+        }
+        const booking = await tx.booking.findFirstOrThrow({
+          where: { id: bookingId, tenantId },
+          select: { workspaceId: true },
+        });
+        for (const alloc of allocations) {
+          await this.staff.assertAvailable(
+            tenantId,
+            booking.workspaceId,
+            alloc.resourceId,
+            alloc.startAt,
+            alloc.endAt,
+            tx as unknown as TransactionContext
+          );
         }
         // Delete old
         await tx.bookingAllocation.deleteMany({

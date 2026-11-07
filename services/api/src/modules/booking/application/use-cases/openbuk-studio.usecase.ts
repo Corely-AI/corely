@@ -26,6 +26,7 @@ import {
   type OpenBukBook,
   type OpenBukReceipt,
 } from "@corely/contracts";
+import { StaffAvailabilityConstraintService } from "../../../people/public";
 import { createHash, randomBytes } from "node:crypto";
 import { AuthorizeWorkspaceUseCase, PilotSetupUseCase } from "../../../workspaces/public";
 import {
@@ -47,7 +48,9 @@ export class OpenBukStudioUseCase {
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
     @Inject(AuthorizeWorkspaceUseCase)
     private readonly authorize: Pick<AuthorizeWorkspaceUseCase, "execute">,
-    @Inject(PilotSetupUseCase) private readonly pilot: Pick<PilotSetupUseCase, "publish">
+    @Inject(PilotSetupUseCase) private readonly pilot: Pick<PilotSetupUseCase, "publish">,
+    @Inject(StaffAvailabilityConstraintService)
+    private readonly staffAvailability: StaffAvailabilityConstraintService
   ) {}
 
   private scope(ctx: UseCaseContext): StudioScope {
@@ -164,7 +167,14 @@ export class OpenBukStudioUseCase {
       now,
       tx
     );
-    return { studio, slots: openBukAvailability(studio, day, now, busy) };
+    const staffWindows = await this.staffAvailability.windows(
+      scope,
+      studio.staffId,
+      new Date(midnight - 14 * 3600000),
+      new Date(midnight + 38 * 3600000),
+      tx
+    );
+    return { studio, slots: openBukAvailability(studio, day, now, busy, staffWindows) };
   }
   async availability(day: string, ctx: UseCaseContext) {
     const result = await this.slots(this.publicScope(ctx), day);

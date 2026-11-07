@@ -12,6 +12,7 @@ export function usePeopleAccess() {
   const permissions = useEffectivePermissions();
   const locale = i18n.language.split("-")[0];
   return {
+    locale,
     scope: JSON.stringify([user?.userId, user?.activeTenantId, activeWorkspaceId]),
     copy: peopleCopy[locale === "de" || locale === "vi" ? locale : "en"],
     loading: permissions.isLoading,
