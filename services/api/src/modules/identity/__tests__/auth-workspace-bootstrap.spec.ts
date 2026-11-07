@@ -6,6 +6,7 @@ import { mockDeep } from "vitest-mock-extended";
 import { AuthClient } from "../../../../../../packages/auth-client/src/auth-client";
 import type { TokenStorage } from "../../../../../../packages/auth-client/src/storage/storage.interface";
 import { ApiClient } from "../../../../../../packages/auth-client/src/api-client";
+import { resolveActiveWorkspaceId } from "../../../../../../apps/pos/src/lib/resolve-active-workspace";
 import { AuthGuard } from "../adapters/http/auth.guard";
 import { AuthorizeRequestContextUseCase } from "../application/use-cases/authorize-request-context.usecase";
 import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
@@ -47,6 +48,12 @@ class BootstrapFixtureController {
   @UseGuards(AuthGuard)
   list() {
     return { workspaces: available.map((id) => ({ id })) };
+  }
+  @Post("workspaces")
+  @UseGuards(AuthGuard)
+  create() {
+    available.push("workspace-new");
+    return { workspace: { id: "workspace-new" } };
   }
   @Get("scoped")
   @UseGuards(AuthGuard)
@@ -181,6 +188,28 @@ it("preserves a valid saved selection and recovers after its membership disappea
   available = ["workspace-a"];
   expect((await client.getCurrentUser()).activeWorkspaceId).toBe("workspace-a");
 });
+it.each([{ remaining: ["workspace-a2"] }, { remaining: [] }])(
+  "discovers and creates after active-workspace revocation ($remaining)",
+  async ({ remaining }) => {
+    active = "workspace-a";
+    available = remaining;
+    const api = new ApiClient({ apiUrl: "https://synthetic.invalid", authClient: client, storage });
+    // Losing a workspace still denies its scoped resources.
+    await expect(api.get("/scoped")).rejects.toMatchObject({ status: 403 });
+    expect(await api.get("/workspaces", { workspaceScope: "none" })).toEqual({
+      workspaces: remaining.map((id) => ({ id })),
+    });
+    expect(await resolveActiveWorkspaceId(api, active)).toBe(remaining[0] ?? null);
+    expect(
+      await api.post("/workspaces", { name: "Replacement" }, { workspaceScope: "none" })
+    ).toEqual({ workspace: { id: "workspace-new" } });
+    expect(
+      selectors.filter((call) => call.path === "/workspaces").every((call) => !call.workspace)
+    ).toBe(true);
+    // Account-level recovery does not implicitly change a scoped request's authority.
+    await expect(api.get("/scoped")).rejects.toMatchObject({ status: 403 });
+  }
+);
 it("switches tenant without treating the new tenant ID as a workspace", async () => {
   active = "workspace-a";
   tenantId = "tenant-b";

@@ -79,6 +79,13 @@ tool builders. Other undeclared legacy tools retain the fail-closed policy above
 execution requires an actual authorized workspace. Sensitive-action confirmation remains
 an additional obligation; these permission checks do not replace it or enable automation.
 
+Account-level workspace discovery and creation omit the saved workspace selector, while
+retaining authenticated tenant membership checks. This lets clients recover after deletion
+or revocation without weakening scoped resource authorization. Completed successful discovery
+clears unavailable selections or selects an authorized remaining workspace; a discovery error
+is not an empty membership list. Identity role lookup uses tenant membership, separately from
+workspace selection, so resolving a real workspace ID preserves Owner role-management access.
+
 No authorization-decision cache is introduced. Owner implementations of search, summaries,
 exports and AI retrieval must authorize before querying and apply the same record/field
 projection as direct reads. Cache keys must include tenant, workspace and permitted

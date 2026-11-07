@@ -20,16 +20,17 @@ import { apiClient } from "@corely/web-shared/lib/api-client";
 
 class WorkspacesApi {
   async listWorkspaces(): Promise<ListWorkspacesOutput["workspaces"]> {
-    const result = await apiClient.get<ListWorkspacesOutput>("/workspaces");
+    const result = await apiClient.get<ListWorkspacesOutput>("/workspaces", {
+      workspaceScope: "none",
+    });
     return result.workspaces ?? [];
   }
 
   async createWorkspace(input: CreateWorkspaceInput): Promise<CreateWorkspaceOutput> {
-    return apiClient.post<CreateWorkspaceOutput>(
-      "/workspaces",
-      input,
-      this.withIdempotencyAndCorrelation()
-    );
+    return apiClient.post<CreateWorkspaceOutput>("/workspaces", input, {
+      ...this.withIdempotencyAndCorrelation(),
+      workspaceScope: "none",
+    });
   }
 
   async updateWorkspace(

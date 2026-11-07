@@ -63,6 +63,8 @@ export class ApiClient {
       skipTokenRefresh?: boolean;
       parseJson?: boolean;
       signal?: AbortSignal;
+      /** Account-level discovery/recovery must not depend on a saved workspace. */
+      workspaceScope?: "active" | "none";
     }
   ): Promise<T> {
     if (!opts?.skipTokenRefresh) {
@@ -70,7 +72,8 @@ export class ApiClient {
     }
 
     const accessToken = this.authClient.getAccessToken();
-    const workspaceId = await this.storage.getActiveWorkspaceId();
+    const workspaceId =
+      opts?.workspaceScope === "none" ? null : await this.storage.getActiveWorkspaceId();
     const parseJson = opts?.parseJson ?? true;
     const requestOptions = {
       url: `${this.apiUrl}${endpoint}`,
@@ -130,14 +133,22 @@ export class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string, opts?: { correlationId?: string }): Promise<T> {
+  async get<T>(
+    endpoint: string,
+    opts?: { correlationId?: string; workspaceScope?: "active" | "none" }
+  ): Promise<T> {
     return this.request<T>(endpoint, { method: "GET" }, opts);
   }
 
   async post<T>(
     endpoint: string,
     body?: unknown,
-    opts?: { idempotencyKey?: string; correlationId?: string; headers?: HeadersInit }
+    opts?: {
+      idempotencyKey?: string;
+      correlationId?: string;
+      headers?: HeadersInit;
+      workspaceScope?: "active" | "none";
+    }
   ): Promise<T> {
     const requestInit: RequestInit = { method: "POST" };
     if (opts?.headers) {

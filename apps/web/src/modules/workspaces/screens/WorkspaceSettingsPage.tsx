@@ -159,6 +159,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
     setIsDeleting(true);
     try {
       await workspacesApi.deleteWorkspace(activeWorkspaceId);
+      await refresh();
       toast({
         title: "Workspace deleted",
         description: "The workspace has been removed.",

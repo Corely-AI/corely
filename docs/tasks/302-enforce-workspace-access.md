@@ -24,8 +24,9 @@ Review at `d4f218b41` reproduced two regressions: auth clients sent a tenant ID 
 
 Current scoped results:
 
-- API Auth/RBAC/Documents/tool/registry/context/workspace checks, actual invoice builders and full AppModule DI smoke: **73 passed** across eight files.
-- Web auth-route/workspace-cache checks: **4 passed**, including a pending tenant transition that cannot reuse the old workspace list.
+- API Auth/RBAC/Documents/tool/registry/context/workspace checks, actual invoice builders and full AppModule DI smoke: **75 passed** across eight files.
+- Web auth-route/workspace-cache/role-editor checks: **10 passed**, including a pending tenant transition that cannot reuse the old workspace list.
+- POS workspace resolver: **3 passed**, including clearing an unavailable last workspace.
 - Auth-client build, API typecheck/build, web-shared typecheck, and separate compilation of API/browser-client test fixtures: passed.
 - Changed-file production ESLint: zero errors; existing warnings remain. Test/spec files are ignored by repository ESLint and are executed/typechecked instead. Changed-file Prettier and local documentation links are checked before commit.
 - Root `pnpm test:unit`: **1,080 passed, 8 skipped**, 265 suites passed; the unchanged cash-handoff integration suite fails initial Prisma cleanup against its hard-coded local database on port 5432. This is not a passing full-suite result.
@@ -43,6 +44,8 @@ pnpm --dir services/api exec vitest run --config vitest.config.ts \
 
 pnpm --dir apps/web exec vitest run --config vitest.config.ts \
   src/app/router/workspace-scope.spec.tsx \
+  src/app/router/workspace-recovery.spec.tsx \
+  src/modules/settings/screens/role-permissions.spec.tsx \
   src/app/router/require-auth.spec.tsx \
   --maxWorkers=1 --minWorkers=1
 ```
@@ -67,6 +70,46 @@ Review captures (synthetic data only):
 - [Desktop sign-in result](302-assets/auth-desktop.png)
 - [Mobile restored session](302-assets/auth-mobile.png)
 - [Mobile signup / no-workspace onboarding](302-assets/signup-onboarding-mobile.png)
+
+## Follow-up review corrections
+
+Review at `ec7d5f073` reproduced two remaining caller regressions. Workspace list/create
+and POS restoration still sent the deleted/revoked selection, blocking recovery with 403.
+The tenant-role hook also searched Identity memberships using the newly correct workspace ID,
+so an Owner lost the system-role editing controls.
+
+- `ApiClient` now accepts explicit `workspaceScope: "none"` for account-level recovery.
+  Web workspace discovery/creation and POS discovery use it, retaining authentication,
+  refresh/retry and idempotency behavior. Ordinary requests still carry and authorize their
+  active workspace; the server guard is unchanged.
+- Completed successful discovery selects an authorized remaining workspace or clears a dead
+  selection when none remain. Discovery errors do not clear it. Deletion refreshes discovery
+  before onboarding. POS persistence also clears unavailable IDs and no longer fabricates a
+  workspace from a tenant ID.
+- Identity role lookup uses `activeTenantId`, separately from workspace selection. An Owner
+  can edit/save Staff system-role grants; non-Owner system-role editing stays disabled.
+
+Fresh follow-up checks: **75 API + 10 web + 3 POS helper tests = 88 passed**. The API
+fixture uses the real client, AuthGuard and workspace policy to prove recovery and continued
+403 denial of revoked scoped requests. Web checks use the actual client/storage/workspace
+facade/provider and actual role editor. Auth-client build, web-shared typecheck, API/client
+fixture compilation, changed-production-file ESLint (zero errors, four existing warnings),
+Prettier and diff whitespace checks pass. Full web typecheck reproduces the same eight
+unchanged Assistant/Cash Management errors. Earlier full-unit/API-build/root-lint results
+above were not rerun for this client-only follow-up.
+
+Fresh local runtime evidence uses the same isolated loopback API/database and synthetic
+accounts. Owner A's local workspace was upgraded to Company to exercise its RBAC UI. At
+1440×1000 the Owner toggled document read on the Staff system role, saved, and an API read
+confirmed the persisted ALLOW grant. Phone layout/scroll was inspected at 390×844 with no
+horizontal overflow. Owner B deleted its sole synthetic workspace, reached onboarding with
+no saved selector, completed the replacement setup, and reached the dashboard with the new
+workspace selected without reload/re-login. No browser responses were mocked. Native POS UI
+and German/Vietnamese remain untested; the actual POS lookup is covered in the API fixture.
+
+- [Owner editing Staff system-role permissions, desktop](302-assets/owner-role-edit-desktop.png)
+- [Last workspace deleted, phone onboarding](302-assets/deleted-workspace-onboarding-mobile.png)
+- [Replacement workspace created, phone dashboard](302-assets/replacement-workspace-mobile.png)
 
 ## Impact and remaining work
 
