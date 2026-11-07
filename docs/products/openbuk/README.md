@@ -1,6 +1,27 @@
 # OpenBuk
 
-Open-source booking for salons & studios. A separate product on the Corely platform.
+Open-source booking for salons & studios. A focused product/client on the Corely platform,
+reusing the existing Booking owner.
+
+## Product direction alignment — 2026-11-07
+
+Corely’s [connected-app strategy](../corely/README.md) focuses on internal operations
+with optional finance. OpenBuk is existing implementation to reuse when assessing
+Appointments and the proposed Schedule experience; public booking may be necessary
+for adoption. Preserve this public journey, the language requirements below, and
+the existing shared Booking records. Do not create another booking domain.
+
+The [launch proposal](../corely/launch-plan.md) recommends one package with Schedule,
+Team and Daily Work; it does not authorize five complete app launches. Choosing
+Corely/OpenBuk as authoritative booking or complementing one existing system through
+a verified integration remains an adoption decision. Do not promise both models or
+duplicate manual schedules. The [repository alignment](../corely/repository-alignment.md)
+separates implementation evidence from priority and readiness.
+
+The implementation details, release gates and **2026-10-04** verification below
+are retained as historical evidence, not fresh tests from this documentation task.
+The historical architecture-check failure must be reverified before treating it as
+current. This alignment changes no code, licensing, deployment or free/paid policy.
 
 ## Repository findings and implementation plan
 

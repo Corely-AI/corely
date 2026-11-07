@@ -19,10 +19,13 @@ Common dev commands:
 ```bash
 pnpm dev          # build packages + run all workspaces
 pnpm dev:web      # web app
-pnpm dev:mock     # mock server (UI-first)
 pnpm dev:api      # API
-pnpm dev:worker   # worker
+pnpm dev:openbuk  # focused booking frontend
 ```
+
+Background execution is hosted in `services/api/src/modules/background`, not a separate worker. The historical mock-server runtime is absent in this commit.
+
+Read [agent guidance](AGENTS.md) and [product strategy](docs/products/corely/README.md) before choosing scope; reuse existing owners rather than scaffolding the catalog.
 
 Quality checks:
 

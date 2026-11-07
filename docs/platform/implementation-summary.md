@@ -1,5 +1,11 @@
 # Platform Module Implementation Summary
 
+> Historical framing note — 2026-11-07: retain this report/plan as dated context,
+> not a fresh completion or test result. Primary product direction now follows
+> [Corely strategy](../products/corely/README.md): connected operational apps, optional finance and one focused
+> package. Existing capabilities remain maintained; this report does not authorize
+> catalog-wide implementation or a five-complete-app launch.
+
 ## Overview
 
 This document summarizes the implementation of the Platform module (Apps + Templates + Packs) system for Corely.
@@ -424,7 +430,7 @@ services/api/src/modules/platform/
 
 ## References
 
-- [Original Specification](../specs/platform-spec.md) - Initial requirements
+- Original specification path `docs/specs/platform-spec.md` is absent in this checkout; use the [apps/templates/packs guide](apps-templates-packs.md) for retained platform concepts.
 - [Hexagonal Architecture](https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/)
 - [Server-Driven UI](https://www.judo.app/blog/server-driven-ui/)
 - [Template Method Pattern](https://refactoring.guru/design-patterns/template-method)

@@ -1,6 +1,23 @@
 # Documentation
 
-Welcome to the Corely documentation. This directory contains detailed information about the architecture, modules, and development guides.
+Corely is a collection of connected, AI-native apps for running a team’s
+internal operations. Teams start with the capabilities they need and expand
+into finance and specialist operations as their work demands.
+
+Finance is optional; accounting is not a prerequisite for operational apps.
+Implementation evidence, target design and unvalidated hypotheses are kept separate.
+
+## Product direction
+
+- [Corely strategy](./products/corely/README.md)
+- [Long-term 32-app map](./products/corely/app-catalog.md) — not a delivery or availability commitment
+- [Focused launch proposal](./products/corely/launch-plan.md) — Schedule, Team, Daily Work
+- [Repository alignment and discrepancies](./products/corely/repository-alignment.md)
+- [Connected-app architecture and ownership](./architecture/connected-apps.md)
+- [Positioning decision](./decisions/ADR-0002-connected-operations-apps.md)
+
+Dated implementation/status reports retain historical context; they do not prove
+current readiness or authorize implementing the catalog.
 
 ## Structure
 
@@ -43,6 +60,7 @@ Frontend guidelines and specific docs.
 
 - [Brand](./frontend/BRAND.md)
 - [Menu](./menu/)
+- [CRUD and operational entry-point standard](./frontend/crud-ui-standard.md)
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
 

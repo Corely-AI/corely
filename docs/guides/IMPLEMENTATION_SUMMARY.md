@@ -1,5 +1,11 @@
 # Authentication & Identity Implementation Summary
 
+> Historical framing note — 2026-11-07: retain this report/plan as dated context,
+> not a fresh completion or test result. Primary product direction now follows
+> [Corely strategy](../products/corely/README.md): connected operational apps, optional finance and one focused
+> package. Existing capabilities remain maintained; this report does not authorize
+> catalog-wide implementation or a five-complete-app launch.
+
 ## Project: Corely - AI-native Modular ERP
 
 **Implementation Date:** December 16, 2025  

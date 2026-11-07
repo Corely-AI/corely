@@ -1,4 +1,24 @@
-# Frontend CRUD UI Standard (ERP Floorplans)
+# Frontend CRUD and Operational Entry-Point Standard
+
+## Operational entry points (target guidance, 2026-11-07)
+
+The [focused package](../products/corely/launch-plan.md) proposes Schedule, Team,
+and Daily Work. Choose entry points for the user’s job: calendars for availability,
+task boards/checklists for work, decision inboxes for approvals, daily views for
+coordination and employee self-service for permitted personal actions. These are
+suitable target patterns, not a claim that all screens already exist.
+
+Keep the list/detail CRUD conventions below for record browsing/editing; do not
+force every operational experience into a table. Preserve routes unless a separate
+change authorizes them. Provide loading/empty/error states, accessible keyboard/
+mobile interaction, current-source/freshness signals and safe action confirmation.
+Private personnel reasons must not appear in general operational views.
+
+Reuse public exports from `@corely/ui`, `@corely/web-shared`, and
+`@corely/web-features`; never fork a focused package or import another app’s
+private screens. Frontend visibility is not backend authorization. AI suggestions
+remain proposals until validated/revalidated and approved as required by
+[AI policy](../ai/ai-copilot.md).
 
 ## Floorplans
 

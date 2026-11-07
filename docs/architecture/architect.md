@@ -1,14 +1,30 @@
 # Corely architecture
 
-**Version:** 1.2  
-**Date:** 19 Mar 2025  
+**Version:** 1.3 (product framing alignment)
+
+**Date:** 2026-11-07 (technical foundation originally documented 19 Mar 2025)
+
 **Scope:** Kernel + module domains (accounting, sales/purchasing, inventory, workflows, AI, POS, web admin).
 
 ---
 
 ## Intent
 
-Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo keeps strict boundaries (DDD + hexagonal) so feature teams can iterate in one codebase today and peel out services later. PostgreSQL + Prisma back the transactional core, with Redis/queues for workflow orchestration and an outbox for integrations.
+Corely is a collection of connected, AI-native apps for running a team’s
+internal operations. Teams start with the capabilities they need and expand
+into finance and specialist operations as their work demands.
+
+Retain the modular monolith, DDD boundaries and hexagonal layering. PostgreSQL +
+Prisma back the transactional core, with queue adapters and an outbox for background
+execution. Finance is optional; accounting is not an operational prerequisite.
+A product app is not necessarily a domain module, surface, schema or subscription.
+See [connected-app composition](connected-apps.md), [product strategy](../products/corely/README.md)
+and [current repository evidence](../products/corely/repository-alignment.md).
+
+The proposed focus is one operational package with Schedule, Team and Daily Work,
+not a 32-app rewrite. Segment and adoption model remain hypotheses. Technical rules
+below are constraints/targets where stated; this document is not a universal
+implementation or operational-readiness audit.
 
 ---
 
@@ -20,14 +36,16 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 - **Corely Cash (`apps/cash-management`, Vite + React):** Dedicated admin app for cash-management workflows (registers, entries, day close, cashbook exports). Uses shared packages `@corely/web-shared` and `@corely/web-features`.
 - **API (`services/api`, NestJS 11):** Modules for identity, accounting, sales, purchasing, inventory, approvals, engagements, workflows, AI copilot, etc. Global env validation via `@corely/config`, Prisma-powered `DataModule`, and trace-ID middleware.
 - **Background runtime (`services/api/src/modules/background`, NestJS 11):** API-hosted internal execution path for outbox processing, scheduled runners, and workflow queue handlers. Cloud Scheduler and Cloud Tasks target internal API endpoints instead of a separate service.
-- **Mock server (`services/mock-server` dist):** Lightweight UI-first backend with latency/idempotency simulation.
+- **OpenBuk (`apps/openbuk-web`, Vite + React):** Focused booking product with marketing/auth/studio/public journeys, using the existing Booking API and records.
+- **Other surfaces:** freelancer, CRM, portal, restaurant-listing and landing (Vite); website-runtime (Next.js); ERiC gateway (.NET). See the alignment inventory.
+- **Historical mock server:** `services/mock-server` has no tracked runtime/package in this commit; do not assume it starts.
 
 ---
 
 ## Monorepo layout (selected)
 
-- **apps/**: `web`, `pos`, `cash-management`, `e2e`
-- **services/**: `api`, `mock-server`
+- **apps/**: multiple clients listed above plus `e2e` (tests, not a product)
+- **services/**: `api`; background is nested under API modules
 - **packages/**:
   - `contracts`: shared schemas/enums/events/tool cards (accounting, CRM, expenses, invoices, inventory, pos, purchasing, sales, tax, workflows, AI contexts, queues)
   - `kernel`: BaseUseCase, Result helpers, DI tokens, core ports (UoW/outbox/audit/idempotency/queue/observability), time helpers, test fakes
@@ -43,7 +61,7 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 ## Backend architecture
 
 - **Hexagonal per module:** `services/api/src/modules/*` follow domain → application (ports/use-cases) → infrastructure (Prisma/adapters) → adapters (HTTP/tools) with testkits. See `services/api/src/modules/README.md` for the layout.
-- **Composition:** `AppModule` imports modules for identity, party/CRM, workspaces, accounting, sales, purchasing, inventory, approvals, engagement, workflows, automation, reporting, documents, tax, platform, and AI copilot. `TraceIdMiddleware` applies to all routes.
+- **Composition:** `AppModule` imports modules for identity, party/CRM, workspaces, accounting, sales, purchasing, inventory, approvals, engagement, workflows, automation, reporting, documents, tax, platform, and AI copilot. `RequestContextInterceptor` and the global `SurfaceGuard` are registered; public workspace path middleware applies to routes.
 - **Data & transactions:** `@corely/data` exposes a global Prisma UnitOfWork plus outbox, audit, and idempotency adapters. Only repositories talk to Prisma.
 - **AI Copilot:** `ai-copilot` module streams chat via `StreamCopilotChatUseCase`, builds tool registries from invoices/party/sales/purchasing/inventory/approvals/engagement, and records tool executions to Prisma + outbox. Prompt registry comes from `@corely/prompts`; observability uses OTEL/Langfuse via `OtelObservabilityAdapter`.
 - **Workflows & automation:** Workflow orchestration lives in the API-hosted background runtime (`WorkflowsModule`) with handlers for human/timer/http/email/ai/system tasks and queue adapters (memory/Cloud Tasks selectable via env). Workflow specs and transitions reuse `packages/core`.
@@ -112,7 +130,7 @@ Web and POS are distinct client surfaces, but they share the same contracts, dom
 - Browser storage and backoffice layouts/dashboards.
 - Admin workflows and reports.
 
-**Rule:** UI logic stays in `apps/*`; shared domain, contracts, and client behavior stay in `packages/*`.
+**Rule:** app composition stays in `apps/*`; reusable UI/features use public exports from `packages/ui`, `packages/web-shared`, and `packages/web-features`. Shared domain, contracts, and client behavior stay in packages. Never import another app’s private screens.
 
 ---
 
@@ -137,7 +155,7 @@ Sync behavior:
 
 # Multi-tenancy, security, and customization
 
-**Tenant isolation:** every row is scoped by `tenantId`; uniqueness and indexes include `tenantId`. Sensitive actions require immutable audit logs.
+**Tenant isolation requirement:** preserve actual tenant/workspace ownership; scope data access, uniqueness and indexes appropriately. Sensitive actions require audit logs. Current coverage is not universally verified; see alignment discrepancies. Public authority comes from trusted workspace resolution, not a client tenant ID.
 
 **Authorization:** RBAC by default, optional ABAC policies for high-precision rules (e.g., amount thresholds).
 
@@ -153,9 +171,14 @@ Sync behavior:
 
 ---
 
-# ERP domain module catalog
+# Historical domain design reference (not current inventory)
 
-Treat each row as a bounded context with its own code ownership, migrations, and APIs.
+The table below preserves the earlier ERP domain design vocabulary. It mixes
+implemented domains and proposed ones (e.g. Assets, operational Projects, light HR);
+it is neither the current module inventory nor the product catalog. Use the
+[alignment inventory](../products/corely/repository-alignment.md) for current owners.
+Product names do not require matching bounded contexts, migrations or schemas.
+Follow the unchanged [persistence policy](DATABASE_PERSISTENCE_STRATEGY.md).
 
 | Module domain             | Purpose                                             | Core entities (examples)                           |
 | ------------------------- | --------------------------------------------------- | -------------------------------------------------- |
@@ -182,19 +205,22 @@ Treat each row as a bounded context with its own code ownership, migrations, and
 
 # AI-native revenue + expense flows
 
-Sales and Purchasing are AI-native by default: the Copilot proposes structured drafts (quotes, orders,
-vendor bills, line items, pricing) and never mutates records silently. Every mutation is explicit and
-user-confirmed, while deterministic auto-posting to Accounting Core produces auditable journal entries
-with source links and explanations.
+Target behavior: Copilot proposes structured drafts for quotes, orders and bills;
+deterministic application logic validates, and authorized users approve sensitive
+AI-originated changes. Existing configured deterministic posting rules are separate:
+for example, purchasing settings include auto-post controls and posting requires
+account mappings. Do not disable those policies by prose or claim every current
+mutation is user-confirmed. Optional finance is a product-adoption target, not
+removal of existing ledger integrations. See [AI policy](../ai/ai-copilot.md).
 
 # AI copilot for Web and POS
 
 We use the existing **ai-copilot** module and **ai-sdk.dev** tool-calling patterns. Web and POS both render
 the same tool cards and apply actions explicitly.
 
-Rules:
+Target rules (coverage must be checked per tool/use case):
 
-- AI proposes structured actions only (tool cards).
+- AI proposes structured actions (tool cards); permission-filter context first.
 - Cashier/user must confirm apply actions.
 - AI never finalizes a sale, never posts inventory moves.
 - All AI interactions are logged (confidence, provenance, accepted/dismissed).
@@ -203,7 +229,7 @@ Rules:
 
 # Vertical packs (restaurant, hotel, factory)
 
-Vertical packs extend the kernel and baseline modules with specialized workflows, UI, and data structures. They should be **additive and isolated**: new tables live in the pack, while shared primitives remain in the kernel. We ship a baseline POS v1 in `apps/pos` (generic quick sale); packs later extend it for hospitality/retail flows.
+Vertical packs extend the kernel and baseline modules with specialized workflows, UI, and data structures. They should be **additive and isolated**: new records follow existing domain buckets/extension storage and architectural approval rules, while shared primitives remain in the kernel. We ship a baseline POS v1 in `apps/pos` (generic quick sale); packs later extend it for hospitality/retail flows.
 
 | Pack                    | Adds (examples)                                                    | Composes kernel primitives                      |
 | ----------------------- | ------------------------------------------------------------------ | ----------------------------------------------- |

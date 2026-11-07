@@ -1,5 +1,11 @@
 # OpenBuk — App screenshots
 
+> Historical framing note — 2026-11-07: retain this report/plan as dated context,
+> not a fresh completion or test result. Primary product direction now follows
+> [Corely strategy](docs/products/corely/README.md): connected operational apps, optional finance and one focused
+> package. Existing capabilities remain maintained; this report does not authorize
+> catalog-wide implementation or a five-complete-app launch.
+
 Captured on 4 October 2026 from the local app at http://127.0.0.1:8091. These are full-page screenshots of the implemented first vertical slice, using the isolated test studio and synthetic appointment data.
 
 This walkthrough covers the current one-service, one-staff flow. See [implementation notes and roadmap](docs/products/openbuk/README.md) for scope and validation.
