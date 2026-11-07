@@ -5,7 +5,7 @@
 - Issue: https://github.com/Corely-AI/corely/issues/304; parent #282.
 - Prerequisites #299, #301 and #302 are closed/completed and integrated.
 - Branch: `304-resumable-pilot-setup`; base: `development` at `dac9007605`.
-- PR: pending creation.
+- PR: [Draft #374](https://github.com/Corely-AI/corely/pull/374), targeting `development`.
 - Outcome: resume the first workspace's private settings, explicitly publish validated availability,
   and associate invited staff accounts without duplicate identities or memberships.
 - Excludes employee/resource linking, multiple-location scheduling, email delivery, imports,
