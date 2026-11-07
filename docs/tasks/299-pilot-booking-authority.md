@@ -7,6 +7,7 @@
 - Prerequisite: [#298](https://github.com/Corely-AI/corely/issues/298), completed
   through merged [PR #365](https://github.com/Corely-AI/corely/pull/365).
 - Branch: `299-pilot-booking-authority`; intended PR base: `development`.
+- Draft PR: [#366](https://github.com/Corely-AI/corely/pull/366), targeting `development`.
 - Worktree: `/Users/hadoan/Documents/GitHub/worktrees/corely-299-pilot-booking-authority`;
   isolated when concurrent #302 work appeared in the shared checkout. Only this
   ticket's seven documentation files were transferred; unrelated work was preserved.
@@ -42,6 +43,7 @@ three blocking exceptions; it does not claim a working importer or team pilot.
 | Synthetic adoption tabletop                    | Seven rows, six IDs: two eligible bookings, one duplicate, one cancelled disposition, three blockers. NO-GO for real cutover; expected replay/public-to-staff behavior traced to source. |
 | Installed Prettier on changed Markdown         | PASS: all seven changed Markdown files.                                                                                                                                                  |
 | Local links/anchors and walkthrough arithmetic | PASS: 134 local references; weekday, UTC offsets/buffers, DST gap and row counts checked with temporary Python validator.                                                                |
+| Staged checks                                  | PASS: `pnpm exec lint-staged --concurrent false` and `node scripts/check-staged-line-limit.mjs` (no affected source files).                                                              |
 | Full diff and whitespace                       | PASS: self-reviewed seven documentation files only; `git diff --check` clean.                                                                                                            |
 
 Application tests, typecheck, architecture checks, builds, provider calls and
