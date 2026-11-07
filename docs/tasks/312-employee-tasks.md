@@ -5,7 +5,7 @@
 - Issue: https://github.com/Corely-AI/corely/issues/312; parent #285.
 - Completed prerequisites: #298 (access), #305 (staff), #302 (package composition).
 - Branch: `312-employee-tasks`; base: `corely/development` at `426954b774`.
-- PR: pending.
+- PR: https://github.com/Corely-AI/corely/pull/376 (Draft; base `development`).
 - Outcome: create, assign, edit, complete and reopen daily work with one versioned record.
 - Excludes recurrence, comments, attachments, Projects, CRM activities and workflow execution tasks.
 
