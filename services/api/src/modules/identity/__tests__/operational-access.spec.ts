@@ -21,6 +21,13 @@ import type { ContextAwareRequest } from "../../../shared/request-context";
 import type { RolePermissionEffect } from "@corely/contracts";
 import { ok } from "@corely/kernel";
 
+import { mockDeep } from "vitest-mock-extended";
+import { buildPermissionCatalog } from "../permissions/permission-catalog";
+import { buildInvoiceTools } from "../../invoices/adapters/tools/invoice.tools";
+import { buildInvoiceWorkflowTools } from "../../ai-copilot/infrastructure/tools/invoice-workflow.tools";
+import type { InvoicesApplication } from "../../invoices/application/invoices.application";
+import type { PartyApplication } from "../../party/application/party.application";
+
 @Controller("operational-fixture")
 @UseGuards(AuthGuard, RbacGuard)
 class ProtectedController {
@@ -350,6 +357,52 @@ describe("Operational authorization HTTP and tool boundaries", () => {
     grants = [];
     await expect(tools.assert(legacy, ctx)).rejects.toThrow("Tool access denied");
     expect(await tools.allows(legacy, { ...ctx, workspaceId: undefined })).toBe(false);
+  });
+  it("keeps real invoice tools available for seeded Owner and read-only roles without wildcard grants", async () => {
+    const tools = [
+      ...buildInvoiceTools(mockDeep<InvoicesApplication>()),
+      ...buildInvoiceWorkflowTools(mockDeep<InvoicesApplication>(), mockDeep<PartyApplication>()),
+    ];
+    const defaults = buildDefaultRoleGrants(buildPermissionCatalog());
+    const ctx = { userId: "user", tenantId: "tenant-a", workspaceId: "workspace-a" };
+    const authorizer = new AuthorizeToolService(currentPermissions);
+    expect(tools.every((tool) => tool.requiredPermissions?.length)).toBe(true);
+    grants = defaults.OWNER;
+    expect(grants.some((grant) => grant.key === "*")).toBe(false);
+    expect((await authorizer.filterAllowed(tools, ctx)).map((tool) => tool.name)).toEqual(
+      tools.map((tool) => tool.name)
+    );
+    grants = defaults.ACCOUNTANT;
+    const invoiceTools = buildInvoiceTools(mockDeep<InvoicesApplication>());
+    expect((await authorizer.filterAllowed(invoiceTools, ctx)).map((tool) => tool.name)).toEqual(
+      invoiceTools.map((tool) => tool.name)
+    );
+    grants = defaults.READ_ONLY;
+    expect((await authorizer.filterAllowed(tools, ctx)).map((tool) => tool.name)).toEqual([
+      "invoice_get",
+      "invoice_list",
+      "invoice_draft_issue_email",
+      "invoice_draft_reminder_email",
+    ]);
+    const read = tools.find((tool) => tool.name === "invoice_get")!;
+    grants = [];
+    await expect(authorizer.assert(read, ctx)).rejects.toThrow("Tool access denied");
+  });
+  it("requires both invoice management and customer lookup for the real customer workflow", async () => {
+    const tools = buildInvoiceWorkflowTools(
+      mockDeep<InvoicesApplication>(),
+      mockDeep<PartyApplication>()
+    );
+    const ctx = { userId: "user", tenantId: "tenant-a", workspaceId: "workspace-a" };
+    const authorizer = new AuthorizeToolService(currentPermissions);
+    grants = [{ key: "sales.invoices.manage", effect: "ALLOW" }];
+    expect(await authorizer.filterAllowed(tools, ctx)).toEqual([]);
+    grants.push({ key: "party.customers.read", effect: "ALLOW" });
+    expect((await authorizer.filterAllowed(tools, ctx)).map((tool) => tool.name)).toEqual([
+      "invoice_create_from_customer",
+    ]);
+    grants.push({ key: "sales.invoices.manage", effect: "DENY" });
+    expect(await authorizer.filterAllowed(tools, ctx)).toEqual([]);
   });
   it("excludes sensitive reads from automatic staff/read-only grants", () => {
     const defaults = buildDefaultRoleGrants(identityPermissions);

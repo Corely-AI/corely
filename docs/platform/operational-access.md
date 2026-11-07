@@ -18,6 +18,13 @@ workspace membership. Missing selectors stay missing; tenant IDs are never synth
 as workspace IDs. Tenant-owned legacy endpoints can work without a workspace; an owner
 requiring workspace records must reject missing workspace context in its use case.
 
+Auth clients bootstrap `/auth/me` and workspace discovery without a selector. They
+validate the saved selection against the authenticated user's authorized workspace list
+before scoped requests, repair legacy/revoked/foreign selections and preserve valid ones.
+Host and no-workspace accounts stay unscoped. Discovery reads use one token snapshot and
+retry if authentication changes before a late success or denial is published. Web workspace-list caches include the
+current tenant and pause during tenant transitions; account switching clears old queries.
+
 `RbacGuard` checks handler/class `RequirePermission` metadata through
 `GetEffectivePermissionsUseCase`, which reloads current membership, role and grants.
 All roles, including OWNER/ADMIN and host roles, require current stored permission
@@ -65,7 +72,10 @@ with selectors inside model arguments. Existing app/surface scoping still applie
 Server tools must declare every `requiredPermissions` key needed for their operation.
 Legacy tools without metadata require a current explicitly wildcard-granted role
 with no DENY entries. OWNER/ADMIN names alone do not grant this access. This intentionally removes
-undeclared tools from ordinary role access until their owners annotate and verify them. Tool
+undeclared tools from ordinary role access until their owners annotate and verify them. Invoice tools now declare existing sales invoice/payment permissions; customer-name
+creation additionally requires customer read. Draft-only email tools require invoice
+read. Seeded Owner/Accountant and read-only role behavior is covered with the actual
+tool builders. Other undeclared legacy tools retain the fail-closed policy above. Tool
 execution requires an actual authorized workspace. Sensitive-action confirmation remains
 an additional obligation; these permission checks do not replace it or enable automation.
 

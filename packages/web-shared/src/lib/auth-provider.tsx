@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (authClient.getAccessToken()) {
           const currentUser = await authClient.getCurrentUser();
-          const workspaceId = currentUser.activeWorkspaceId ?? currentUser.activeTenantId ?? null;
+          const workspaceId = currentUser.activeWorkspaceId ?? null;
           setActiveWorkspaceId(workspaceId);
           setUser(currentUser);
         }
@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await authClient.signup(data);
       // Fetch user data after signup
       const currentUser = await authClient.getCurrentUser();
-      const workspaceId = currentUser.activeWorkspaceId ?? currentUser.activeTenantId ?? null;
+      const workspaceId = currentUser.activeWorkspaceId ?? null;
       setActiveWorkspaceId(workspaceId);
       setUser(currentUser);
       return result;
@@ -72,12 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await authClient.signin(data);
       // Fetch user data after signin
       const currentUser = await authClient.getCurrentUser();
-      const workspaceId =
-        currentUser.activeWorkspaceId ??
-        currentUser.activeTenantId ??
-        data.workspaceId ??
-        data.tenantId ??
-        null;
+      const workspaceId = currentUser.activeWorkspaceId ?? null;
       setActiveWorkspaceId(workspaceId);
       setUser(currentUser);
       return result;
@@ -114,16 +109,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const switchTenant = async (tenantId: string | null): Promise<AuthResponse> => {
     try {
       setError(null);
+      setIsLoading(true);
       const result = await authClient.switchTenant(tenantId);
+      queryClient.clear();
       // Fetch updated user data
       const currentUser = await authClient.getCurrentUser();
-      setActiveWorkspaceId(tenantId ?? null);
+      setActiveWorkspaceId(currentUser.activeWorkspaceId ?? null);
       setUser(currentUser);
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Tenant switch failed";
       setError(message);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -132,7 +131,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await authClient.refreshAccessToken();
       if (authClient.getAccessToken()) {
         const currentUser = await authClient.getCurrentUser();
-        const workspaceId = currentUser.activeWorkspaceId ?? currentUser.activeTenantId ?? null;
+        const workspaceId = currentUser.activeWorkspaceId ?? null;
         setActiveWorkspaceId(workspaceId);
         setUser(currentUser);
       }

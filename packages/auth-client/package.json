@@ -26,7 +26,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@corely/api-client": "workspace:*"
+    "@corely/api-client": "workspace:*",
+    "@corely/contracts": "workspace:*"
   },
   "peerDependencies": {
     "expo-secure-store": ">=14.0.0"

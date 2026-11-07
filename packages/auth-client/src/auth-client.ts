@@ -1,3 +1,4 @@
+import type { ListWorkspacesOutput } from "@corely/contracts";
 import { request, createIdempotencyKey, normalizeError } from "@corely/api-client";
 import type { TokenStorage } from "./storage/storage.interface";
 
@@ -188,7 +189,7 @@ export class AuthClient {
         idempotencyKey: createIdempotencyKey(),
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
-      const workspaceId = result.workspaceId ?? result.tenantId ?? null;
+      const workspaceId = result.workspaceId ?? null;
       await this.storage.setActiveWorkspaceId(workspaceId);
 
       return result;
@@ -209,8 +210,7 @@ export class AuthClient {
         body: data,
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
-      const workspaceId =
-        result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId ?? null;
+      const workspaceId = result.workspaceId ?? data.workspaceId ?? null;
       await this.storage.setActiveWorkspaceId(workspaceId);
 
       return result;
@@ -230,15 +230,56 @@ export class AuthClient {
       throw new Error("No access token");
     }
 
+    const accessToken = this.accessToken;
     try {
-      const workspaceId = await this.storage.getActiveWorkspaceId();
-      return await request<CurrentUserResponse>({
+      // Bootstrap/account discovery must not depend on a valid saved workspace.
+      // Old clients persisted tenant IDs here, and memberships may be revoked.
+      const currentUser = await request<CurrentUserResponse>({
         url: `${this.apiUrl}/auth/me`,
         method: "GET",
-        accessToken: this.accessToken,
-        workspaceId: workspaceId ?? undefined,
+        accessToken,
       });
+      if (this.accessToken !== accessToken) {
+        return this.getCurrentUser();
+      }
+      if (!currentUser.activeTenantId) {
+        await this.storage.setActiveWorkspaceId(null);
+        if (this.accessToken !== accessToken) {
+          return this.getCurrentUser();
+        }
+        delete currentUser.activeWorkspaceId;
+        return currentUser;
+      }
+
+      const { workspaces } = await request<ListWorkspacesOutput>({
+        url: `${this.apiUrl}/workspaces`,
+        method: "GET",
+        accessToken,
+      });
+      const savedWorkspaceId = await this.storage.getActiveWorkspaceId();
+      if (this.accessToken !== accessToken) {
+        return this.getCurrentUser();
+      }
+      const workspaceId =
+        (
+          workspaces.find((workspace) => workspace.id === savedWorkspaceId) ??
+          workspaces.find((workspace) => workspace.id === currentUser.activeWorkspaceId) ??
+          workspaces[0]
+        )?.id ?? null;
+      await this.storage.setActiveWorkspaceId(workspaceId);
+      if (this.accessToken !== accessToken) {
+        return this.getCurrentUser();
+      }
+      if (workspaceId) {
+        currentUser.activeWorkspaceId = workspaceId;
+      } else {
+        delete currentUser.activeWorkspaceId;
+      }
+      return currentUser;
     } catch (error) {
+      if (this.accessToken !== accessToken) {
+        return this.getCurrentUser();
+      }
       const normalized = normalizeError(error);
       if (normalized.status === 401) {
         await this.refreshAccessToken();
@@ -305,9 +346,7 @@ export class AuthClient {
         body: { tenantId },
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
-      await this.storage.setActiveWorkspaceId(
-        result.workspaceId ?? result.tenantId ?? tenantId ?? null
-      );
+      await this.storage.setActiveWorkspaceId(result.workspaceId ?? null);
 
       return result;
     } catch (error) {

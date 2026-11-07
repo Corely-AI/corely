@@ -17,6 +17,7 @@ export const buildInvoiceWorkflowTools = (
 ): DomainToolPort[] => [
   {
     name: "invoice_create_from_customer",
+    requiredPermissions: ["sales.invoices.manage", "party.customers.read"],
     description:
       "Resolve a customer by name and create a draft invoice when required fields are present.",
     kind: "server",

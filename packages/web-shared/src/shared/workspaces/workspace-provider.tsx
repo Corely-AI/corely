@@ -19,10 +19,10 @@ const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefi
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId());
   const isHostScope = user?.activeTenantId === null;
-  const shouldLoadWorkspaces = isAuthenticated && !isHostScope;
+  const shouldLoadWorkspaces = isAuthenticated && !isAuthLoading && !isHostScope;
 
   console.debug("[WorkspaceProvider] init", {
     isAuthenticated,
@@ -34,7 +34,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     isFetching,
     refetch,
   } = useQuery<WorkspaceDto[]>({
-    queryKey: ["workspaces"],
+    queryKey: ["workspaces", user?.activeTenantId],
     queryFn: () => workspacesApi.listWorkspaces(),
     enabled: shouldLoadWorkspaces,
     staleTime: 30_000,
@@ -64,7 +64,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
       isFetching,
     });
 
-    if (!activeId && workspaces.length > 0 && !isHostScope) {
+    if (!isAuthLoading && !activeId && workspaces.length > 0 && !isHostScope) {
       console.debug("[WorkspaceProvider] setting default workspace", {
         id: workspaces[0].id,
         name: workspaces[0].name,
@@ -73,11 +73,11 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
       setActiveWorkspaceId(defaultId);
       setActiveId(defaultId);
     }
-  }, [activeId, workspaces, isHostScope]);
+  }, [activeId, workspaces, isHostScope, isAuthLoading]);
 
   // If stored activeId does not exist in fetched workspaces, fall back to first
   useEffect(() => {
-    if (activeId && workspaces.length > 0 && !isHostScope) {
+    if (!isAuthLoading && activeId && workspaces.length > 0 && !isHostScope) {
       const exists = workspaces.some((w) => w.id === activeId);
       if (!exists) {
         const fallbackId = workspaces[0].id;
@@ -89,7 +89,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         setActiveId(fallbackId);
       }
     }
-  }, [activeId, workspaces, isHostScope]);
+  }, [activeId, workspaces, isHostScope, isAuthLoading]);
 
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === activeId) ?? null,
