@@ -6,7 +6,7 @@
 - Parent: [EP-STRATEGY / #281](https://github.com/Corely-AI/corely/issues/281); no hard prerequisite.
 - Branch: `298-map-capabilities-and-reuse`; intended PR base: `development`.
 - Inspected source baseline: `fb7677cbc31715b6bebefe5c6c1f2d838d6be198`, 7 November 2026.
-- PR: not created yet.
+- Draft PR: [#365](https://github.com/Corely-AI/corely/pull/365), targeting `development`.
 - Goal: map all 13 P1/P2 apps and all 68 feature keys to source, reuse candidates,
   verified issue/PR history and residual gaps, without treating static evidence as readiness.
 - Exclusions: application implementation, new modules/tables, migrations, deployment,
@@ -39,7 +39,9 @@ Applicable access, concurrency, replay and UI checks belong to the mapped delive
 this ticket changes documentation only. Application suites, architecture checks, typecheck and
 build were not run for STR-01. The prior push's 1,049 passing/7 skipped unit tests are historical,
 not tests of these inventory claims. Its two ESLint errors remain in unchanged files; retain
-that limitation if using the documented hook bypass for this prose-only delivery.
+that limitation in the PR. The prose-only branch was pushed using the documented one-time
+`HUSKY=0` bypass after verifying those files/configuration match the source baseline. The commit
+hook and all targeted document checks passed. Hosted CI was triggered; no hosted pass is claimed.
 
 The structural/link audit used a temporary validator, not new application tooling. Reviewers can
 repeat essential coverage/path checks from the repository root:
