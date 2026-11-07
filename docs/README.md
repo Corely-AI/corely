@@ -57,6 +57,7 @@ Design and implementation of the AI features.
 
 Backend specific documentation.
 
+- [People staff directory](./backend/people.md) — workspace profiles, identity links and private-field access
 - [Auth](./backend/AUTH.md)
 - [Background Module](./backend/background.md)
 - [Events](./backend/EVENTS.md)
