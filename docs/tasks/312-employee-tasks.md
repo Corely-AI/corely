@@ -40,7 +40,8 @@ from the Prisma schema on a dedicated local cluster; no shared database was rese
 | `pnpm --filter @corely/api typecheck` / `build`                          | Passed                                                                                                                                                                                                   |
 | `pnpm --filter @corely/contracts build`                                  | Passed                                                                                                                                                                                                   |
 | `pnpm --filter @corely/openbuk-web typecheck` / `build`                  | Passed                                                                                                                                                                                                   |
-| Changed-source ESLint / Prettier / staged line limit                     | Passed (repository 8 GB lint heap setting); final staged verification before commit                                                                                                                      |
+| Changed-source ESLint / Prettier                                         | Passed with the repository 8 GB lint heap setting; `lint-staged --concurrent false` passed                                                                                                               |
+| Staged source size gate                                                  | Failed: existing oversized BillingAccessService and PrismaBillingRepository files touched by optional transaction propagation; no line-limit exemption added                                             |
 | Frozen offline lockfile verification                                     | Passed: `pnpm install --lockfile-only --frozen-lockfile --offline --ignore-scripts`                                                                                                                      |
 | `pnpm docs:check` and changed-document relative links                    | Passed                                                                                                                                                                                                   |
 | Shared-feature and administration typechecks                             | Blocked by existing Assistant/Cash/People-test diagnostics; all 15 shared-feature diagnostics exactly reproduced in an untouched detached checkout at `426954b774`. No task diagnostics                  |
@@ -103,6 +104,6 @@ ports accept an optional transaction so authorization and assignment checks reus
 connection; ordinary callers keep their existing behavior. Audit/outbox/replay records commit
 with task changes. No background event consumer or notification delivery is added.
 
-App installation and role grants remain explicit provisioning steps. Shared frontend type debt
-and the stale architecture-check path remain baseline limits. Keep the PR Draft; no merge,
+App installation and role grants remain explicit provisioning steps. Shared frontend type debt, the stale architecture-check path and the existing oversized Billing
+files remain review blockers. Keep the PR Draft; no merge,
 deployment, pilot acceptance or downstream #313–#315 work is included.
