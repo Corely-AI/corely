@@ -3,6 +3,7 @@
 - Issue: [#306 / PEOPLE-02](https://github.com/Corely-AI/corely/issues/306).
 - Parent: [#283](https://github.com/Corely-AI/corely/issues/283).
 - Prerequisite #305 is merged through #373 into `development`.
+- PR: [Draft #375](https://github.com/Corely-AI/corely/pull/375).
 - Branch: `306-staff-availability`; initial base: `development` at `c4d2241e7`; rebased onto `426954b77`
   after #304 / PR #374 merged. Both pilot publication and staff constraints are preserved.
 - Outcome: explicit recurring staff hours, effective dates, IANA timezone and neutral
@@ -102,3 +103,6 @@ this slice integrates authoritative OpenBuk availability and enforces all covere
 Booking writes. Broader repository type/architecture gates remain blocked as
 recorded above. Full repository tests, deployment and pilot acceptance are not
 claimed. The ticket stays open and its PR remains Draft; no merge or deployment.
+Normal commit hooks passed; branch push used the pre-push hook's documented
+`HUSKY=0` escape after scoped verification because broader gates remain blocked.
+The task-owned PostgreSQL cluster and Vite server were stopped after verification.
