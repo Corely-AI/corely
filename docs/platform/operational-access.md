@@ -4,6 +4,49 @@ Status: shared authorization foundation for [PLAT-02 / #302](https://github.com/
 This describes implemented gates separately from requirements for upcoming operational owners.
 It does not establish that every existing domain has been audited.
 
+## Foundation delivery and downstream acceptance
+
+The maintainer confirmed on 2026-11-07 that #302 delivers the shared access
+foundation. People records and their field, attachment, export and audit policies
+remain acceptance requirements of the People tickets. #302 is a prerequisite of
+[#305](https://github.com/Corely-AI/corely/issues/305); it does not implement that
+downstream feature or establish its readiness. The foundation was integrated through
+[#368](https://github.com/Corely-AI/corely/pull/368) and
+[#371](https://github.com/Corely-AI/corely/pull/371).
+
+| Foundation acceptance                                                                                  | Implementation and executable evidence                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Document action/resource/field rules, including private data, files, exports and audit.                | The policy below and the existing [permission catalog](../../services/api/src/modules/identity/permissions/identity.permissions.ts) distinguish neutral, private, document, export and audit grants.                                                                                                                                                                                                                                                     |
+| Validate current tenant/workspace membership independently of routes, token roles and model arguments. | [HTTP/RBAC/tool checks](../../services/api/src/modules/identity/__tests__/operational-access.spec.ts), [bootstrap/recovery checks](../../services/api/src/modules/identity/__tests__/auth-workspace-bootstrap.spec.ts) and [actual SDK callback checks](../../services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts).                                                                                                                      |
+| Apply shared gates to retrieval, file access and workspace caches independently of menus.              | [Copilot HTTP checks](../../services/api/src/modules/ai-copilot/__tests__/private-retrieval.http.spec.ts), [SQL history/search checks](../../services/api/src/modules/ai-copilot/__tests__/private-retrieval.int.test.ts), [document/file pairing checks](../../services/api/src/modules/documents/application/use-cases/proxy-download/proxy-download.usecase.test.ts) and [offline cache checks](../../apps/web/src/app/router/offline-scope.spec.ts). |
+| Reject stale access after revocation or workspace switching across tenants/workspaces.                 | HTTP/RBAC/tool checks above and [workspace view/cache checks](../../apps/web/src/app/router/workspace-scope.spec.tsx), with [navigation checks](../../apps/web/src/app/router/workspace-navigation.spec.tsx) preserving onboarding and public routes.                                                                                                                                                                                                    |
+
+The [task record](../tasks/302-enforce-workspace-access.md) distinguishes fresh test
+runs from historical SQL and UI evidence. These checks cover the named shared owners;
+they are not a universal audit of legacy module routes or private-field redaction.
+
+Downstream implementation must retain the following acceptance before exposing data:
+
+- [#305 — staff profiles](https://github.com/Corely-AI/corely/issues/305): authorize
+  actual workspace records; allowlist neutral fields for list/detail/search and AI
+  retrieval; keep private reads/writes separate. Any profile export or audit route must
+  authorize records and project fields before materializing results or caching them.
+- [#307 — private absences](https://github.com/Corely-AI/corely/issues/307): authorize
+  the absence and its attachment relation on every list/read/link/sign/download path.
+  General document grants alone cannot authorize personnel files. Operational events,
+  search, caches, exports, audit projections and AI context must not disclose private
+  reasons, private contacts, notes or attachment references without the relevant grants.
+- [#308 — self-service/offboarding](https://github.com/Corely-AI/corely/issues/308):
+  restrict allowed fields and subject access; reject role/manager escalation; prove
+  that revocation and switching cannot reuse privileged responses or pending actions.
+
+Each owner must exercise actual persisted records/projections with Staff and Manager
+roles, two tenants, multiple workspaces, guessed IDs, direct routes, model selectors
+where exposed, explicit denial and revocation. Files, exports, audit and AI paths need
+negative cases when introduced. Unimplemented paths are not verified by a synthetic
+directory fixture or the existence of permission keys. These requirements remain open
+in the linked owning tickets when #302 closes.
+
 ## Authority and enforcement
 
 `AuthGuard` obtains identity and tenant/host scope from a verified token. It checks
