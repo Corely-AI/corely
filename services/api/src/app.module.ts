@@ -37,6 +37,7 @@ import { AiRichTextModule } from "./modules/ai-richtext";
 import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
 import { BookingModule } from "./modules/booking";
+import { PeopleModule } from "./modules/people/people.module";
 import { PortalModule } from "./modules/portal/portal.module";
 import { CashManagementModule } from "./modules/cash-management/cash-management.module";
 import { BillingModule } from "./modules/billing/billing.module";
@@ -106,6 +107,7 @@ import { SurfaceGuard } from "./shared/surface";
     CrmMailModule,
     ClassesModule,
     BookingModule,
+    PeopleModule,
     CoachingEngagementsModule,
     RestaurantModule,
     PortalModule,
