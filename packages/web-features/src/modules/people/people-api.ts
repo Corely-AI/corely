@@ -1,6 +1,12 @@
 import { apiClient } from "@corely/web-shared/lib/api-client";
 import { getActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
-import type { StaffDirectoryEntry, StaffProfile, StaffPrivate, StaffList } from "@corely/contracts";
+import type {
+  StaffDirectoryEntry,
+  StaffProfile,
+  StaffPrivate,
+  StaffList,
+  StaffAvailabilityView,
+} from "@corely/contracts";
 const root = "/people/staff";
 function request<T>(path: string, options: RequestInit = {}, signal?: AbortSignal, key?: string) {
   // Capture the selected workspace before token refresh/async storage. A pending
@@ -19,6 +25,19 @@ function request<T>(path: string, options: RequestInit = {}, signal?: AbortSigna
   );
 }
 export const peopleApi = {
+  availability: (id: string, signal: AbortSignal) =>
+    request<StaffAvailabilityView>(`/${encodeURIComponent(id)}/availability`, {}, signal),
+  saveAvailability: (id: string, body: unknown, key: string) =>
+    request<StaffAvailabilityView>(
+      `/${encodeURIComponent(id)}/availability`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      },
+      undefined,
+      key
+    ),
   list: (query: string, signal: AbortSignal) => request<StaffList>(`?${query}`, {}, signal),
   detail: (id: string, manage: boolean, signal: AbortSignal) =>
     request<StaffProfile | StaffDirectoryEntry>(

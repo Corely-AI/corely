@@ -1,3 +1,8 @@
+import { StaffAvailabilityUseCase } from "../application/staff-availability.usecase";
+import { ExtStaffAvailabilityAdapter } from "../infrastructure/ext-staff-availability.adapter";
+import { StaffAvailabilityConstraintService } from "../application/staff-availability-constraint.service";
+import { StaffBookingAdapter } from "../../booking/public";
+import type { ClockPort } from "@corely/kernel";
 import { ProblemDetailsExceptionFilter } from "../../../shared/exceptions/problem-details.filter";
 import { EnableAppUseCase } from "../../platform/application/use-cases/enable-app.usecase";
 import { DisableAppUseCase } from "../../platform/application/use-cases/disable-app.usecase";
@@ -32,7 +37,10 @@ import { PrismaWorkspaceRepository } from "../../workspaces/infrastructure/adapt
 import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
 import type { UseCaseContext } from "@corely/kernel";
 
-export async function staffFixture(prisma: PrismaService) {
+export async function staffFixture(
+  prisma: PrismaService,
+  clock: ClockPort = { now: () => new Date() }
+) {
   const uid = () => randomUUID();
   const tenantA = uid(),
     tenantB = uid(),
@@ -158,6 +166,9 @@ export async function staffFixture(prisma: PrismaService) {
   ]) {
     await enableApp.execute({ tenantId, actorUserId, appId: "people" });
   }
+  const booking = new StaffBookingAdapter(prisma);
+  const schedules = new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma));
+  const constraint = new StaffAvailabilityConstraintService(repo, schedules);
   const usecase = new StaffDirectoryUseCase(
     repo,
     permissions,
@@ -166,7 +177,17 @@ export async function staffFixture(prisma: PrismaService) {
     resourceLookup,
     audit,
     outbox,
-    platformEntitlements
+    platformEntitlements,
+    booking
+  );
+  const availability = new StaffAvailabilityUseCase(
+    usecase,
+    repo,
+    schedules,
+    booking,
+    audit,
+    outbox,
+    clock
   );
   const tokens = {
     manager: { userId: manager, tenantId: tenantA },
@@ -195,6 +216,7 @@ export async function staffFixture(prisma: PrismaService) {
     controllers: [StaffController],
     providers: [
       { provide: StaffDirectoryUseCase, useValue: usecase },
+      { provide: StaffAvailabilityUseCase, useValue: availability },
       { provide: AuthGuard, useValue: auth },
     ],
   })
@@ -211,6 +233,12 @@ export async function staffFixture(prisma: PrismaService) {
       await prisma.extKv.deleteMany({ where: { tenantId, moduleId: "people" } });
       await prisma.auditLog.deleteMany({ where: { tenantId } });
       await prisma.outboxEvent.deleteMany({ where: { tenantId } });
+      await prisma.bookingAllocation.deleteMany({ where: { tenantId } });
+      await prisma.booking.deleteMany({ where: { tenantId } });
+      await prisma.bookingHold.deleteMany({ where: { tenantId } });
+      await prisma.bookingServiceOffering.deleteMany({ where: { tenantId } });
+      await prisma.bookingAvailabilityRule.deleteMany({ where: { tenantId } });
+      await prisma.extKv.deleteMany({ where: { tenantId, moduleId: "booking" } });
       await prisma.bookingResource.deleteMany({ where: { tenantId } });
       await prisma.party.deleteMany({ where: { tenantId } });
       await prisma.workspace.deleteMany({ where: { tenantId } });
@@ -221,6 +249,10 @@ export async function staffFixture(prisma: PrismaService) {
   }
   return {
     app,
+    booking,
+    schedules,
+    constraint,
+    availability,
     prisma,
     repo,
     entitlements,

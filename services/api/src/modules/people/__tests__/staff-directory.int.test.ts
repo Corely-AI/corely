@@ -333,7 +333,8 @@ describe.skipIf(!enabled)("People persisted HTTP, privacy and transaction bounda
           throw new Error("synthetic outbox failure");
         },
       },
-      f.platformEntitlements
+      f.platformEntitlements,
+      f.booking
     );
     const before = await prisma.auditLog.count({ where: { tenantId: f.tenantA } });
     const commandKey = key();

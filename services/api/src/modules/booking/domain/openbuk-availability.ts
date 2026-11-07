@@ -20,7 +20,8 @@ export function openBukAvailability(
   studio: OpenBukStudio,
   day: string,
   now: Date,
-  occupied: OccupiedInterval[]
+  occupied: OccupiedInterval[],
+  staffWindows?: { startAt: string; endAt: string }[] | null
 ): OpenBukSlot[] {
   const midnight = Date.parse(`${day}T00:00:00Z`);
   if (!Number.isFinite(midnight)) {
@@ -87,6 +88,14 @@ export function openBukAvailability(
     if (
       (studio.effectiveFrom && busyStart < Date.parse(studio.effectiveFrom)) ||
       (studio.effectiveTo && busyEnd > Date.parse(studio.effectiveTo))
+    ) {
+      return [];
+    }
+    if (
+      staffWindows &&
+      !staffWindows.some(
+        (w) => Date.parse(w.startAt) <= busyStart && Date.parse(w.endAt) >= busyEnd
+      )
     ) {
       return [];
     }

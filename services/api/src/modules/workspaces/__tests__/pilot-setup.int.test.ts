@@ -93,7 +93,8 @@ describe.skipIf(!enabled)("Pilot setup PostgreSQL boundaries", () => {
       new PrismaOutboxAdapter(prisma),
       { now: () => now },
       new AuthorizeWorkspaceUseCase(repo),
-      app
+      app,
+      { windows: async () => null }
     );
   });
   afterAll(async () => {
@@ -176,7 +177,8 @@ describe.skipIf(!enabled)("Pilot setup PostgreSQL boundaries", () => {
         enqueue: async () => {
           throw new Error("publication event unavailable");
         },
-      })
+      }),
+      { windows: async () => null }
     );
     await expect(
       broken.publishSetup({ ...setup, studioName: "Should roll back" }, { ...ctx, workspaceId })

@@ -1,3 +1,5 @@
+import type { TransactionContext } from "@corely/kernel";
+import { BookingStaffConstraintAdapter } from "./booking-staff-constraint.adapter";
 import { Injectable, ConflictException } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type { HoldRepositoryPort } from "../../application/ports/booking-repo.ports";
@@ -6,7 +8,10 @@ import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly staff: BookingStaffConstraintAdapter
+  ) {}
 
   private mapToDomain(row: any): BookingHold {
     return new BookingHold(
@@ -34,6 +39,14 @@ export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
       async (tx) => {
         for (const resourceId of [...new Set(hold.resourceIds)].sort()) {
           await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${hold.tenantId}:${resourceId}`}, 0))::text`;
+          await this.staff.assertAvailable(
+            hold.tenantId,
+            hold.workspaceId,
+            resourceId,
+            hold.startAt,
+            hold.endAt,
+            tx as unknown as TransactionContext
+          );
           const [booking, activeHold] = await Promise.all([
             tx.bookingAllocation.findFirst({
               where: {
