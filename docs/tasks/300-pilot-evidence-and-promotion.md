@@ -7,6 +7,7 @@
 - Prerequisite: #299, integrated through PR #366; actual evidence review remains
   [REL-04 / #334](https://github.com/Corely-AI/corely/issues/334).
 - Branch: `300-pilot-evidence-and-promotion`; intended PR base: `development`.
+- Draft PR: [#370](https://github.com/Corely-AI/corely/pull/370).
 - Verified remote/default: `corely`, `Corely-AI/corely`, `development` at
   `440c6a3ff954e18184addf550650be166b14e245`, 7 November 2026.
 - Worktree: `/Users/hadoan/Documents/GitHub/worktrees/corely-300-pilot-evidence-and-promotion`.
