@@ -5,6 +5,9 @@ capabilities. See [repository alignment](repository-alignment.md), the long-term
 [catalog](app-catalog.md), and the focused [launch proposal](launch-plan.md).
 The [P1/P2 backlog package](p1-p2-backlog/README.md) records proposed slices and
 their live issue mappings; P2 implementation remains conditional.
+The [pilot research protocol](pilot-research-protocol.md) defines evidence to
+collect; [P2 criteria](p2-promotion-criteria.md) define separate promotion decisions.
+No collected customer evidence or promotion is claimed by those plans.
 
 ## Positioning
 

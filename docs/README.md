@@ -18,6 +18,8 @@ Implementation evidence, target design and unvalidated hypotheses are kept separ
 - [Long-term 32-app map](./products/corely/app-catalog.md) — not a delivery or availability commitment
 - [Focused launch proposal](./products/corely/launch-plan.md) — Schedule, Team, Daily Work
 - [Pilot booking decision](./products/corely/pilot-booking-decision.md) — OpenBuk replacement, staff surface and cutover gates
+- [Pilot research protocol](./products/corely/pilot-research-protocol.md) — hypotheses, baseline measures and evidence handling
+- [Conditional P2 promotion criteria](./products/corely/p2-promotion-criteria.md) — eight epic-specific evidence checklists; no implementation commitment
 - [P1/P2 backlog package](./products/corely/p1-p2-backlog/README.md) — issue specifications and live project reconciliation
 - [P1/P2 capability reuse inventory](./products/corely/p1-p2-backlog/capability-reuse-inventory.md) — current owners, evidence and residual gaps for all 68 features
 - [Repository alignment and discrepancies](./products/corely/repository-alignment.md)
