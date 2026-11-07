@@ -7,6 +7,11 @@ into finance and specialist operations as their work demands.
 Finance is optional; accounting is not a prerequisite for operational apps.
 Implementation evidence, target design and unvalidated hypotheses are kept separate.
 
+## Engineering workflow
+
+- [Corely Engineering Guide](./engineering-guide.md) — ticket delivery, verification, PRs and UI/UX review
+- [Agent skills](./ai/skills-management.md) — task-specific workflows customized for this repository
+
 ## Product direction
 
 - [Corely strategy](./products/corely/README.md)

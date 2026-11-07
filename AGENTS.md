@@ -1,5 +1,23 @@
 # Instructions for AI Agents
 
+## Delivery workflow and skills
+
+Read the [Corely Engineering Guide](docs/engineering-guide.md) for the concise
+maintainer/agent workflow and the [skills catalog](docs/ai/skills-management.md)
+for task-specific procedures under `.agents/skills/`. Load only relevant skills.
+They support these instructions and do not expand task authorization.
+
+Deliver each implemented ticket on its own `codex/<issue>-<summary>` branch and
+linked Draft PR, honoring explicit local-only/no-commit/no-push limits. Verify the
+actual base and remote; do not assume `main`. Read-only/planning work does not
+need empty PRs. Use the [PR template](.github/pull_request_template.md).
+
+For interface changes, inspect the rendered flow and include screenshots or a
+recording plus relevant UI/UX states/viewports in the PR before requesting review.
+Missing material visual or interaction evidence keeps the PR Draft. Backend-only
+or prose-only changes explain why UI/UX evidence is not applicable. Follow
+[CONTRIBUTING](CONTRIBUTING.md) for DCO sign-off; do not auto-merge or deploy.
+
 ## Product identity and scope
 
 Corely is a collection of connected, AI-native apps for running a team’s

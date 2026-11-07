@@ -2,6 +2,12 @@
 
 Thanks for helping build Corely. This guide keeps contributions consistent and easy to review.
 
+Follow the [Corely Engineering Guide](docs/engineering-guide.md) for ticket delivery,
+verification and review. Each implemented ticket has its own Draft PR; interface
+changes include screenshots/recording and manual UI/UX evidence before review.
+Use the [PR template](.github/pull_request_template.md) and relevant
+[agent skills](docs/ai/skills-management.md).
+
 ## Before you start
 
 - For larger changes, open an issue first to align on scope and architecture.
