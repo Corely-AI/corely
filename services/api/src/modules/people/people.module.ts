@@ -1,4 +1,4 @@
-import { PlatformEntitlementsModule } from "../platform-entitlements/platform-entitlements.module";
+import { PlatformModule } from "../platform/platform.module";
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity/identity.module";
@@ -16,7 +16,7 @@ import { StaffDirectoryUseCase } from "./application/staff-directory.usecase";
 import { ExtStaffRepositoryAdapter } from "./infrastructure/ext-staff-repository.adapter";
 import { StaffController } from "./adapters/http/staff.controller";
 @Module({
-  imports: [DataModule, IdentityModule, WorkspacesModule, PlatformEntitlementsModule],
+  imports: [DataModule, IdentityModule, WorkspacesModule, PlatformModule],
   controllers: [StaffController],
   providers: [
     StaffDirectoryUseCase,

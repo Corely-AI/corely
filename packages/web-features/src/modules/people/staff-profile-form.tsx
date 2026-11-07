@@ -3,7 +3,11 @@ import { usePeopleMounted } from "./use-people";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Input, Label } from "@corely/ui";
-import { CreateStaffSchema, type StaffProfile } from "@corely/contracts";
+import {
+  CreateStaffSchema,
+  StaffIdentityLinkConflictCode,
+  type StaffProfile,
+} from "@corely/contracts";
 import type { PeopleCopy } from "./people-copy";
 import { peopleApi } from "./people-api";
 export function StaffProfileForm({
@@ -19,7 +23,7 @@ export function StaffProfileForm({
   const mounted = usePeopleMounted();
   const [blocked, setBlocked] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<{ message: string; reload: boolean } | null>(null);
   const [retry, setRetry] = useState<{ fingerprint: string; key: string } | null>(null);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,7 +43,7 @@ export function StaffProfileForm({
     }
     const parsed = CreateStaffSchema.safeParse(fields);
     if (!parsed.success) {
-      setError(true);
+      setError({ message: t.changed, reload: true });
       return;
     }
     const body = { ...parsed.data, ...(profile ? { version: profile.version } : {}) };
@@ -47,7 +51,7 @@ export function StaffProfileForm({
     const key = retry?.fingerprint === fingerprint ? retry.key : crypto.randomUUID();
     setRetry({ fingerprint, key });
     setBusy(true);
-    setError(false);
+    setError(null);
     try {
       const saved = await peopleApi.command(
         profile ? `/${profile.id}` : "",
@@ -62,8 +66,18 @@ export function StaffProfileForm({
       if (!mounted.current) {
         return;
       }
-      setBlocked(error instanceof HttpError && [403, 409].includes(error.status ?? 0));
-      setError(true);
+      const linkConflict =
+        error instanceof HttpError &&
+        error.status === 409 &&
+        typeof error.body === "object" &&
+        error.body !== null &&
+        "code" in error.body &&
+        error.body.code === StaffIdentityLinkConflictCode;
+      setBlocked(
+        error instanceof HttpError &&
+          (error.status === 403 || (error.status === 409 && !linkConflict))
+      );
+      setError({ message: linkConflict ? t.linkConflict : t.changed, reload: !linkConflict });
     } finally {
       if (mounted.current) {
         setBusy(false);
@@ -89,11 +103,16 @@ export function StaffProfileForm({
       className="space-y-6 rounded-lg border bg-card p-5 sm:p-6"
     >
       {error && (
-        <div role="alert" className="space-y-2 text-destructive">
-          <p>{t.changed}</p>
-          <Button type="button" variant="outline" onClick={onReload}>
-            {t.reload}
-          </Button>
+        <div
+          role="alert"
+          className="space-y-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-foreground"
+        >
+          <p>{error.message}</p>
+          {error.reload && (
+            <Button type="button" variant="outline" onClick={onReload}>
+              {t.reload}
+            </Button>
+          )}
         </div>
       )}
       <fieldset disabled={busy || blocked} className="space-y-5">

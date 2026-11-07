@@ -91,7 +91,9 @@ describe.skipIf(!enabled)("People persisted HTTP, privacy and transaction bounda
     );
     expect((await get(`/${id}/management`, "staff")).status).toBe(403);
     expect((await get("", "staff")).text).not.toContain("party-secret");
-    expect((await create({ displayName: "Duplicate", accountId: f.staff })).status).toBe(409);
+    const duplicate = await create({ displayName: "Duplicate", accountId: f.staff });
+    expect(duplicate.status).toBe(409);
+    expect(duplicate.body.code).toBe("People:IdentityLinkConflict");
     expect((await create({ displayName: "Duplicate", partyId: f.party.id })).status).toBe(409);
     expect((await create({ displayName: "Duplicate", resourceId: f.resource.id })).status).toBe(
       409
@@ -331,7 +333,7 @@ describe.skipIf(!enabled)("People persisted HTTP, privacy and transaction bounda
           throw new Error("synthetic outbox failure");
         },
       },
-      f.entitlements
+      f.platformEntitlements
     );
     const before = await prisma.auditLog.count({ where: { tenantId: f.tenantA } });
     const commandKey = key();
@@ -348,6 +350,35 @@ describe.skipIf(!enabled)("People persisted HTTP, privacy and transaction bounda
     expect((await create({ displayName: "Disabled app" })).status).toBe(403);
     await f.entitlementService.updateAppEnablement(f.tenantA, "people", true, f.manager);
     expect((await get()).status).toBe(200);
+  });
+  it("denies reads, private retrieval, writes and replay after the Platform app is disabled", async () => {
+    const commandKey = key();
+    const created = await create({ displayName: "Install gate" }, commandKey);
+    const id = created.body.id;
+    const scope = { tenantId: f.tenantA, actorUserId: f.manager, appId: "people" };
+    await f.disableApp.execute(scope);
+    const privateRead = vi.spyOn(f.repo, "privateGet");
+    try {
+      expect(await f.entitlements.isAppEnabled(f.tenantA, "people")).toBe(true);
+      for (const path of ["", `/${id}`, `/${id}/management`, `/${id}/private`]) {
+        expect((await get(path)).status).toBe(403);
+      }
+      expect((await create({ displayName: "Install gate" }, commandKey)).status).toBe(403);
+      expect((await patch(id, { displayName: "Disabled update", version: 1 })).status).toBe(403);
+      expect(privateRead).not.toHaveBeenCalled();
+    } finally {
+      privateRead.mockRestore();
+      await f.enableApp.execute(scope);
+    }
+    expect((await get(`/${id}`)).status).toBe(200);
+    await prisma.tenantAppInstall.delete({
+      where: { tenantId_appId: { tenantId: f.tenantA, appId: "people" } },
+    });
+    try {
+      expect((await get()).status).toBe(403);
+    } finally {
+      await f.enableApp.execute(scope);
+    }
   });
   it("requires authentication and a command key and rejects private/file fields in a neutral command", async () => {
     expect((await request(f.app.getHttpServer()).get("/people/staff")).status).toBe(401);

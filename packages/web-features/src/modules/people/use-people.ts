@@ -1,5 +1,5 @@
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useEffectivePermissions, hasPermission } from "@corely/web-shared/shared/lib/permissions";
@@ -56,13 +56,15 @@ export function usePeopleLoad<T>(
   };
 }
 
-export function usePeopleMounted() {
-  const mounted = useRef(true);
+export function usePeopleMounted(identity = "") {
+  // Each routed operation keeps its original lifetime, even when React reuses
+  // the component for another staff ID or the user navigates away and back.
+  const mounted = useMemo(() => ({ current: true }), [identity]);
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
     };
-  }, []);
+  }, [mounted]);
   return mounted;
 }

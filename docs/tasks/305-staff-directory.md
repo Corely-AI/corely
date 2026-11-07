@@ -36,6 +36,9 @@ React Query caches. Audit/outbox payloads contain IDs/versions only.
 
 ## Verification
 
+The table below records the initial delivery. Fresh review results are recorded
+in the review section below.
+
 Disposable PostgreSQL 16 cluster created specifically for this ticket on loopback
 port 55435; database name `people_test_305`. All checked-in migrations applied with
 `prisma migrate deploy`; no new migration, shared database reset, seed or real
@@ -53,8 +56,8 @@ message delivery. Integration tests require `PEOPLE_TEST_DATABASE_URL` with a
 | `pnpm --filter @corely/web build`                                                                                                                                                                                                                                                                               | Passed; existing large-chunk/Browserslist warnings                                                                                                 |
 | `pnpm --filter @corely/web typecheck`                                                                                                                                                                                                                                                                           | Eight errors in existing Assistant/Cash files; reproduced identically on clean base `dac9007605` in a separate detached worktree; no People errors |
 | `pnpm arch:check`                                                                                                                                                                                                                                                                                               | Stops at absent historical `services/worker/src`; reproduced on the same clean base                                                                |
-| Installed ESLint/Prettier on changed files and whitespace checks                                                                                                                                                                                                                                                | Final result pending                                                                                                                               |
-| `pnpm build:api` and existing DI smoke suite                                                                                                                                                                                                                                                                    | Final results pending                                                                                                                              |
+| Installed ESLint/Prettier on changed files and whitespace checks                                                                                                                                                                                                                                                | Passed during initial delivery; refreshed review checks below                                                                                      |
+| `pnpm build:api` and existing DI smoke suite                                                                                                                                                                                                                                                                    | Passed during initial delivery; refreshed review checks below                                                                                      |
 
 Root full-suite/full-lint/full-format checks are not claimed. The browser's
 synthetic auth/API responses establish rendered behavior separately from the real
@@ -88,7 +91,72 @@ Keep Draft pending ordinary checks/human review; issue/project remains In progre
 No merge or deployment. Existing platform entitlement caching/invalidation is reused.
 Publication uses the pre-push hook's documented `HUSKY=0` escape because its broad
 typecheck is blocked by the verified base errors. Scoped lint/format/typechecks,
-90 tests, builds, visual inspection and normal pre-commit checks are recorded separately.
+tests, builds, visual inspection and normal pre-commit checks are recorded separately.
 Generic Documents are not safe People attachments; no attachment path is added.
 The administration UI offers this slice; future focused clients can reuse its public
 feature exports without importing another app's private screens.
+
+## Review and fixes — 7 November 2026
+
+Reviewed the complete PR at `2ac84422e`, owning Platform app installation/feature
+policies, Identity/Workspaces access, People transactions/projections and UI callers.
+There were no human review threads on #373. Three concrete findings were reproduced
+before their fixes; unrelated baseline debt was left outside this change.
+
+1. **P1 — Disabled/uninstalled app still permitted direct People calls.** The
+   kernel feature-read adapter returns the flag independently of `TenantAppInstall`.
+   The real Platform disable use case changed the installation but a People GET
+   still returned 200. Reuse Platform's composed application policy instead: enabled
+   installation plus effective configuration, checked before retrieval and again
+   before mutation/replay. Fixtures now enable People through its actual owner;
+   persisted HTTP checks cover disabled and missing installs, every read projection,
+   writes and replay, and assert private values are not fetched on denial.
+2. **P2 — Archive confirmation could follow a different routed record.** Browser
+   history navigation reuses the profile component and left its dialog open. The
+   prior callback would use the new profile. Capture the intended ID/version,
+   cancel confirmation on route changes, and invalidate the old operation's callback
+   lifetime. Tests cover both an open dialog and an in-flight response after navigation.
+3. **P2 — Duplicate-link errors disabled the whole form.** All 409 responses were
+   treated as stale-version failures, forcing reload and discarding the draft.
+   Add the shared `People:IdentityLinkConflict` wire code, preserve editable fields
+   with localized correction guidance, and use a new idempotency key after correction.
+   Other 409/403 errors keep the reload requirement. Browser/component checks verify
+   correction and successful resubmission without losing the staff name.
+
+Fresh checks after these fixes (no skipped tests):
+
+| Check                                                                                                                                               | Result                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Persisted People HTTP suite with the real production ProblemDetails filter                                                                          | 16 passed; new disable-path regression failed before the fix (200 instead of 403), now passes    |
+| People rules, Identity operational access, menu, operational-package, entitlement gating/read, workspace-experience and OpenBuk availability suites | 59 passed across eight files                                                                     |
+| People UI/API isolation and form/profile regressions                                                                                                | 10 passed across four files; archive-navigation and duplicate-link tests failed before the fixes |
+| Full-module DI smoke suite                                                                                                                          | 10 passed; composed Platform policy resolves through the real module                             |
+| Contracts/API typechecks, contracts/API builds and web build                                                                                        | Passed; existing build warnings retained                                                         |
+| Broad web typecheck                                                                                                                                 | Same eight Assistant/Cash errors as the verified clean base; no new People errors                |
+| Configured lint, changed-file Prettier, doc links and whitespace                                                                                    | Refreshed before publication; normal pre-commit hooks retained                                   |
+
+Total: **95 passing tests**. The integration suite uses only the task-owned
+`people_test_305` database. No new tables/migrations or real background delivery.
+The last published CI head also failed quality/unit collection because its Prisma
+client was not generated, and Browser E2E because `e2e:smoke` is absent. These were
+read from jobs 128537171074, 128537171217 and 128537171221; the owning CI/package
+files are outside this People diff. No CI pass or CI remediation is claimed here.
+Root architecture-checker and broad-check limitations above remain unchanged;
+this review does not claim fresh full-root test/lint/format or deployed evidence.
+
+The `ui-change` review used the actual administration client with synthetic API/auth
+responses in isolated Chrome: 1440×1000 and 390×844. History navigation while a
+confirmation was open cancelled it without any archive request. Duplicate-link
+validation preserved the name and enabled fields, and correction saved successfully.
+Normal create/edit/archive, Escape cancellation, empty/error/denied states, Staff
+privacy, phone overflow and EN/DE/VI checks also passed. Screenshots were visually
+inspected; persisted HTTP tests separately establish actual backend behavior.
+
+![Correctable identity-link conflict](assets/305/link-conflict-desktop-review.png)
+
+![Phone conflict state](assets/305/link-conflict-mobile-review.png)
+
+![Archive confirmation cancelled after navigation](assets/305/archive-navigation-review.png)
+
+Reuse Draft #373 for the fixes. Keep issue/project In progress pending normal
+checks and human review; no merge or manual deployment is authorized by this review.

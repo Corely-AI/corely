@@ -50,8 +50,11 @@ existing bookings. Archive is not employee offboarding; that belongs to PEOPLE-0
 
 Each application entry point revalidates current tenant/workspace membership and
 permissions using the [shared access foundation](../platform/operational-access.md).
-People app enablement is checked independently through the existing entitlement
-read port. Its existing platform cache/invalidation policy is reused; authorization
+People app access is checked independently through the public Platform application
+policy: the tenant installation must be enabled and the effective app configuration
+must allow People. Disabling the installation immediately denies reads, private
+retrieval, writes and command replay even while its feature flag is cached as enabled.
+The existing feature cache/invalidation policy is reused; authorization
 decisions and personnel responses introduce no shared decision/DTO cache.
 
 | Operation              | Required People permissions                          | Returned fields                                                                                                                                   |
@@ -75,7 +78,9 @@ personnel results only in mounted component memory, outside persisted query
 caches. Reads are cancelled/discarded on scope/projection changes; failed reloads
 remove old data. Mutations capture the workspace before asynchronous token
 refresh and discard callbacks after unmount, so a pending action cannot adopt a
-new workspace or navigate its result into another workspace.
+new workspace or navigate its result into another workspace. Archive confirmation
+captures the original staff ID/version and is cancelled when the routed record changes;
+a late response cannot reload or close actions on a newly selected profile.
 
 ## HTTP and client behavior
 
@@ -94,7 +99,10 @@ Authenticated routes live below `/people/staff`:
 Mutations accept the shared client's `X-Idempotency-Key` or `Idempotency-Key`.
 Unknown fields (including caller-supplied tenant/workspace selectors and file
 references) are rejected. Bad input yields 400, denied authority 403, a guessed
-out-of-scope ID 404, and stale/conflicting commands 409.
+out-of-scope ID 404, and stale/conflicting commands 409. Duplicate identity links
+carry the stable `People:IdentityLinkConflict` code. The editor keeps the draft
+editable so a manager can correct/remove the link and resubmit. Stale-version and
+permission failures still require reload rather than blindly repeating a stale save.
 
 The UI provides list/search/status filters, pagination, detail/create/edit routes,
 optional link fields, restricted private details, and archive confirmation with

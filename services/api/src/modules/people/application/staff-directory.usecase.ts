@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { createHash, randomUUID } from "node:crypto";
 import {
+  StaffIdentityLinkConflictCode,
   ArchiveStaffSchema,
   CreateStaffSchema,
   ListStaffSchema,
@@ -20,14 +21,13 @@ import {
 } from "@corely/contracts";
 import {
   AUDIT_PORT,
-  TENANT_ENTITLEMENTS_READ_PORT_TOKEN,
-  type TenantEntitlementsReadPort,
   OUTBOX_PORT,
   type AuditPort,
   type OutboxPort,
   type UseCaseContext,
   type TransactionContext,
 } from "@corely/kernel";
+import { TenantEntitlementService } from "../../platform/public";
 import { GetEffectivePermissionsUseCase } from "../../identity/public";
 import { directoryEntry, staffLinkConflict, validManager } from "../domain/staff-rules";
 import {
@@ -50,8 +50,8 @@ export class StaffDirectoryUseCase {
     @Inject(STAFF_RESOURCE_LOOKUP) private readonly resources: StaffLinkLookup,
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
-    @Inject(TENANT_ENTITLEMENTS_READ_PORT_TOKEN)
-    private readonly entitlements: Pick<TenantEntitlementsReadPort, "isAppEnabled">
+    @Inject(TenantEntitlementService)
+    private readonly entitlements: Pick<TenantEntitlementService, "isAppEnabled">
   ) {}
   private async authorize(ctx: UseCaseContext, required: string[]): Promise<StaffScope> {
     if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) {
@@ -217,9 +217,10 @@ export class StaffDirectoryUseCase {
         if (kind !== "archive") {
           const profiles = await this.repo.list(scope, tx);
           if (staffLinkConflict(next, profiles)) {
-            throw new ConflictException(
-              "Identity link is already assigned to another staff profile"
-            );
+            throw new ConflictException({
+              code: StaffIdentityLinkConflictCode,
+              message: "Identity link is already assigned to another staff profile",
+            });
           }
           if (!validManager(next, profiles)) {
             throw new BadRequestException(

@@ -48,6 +48,8 @@ export const peopleCopy = {
     page: "Page",
     total: "staff members",
     changed: "The record changed or access was denied. Reload before retrying.",
+    linkConflict:
+      "Another staff profile already uses this identity link. Change or remove it, then save again.",
     reload: "Reload profile",
     saved: "Changes saved",
     denied: "You do not have access to this directory.",
@@ -106,6 +108,8 @@ export const peopleCopy = {
     page: "Seite",
     total: "Personen",
     changed: "Daten geändert oder Zugriff verweigert. Vor erneutem Versuch neu laden.",
+    linkConflict:
+      "Diese Identitätsverknüpfung wird bereits von einem anderen Personalprofil verwendet. Ändern oder entfernen Sie sie und speichern Sie erneut.",
     reload: "Profil neu laden",
     saved: "Änderungen gespeichert",
     denied: "Kein Zugriff auf dieses Verzeichnis.",
@@ -163,6 +167,8 @@ export const peopleCopy = {
     page: "Trang",
     total: "nhân viên",
     changed: "Dữ liệu đã thay đổi hoặc quyền bị từ chối. Tải lại trước khi thử lại.",
+    linkConflict:
+      "Liên kết danh tính này đã được hồ sơ nhân viên khác sử dụng. Hãy sửa hoặc xóa liên kết rồi lưu lại.",
     reload: "Tải lại hồ sơ",
     saved: "Đã lưu thay đổi",
     denied: "Bạn không có quyền truy cập danh bạ này.",

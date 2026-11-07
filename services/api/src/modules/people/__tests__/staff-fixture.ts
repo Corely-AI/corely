@@ -1,3 +1,9 @@
+import { ProblemDetailsExceptionFilter } from "../../../shared/exceptions/problem-details.filter";
+import { EnableAppUseCase } from "../../platform/application/use-cases/enable-app.usecase";
+import { DisableAppUseCase } from "../../platform/application/use-cases/disable-app.usecase";
+import { DependencyResolverService } from "../../platform/application/services/dependency-resolver.service";
+import { PrismaTenantAppInstallRepositoryAdapter } from "../../platform/infrastructure/adapters/prisma-tenant-app-install-repository.adapter";
+import { TenantEntitlementService } from "../../platform/application/services/tenant-entitlement.service";
 import type { AppRegistryPort } from "../../platform/application/ports/app-registry.port";
 import { FeatureCatalogService } from "../../platform-entitlements/application/feature-catalog.service";
 import { TenantEntitlementsService } from "../../platform-entitlements/application/tenant-entitlements.service";
@@ -141,6 +147,17 @@ export async function staffFixture(prisma: PrismaService) {
   catalog.compileCatalog();
   const entitlementService = new TenantEntitlementsService(prisma, catalog);
   const entitlements = new TenantEntitlementsReadAdapter(entitlementService);
+  const appInstalls = new PrismaTenantAppInstallRepositoryAdapter(prisma);
+  const resolver = new DependencyResolverService();
+  const enableApp = new EnableAppUseCase(registry, appInstalls, resolver, audit, { newId: uid });
+  const disableApp = new DisableAppUseCase(registry, appInstalls, resolver, audit);
+  const platformEntitlements = new TenantEntitlementService(appInstalls, registry, entitlements);
+  for (const [tenantId, actorUserId] of [
+    [tenantA, manager],
+    [tenantB, outsider],
+  ]) {
+    await enableApp.execute({ tenantId, actorUserId, appId: "people" });
+  }
   const usecase = new StaffDirectoryUseCase(
     repo,
     permissions,
@@ -149,7 +166,7 @@ export async function staffFixture(prisma: PrismaService) {
     resourceLookup,
     audit,
     outbox,
-    entitlements
+    platformEntitlements
   );
   const tokens = {
     manager: { userId: manager, tenantId: tenantA },
@@ -185,6 +202,7 @@ export async function staffFixture(prisma: PrismaService) {
     .useValue(auth)
     .compile();
   const app = module.createNestApplication();
+  app.useGlobalFilters(new ProblemDetailsExceptionFilter());
   await app.init();
   const ctx: UseCaseContext = { tenantId: tenantA, workspaceId: workspaceA, userId: manager };
   async function cleanup() {
@@ -206,6 +224,10 @@ export async function staffFixture(prisma: PrismaService) {
     prisma,
     repo,
     entitlements,
+    platformEntitlements,
+    appInstalls,
+    enableApp,
+    disableApp,
     entitlementService,
     usecase,
     permissions,

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const StaffIdentityLinkConflictCode = "People:IdentityLinkConflict";
+
 const id = z.string().trim().min(1).max(160);
 const label = z.string().trim().min(1).max(160);
 export const StaffProfileFieldsSchema = z

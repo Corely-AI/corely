@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Button, Badge } from "@corely/ui";
 import { ConfirmDeleteDialog } from "@corely/web-shared/shared/crud";
@@ -9,9 +9,10 @@ import { StaffProfileForm } from "./staff-profile-form";
 import { StaffPrivateDetails } from "./staff-private-details";
 export function StaffProfilePage() {
   const access = usePeopleAccess();
-  const mounted = usePeopleMounted();
   const { id } = useParams<{ id: string }>();
   const { pathname } = useLocation();
+  const routeKey = JSON.stringify([access.scope, pathname]);
+  const mounted = usePeopleMounted(routeKey);
   const create = pathname.endsWith("/new");
   const editing = create || pathname.endsWith("/edit");
   const manage = access.can("profile.manage");
@@ -21,10 +22,27 @@ export function StaffProfilePage() {
     `${access.scope}:${id}:${manage}:${pathname}`,
     !create && !access.loading && access.can("directory.read")
   );
-  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiveTarget, setArchiveTarget] = useState<{
+    id: string;
+    version: number;
+    routeKey: string;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const profile = result.data;
+  const archiveOpen = Boolean(
+    archiveTarget &&
+    archiveTarget.routeKey === routeKey &&
+    archiveTarget.id === id &&
+    manage &&
+    profile &&
+    !profile.archivedAt
+  );
+  useEffect(() => {
+    setArchiveTarget(null);
+    setBusy(false);
+    setFailed(false);
+  }, [routeKey]);
   if (access.loading) {
     return <p role="status">{t.loading}</p>;
   }
@@ -36,15 +54,20 @@ export function StaffProfilePage() {
     result.reload();
   };
   const archive = async () => {
-    if (!profile) {
+    if (
+      !archiveTarget ||
+      archiveTarget.routeKey !== routeKey ||
+      archiveTarget.id !== id ||
+      !manage
+    ) {
       return;
     }
     setBusy(true);
     try {
       await peopleApi.command(
-        `/${profile.id}/archive`,
+        `/${archiveTarget.id}/archive`,
         "POST",
-        { version: profile.version },
+        { version: archiveTarget.version },
         crypto.randomUUID()
       );
       if (mounted.current) {
@@ -59,7 +82,7 @@ export function StaffProfilePage() {
     } finally {
       if (mounted.current) {
         setBusy(false);
-        setArchiveOpen(false);
+        setArchiveTarget(null);
       }
     }
   };
@@ -131,7 +154,12 @@ export function StaffProfilePage() {
                       <Button asChild>
                         <Link to={`/people/staff/${profile.id}/edit`}>{t.edit}</Link>
                       </Button>
-                      <Button variant="outline" onClick={() => setArchiveOpen(true)}>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setArchiveTarget({ id: profile.id, version: profile.version, routeKey })
+                        }
+                      >
                         {t.archive}
                       </Button>
                     </div>
@@ -158,7 +186,11 @@ export function StaffProfilePage() {
         confirmLabel={t.archive}
         cancelLabel={t.cancel}
         open={archiveOpen}
-        onOpenChange={setArchiveOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setArchiveTarget(null);
+          }
+        }}
         isLoading={busy}
         onConfirm={archive}
       />
