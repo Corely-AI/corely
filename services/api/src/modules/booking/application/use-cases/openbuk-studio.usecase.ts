@@ -19,12 +19,15 @@ import {
 } from "@corely/kernel";
 import {
   OpenBukPublicStudioSchema,
+  OpenBukSetupSchema,
+  OpenBukSetupDraftSchema,
+  type OpenBukSetupDraft,
   type OpenBukSetup,
   type OpenBukBook,
   type OpenBukReceipt,
 } from "@corely/contracts";
 import { createHash, randomBytes } from "node:crypto";
-import { AuthorizeWorkspaceUseCase } from "../../../workspaces";
+import { AuthorizeWorkspaceUseCase, PilotSetupUseCase } from "../../../workspaces/public";
 import {
   OPENBUK_REPOSITORY,
   type OpenBukRepositoryPort,
@@ -43,7 +46,8 @@ export class OpenBukStudioUseCase {
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
     @Inject(AuthorizeWorkspaceUseCase)
-    private readonly authorize: Pick<AuthorizeWorkspaceUseCase, "execute">
+    private readonly authorize: Pick<AuthorizeWorkspaceUseCase, "execute">,
+    @Inject(PilotSetupUseCase) private readonly pilot: Pick<PilotSetupUseCase, "publish">
   ) {}
 
   private scope(ctx: UseCaseContext): StudioScope {
@@ -68,17 +72,50 @@ export class OpenBukStudioUseCase {
     return this.scope(ctx);
   }
   async getStudio(ctx: UseCaseContext) {
-    const { scope } = await this.admin(ctx);
-    return { studio: await this.repo.studio(scope) };
+    const { scope, workspace } = await this.admin(ctx);
+    return { studio: await this.repo.studio(scope), canManage: workspace.canManage === true };
   }
-  async configure(input: OpenBukSetup, ctx: UseCaseContext) {
+  async getSetup(ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    return { draft: await this.repo.draft(scope) };
+  }
+  async saveSetup(input: OpenBukSetupDraft, ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    const draft = OpenBukSetupDraftSchema.parse(input);
+    return this.uow.withinTransaction(async (tx) => {
+      await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
+      await this.admin(ctx, true);
+      await this.repo.saveDraft(scope, draft, tx);
+      await this.audit.log(
+        {
+          tenantId: scope.tenantId,
+          userId: ctx.userId!,
+          action: "openbuk.setup.saved",
+          entityType: "Workspace",
+          entityId: scope.workspaceId,
+        },
+        tx
+      );
+      return { draft };
+    });
+  }
+  async publishSetup(input: OpenBukSetup, ctx: UseCaseContext) {
+    return this.configure(input, ctx, true);
+  }
+  async configure(input: OpenBukSetup, ctx: UseCaseContext, publish = false) {
+    input = OpenBukSetupSchema.parse(input);
     const { scope, workspace } = await this.admin(ctx, true);
     if (!workspace.slug) {
       throw new BadRequestException("Studio needs a public workspace slug");
     }
     return this.uow.withinTransaction(async (tx) => {
       await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
+      await this.admin(ctx, true);
       const studio = await this.repo.configure(scope, input, workspace.slug!, tx);
+      await this.repo.saveDraft(scope, input, tx);
+      if (publish) {
+        await this.pilot.publish(ctx, tx);
+      }
       await this.audit.log(
         {
           tenantId: scope.tenantId,

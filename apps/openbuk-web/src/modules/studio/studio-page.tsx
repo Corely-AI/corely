@@ -4,12 +4,16 @@ import type {
   ListWorkspacesOutput,
   WorkspaceDto,
   OpenBukStudio,
+  OpenBukSetupDraft,
+  OpenBukSetupDraftResponse,
+  OpenBukStudioResponse,
   OpenBukAppointment,
 } from "@corely/contracts";
 import { api, auth, storage } from "../../shared/api";
 import { bookingLink } from "../../shared/brand";
 import { LanguageSwitch, useLanguage } from "../../shared/i18n";
 import { Logo, Field, Loading, ErrorMessage, localDay, time } from "../../shared/ui";
+import { StaffInvitations } from "./staff-invitations";
 import { SetupForm } from "./setup-form";
 export default function StudioPage() {
   const { t, locale } = useLanguage();
@@ -18,6 +22,8 @@ export default function StudioPage() {
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [workspace, setWorkspace] = useState<WorkspaceDto | null>(null);
   const [studio, setStudio] = useState<OpenBukStudio | null>(null);
+  const [draft, setDraft] = useState<OpenBukSetupDraft | null>(null);
+  const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [day, setDay] = useState("");
@@ -33,7 +39,11 @@ export default function StudioPage() {
         return;
       }
       try {
-        const result = await api.request<ListWorkspacesOutput>("/workspaces");
+        const result = await api.request<ListWorkspacesOutput>(
+          "/workspaces",
+          {},
+          { workspaceScope: "none" }
+        );
         const selected = await storage.getActiveWorkspaceId();
         const chosen =
           result.workspaces.find((w) => w.id === selected) ??
@@ -45,8 +55,13 @@ export default function StudioPage() {
         setWorkspace(chosen);
         if (chosen) {
           await storage.setActiveWorkspaceId(chosen.id);
-          const data = await api.request<{ studio: OpenBukStudio | null }>("/openbuk/studio");
+          const data = await api.request<OpenBukStudioResponse>("/openbuk/studio");
+          const setup = data.canManage
+            ? await api.request<OpenBukSetupDraftResponse>("/openbuk/setup")
+            : null;
           if (active) {
+            setDraft(setup?.draft ?? null);
+            setCanManage(data.canManage);
             setStudio(data.studio);
             setDay(localDay(data.studio?.timezone ?? "UTC"));
           }
@@ -67,7 +82,7 @@ export default function StudioPage() {
     };
   }, [navigate]);
   useEffect(() => {
-    if (!studio || !day) {
+    if (!studio || !day || !canManage) {
       return;
     }
     const controller = new AbortController();
@@ -96,8 +111,12 @@ export default function StudioPage() {
         }
       });
     return () => controller.abort();
-  }, [studio, day]);
-  const setup = !studio || location.pathname.endsWith("/settings");
+  }, [studio, day, canManage]);
+  const setup =
+    !studio ||
+    !workspace?.publicEnabled ||
+    !workspace?.publicModules?.booking ||
+    location.pathname.endsWith("/settings");
   return (
     <div className="studio-layout">
       <aside className="sidebar">
@@ -154,17 +173,31 @@ export default function StudioPage() {
               </button>
             ))}
           </section>
+        ) : workspace && !canManage ? (
+          <section>
+            <h1>{t("staffJoined")}</h1>
+            <p>{t("staffAccess")}</p>
+          </section>
         ) : setup ? (
-          <SetupForm
-            workspace={workspace}
-            studio={studio}
-            onWorkspace={setWorkspace}
-            onSaved={(s) => {
-              setStudio(s);
-              setDay(localDay(s.timezone));
-              navigate("/app");
-            }}
-          />
+          <>
+            <SetupForm
+              draft={draft}
+              onDraftSaved={setDraft}
+              workspace={workspace}
+              studio={studio}
+              onWorkspace={(next) => {
+                setWorkspace(next);
+                setCanManage(true);
+              }}
+              onSaved={(s) => {
+                setDraft(null);
+                setStudio(s);
+                setDay(localDay(s.timezone));
+                navigate("/app");
+              }}
+            />
+            {workspace ? <StaffInvitations workspaceId={workspace.id} /> : null}
+          </>
         ) : (
           <>
             <div className="page-heading">

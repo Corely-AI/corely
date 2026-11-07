@@ -1,3 +1,4 @@
+import { WorkspacePublicationGuard } from "./workspace-publication.guard";
 import {
   Body,
   Controller,
@@ -135,6 +136,7 @@ export class WorkspacesController {
   }
 
   @Patch(":workspaceId")
+  @UseGuards(WorkspacePublicationGuard)
   async update(
     @Param("workspaceId") workspaceId: string,
     @Body() body: unknown,

@@ -19,7 +19,7 @@ export class AuthorizeWorkspaceUseCase {
     workspaceId: string;
     userId: string;
     manage?: boolean;
-  }) {
+  }): Promise<{ slug?: string; name: string; canManage?: boolean }> {
     const workspace = await this.repo.getWorkspaceById(input.tenantId, input.workspaceId);
     const membership = workspace
       ? await this.repo.getMembershipByUserAndWorkspace(input.workspaceId, input.userId)
@@ -32,6 +32,10 @@ export class AuthorizeWorkspaceUseCase {
     ) {
       throw new ForbiddenException("Workspace access denied");
     }
-    return { slug: workspace.slug, name: workspace.name };
+    return {
+      slug: workspace.slug,
+      name: workspace.name,
+      canManage: ["OWNER", "ADMIN"].includes(membership.role),
+    };
   }
 }

@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService, PrismaExtKvAdapter, getPrismaClient } from "@corely/data";
 import {
   OpenBukStudioSchema,
+  OpenBukSetupDraftSchema,
+  type OpenBukSetupDraft,
   type OpenBukSetup,
   type OpenBukStudio,
   type OpenBukBook,
@@ -36,6 +38,14 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     // Shared with all Booking allocation writers. ReadCommitted takes a fresh
     // snapshot after waiting, so the losing writer sees the winner's allocation.
     await client.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${scope.tenantId}:${key}`}, 0))::text`;
+  }
+
+  async draft(scope: StudioScope, tx?: TransactionContext) {
+    const record = await this.kv.get(settingsKey(scope, "openbuk-setup-draft"), tx);
+    return record ? OpenBukSetupDraftSchema.parse(record.value) : null;
+  }
+  async saveDraft(scope: StudioScope, input: OpenBukSetupDraft, tx: TransactionContext) {
+    await this.kv.set({ ...settingsKey(scope, "openbuk-setup-draft"), value: input }, tx);
   }
 
   async isRegistered(scope: StudioScope): Promise<boolean> {

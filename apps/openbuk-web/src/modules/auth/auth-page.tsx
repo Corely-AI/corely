@@ -38,7 +38,7 @@ export default function AuthPage({ mode }: { mode: "login" | "signup" | "reset" 
         } else {
           await auth.signin({ email, password });
         }
-        navigate("/app");
+        navigate(sessionStorage.getItem("openbuk:invite") ? "/invite" : "/app");
       }
     } catch {
       setError(true);

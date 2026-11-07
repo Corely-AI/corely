@@ -1,3 +1,6 @@
+import { AssociateInvitedAccountUseCase } from "./application/use-cases/associate-invited-account.usecase";
+import { INVITED_ACCOUNT_PORT } from "./application/ports/invited-account.port";
+import { PrismaInvitedAccountAdapter } from "./infrastructure/adapters/prisma-invited-account.adapter";
 /* eslint @typescript-eslint/no-explicit-any: "error" */
 import { Module, forwardRef } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
@@ -81,6 +84,8 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
   ],
   controllers: [AuthController, RolesController, PermissionsController, TenantsController],
   providers: [
+    AssociateInvitedAccountUseCase,
+    { provide: INVITED_ACCOUNT_PORT, useClass: PrismaInvitedAccountAdapter },
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()
     PrismaUserRepository,
     PrismaTenantRepository,
@@ -197,6 +202,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     PermissionCatalogRegistry,
   ],
   exports: [
+    AssociateInvitedAccountUseCase,
     GetEffectivePermissionsUseCase,
     AuthorizeRequestContextUseCase,
     Reflector,

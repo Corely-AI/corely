@@ -43,10 +43,17 @@ export class ListWorkspaceMembersUseCase {
       orderBy: { createdAt: "asc" },
     });
 
-    const invites = await this.prisma.workspaceInvite.findMany({
-      where: { workspaceId: command.workspaceId },
-      orderBy: { createdAt: "desc" },
-    });
+    const member = await this.workspaceRepo.getMembershipByUserAndWorkspace(
+      command.workspaceId,
+      command.userId
+    );
+    const invites =
+      member?.status === "ACTIVE" && ["OWNER", "ADMIN"].includes(member.role)
+        ? await this.prisma.workspaceInvite.findMany({
+            where: { workspaceId: command.workspaceId },
+            orderBy: { createdAt: "desc" },
+          })
+        : [];
 
     return {
       members: memberships.map((membership) => ({

@@ -48,7 +48,8 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
       new PrismaAuditAdapter(prisma),
       new PrismaOutboxAdapter(prisma),
       { now: () => now },
-      { execute: async () => ({ slug: "test-studio", name: "Studio" }) }
+      { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
+      { publish: async () => {} }
     );
     const { serviceId, staffId, slug, ...setup } = studioFixture();
     await app.configure(setup, ctx);
@@ -166,7 +167,8 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
         },
       },
       { now: () => now },
-      { execute: async () => ({ slug: "test-studio", name: "Studio" }) }
+      { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
+      { publish: async () => {} }
     );
     const key = randomUUID();
     const body = await input("2026-10-05T11:00:00Z");

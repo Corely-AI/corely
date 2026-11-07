@@ -1,10 +1,13 @@
 import { useRef, useState, type FormEvent } from "react";
 import {
   OpenBukSetupSchema,
+  OpenBukSetupDraftSchema,
+  type OpenBukSetupDraft,
+  type OpenBukSetupDraftResponse,
   type OpenBukStudio,
   type OpenBukSetup,
   type WorkspaceDto,
-  type CreateWorkspaceOutput,
+  type GetWorkspaceOutput,
 } from "@corely/contracts";
 import { api, json, storage } from "../../shared/api";
 import { Field, ErrorMessage } from "../../shared/ui";
@@ -12,34 +15,42 @@ import { useLanguage, languageNames } from "../../shared/i18n";
 export function SetupForm({
   workspace,
   studio,
+  draft,
+  onDraftSaved,
   onSaved,
   onWorkspace,
 }: {
   workspace: WorkspaceDto | null;
   studio: OpenBukStudio | null;
+  draft: OpenBukSetupDraft | null;
+  onDraftSaved: (draft: OpenBukSetupDraft) => void;
   onSaved: (studio: OpenBukStudio) => void;
   onWorkspace: (workspace: WorkspaceDto) => void;
 }) {
   const { t, locale } = useLanguage();
-  const key = useRef(crypto.randomUUID());
+  const settings = draft ?? studio;
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"setupError" | "invalidTimezone" | null>(null);
+  const [saved, setSaved] = useState(false);
   const [hours, setHours] = useState<OpenBukSetup["weeklyHours"]>(
-    studio?.weeklyHours ??
+    settings?.weeklyHours ??
       [1, 2, 3, 4, 5].map((dayOfWeek) => ({ dayOfWeek, startTime: "09:00", endTime: "18:00" }))
   );
-  const [blocks, setBlocks] = useState<OpenBukSetup["blockedTimes"]>(studio?.blockedTimes ?? []);
+  const [blocks, setBlocks] = useState<OpenBukSetup["blockedTimes"]>(settings?.blockedTimes ?? []);
   const startRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLInputElement>(null);
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
-    setError(false);
+    setError(null);
+    setSaved(false);
+    const publish =
+      (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "publish";
     const data = new FormData(event.currentTarget);
     const string = (name: string) => String(data.get(name) ?? "");
     const number = (name: string) => Number(data.get(name));
     try {
-      const input = OpenBukSetupSchema.parse({
+      const raw = {
         studioName: string("studioName"),
         timezone: string("timezone"),
         locale: string("locale"),
@@ -57,39 +68,54 @@ export function SetupForm({
         maximumAdvanceDays: number("maximumAdvanceDays"),
         weeklyHours: hours,
         blockedTimes: blocks,
-      });
+      };
+      const input = publish
+        ? OpenBukSetupSchema.parse(raw)
+        : OpenBukSetupDraftSchema.parse({
+            ...raw,
+            serviceName: raw.serviceName || undefined,
+            staffName: raw.staffName || undefined,
+          });
       let active = workspace;
       if (!active) {
-        const result = await api.request<CreateWorkspaceOutput>(
-          "/workspaces",
+        const result = await api.request<GetWorkspaceOutput>(
+          "/workspaces/pilot-setup/start",
           json("POST", {
             name: input.studioName,
-            kind: "COMPANY",
             countryCode: string("country"),
             currency: input.currency,
-            publicEnabled: false,
           }),
-          { idempotencyKey: key.current }
+          { workspaceScope: "none" }
         );
         active = result.workspace;
         onWorkspace(active);
       }
       await storage.setActiveWorkspaceId(active.id);
+      if (!publish) {
+        const result = await api.request<OpenBukSetupDraftResponse>(
+          "/openbuk/setup",
+          json("PUT", input)
+        );
+        if (!result.draft) {
+          throw new Error("Draft was not saved");
+        }
+        onDraftSaved(result.draft);
+        setSaved(true);
+        return;
+      }
       const result = await api.request<{ studio: OpenBukStudio }>(
-        "/openbuk/studio",
-        json("PUT", input)
+        "/openbuk/studio/publish",
+        json("POST", input)
       );
-      await api.request(
-        `/workspaces/${encodeURIComponent(active.id)}`,
-        json("PATCH", {
-          publicEnabled: true,
-          publicModules: { ...active.publicModules, booking: true },
-        }),
-        { idempotencyKey: `${key.current}-publish` }
-      );
+      onWorkspace({
+        ...active,
+        publicEnabled: true,
+        publicModules: { ...active.publicModules, booking: true },
+      });
       onSaved(result.studio);
     } catch {
-      setError(true);
+      const invalidZone = OpenBukSetupDraftSchema.shape.timezone.safeParse(string("timezone"));
+      setError(invalidZone.success ? "setupError" : "invalidTimezone");
     } finally {
       setPending(false);
     }
@@ -114,7 +140,7 @@ export function SetupForm({
         min={min}
         max={max}
         step="1"
-        defaultValue={studio?.[key] ?? fallback}
+        defaultValue={settings?.[key] ?? fallback}
         required
       />
     </Field>
@@ -124,6 +150,7 @@ export function SetupForm({
       <p className="eyebrow">{t("studio")}</p>
       <h1>{t("setup")}</h1>
       <p className="muted">{t("setupIntro")}</p>
+      <p className="muted">{t("draftHelp")}</p>
       <form className="setup-form" onSubmit={(e) => void save(e)}>
         <fieldset>
           <legend>{t("location")}</legend>
@@ -131,7 +158,7 @@ export function SetupForm({
             <Field label={t("studioName")}>
               <input
                 name="studioName"
-                defaultValue={studio?.studioName ?? workspace?.name}
+                defaultValue={settings?.studioName ?? workspace?.name}
                 required
                 maxLength={120}
               />
@@ -144,7 +171,9 @@ export function SetupForm({
             <Field label={t("timezone")}>
               <input
                 name="timezone"
-                defaultValue={studio?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone}
+                defaultValue={
+                  settings?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+                }
                 required
                 list="timezones"
               />
@@ -163,13 +192,13 @@ export function SetupForm({
             <Field label={t("currency")}>
               <input
                 name="currency"
-                defaultValue={studio?.currency ?? "EUR"}
+                defaultValue={settings?.currency ?? "EUR"}
                 pattern="[A-Z]{3}"
                 required
               />
             </Field>
             <Field label={t("language")}>
-              <select name="locale" defaultValue={studio?.locale ?? locale}>
+              <select name="locale" defaultValue={settings?.locale ?? locale}>
                 {Object.entries(languageNames).map(([value, name]) => (
                   <option key={value} value={value} lang={value}>
                     {name}
@@ -185,7 +214,7 @@ export function SetupForm({
             <Field label={t("serviceName")}>
               <input
                 name="serviceName"
-                defaultValue={studio?.serviceName}
+                defaultValue={settings?.serviceName}
                 required
                 maxLength={120}
               />
@@ -196,7 +225,7 @@ export function SetupForm({
                 name="price"
                 inputMode="decimal"
                 pattern="[0-9]+([.,][0-9]{1,2})?"
-                defaultValue={((studio?.priceCents ?? 3500) / 100).toFixed(2)}
+                defaultValue={((settings?.priceCents ?? 3500) / 100).toFixed(2)}
                 required
               />
             </Field>
@@ -207,7 +236,7 @@ export function SetupForm({
         <fieldset>
           <legend>{t("staff")}</legend>
           <Field label={t("staffName")}>
-            <input name="staffName" defaultValue={studio?.staffName} required maxLength={120} />
+            <input name="staffName" defaultValue={settings?.staffName} required maxLength={120} />
           </Field>
         </fieldset>
         <fieldset>
@@ -321,10 +350,22 @@ export function SetupForm({
             {numeric("maximumAdvanceDays", t("advance"), 60, 1, 180)}
           </div>
         </fieldset>
-        {error ? <ErrorMessage message="setupError" /> : null}
-        <button className="button" disabled={pending}>
-          {pending ? t("saving") : t("publish")} ↗
-        </button>
+        {error ? <ErrorMessage message={error} /> : null}
+        {saved ? <p role="status">{t("draftSaved")}</p> : null}
+        <div className="actions">
+          <button
+            className="button secondary"
+            type="submit"
+            value="draft"
+            formNoValidate
+            disabled={pending}
+          >
+            {pending ? t("saving") : t("saveDraft")}
+          </button>
+          <button className="button" type="submit" value="publish" disabled={pending}>
+            {pending ? t("saving") : t("publish")} ↗
+          </button>
+        </div>
       </form>
     </section>
   );
