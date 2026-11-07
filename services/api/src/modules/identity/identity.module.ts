@@ -5,6 +5,7 @@ import { DataModule, PrismaOutboxAdapter } from "@corely/data";
 import { EnvModule, EnvService } from "@corely/config";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
+import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { PlatformModule } from "../platform/platform.module";
 
 // Controllers
@@ -67,10 +68,17 @@ import { UpdateTenantUserRoleUseCase } from "./application/use-cases/update-tena
 import { GetTenantUseCase } from "./application/use-cases/get-tenant.usecase";
 import { RequestPasswordResetUseCase } from "./application/use-cases/request-password-reset.usecase";
 import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-password-reset.usecase";
+import { AuthorizeRequestContextUseCase } from "./application/use-cases/authorize-request-context.usecase";
 import { TenantRoleSeederService } from "./application/services/tenant-role-seeder.service";
 
 @Module({
-  imports: [EnvModule.forRoot(), DataModule, KernelModule, forwardRef(() => PlatformModule)],
+  imports: [
+    EnvModule.forRoot(),
+    DataModule,
+    KernelModule,
+    forwardRef(() => PlatformModule),
+    forwardRef(() => WorkspacesModule),
+  ],
   controllers: [AuthController, RolesController, PermissionsController, TenantsController],
   providers: [
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()
@@ -172,6 +180,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     DeleteRoleUseCase,
     GetPermissionCatalogUseCase,
     GetEffectivePermissionsUseCase,
+    AuthorizeRequestContextUseCase,
     GetRolePermissionsUseCase,
     UpdateRolePermissionsUseCase,
     SyncRolePermissionsFromManifestsUseCase,
@@ -188,6 +197,8 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     PermissionCatalogRegistry,
   ],
   exports: [
+    GetEffectivePermissionsUseCase,
+    AuthorizeRequestContextUseCase,
     Reflector,
     USER_REPOSITORY_TOKEN,
     TENANT_REPOSITORY_TOKEN,

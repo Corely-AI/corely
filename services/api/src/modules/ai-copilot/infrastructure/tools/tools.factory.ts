@@ -17,6 +17,7 @@ const logger = new Logger("ToolsFactory");
 export function buildAiTools(
   tools: DomainToolPort[],
   deps: {
+    authorize: (tool: DomainToolPort) => Promise<void>;
     toolExecutions: ToolExecutionRepositoryPort;
     audit: AuditPort;
     outbox: OutboxPort;
@@ -73,6 +74,7 @@ export function buildAiTools(
             );
           }
 
+          await deps.authorize(t);
           const result = await t.execute({
             tenantId: deps.tenantId,
             workspaceId: deps.workspaceId,

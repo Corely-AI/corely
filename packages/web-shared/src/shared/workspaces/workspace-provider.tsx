@@ -19,10 +19,10 @@ const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefi
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId());
   const isHostScope = user?.activeTenantId === null;
-  const shouldLoadWorkspaces = isAuthenticated && !isHostScope;
+  const shouldLoadWorkspaces = isAuthenticated && !isAuthLoading && !isHostScope;
 
   console.debug("[WorkspaceProvider] init", {
     isAuthenticated,
@@ -32,9 +32,10 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const {
     data: workspaces = [],
     isFetching,
+    isSuccess,
     refetch,
   } = useQuery<WorkspaceDto[]>({
-    queryKey: ["workspaces"],
+    queryKey: ["workspaces", user?.activeTenantId],
     queryFn: () => workspacesApi.listWorkspaces(),
     enabled: shouldLoadWorkspaces,
     staleTime: 30_000,
@@ -56,40 +57,19 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [workspaces, isAuthenticated, activeId]);
 
-  // Set default workspace once we have list
+  // Only an authoritative completed discovery can replace or clear a saved selection.
   useEffect(() => {
-    console.debug("[WorkspaceProvider] evaluate default workspace", {
-      activeId,
-      workspaces: workspaces.length,
-      isFetching,
-    });
-
-    if (!activeId && workspaces.length > 0 && !isHostScope) {
-      console.debug("[WorkspaceProvider] setting default workspace", {
-        id: workspaces[0].id,
-        name: workspaces[0].name,
-      });
-      const defaultId = workspaces[0].id;
-      setActiveWorkspaceId(defaultId);
-      setActiveId(defaultId);
+    if (!shouldLoadWorkspaces || isFetching || !isSuccess) {
+      return;
     }
-  }, [activeId, workspaces, isHostScope]);
-
-  // If stored activeId does not exist in fetched workspaces, fall back to first
-  useEffect(() => {
-    if (activeId && workspaces.length > 0 && !isHostScope) {
-      const exists = workspaces.some((w) => w.id === activeId);
-      if (!exists) {
-        const fallbackId = workspaces[0].id;
-        console.debug("[WorkspaceProvider] activeId not found, resetting to first workspace", {
-          staleActiveId: activeId,
-          fallbackId,
-        });
+    if (!workspaces.some((workspace) => workspace.id === activeId)) {
+      const fallbackId = workspaces[0]?.id ?? null;
+      if (fallbackId !== activeId) {
         setActiveWorkspaceId(fallbackId);
         setActiveId(fallbackId);
       }
     }
-  }, [activeId, workspaces, isHostScope]);
+  }, [activeId, workspaces, shouldLoadWorkspaces, isFetching, isSuccess]);
 
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === activeId) ?? null,

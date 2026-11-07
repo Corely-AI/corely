@@ -5,6 +5,11 @@ import {
   UnauthorizedException,
   Inject,
 } from "@nestjs/common";
+import { AuthorizeRequestContextUseCase } from "../../application/use-cases/authorize-request-context.usecase";
+import {
+  resolveRequestContext,
+  type ContextAwareRequest,
+} from "../../../../shared/request-context";
 import type { TokenServicePort } from "../../application/ports/token-service.port";
 import { TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port";
 
@@ -14,10 +19,13 @@ import { TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port"
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(@Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort) {}
+  constructor(
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
+    private readonly authorizeRequestContext: AuthorizeRequestContextUseCase
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<ContextAwareRequest>();
     const authHeader = request.headers.authorization;
     if (!authHeader) {
       // Small bypass for integration tests that use headers instead of tokens
@@ -29,17 +37,19 @@ export class AuthGuard implements CanActivate {
             userId,
             tenantId,
             roleIds: [],
-            workspaceId: tenantId, // Default in tests
           };
           request.tenantId = tenantId;
           request.roleIds = [];
-          request.workspaceId = tenantId;
+          await this.validateContext(request);
           return true;
         }
       }
       throw new UnauthorizedException("Missing authorization header");
     }
 
+    if (typeof authHeader !== "string") {
+      throw new UnauthorizedException("Invalid authorization header format");
+    }
     const parts = authHeader.split(" ");
     if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
       throw new UnauthorizedException("Invalid authorization header format");
@@ -57,20 +67,31 @@ export class AuthGuard implements CanActivate {
     const roleIds = Array.isArray(decoded.roleIds) ? decoded.roleIds : [];
 
     // Set user, tenant, and roles on request (typed principal)
-    const workspaceId = request.context?.workspaceId ?? decoded.tenantId;
-
     request.user = {
       userId: decoded.userId,
       email: decoded.email,
       tenantId: decoded.tenantId,
-      workspaceId,
       roleIds,
     };
 
     request.tenantId = decoded.tenantId;
     request.roleIds = roleIds;
-    request.workspaceId = workspaceId;
 
+    await this.validateContext(request);
     return true;
+  }
+
+  private async validateContext(request: ContextAwareRequest): Promise<void> {
+    const principal = request.user;
+    if (!principal) {
+      throw new UnauthorizedException("Authenticated principal required");
+    }
+    const ctx = resolveRequestContext(request);
+    const { roleIds } = await this.authorizeRequestContext.execute({
+      ...ctx,
+      workspaceId: ctx.workspaceId ?? undefined,
+    });
+    principal.roleIds = roleIds;
+    resolveRequestContext(request);
   }
 }

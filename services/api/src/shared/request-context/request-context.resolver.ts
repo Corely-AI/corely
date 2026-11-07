@@ -94,8 +94,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const surfaceId = trustedSurfaceId ?? "platform";
 
   // Principal
-  const headerUserId = pickHeader(req, ["x-user-id"]);
-  const userId = req.user?.userId ?? headerUserId;
+  const userId = req.user?.userId;
   const roleIds = Array.isArray(req.user?.roleIds) ? req.user?.roleIds : undefined;
 
   const publicContext: PublicWorkspaceContext | undefined = req.publicContext;

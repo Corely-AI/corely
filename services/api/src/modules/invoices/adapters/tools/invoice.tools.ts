@@ -18,6 +18,7 @@ import { mapToolResult } from "./mappers";
 export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] => [
   {
     name: "invoice_get",
+    requiredPermissions: ["sales.invoices.read"],
     description: "Fetch a single invoice by id for the current tenant.",
     kind: "server",
     inputSchema: GetInvoiceByIdInputSchema,
@@ -35,6 +36,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_list",
+    requiredPermissions: ["sales.invoices.read"],
     description: "List invoices with optional filters (status, customer, date range).",
     kind: "server",
     inputSchema: ListInvoicesInputSchema,
@@ -52,6 +54,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_create",
+    requiredPermissions: ["sales.invoices.manage"],
     description:
       "Create a draft invoice with line items when customerPartyId is known (use invoice_create_from_customer for names).",
     kind: "server",
@@ -70,6 +73,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_update",
+    requiredPermissions: ["sales.invoices.manage"],
     description: "Update invoice header or line items (draft only for lines).",
     kind: "server",
     inputSchema: UpdateInvoiceInputSchema,
@@ -87,6 +91,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_finalize",
+    requiredPermissions: ["sales.invoices.issue"],
     description: "Finalize a draft invoice (assigns number and marks issued).",
     kind: "server",
     inputSchema: FinalizeInvoiceInputSchema,
@@ -104,6 +109,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_send",
+    requiredPermissions: ["sales.invoices.issue"],
     description: "Mark an invoice as sent (email/link).",
     kind: "server",
     inputSchema: SendInvoiceInputSchema,
@@ -121,6 +127,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_record_payment",
+    requiredPermissions: ["sales.payments.record"],
     description: "Record a payment for an invoice.",
     kind: "server",
     inputSchema: RecordPaymentInputSchema,
@@ -138,6 +145,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_cancel",
+    requiredPermissions: ["sales.invoices.void"],
     description: "Cancel an invoice.",
     kind: "server",
     inputSchema: CancelInvoiceInputSchema,
@@ -155,6 +163,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_draft_issue_email",
+    requiredPermissions: ["sales.invoices.read"],
     description:
       "Draft the first invoice sent/issued email in de/vi/en with friendly or neutral tone (draft-only, no send).",
     kind: "server",
@@ -173,6 +182,7 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
   },
   {
     name: "invoice_draft_reminder_email",
+    requiredPermissions: ["sales.invoices.read"],
     description:
       "Draft a payment reminder email in de/vi/en with polite, normal, or firm tone (draft-only, no send).",
     kind: "server",
