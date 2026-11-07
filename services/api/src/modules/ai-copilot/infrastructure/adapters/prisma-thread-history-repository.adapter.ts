@@ -146,6 +146,7 @@ export class PrismaThreadHistoryRepository implements ThreadHistoryRepositoryPor
       tenantId: params.tenantId,
       runId: params.threadId,
       run: {
+        tenantId: params.tenantId,
         createdByUserId: params.userId,
       },
     };
@@ -219,6 +220,7 @@ export class PrismaThreadHistoryRepository implements ThreadHistoryRepositoryPor
     const where: Prisma.MessageWhereInput = {
       tenantId: params.tenantId,
       run: {
+        tenantId: params.tenantId,
         createdByUserId: params.userId,
         archivedAt: null,
       },

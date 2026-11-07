@@ -101,6 +101,48 @@ feature, rather than fabricating a new document schema in this platform ticket. 
 issued signed URLs remain valid for their storage TTL; revocation blocks new API issuance,
 not already-issued bearer URLs. Private files need an appropriate TTL/proxy policy.
 
+## Conversation, file and cache boundaries
+
+Copilot conversations are private to their creator, including the legacy run, raw-message,
+UI-history and resume routes. Tenant-wide Owner/Admin/Manager labels do not grant access to
+another creator's conversation. Internal stream continuations and run-ID reuse check the
+owner too, including a create collision returning an existing row. Ownerless legacy runs
+are not shared conversations. The established Copilot storage namespace still uses a
+selected workspace ID in its `tenantId` field; legacy tenant-scoped history retains its
+existing namespace. This change does not rewrite records or interchange Identity tenant
+and workspace authority.
+
+A message ID belongs to both its storage scope and its conversation. Normal and concurrent
+upsert paths reject another run's ID. Search and thread-message queries constrain both the
+message scope and the parent run scope, since the schema has no composite scope foreign key.
+
+Document proxy downloads check that the file belongs to the requested document and tenant
+before reading bytes, matching signed-download behavior. Authenticated Documents and Copilot
+responses send `Cache-Control: private, no-store`, including SDK streams. Explicitly public
+file redirects retain their publication flag checks. Existing generic documents are still
+tenant-owned, not personnel attachment ACLs; already-issued signed links retain their TTL.
+
+Workspace changes cancel and discard cached payload queries and mutation view state, then
+remount workspace views so old local drafts/stream state cannot follow the new selection.
+Only the current tenant's authorized workspace-discovery list is retained. Callers should
+still include scope in query keys; scope changes are not an authorization grant.
+
+The reset boundary is the authenticated app shell's routed content, inside the router.
+The router, shared providers, login and public routes remain mounted, so a pending
+workspace-creation action can finish discovery and navigate to the rendered dashboard.
+Public-route form state is not reset by an authenticated workspace selection change.
+
+Offline restore/write completion must still match its captured user/workspace subscription
+and current selection. Old subscriptions cannot hydrate a new workspace after a delayed
+IndexedDB read. The `workspace-scope-v2` cache buster discards earlier query snapshots, and
+effective-permission queries are no longer persisted. Other current-scope offline query
+caching and the outbox remain in place. Switching workspaces discards unsaved local form
+state; finish/save work in the current workspace before switching.
+
+This is not a retroactive private-field redactor for historical conversations or an
+implementation of People attachment/export/audit ownership. Those owners must define and
+test their authorized projections and cache/retrieval policy before storing private data.
+
 ## Evidence and limits
 
 Synthetic HTTP tests exercise the actual Auth/RBAC guards and Documents controller for

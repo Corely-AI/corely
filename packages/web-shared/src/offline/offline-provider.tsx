@@ -17,6 +17,8 @@ import {
 import { computeBackoffDelayMs, defaultRetryPolicy } from "@corely/api-client";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
+import { getActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
+import { scopePersister } from "./scope-persister";
 
 interface OfflineContextValue {
   syncEngine: SyncEngine | null;
@@ -57,6 +59,8 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ queryClient, c
     () => `corely-cache:${user?.userId ?? "anon"}:${activeWorkspaceId ?? "workspace"}`,
     [user?.userId, activeWorkspaceId]
   );
+  const currentPersisterKey = useRef(persisterKey);
+  currentPersisterKey.current = persisterKey;
 
   const syncEngineRef = useRef<SyncEngine | null>(null);
 
@@ -91,17 +95,30 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ queryClient, c
   }, [activeWorkspaceId]);
 
   useEffect(() => {
-    const persister = createIndexedDbPersister({ key: persisterKey });
+    let mounted = true;
+    const persister = scopePersister(
+      createIndexedDbPersister({ key: persisterKey }),
+      () =>
+        mounted &&
+        currentPersisterKey.current === persisterKey &&
+        getActiveWorkspaceId() === activeWorkspaceId
+    );
     const [unsubscribe, restorePromise] = persistQueryClient({
       queryClient,
       persister,
-      buster: "v1",
+      // Drop snapshots written before workspace transitions were isolated.
+      buster: "workspace-scope-v2",
+      dehydrateOptions: {
+        shouldDehydrateQuery: (query) =>
+          query.state.status === "success" && query.queryKey[0] !== "permissions",
+      },
     });
     restorePromise.catch((err) => consoleLogger.warn("Failed to restore query cache", err));
     return () => {
+      mounted = false;
       unsubscribe();
     };
-  }, [persisterKey, queryClient]);
+  }, [persisterKey, queryClient, activeWorkspaceId]);
 
   const value = useMemo<OfflineContextValue>(
     () => ({

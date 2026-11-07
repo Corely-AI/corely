@@ -318,7 +318,10 @@ export function AppShell({
             )}
           </header>
 
-          <div className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
+          <div
+            key={activeWorkspaceId ?? "no-workspace"}
+            className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
+          >
             {topContent}
             <Outlet />
           </div>

@@ -19,6 +19,7 @@ import { type CopilotContextBuilder } from "../services/copilot-context.builder"
 import { type CopilotTaskStateTracker } from "../services/copilot-task-state.service";
 import { type WorkspaceKind } from "@corely/prompts";
 import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
+import { requireRunOwner } from "../policies/require-run-owner";
 import {
   extractAssistantText,
   extractLatestUserInput,
@@ -67,6 +68,12 @@ export class StreamCopilotChatUseCase {
     toolTenantId?: string;
   }): Promise<void> {
     const { tenantId, userId, idempotencyKey } = params;
+    const existingRun = params.runId
+      ? await this.agentRuns.findById({ tenantId, runId: params.runId })
+      : null;
+    if (existingRun) {
+      requireRunOwner(existingRun, userId);
+    }
     const incomingMessages = this.ensureMessageIds(
       params.messages?.length ? params.messages : params.message ? [params.message] : []
     );
@@ -158,10 +165,9 @@ export class StreamCopilotChatUseCase {
       toolsRequested: tools.map((tool) => tool.name),
     });
 
-    const existingRun = await this.agentRuns.findById({ tenantId, runId });
     if (!existingRun) {
       try {
-        await this.agentRuns.create({
+        const created = await this.agentRuns.create({
           id: runId,
           tenantId,
           createdByUserId: userId,
@@ -169,10 +175,11 @@ export class StreamCopilotChatUseCase {
           lastMessageAt: this.clock.now(),
           traceId: turnSpan.traceId,
         });
+        requireRunOwner(created, userId);
       } catch (error) {
         if (isUniqueConstraintError(error)) {
           runId = nanoid();
-          await this.agentRuns.create({
+          const created = await this.agentRuns.create({
             id: runId,
             tenantId,
             createdByUserId: userId,
@@ -180,6 +187,7 @@ export class StreamCopilotChatUseCase {
             lastMessageAt: this.clock.now(),
             traceId: turnSpan.traceId,
           });
+          requireRunOwner(created, userId);
         } else {
           throw error;
         }
@@ -316,9 +324,10 @@ export class StreamCopilotChatUseCase {
         },
       });
 
-      pipeUIMessageStreamToResponse({
+      await pipeUIMessageStreamToResponse({
         response: params.response,
         stream,
+        headers: { "Cache-Control": "private, no-store" },
       });
     } catch (error) {
       if (error instanceof Error) {

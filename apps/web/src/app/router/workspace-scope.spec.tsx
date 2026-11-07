@@ -1,6 +1,8 @@
-import React from "react";
-import { act, cleanup, render, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AppShell } from "@corely/web-shared/layout/app-shell";
 import { afterEach, expect, it, vi } from "vitest";
 import type { WorkspaceDto } from "@corely/contracts";
 import {
@@ -20,6 +22,10 @@ vi.mock("@corely/web-shared/lib/auth-provider", () => ({
 }));
 vi.mock("@corely/web-shared/shared/workspaces/workspaces-api", () => ({
   workspacesApi: { listWorkspaces: list },
+}));
+vi.mock("@corely/web-shared/layout/app-sidebar", () => ({ AppSidebar: () => null }));
+vi.mock("@corely/web-shared/shared/workspaces/workspace-config-provider", () => ({
+  useWorkspaceConfig: () => ({ config: null, navigationGroups: [], isLoading: false, error: null }),
 }));
 
 function Probe() {
@@ -82,8 +88,96 @@ it("does not reuse another tenant's workspace list while discovery is pending", 
   await act(async () => {
     resolveList([workspace("b")]);
   });
-  expect(await screen.findByText("Workspace B")).toBeInTheDocument();
-  expect(screen.queryByText("Workspace A")).not.toBeInTheDocument();
-  expect(await screen.findByText("workspace-b")).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText("Workspace B")).toBeInTheDocument();
+    expect(screen.queryByText("Workspace A")).not.toBeInTheDocument();
+    expect(screen.getByText("workspace-b")).toBeInTheDocument();
+  });
+  client.clear();
+});
+
+it("discards cached payloads and local view state before fetching in a new workspace", async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  client.setQueryData(["workspaces", "tenant-a"], [workspace("a"), workspace("b")]);
+  client.setQueryData(["legacy-private-key"], "Private workspace A");
+  list.mockResolvedValue([workspace("a"), workspace("b")]);
+  setActiveWorkspaceId("workspace-a");
+  let finishNew: (value: string) => void = () => {
+    throw new Error("New query not started");
+  };
+  const fetchNew = new Promise<string>((resolve) => {
+    finishNew = resolve;
+  });
+  let finishOld: (value: string) => void = () => {
+    throw new Error("Old query not started");
+  };
+  function PrivateView() {
+    const { setWorkspace } = useWorkspace();
+    const [draft, setDraft] = useState("");
+    const { data } = useQuery({
+      queryKey: ["legacy-private-key"],
+      queryFn: () => fetchNew,
+      staleTime: Infinity,
+    });
+    return (
+      <>
+        <input
+          aria-label="Private draft"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+        />
+        <p>{data ?? "Loading new workspace"}</p>
+        <button onClick={() => setWorkspace("workspace-b")}>Switch workspace</button>
+      </>
+    );
+  }
+  render(
+    <QueryClientProvider client={client}>
+      <WorkspaceProvider>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+            <Route
+              element={
+                <AppShell
+                  navigationGroups={[]}
+                  includeWorkspaceQuickActions={false}
+                  renderSidebar={() => null}
+                />
+              }
+            >
+              <Route path="*" element={<PrivateView />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </WorkspaceProvider>
+    </QueryClientProvider>
+  );
+  fireEvent.change(screen.getByLabelText("Private draft"), {
+    target: { value: "Private unsaved A" },
+  });
+  const oldFetch = client
+    .fetchQuery({
+      queryKey: ["legacy-private-key"],
+      queryFn: () =>
+        new Promise<string>((resolve) => {
+          finishOld = resolve;
+        }),
+      staleTime: 0,
+    })
+    .catch(() => undefined);
+  fireEvent.click(screen.getByRole("button", { name: "Switch workspace" }));
+  expect(screen.queryByText("Private workspace A")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Private draft")).toHaveValue("");
+  expect(client.getQueryData(["legacy-private-key"])).toBeUndefined();
+  await act(async () => {
+    finishNew("Private workspace B");
+  });
+  expect(await screen.findByText("Private workspace B")).toBeInTheDocument();
+  await act(async () => {
+    finishOld("Late private workspace A");
+    await oldFetch;
+  });
+  expect(screen.queryByText("Late private workspace A")).not.toBeInTheDocument();
+  expect(client.getQueryData(["legacy-private-key"])).toBe("Private workspace B");
   client.clear();
 });

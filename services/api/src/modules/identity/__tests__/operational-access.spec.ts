@@ -287,7 +287,9 @@ describe("Operational authorization HTTP and tool boundaries", () => {
   });
   it("allows explicitly granted document reads but still rejects foreign workspaces", async () => {
     grants = [{ key: "documents.read", effect: "ALLOW" }];
-    expect((await get("/documents/document-a/download-url")).status).toBe(200);
+    const response = await get("/documents/document-a/download-url");
+    expect(response.status).toBe(200);
+    expect(response.headers["cache-control"]).toBe("private, no-store");
     expect(signedFile).toHaveBeenCalledOnce();
     expect((await get("/documents/document-a/download-url", "workspace-b")).status).toBe(403);
     expect(signedFile).toHaveBeenCalledOnce();

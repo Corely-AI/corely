@@ -143,7 +143,7 @@ General developer guides and references.
 
 - [Historical plans and status reports](./archive/README.md)
 
-- [Operational access and private-data policy](./platform/operational-access.md)
+- [Operational access and private-data policy](./platform/operational-access.md) — current membership, conversation/file access, workspace caches and People owner requirements.
 - [Platform Menu API](./platform/menu.md)
 - [Operational package configuration](./platform/operational-package.md) — existing OpenBuk client, manifest composition and independent access gates
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)

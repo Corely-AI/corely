@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import type { Request, Response } from "express";
 import { isErr } from "@corely/kernel";
 import {
@@ -14,9 +24,11 @@ import { DocumentsApplication } from "../../application/documents.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
+import { PrivateResponseInterceptor } from "../../../../shared/http/private-response.interceptor";
 
 @Controller("documents")
 @UseGuards(AuthGuard, RbacGuard)
+@UseInterceptors(PrivateResponseInterceptor)
 export class DocumentsController {
   constructor(private readonly app: DocumentsApplication) {}
 

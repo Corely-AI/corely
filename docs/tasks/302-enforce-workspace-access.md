@@ -3,7 +3,8 @@
 ## Tracking and outcome
 
 - Issue: [#302 / PLAT-02](https://github.com/Corely-AI/corely/issues/302); parent #282; prerequisite #298 complete.
-- Branch: `302-enforce-workspace-access`; PR: [Draft #368](https://github.com/Corely-AI/corely/pull/368), targeting `development`.
+- Foundation: `302-enforce-workspace-access`; [PR #368](https://github.com/Corely-AI/corely/pull/368) merged into `development`.
+- Continuation: `302-complete-access-boundaries`, based on merged `development` at `48f61bc6929a22ab6fa637a13192e024fabb467e`, delivered through a follow-up Draft PR for #302.
 - Base: initially `4ed3292a2c556cff9d13b2cb6c85672be48fb2f3`, rebased onto `1bdae26ddd43ac1d0e4bad0cd754139f7b2186b5` before publication. Range-diff confirmed the original implementation patch was unchanged.
 - Outcome: current membership and stored grants authorize authenticated workspace operations, independently of menus and stale token roles. System role names add no permission bypass.
 - Scope: existing Identity/Workspaces authorization, permission defaults, Documents and Copilot gates, plus compatible auth/workspace bootstrap. No People records, new app/module/schema or production migration.
@@ -22,7 +23,7 @@ Review at `d4f218b41` reproduced two regressions: auth clients sent a tenant ID 
 
 ## Verification
 
-Current scoped results:
+Foundation delivery results (historical; fresh continuation results below):
 
 - API Auth/RBAC/Documents/tool/registry/context/workspace checks, actual invoice builders and full AppModule DI smoke: **75 passed** across eight files.
 - Web auth-route/workspace-cache/role-editor checks: **10 passed**, including a pending tenant transition that cannot reuse the old workspace list.
@@ -111,8 +112,112 @@ and German/Vietnamese remain untested; the actual POS lookup is covered in the A
 - [Last workspace deleted, phone onboarding](302-assets/deleted-workspace-onboarding-mobile.png)
 - [Replacement workspace created, phone dashboard](302-assets/replacement-workspace-mobile.png)
 
+## Continuation after merging #368
+
+The follow-up closes reachable gaps in existing owners without creating People records:
+
+- Legacy Copilot run/history/message/resume reads now require their creator, matching the
+  modern thread API. Same-workspace Staff and Manager users get 404 without private values.
+  Run reuse and internal stream continuations check ownership before replay/history/model
+  execution; create collisions validate the actual returned owner.
+- Message upserts validate storage scope and run ID, including the concurrent unique-key
+  retry path. SQL thread search/history constrain both message and parent run scope.
+- Document proxy reads reject mismatched document/file IDs before fetching bytes. Both
+  authenticated controllers and SDK streams prevent response caching with `private, no-store`.
+- Workspace switching discards old payload queries and mutation view state and remounts
+  feature views. It retains only authorized discovery for the current tenant. Scoped offline
+  subscriptions reject late restores/writes; a cache-buster refreshes old snapshots and
+  effective-permission queries are excluded from persistence. Other offline caching remains.
+
+Fresh verification:
+
+- **158 owning-module unit/HTTP tests** across Copilot, Documents, Identity, Workspaces and
+  request context; **10 AppModule DI checks**. The new HTTP cases exercise the actual
+  controller/use cases and AuthGuard with deterministic identity/workspace ports.
+- **9 PostgreSQL integration checks** use actual Prisma run/message/search/chat-store
+  adapters. They cover creator/workspace/foreign-scope isolation, search, inconsistent
+  message/run relations, guessed IDs, real unique-key fallback after a stale preflight,
+  unchanged foreign messages and successful same-conversation updates.
+- **14 web checks** include old-cache/draft removal, ignored late query results, successful
+  current-scope offline restore and rejected obsolete restore/persist operations.
+- Regression checks fail against the original implementation for creator access,
+  document/file substitution and workspace-cache retention, then pass with the corrections.
+- API typecheck/build, web-shared typecheck and separate fixture typecheck: passed.
+  Changed-production ESLint: zero errors after corrections, with existing warnings;
+  Prettier and changed documentation references: passed.
+  Broad root checks and the unrelated web-app type errors documented above are not repaired
+  or represented as passing by these scoped results.
+
+The Docker daemon is unavailable. The committed integration suite uses the existing
+Testcontainers harness; locally a temporary setup substitutes only database provisioning.
+A fresh `corely_302_boundarytest` database on the existing isolated loopback PostgreSQL port
+55432 receives the repository's existing migrations. The temporary harness asserts its exact
+host, port and database before connecting/resetting only this test database. Repositories,
+SQL, use cases and assertions are unchanged; no shared or production database is touched.
+
+Reproducible repository commands:
+
+```sh
+pnpm --dir services/api exec vitest run --config vitest.config.ts \
+  src/modules/ai-copilot/__tests__/run-access.spec.ts \
+  src/modules/ai-copilot/__tests__/private-retrieval.http.spec.ts \
+  src/modules/documents/application/use-cases/proxy-download/proxy-download.usecase.test.ts
+
+# Requires the existing disposable PostgreSQL/Testcontainers environment:
+pnpm --dir services/api exec vitest run --config vitest.config.ts \
+  src/modules/ai-copilot/__tests__/private-retrieval.int.test.ts
+
+pnpm --dir apps/web exec vitest run --config vitest.config.ts \
+  src/app/router/workspace-scope.spec.tsx src/app/router/offline-scope.spec.ts
+```
+
+UI/UX: existing `/settings/workspace` was inspected with synthetic Owner B across two
+workspaces at 1440×1000 and 390×844 in English. Switching with an unsaved draft removes
+that draft and displays the new workspace's values; the real config request was delayed
+one second to inspect the pending transition, without mocking its response. Returning on
+phone restores saved workspace B values, without the old draft or horizontal overflow.
+New ownership/file/cache HTTP behavior is covered by tests; no live model provider or
+personnel redaction is claimed. Native clients and German/Vietnamese were not exercised.
+
+- [Before switching, synthetic unsaved draft](302-assets/workspace-switch-before-desktop.png)
+- [After switching to workspace C, desktop](302-assets/workspace-switch-after-desktop.png)
+- [Return to workspace B, phone](302-assets/workspace-switch-after-mobile.png)
+
+## PR #371 router review correction
+
+Review at `00c915728` reproduced a navigation regression: the workspace key also
+remounted BrowserRouter. Creating a workspace selected its ID before awaiting discovery;
+the old navigate callback then updated the URL while the new router kept showing a reset
+onboarding wizard. The same broad boundary also reset unrelated public-route local state.
+
+The key now sits on the shared app shell's routed-content container. Authenticated views
+still discard private drafts/stream state when the workspace changes. Router, shared
+providers and public/auth routes remain mounted; query cancellation/removal and guarded
+offline persistence remain unchanged. Focused clients reuse the same app shell.
+
+Fresh checks for this client-only correction:
+
+- **16 web tests passed** across six files. New cases use the actual onboarding page,
+  BrowserRouter and shared AppShell: delayed post-create discovery reaches the dashboard
+  DOM as well as its URL; a non-workspace form keeps its draft through selection changes.
+  Both new cases fail before the correction. Existing scope tests now render the actual
+  app shell and still prove private draft/cache reset and rejection of late old responses.
+- Web-shared typecheck passed. Changed-production ESLint passed with three existing console
+  warnings. Changed files pass Prettier and diff whitespace checks.
+- Full web-app typecheck reproduces the same eight unchanged Assistant/Cash Management
+  errors. Backend/SQL/full-root checks above were not rerun for this client-only change.
+- Real local API/JWT/PostgreSQL creation succeeds at **1440×1000** and **390×844** using
+  the existing synthetic Owner B. GET workspace discovery is delayed 750 ms without
+  mocking the response. Both journeys reach `/dashboard` with the actual “Welcome back”
+  dashboard and no onboarding wizard; phone horizontal overflow is absent.
+- Shared boundaries are covered locally; focused-client/native browser journeys and
+  German/Vietnamese were not exercised. No backend, schema, migration or release changed.
+
+[Desktop post-create dashboard](302-assets/onboarding-router-fixed-desktop.png) ·
+[Phone post-create dashboard](302-assets/onboarding-router-fixed-mobile.png)
+
 ## Impact and remaining work
 
-#302 remains open / In progress. This PR provides common enforcement and policy; private People field/search/cache/export projections and personnel attachment ownership require owner-level implementation and acceptance tests. A synthetic directory fixture is not a deployed private-field redactor. Generic documents remain tenant-owned; signed URLs already issued remain valid until their storage TTL.
+#302 remains open / In progress. The merged foundation and follow-up provide common enforcement and policy; private People field/search/cache/export projections and personnel attachment ownership require owner-level implementation and acceptance tests. A synthetic directory fixture is not a deployed private-field redactor. Generic documents remain tenant-owned; signed URLs already issued remain valid until their storage TTL.
 
 Existing stored roles require explicit new document grants; no automatic permission backfill is performed. Other undeclared legacy server tools remain restricted. Rollback is reverting the source; the review-only local database is independent of application migrations and production data.
