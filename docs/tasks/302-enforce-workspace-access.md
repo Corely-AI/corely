@@ -5,7 +5,7 @@
 - Issue: [#302 / PLAT-02](https://github.com/Corely-AI/corely/issues/302); parent #282; prerequisite #298 complete.
 - Foundation: `302-enforce-workspace-access`; [PR #368](https://github.com/Corely-AI/corely/pull/368) merged into `development`.
 - Continuation: `302-complete-access-boundaries`, based on merged `development` at `48f61bc6929a22ab6fa637a13192e024fabb467e`; [PR #371](https://github.com/Corely-AI/corely/pull/371) merged into `development`.
-- Acceptance handoff: `302-access-foundation-acceptance`, based on merged `development` at `b7ec3bf9ff` (merge of #371); documentation-only Draft PR.
+- Acceptance handoff: `302-access-foundation-acceptance`, based on merged `development` at `b7ec3bf9ff` (merge of #371); documentation-only [Draft PR #372](https://github.com/Corely-AI/corely/pull/372).
 - Base: initially `4ed3292a2c556cff9d13b2cb6c85672be48fb2f3`, rebased onto `1bdae26ddd43ac1d0e4bad0cd754139f7b2186b5` before publication. Range-diff confirmed the original implementation patch was unchanged.
 - Outcome: current membership and stored grants authorize authenticated workspace operations, independently of menus and stale token roles. System role names add no permission bypass.
 - Scope: existing Identity/Workspaces authorization, permission defaults, Documents and Copilot gates, plus compatible auth/workspace bootstrap. No People records, new app/module/schema or production migration.
@@ -274,7 +274,7 @@ pnpm --dir apps/web exec vitest run --config vitest.config.ts \
 
 ## Impact and remaining work
 
-#302 remains open pending integration of its acceptance handoff. Under the confirmed
+#302 remains open pending integration of acceptance handoff #372. Under the confirmed
 scope, the merged foundation and follow-up provide common enforcement and policy;
 private People field/search/cache/export/audit projections and personnel attachment
 ownership remain required in #305, #307 and #308. Closing the foundation does not close
