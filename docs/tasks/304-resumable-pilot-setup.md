@@ -142,3 +142,18 @@ Environment: a separate temporary PostgreSQL cluster on port 55437 with only
 explicitly disabled, with test-only provider placeholders. The previously running cluster on
 55435 and all unrelated services were left untouched. Stopped this follow-up's API/frontend/cluster and removed its temporary database directory after
 acceptance. No shared database was reset and no unrelated process was stopped.
+
+## Development conflict resolution — 7 November 2026
+
+Merged `development` at `c4d2241e75` (People PR #373) into this ticket branch. The only
+conflict was Identity's public barrel: retained both `AssociateInvitedAccountUseCase`
+for pilot invitations and `StaffAccountLookupAdapter` for the People directory. The
+automatic documentation merge retains both guide entries. No interface behavior changed.
+
+Fresh verification: API typecheck and production build passed; 52 tests across six
+OpenBuk/Workspaces/People domain and PostgreSQL suites passed with no skips. The resolved
+barrel and combined docs index pass Prettier, the barrel passes targeted ESLint, and the
+merge passes whitespace/conflict-marker checks. Browser tests were not rerun for this
+export-only resolution; prior UI evidence remains applicable. The test databases
+`openbuk_test_304_merge` and `people_test_304_merge` used a dedicated temporary PostgreSQL
+cluster on port 55439; the cluster was stopped and removed after verification.

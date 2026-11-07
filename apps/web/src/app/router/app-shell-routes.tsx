@@ -1,3 +1,4 @@
+import { PeopleDirectoryPage, StaffProfilePage } from "@corely/web-features/modules/people";
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
 import { cashManagementFeature, posAdminFeature } from "@corely/web-features";
@@ -117,6 +118,10 @@ export const appShellRoutes = (
   <Route element={<RequireAuth />}>
     <Route element={<AppShell />}>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
+      <Route path="/people/staff" element={<PeopleDirectoryPage />} />
+      <Route path="/people/staff/new" element={<StaffProfilePage />} />
+      <Route path="/people/staff/:id" element={<StaffProfilePage />} />
+      <Route path="/people/staff/:id/edit" element={<StaffProfilePage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
