@@ -6,7 +6,7 @@
 - Parent: [#283](https://github.com/Corely-AI/corely/issues/283).
 - Prerequisites: #298 and #302, both closed completed with their implementations merged.
 - Branch: `305-staff-directory`; PR base: `development`, inspected `dac9007605` on 2026-11-07.
-- PR: pending publication.
+- PR: [Draft #373](https://github.com/Corely-AI/corely/pull/373).
 - Outcome: managers maintain workspace staff records and optional validated links;
   staff read a neutral directory; private fields remain separately authorized.
 - Excludes working patterns, absence, self-service/offboarding, exports/attachments,
