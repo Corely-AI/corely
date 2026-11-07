@@ -4,6 +4,7 @@ import type {
   SurfaceId,
   WorkspaceCapabilities,
   WorkspaceKind,
+  WorkspacePackageId,
 } from "@corely/contracts";
 import { TenantEntitlement } from "../../domain/entitlement.aggregate";
 import { TenantEntitlementService } from "./tenant-entitlement.service";
@@ -13,6 +14,7 @@ import {
   type WorkspaceRepositoryPort,
 } from "../../../workspaces/application/ports/workspace-repository.port";
 import type { Workspace } from "../../../workspaces/domain/workspace.entity";
+import { operationalCapabilities } from "./operational-package.service";
 
 export interface ResolveWorkspaceExperienceInput {
   tenantId: string;
@@ -20,6 +22,7 @@ export interface ResolveWorkspaceExperienceInput {
   surfaceId: SurfaceId;
   workspaceId?: string;
   permissions?: Iterable<string>;
+  packageId?: WorkspacePackageId;
 }
 
 export interface WorkspaceExperienceContext {
@@ -50,7 +53,8 @@ export class WorkspaceExperienceResolverService {
     const entitlement = await this.entitlementService.getTenantEntitlement(input.tenantId);
     const workspace = await this.resolveWorkspace(input.tenantId, input.workspaceId);
     const workspaceKind = workspace?.legalEntity?.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-    const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
+    const defaults = this.templateService.getDefaultCapabilities(workspaceKind);
+    const capabilities = input.packageId ? operationalCapabilities(defaults) : defaults;
     const capabilityKeys = new Set(Object.keys(capabilities));
     const enabledCapabilities = new Set(
       Object.entries(capabilities)

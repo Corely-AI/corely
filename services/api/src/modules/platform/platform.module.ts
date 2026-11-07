@@ -21,6 +21,7 @@ import { MenuBuilderService } from "./application/services/menu-builder.service"
 import { DependencyResolverService } from "./application/services/dependency-resolver.service";
 import { WorkspaceTemplateService } from "./application/services/workspace-template.service";
 import { WorkspaceExperienceResolverService } from "./application/services/workspace-experience-resolver.service";
+import { OperationalPackageService } from "./application/services/operational-package.service";
 
 // Use Cases
 import { EnableAppUseCase } from "./application/use-cases/enable-app.usecase";
@@ -110,6 +111,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     DependencyResolverService,
     WorkspaceTemplateService,
     WorkspaceExperienceResolverService,
+    OperationalPackageService,
 
     // Use Cases
     EnableAppUseCase,

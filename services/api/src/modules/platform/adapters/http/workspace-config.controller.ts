@@ -21,7 +21,7 @@ import {
 import { toAllowedPermissionKeys } from "../../../../shared/permissions/effective-permissions";
 import { resolveRequestContext } from "../../../../shared/request-context";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
-import { GetMenuQuerySchema, type MenuScope } from "@corely/contracts";
+import { GetWorkspaceConfigQuerySchema } from "@corely/contracts";
 import { GetWorkspaceConfigUseCase } from "../../application/use-cases/get-workspace-config.usecase";
 
 @Controller("workspaces")
@@ -36,13 +36,16 @@ export class WorkspaceConfigController {
   @Get(":workspaceId/config")
   async getConfig(
     @Param("workspaceId") workspaceIdParam: string,
-    @Query("scope") scope: string | undefined,
+    @Query() query: Record<string, unknown>,
     @CurrentTenantId() tenantId: string,
     @CurrentUserId() userId: string,
     @CurrentRoleIds() roleIds: string[],
     @Req() req: Request
   ) {
-    const validatedScope = this.parseScope(scope);
+    const parsed = GetWorkspaceConfigQuerySchema.safeParse(query);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.message);
+    }
     if (!tenantId || !userId) {
       throw new BadRequestException("Missing tenant or user context");
     }
@@ -62,7 +65,8 @@ export class WorkspaceConfigController {
       userId,
       workspaceId,
       permissions,
-      scope: validatedScope,
+      scope: parsed.data.scope,
+      packageId: parsed.data.packageId,
       surfaceId: ctx.surfaceId,
       trustedSurfaceId: ctx.trustedSurfaceId,
       declaredSurfaceId: ctx.declaredSurfaceId,
@@ -70,13 +74,5 @@ export class WorkspaceConfigController {
       surfaceHeaderMismatch: ctx.surfaceHeaderMismatch,
       route: req.route?.path ?? req.originalUrl ?? req.url,
     });
-  }
-
-  private parseScope(scope: string | undefined): MenuScope {
-    const parsed = GetMenuQuerySchema.safeParse({ scope });
-    if (!parsed.success) {
-      throw new BadRequestException(parsed.error.message);
-    }
-    return parsed.data.scope;
   }
 }

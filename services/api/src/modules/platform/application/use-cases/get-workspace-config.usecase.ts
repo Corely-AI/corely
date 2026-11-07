@@ -12,6 +12,7 @@ import type {
   WorkspaceConfig,
   WorkspaceNavigationGroup,
   WorkspaceMembershipRole,
+  WorkspacePackageId,
 } from "@corely/contracts";
 import { MenuComposerService } from "../services/menu-composer.service";
 import { WorkspaceExperienceResolverService } from "../services/workspace-experience-resolver.service";
@@ -31,6 +32,7 @@ import {
 } from "../ports/tenant-app-install-repository.port";
 import { APP_REGISTRY_TOKEN, type AppRegistryPort } from "../ports/app-registry.port";
 import { randomUUID } from "crypto";
+import { OperationalPackageService } from "../services/operational-package.service";
 
 export interface GetWorkspaceConfigInput {
   tenantId: string;
@@ -44,6 +46,7 @@ export interface GetWorkspaceConfigInput {
   surfaceResolutionSource: SurfaceResolutionSource;
   surfaceHeaderMismatch: boolean;
   route: string;
+  packageId?: WorkspacePackageId;
 }
 
 @Injectable()
@@ -59,10 +62,17 @@ export class GetWorkspaceConfigUseCase {
     @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
     private readonly appInstallRepo: TenantAppInstallRepositoryPort,
     @Inject(APP_REGISTRY_TOKEN)
-    private readonly appRegistry: AppRegistryPort
+    private readonly appRegistry: AppRegistryPort,
+    private readonly operationalPackages: OperationalPackageService
   ) {}
 
   async execute(input: GetWorkspaceConfigInput): Promise<WorkspaceConfig> {
+    if (
+      input.packageId &&
+      (input.scope !== "web" || !["platform", "app"].includes(input.surfaceId))
+    ) {
+      throw new BadRequestException("The operational package uses the existing OpenBuk web client");
+    }
     const surfaceLogFields = buildSurfaceResolutionLogFields({
       requestContext: {
         surfaceId: input.surfaceId,
@@ -102,6 +112,7 @@ export class GetWorkspaceConfigUseCase {
       workspaceId: input.workspaceId,
       surfaceId: input.surfaceId,
       permissions: input.permissions,
+      packageId: input.packageId,
     });
 
     if (experience.surfaceId === "pos" && !experience.verticalId) {
@@ -146,11 +157,9 @@ export class GetWorkspaceConfigUseCase {
     const workspaceKind = experience.workspaceKind;
     const capabilities = experience.capabilities;
 
-    const installedDefaults = await this.ensureDefaultAppsInstalled(
-      input.tenantId,
-      input.userId,
-      workspaceKind
-    );
+    const installedDefaults =
+      !input.packageId &&
+      (await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind));
     if (installedDefaults) {
       experience = await this.experienceResolver.resolve({
         tenantId: input.tenantId,
@@ -161,17 +170,19 @@ export class GetWorkspaceConfigUseCase {
       });
     }
 
-    const menu = await this.menuComposer.composeMenuTree({
-      tenantId: input.tenantId,
-      userId: input.userId,
-      permissions: experience.permissions,
-      scope: input.scope,
-      surfaceId: experience.surfaceId,
-      verticalId: experience.verticalId,
-      entitlement: experience.entitlement,
-      capabilityFilter: experience.enabledCapabilities,
-      capabilityKeys: experience.capabilityKeys,
-    });
+    const menu = input.packageId
+      ? { groups: [] }
+      : await this.menuComposer.composeMenuTree({
+          tenantId: input.tenantId,
+          userId: input.userId,
+          permissions: experience.permissions,
+          scope: input.scope,
+          surfaceId: experience.surfaceId,
+          verticalId: experience.verticalId,
+          entitlement: experience.entitlement,
+          capabilityFilter: experience.enabledCapabilities,
+          capabilityKeys: experience.capabilityKeys,
+        });
 
     const membership = await this.workspaceRepo.getMembershipByUserAndWorkspace(
       input.workspaceId,
@@ -179,6 +190,9 @@ export class GetWorkspaceConfigUseCase {
     );
     const membershipRole = (membership?.role ?? "MEMBER") as WorkspaceMembershipRole;
     const isWorkspaceAdmin = membershipRole === "OWNER" || membershipRole === "ADMIN";
+    const operationalPackage = input.packageId
+      ? await this.operationalPackages.compose(experience, isWorkspaceAdmin)
+      : undefined;
 
     return {
       workspaceId: workspace.id,
@@ -191,13 +205,14 @@ export class GetWorkspaceConfigUseCase {
         groups: this.buildNavigationGroups(menu.groups),
       },
       home: {
-        widgets: this.templateService.getDefaultHomeWidgets(workspaceKind),
+        widgets: input.packageId ? [] : this.templateService.getDefaultHomeWidgets(workspaceKind),
       },
       currentUser: {
         membershipRole,
         isWorkspaceAdmin,
       },
       computedAt: new Date().toISOString(),
+      ...(operationalPackage ? { operationalPackage } : {}),
     };
   }
 
@@ -216,7 +231,8 @@ export class GetWorkspaceConfigUseCase {
     userId: string,
     workspaceKind: "PERSONAL" | "COMPANY"
   ): Promise<boolean> {
-    const currentInstalls = await this.appInstallRepo.listEnabledByTenant(tenantId);
+    // Existing disabled installs are explicit choices, not missing defaults.
+    const currentInstalls = await this.appInstallRepo.listByTenant(tenantId);
     const installed = new Set(currentInstalls.map((i) => i.appId));
     const defaultApps = this.templateService.getDefaultEnabledApps(workspaceKind);
     let installedAny = false;
