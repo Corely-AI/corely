@@ -5,6 +5,7 @@
 - Issue: [PLAT-01 / #301](https://github.com/Corely-AI/corely/issues/301).
 - Parent: [EP-PLATFORM / #282](https://github.com/Corely-AI/corely/issues/282).
 - Prerequisites #298 and #299 integrated through PRs #365 and #366.
+- Draft PR: [#369](https://github.com/Corely-AI/corely/pull/369).
 - Branch: `301-compose-operational-package`; PR base: `development`, verified
   remote `corely` (`Corely-AI/corely`). Inspected base:
   `1bdae26ddd43ac1d0e4bad0cd754139f7b2186b5`, 7 November 2026.
