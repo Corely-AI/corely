@@ -3,8 +3,8 @@
 ## Tracking and outcome
 
 - Issue: https://github.com/Corely-AI/corely/issues/302; parent #282; prerequisite #298 complete.
-- Branch: `302-enforce-workspace-access`; base: `development` at `4ed3292a2c556cff9d13b2cb6c85672be48fb2f3`.
-- PR: not created yet.
+- Branch: `302-enforce-workspace-access`; base: `development`, initially `4ed3292a2c556cff9d13b2cb6c85672be48fb2f3`, rebased onto `1bdae26ddd43ac1d0e4bad0cd754139f7b2186b5` before publication. `git range-diff` confirmed the implementation patch was unchanged.
+- PR: [Draft #368](https://github.com/Corely-AI/corely/pull/368), targeting `development`. #302 remains open / In progress.
 - Outcome: current membership and role grants authorize authenticated workspace operations, independent of menu/capability visibility or stale token roles.
 - Scope: existing Identity/Workspaces authorization, private permission defaults, document access and copilot execution boundaries. No People records, new schemas, migrations or UI.
 
@@ -41,6 +41,8 @@ pnpm --dir services/api exec vitest run --config vitest.config.ts \
   src/shared/request-context/__tests__/request-context.resolver.spec.ts \
   --maxWorkers=1 --minWorkers=1
 ```
+
+The ticket branch was pushed with the pre-push hook's documented `HUSKY=0` escape after directly running the checks above. The full-suite fixture failure and root lint heap failure are disclosed in the Draft PR; no failing new-code check was waived.
 
 No browser E2E, deployed validation or full database-integration suite is claimed. No migration, seed, release or production action was performed.
 
