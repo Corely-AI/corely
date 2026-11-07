@@ -17,6 +17,7 @@ Implementation evidence, target design and unvalidated hypotheses are kept separ
 - [Corely strategy](./products/corely/README.md)
 - [Long-term 32-app map](./products/corely/app-catalog.md) — not a delivery or availability commitment
 - [Focused launch proposal](./products/corely/launch-plan.md) — Schedule, Team, Daily Work
+- [Pilot booking decision](./products/corely/pilot-booking-decision.md) — OpenBuk replacement, staff surface and cutover gates
 - [P1/P2 backlog package](./products/corely/p1-p2-backlog/README.md) — issue specifications and live project reconciliation
 - [P1/P2 capability reuse inventory](./products/corely/p1-p2-backlog/capability-reuse-inventory.md) — current owners, evidence and residual gaps for all 68 features
 - [Repository alignment and discrepancies](./products/corely/repository-alignment.md)
