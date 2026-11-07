@@ -1,0 +1,1534 @@
+{
+  "read_only_reconciliation": true,
+  "inspected_local_head": "53381f420d5fa5de1f3d7c4cc9ee6d76803d8e89",
+  "remote_default_head": "26d611e510c785ccad78341f6564ecdcf05de770",
+  "repository_issues": 77,
+  "repository_prs": 203,
+  "project_items_including_archived": 73,
+  "project_items_archived": 0,
+  "create": 84,
+  "completed_coverage": {
+    "STR-02": "https://github.com/Corely-AI/corely/commit/26d611e510c785ccad78341f6564ecdcf05de770"
+  },
+  "preserve_existing_issues": [130, 215, 93, 52, 112, 111, 196, 141],
+  "field_policy": "New items Backlog; native Feature type; epic label; namespaced roadmap scope labels; leave existing Priority/Size/Estimate/dates unset. P2 conditional.",
+  "rows": [
+    {
+      "key": "EP-STRATEGY",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "STR-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "STR-02",
+      "action": "no-issue",
+      "disposition": "covered-by-completed-work",
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "STR-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "STR-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-PLATFORM",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      }
+    },
+    {
+      "key": "PLAT-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      }
+    },
+    {
+      "key": "PLAT-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      }
+    },
+    {
+      "key": "PLAT-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      }
+    },
+    {
+      "key": "PLAT-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      }
+    },
+    {
+      "key": "EP-PEOPLE",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      }
+    },
+    {
+      "key": "PEOPLE-01",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      }
+    },
+    {
+      "key": "PEOPLE-02",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      }
+    },
+    {
+      "key": "PEOPLE-03",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      }
+    },
+    {
+      "key": "PEOPLE-04",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      }
+    },
+    {
+      "key": "EP-REQUESTS",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      }
+    },
+    {
+      "key": "REQ-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      }
+    },
+    {
+      "key": "REQ-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      }
+    },
+    {
+      "key": "REQ-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      }
+    },
+    {
+      "key": "EP-TASKS",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "TASK-01",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "TASK-02",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "TASK-03",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "TASK-04",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-APPOINTMENTS",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "APT-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "APT-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "APT-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "APT-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "APT-05",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "APT-06",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "APT-07",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      }
+    },
+    {
+      "key": "EP-KNOWLEDGE",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      }
+    },
+    {
+      "key": "KNOW-01",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      }
+    },
+    {
+      "key": "KNOW-02",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      }
+    },
+    {
+      "key": "KNOW-03",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      }
+    },
+    {
+      "key": "EP-CONNECTED",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      }
+    },
+    {
+      "key": "OPS-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      }
+    },
+    {
+      "key": "OPS-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      }
+    },
+    {
+      "key": "OPS-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      }
+    },
+    {
+      "key": "OPS-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      }
+    },
+    {
+      "key": "OPS-05",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      }
+    },
+    {
+      "key": "EP-RELEASE",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "REL-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "REL-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "REL-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "REL-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-SHIFTS",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "SHIFT-01",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "SHIFT-02",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "SHIFT-03",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "SHIFT-04",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-TIME",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "TIME-01",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "TIME-02",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "TIME-03",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-EXPENSES",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EXP-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EXP-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EXP-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EXP-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-ASSETS",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "ASSET-01",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "ASSET-02",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "ASSET-03",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-HELPDESK",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      }
+    },
+    {
+      "key": "HELP-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      }
+    },
+    {
+      "key": "HELP-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      }
+    },
+    {
+      "key": "HELP-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      }
+    },
+    {
+      "key": "HELP-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      }
+    },
+    {
+      "key": "EP-INVOICES",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      }
+    },
+    {
+      "key": "INV-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      }
+    },
+    {
+      "key": "INV-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      }
+    },
+    {
+      "key": "INV-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      }
+    },
+    {
+      "key": "INV-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      }
+    },
+    {
+      "key": "EP-BILLS",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BILL-01",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BILL-02",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BILL-03",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BILL-04",
+      "action": "create",
+      "disposition": "partial-gap",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "EP-BUDGETS",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BUD-01",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BUD-02",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BUD-03",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      }
+    },
+    {
+      "key": "BUD-04",
+      "action": "create",
+      "disposition": "create",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      }
+    }
+  ]
+}

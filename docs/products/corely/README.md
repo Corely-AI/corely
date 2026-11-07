@@ -3,6 +3,8 @@
 Direction recorded 2026-11-07. This defines product intent, not delivered
 capabilities. See [repository alignment](repository-alignment.md), the long-term
 [catalog](app-catalog.md), and the focused [launch proposal](launch-plan.md).
+The [P1/P2 backlog package](p1-p2-backlog/README.md) records proposed slices and
+their live issue mappings; P2 implementation remains conditional.
 
 ## Positioning
 

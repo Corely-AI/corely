@@ -12,6 +12,7 @@ Implementation evidence, target design and unvalidated hypotheses are kept separ
 - [Corely strategy](./products/corely/README.md)
 - [Long-term 32-app map](./products/corely/app-catalog.md) — not a delivery or availability commitment
 - [Focused launch proposal](./products/corely/launch-plan.md) — Schedule, Team, Daily Work
+- [P1/P2 backlog package](./products/corely/p1-p2-backlog/README.md) — issue specifications and live project reconciliation
 - [Repository alignment and discrepancies](./products/corely/repository-alignment.md)
 - [Connected-app architecture and ownership](./architecture/connected-apps.md)
 - [Positioning decision](./decisions/ADR-0002-connected-operations-apps.md)

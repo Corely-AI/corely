@@ -1,0 +1,4318 @@
+{
+  "metadata": {
+    "namespace": "corely-internal-ops-v1",
+    "project_url": "https://github.com/orgs/Corely-AI/projects/1",
+    "project_id": "PVT_kwDODwg8Ws4BLrxq",
+    "inspected_on": "2026-11-07",
+    "local_branch": "development",
+    "local_commit": "53381f420d5fa5de1f3d7c4cc9ee6d76803d8e89",
+    "remote_default_commit": "26d611e510c785ccad78341f6564ecdcf05de770",
+    "tests": "Static source inspection only; no application tests run",
+    "field_policy": "Backlog for new issues; roadmap:p1/p2 scope labels; native Feature issue type; type:epic label; no urgency/size/date/estimate assignment"
+  },
+  "issues": [
+    {
+      "key": "EP-STRATEGY",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 281,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/281",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTrwBQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0XK0",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "status": "Backlog",
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:strategy"],
+        "issue_type": null,
+        "parent": null
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "STR-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 298,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/298",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTs1wQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YNU",
+      "parent_key": "EP-STRATEGY",
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:strategy"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/281",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/281",
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "STR-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "covered-by-completed-work",
+      "action": "no-issue",
+      "issue_number": null,
+      "issue_url": null,
+      "issue_node_id": null,
+      "project_item_id": null,
+      "parent_key": "EP-STRATEGY",
+      "dependency_keys": ["STR-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": "https://github.com/Corely-AI/corely/commit/26d611e510c785ccad78341f6564ecdcf05de770",
+      "fields_applied": {},
+      "verified": true,
+      "error": null
+    },
+    {
+      "key": "STR-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 299,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/299",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTs5jQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YQE",
+      "parent_key": "EP-STRATEGY",
+      "dependency_keys": ["STR-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:strategy"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/281",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/281",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/298"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "STR-04",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 300,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/300",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTs9Jw",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YSQ",
+      "parent_key": "EP-STRATEGY",
+      "dependency_keys": ["STR-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+        "paths": [
+          "AGENTS.md",
+          "README.md",
+          "docs/products/corely/README.md",
+          "docs/products/corely/app-catalog.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:strategy"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/281",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/281",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/299"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-PLATFORM",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 282,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/282",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTr7MA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0XWg",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:platform"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "PLAT-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 301,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/301",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtBQQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YU8",
+      "parent_key": "EP-PLATFORM",
+      "dependency_keys": ["STR-01", "STR-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:platform"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/282",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/282",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/299"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "PLAT-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 302,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/302",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtFPQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YXc",
+      "parent_key": "EP-PLATFORM",
+      "dependency_keys": ["STR-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:platform"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/282",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/282",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/298"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "PLAT-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 303,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/303",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtIoA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YbE",
+      "parent_key": "EP-PLATFORM",
+      "dependency_keys": ["PLAT-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:platform"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/282",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/282",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/301",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "PLAT-04",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 304,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/304",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtM0w",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Yes",
+      "parent_key": "EP-PLATFORM",
+      "dependency_keys": ["PLAT-01", "PLAT-02", "STR-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+        "paths": [
+          "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+          "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+          "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "packages/contracts/src/platform/app-manifest.schema.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+          "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"
+        ],
+        "related_issues": [112, 111, 170]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:platform"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/282",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/282",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/301",
+        "https://github.com/Corely-AI/corely/issues/302",
+        "https://github.com/Corely-AI/corely/issues/299"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-PEOPLE",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [2],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 283,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/283",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTr_Jg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Xak",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:people"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "PEOPLE-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [2],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 305,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/305",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtQKQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Yic",
+      "parent_key": "EP-PEOPLE",
+      "dependency_keys": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:people"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/283",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/283",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "PEOPLE-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [2],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 306,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/306",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtU2w",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Ylg",
+      "parent_key": "EP-PEOPLE",
+      "dependency_keys": ["PEOPLE-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:people"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/283",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/283",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/305"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "PEOPLE-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [2],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 307,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/307",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtaNg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Ypo",
+      "parent_key": "EP-PEOPLE",
+      "dependency_keys": ["PEOPLE-01", "PEOPLE-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:people"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/283",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/283",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/305",
+        "https://github.com/Corely-AI/corely/issues/306"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "PEOPLE-04",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [2],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 308,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/308",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTte_Q",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YtQ",
+      "parent_key": "EP-PEOPLE",
+      "dependency_keys": ["PEOPLE-01", "PLAT-04", "TASK-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+        "paths": [
+          "packages/data/prisma/schema/10_identity.prisma",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "packages/data/prisma/schema/45_party_crm.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts"
+        ],
+        "related_issues": [215, 111]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:people"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/283",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/283",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/305",
+        "https://github.com/Corely-AI/corely/issues/304",
+        "https://github.com/Corely-AI/corely/issues/312"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-REQUESTS",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [4],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 284,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/284",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsC8g",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0XfY",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:requests"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "REQ-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [4],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 309,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/309",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtjZA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Yw8",
+      "parent_key": "EP-REQUESTS",
+      "dependency_keys": ["PLAT-02", "PEOPLE-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:requests"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/284",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/284",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/302",
+        "https://github.com/Corely-AI/corely/issues/305"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "REQ-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [4],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 310,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/310",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtoZQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Y0c",
+      "parent_key": "EP-REQUESTS",
+      "dependency_keys": ["REQ-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:requests"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/284",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/284",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/309"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "REQ-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [4],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 311,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/311",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTttQQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Y4I",
+      "parent_key": "EP-REQUESTS",
+      "dependency_keys": ["REQ-02", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+        "paths": [
+          "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts",
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "packages/contracts/src/approvals/approval.schemas.ts",
+          "packages/data/prisma/schema/66_forms.prisma",
+          "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": [52]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:requests"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/284",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/284",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/310",
+        "https://github.com/Corely-AI/corely/issues/303"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-TASKS",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [1],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 285,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/285",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsGtg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0XkI",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:tasks"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "TASK-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [1],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 312,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/312",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTtyXA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Y8E",
+      "parent_key": "EP-TASKS",
+      "dependency_keys": ["STR-01", "PEOPLE-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:tasks"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/285",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/285",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/305",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "TASK-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [1],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 313,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/313",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTt3Eg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Y_8",
+      "parent_key": "EP-TASKS",
+      "dependency_keys": ["TASK-01", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:tasks"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/285",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/285",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/312",
+        "https://github.com/Corely-AI/corely/issues/303"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "TASK-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [1],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 314,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/314",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTt7vg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZCw",
+      "parent_key": "EP-TASKS",
+      "dependency_keys": ["TASK-01", "PEOPLE-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:tasks"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/285",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/285",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/312",
+        "https://github.com/Corely-AI/corely/issues/306"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "TASK-04",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [1],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 315,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/315",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuA9Q",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZGo",
+      "parent_key": "EP-TASKS",
+      "dependency_keys": ["TASK-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+        "paths": [
+          "services/api/src/modules/workflow/application/workflow.service.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "packages/core/src",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:tasks"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/285",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/285",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/312"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-APPOINTMENTS",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 286,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/286",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsKSg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Xng",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:appointments"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "APT-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 316,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/316",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuFEQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZJ4",
+      "parent_key": "EP-APPOINTMENTS",
+      "dependency_keys": ["STR-01", "PEOPLE-01", "STR-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:appointments"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/286",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/286",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/305",
+        "https://github.com/Corely-AI/corely/issues/299"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "APT-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 317,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/317",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuJsA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZNU",
+      "parent_key": "EP-APPOINTMENTS",
+      "dependency_keys": ["APT-01", "PEOPLE-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:appointments"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/286",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/286",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/316",
+        "https://github.com/Corely-AI/corely/issues/306"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "APT-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 318,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/318",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuNNg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZQU",
+      "parent_key": "EP-APPOINTMENTS",
+      "dependency_keys": ["APT-02", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:appointments"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/286",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/286",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/317",
+        "https://github.com/Corely-AI/corely/issues/303"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "APT-04",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 319,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/319",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuQtQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZSs",
+      "parent_key": "EP-APPOINTMENTS",
+      "dependency_keys": ["APT-02", "STR-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:appointments"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/286",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/286",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/317",
+        "https://github.com/Corely-AI/corely/issues/299"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "APT-05",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 320,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/320",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuVdw",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZWw",
+      "parent_key": "EP-APPOINTMENTS",
+      "dependency_keys": ["APT-03", "APT-04"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:appointments"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/286",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/286",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/318",
+        "https://github.com/Corely-AI/corely/issues/319"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "APT-06",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 321,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/321",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuaLQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Za4",
+      "parent_key": "EP-APPOINTMENTS",
+      "dependency_keys": ["STR-03", "APT-02", "PLAT-04"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:appointments"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/286",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/286",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/299",
+        "https://github.com/Corely-AI/corely/issues/317",
+        "https://github.com/Corely-AI/corely/issues/304"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "APT-07",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [3],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 322,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/322",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTudrg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Zd0",
+      "parent_key": "EP-APPOINTMENTS",
+      "dependency_keys": ["APT-04"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+          "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+          "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+          "services/api/src/modules/booking/booking.manifest.ts",
+          "services/api/src/modules/booking/http/openbuk.controller.ts",
+          "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+          "packages/contracts/src/booking",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "apps/openbuk-web/src/app/app.tsx",
+          "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+          "docs/products/openbuk/README.md"
+        ],
+        "related_issues": [215]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:appointments"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/286",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/286",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/319"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-KNOWLEDGE",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [5],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 287,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/287",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsOgQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0XrI",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:knowledge"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "KNOW-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [5],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 323,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/323",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuh1g",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZhE",
+      "parent_key": "EP-KNOWLEDGE",
+      "dependency_keys": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:knowledge"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/287",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/287",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "KNOW-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [5],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 324,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/324",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTul3A",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ZmM",
+      "parent_key": "EP-KNOWLEDGE",
+      "dependency_keys": ["KNOW-01", "TASK-04", "REQ-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:knowledge"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/287",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/287",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/323",
+        "https://github.com/Corely-AI/corely/issues/315",
+        "https://github.com/Corely-AI/corely/issues/309"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "KNOW-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [5],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 325,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/325",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTupzQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Zp8",
+      "parent_key": "EP-KNOWLEDGE",
+      "dependency_keys": ["KNOW-02", "OPS-01"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+        "paths": [
+          "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+          "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+          "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+          "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+        ],
+        "related_issues": [130, 131]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:knowledge"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/287",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/287",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/324",
+        "https://github.com/Corely-AI/corely/issues/326"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-CONNECTED",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 288,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/288",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsSww",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Xug",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:connected"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "OPS-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 326,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/326",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuuHQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Zus",
+      "parent_key": "EP-CONNECTED",
+      "dependency_keys": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:connected"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/288",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/288",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "OPS-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 327,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/327",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTuyWg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Zzc",
+      "parent_key": "EP-CONNECTED",
+      "dependency_keys": ["REQ-02", "PEOPLE-03", "APT-02", "TASK-04"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:connected"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/288",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/288",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/310",
+        "https://github.com/Corely-AI/corely/issues/307",
+        "https://github.com/Corely-AI/corely/issues/317",
+        "https://github.com/Corely-AI/corely/issues/315"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "OPS-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 328,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/328",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTu25w",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Z4U",
+      "parent_key": "EP-CONNECTED",
+      "dependency_keys": ["TASK-02", "REQ-03", "APT-03", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:connected"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/288",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/288",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/313",
+        "https://github.com/Corely-AI/corely/issues/311",
+        "https://github.com/Corely-AI/corely/issues/318",
+        "https://github.com/Corely-AI/corely/issues/303"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "OPS-04",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 329,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/329",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTu6ZQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Z8c",
+      "parent_key": "EP-CONNECTED",
+      "dependency_keys": ["OPS-01", "OPS-02", "OPS-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:connected"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/288",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/288",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/326",
+        "https://github.com/Corely-AI/corely/issues/327",
+        "https://github.com/Corely-AI/corely/issues/328"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "OPS-05",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 330,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/330",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTu-nA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0aCo",
+      "parent_key": "EP-CONNECTED",
+      "dependency_keys": ["OPS-01", "OPS-02", "OPS-03", "APT-05"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+        "paths": [
+          "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+          "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+          "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+          "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+          "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+          "docs/ai/ai-copilot.md"
+        ],
+        "related_issues": [185, 196]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:connected"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/288",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/288",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/326",
+        "https://github.com/Corely-AI/corely/issues/327",
+        "https://github.com/Corely-AI/corely/issues/328",
+        "https://github.com/Corely-AI/corely/issues/320"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-RELEASE",
+      "type": "Epic",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 289,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/289",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsWBQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0Xyk",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "type:epic", "area:release"],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "REL-01",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 331,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/331",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvCXQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0aGo",
+      "parent_key": "EP-RELEASE",
+      "dependency_keys": [
+        "PLAT-04",
+        "PEOPLE-04",
+        "REQ-03",
+        "TASK-03",
+        "KNOW-03",
+        "OPS-04",
+        "OPS-05",
+        "APT-06",
+        "APT-07"
+      ],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:release"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/289",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/289",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/304",
+        "https://github.com/Corely-AI/corely/issues/308",
+        "https://github.com/Corely-AI/corely/issues/311",
+        "https://github.com/Corely-AI/corely/issues/314",
+        "https://github.com/Corely-AI/corely/issues/325",
+        "https://github.com/Corely-AI/corely/issues/329",
+        "https://github.com/Corely-AI/corely/issues/330",
+        "https://github.com/Corely-AI/corely/issues/321",
+        "https://github.com/Corely-AI/corely/issues/322"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "REL-02",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 332,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/332",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvGiQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0aLs",
+      "parent_key": "EP-RELEASE",
+      "dependency_keys": ["PLAT-03", "APT-04", "TASK-02", "REQ-03", "KNOW-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:release"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/289",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/289",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/303",
+        "https://github.com/Corely-AI/corely/issues/319",
+        "https://github.com/Corely-AI/corely/issues/313",
+        "https://github.com/Corely-AI/corely/issues/311",
+        "https://github.com/Corely-AI/corely/issues/324"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "REL-03",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 333,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/333",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvKfQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0aQc",
+      "parent_key": "EP-RELEASE",
+      "dependency_keys": ["PLAT-02", "APT-05", "APT-07", "OPS-02"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:release"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/289",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/289",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/302",
+        "https://github.com/Corely-AI/corely/issues/320",
+        "https://github.com/Corely-AI/corely/issues/322",
+        "https://github.com/Corely-AI/corely/issues/327"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "REL-04",
+      "type": "Feature",
+      "priority": "P1",
+      "apps": [],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 334,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/334",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvOOg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0aVU",
+      "parent_key": "EP-RELEASE",
+      "dependency_keys": ["STR-04", "REL-01", "REL-02", "REL-03"],
+      "conditional_implementation_gate": null,
+      "evidence": {
+        "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+        "paths": [
+          "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+          "apps/e2e/tests/invoices.spec.ts",
+          "apps/e2e/tests/expenses.spec.ts",
+          "docs/products/openbuk/README.md",
+          "docs/products/corely/launch-plan.md",
+          "docs/products/corely/repository-alignment.md"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p1", "area:release"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/289",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/289",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/300",
+        "https://github.com/Corely-AI/corely/issues/331",
+        "https://github.com/Corely-AI/corely/issues/332",
+        "https://github.com/Corely-AI/corely/issues/333"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-SHIFTS",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [11],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 290,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/290",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsZLw",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0X04",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:shifts"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "SHIFT-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [11],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 335,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/335",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvSHg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0abE",
+      "parent_key": "EP-SHIFTS",
+      "dependency_keys": ["PEOPLE-02", "STR-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:shifts"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/290",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/290",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/306",
+        "https://github.com/Corely-AI/corely/issues/298"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "SHIFT-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [11],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 336,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/336",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvXLA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0agE",
+      "parent_key": "EP-SHIFTS",
+      "dependency_keys": ["SHIFT-01", "PEOPLE-03"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:shifts"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/290",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/290",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/335",
+        "https://github.com/Corely-AI/corely/issues/307"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "SHIFT-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [11],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 337,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/337",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTva0Q",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ajg",
+      "parent_key": "EP-SHIFTS",
+      "dependency_keys": ["SHIFT-02", "APT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:shifts"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/290",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/290",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/336",
+        "https://github.com/Corely-AI/corely/issues/317"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "SHIFT-04",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [11],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 338,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/338",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvehg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0ans",
+      "parent_key": "EP-SHIFTS",
+      "dependency_keys": ["SHIFT-03", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+        "paths": [
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/booking/domain/openbuk-availability.ts",
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:shifts"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/290",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/290",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/337",
+        "https://github.com/Corely-AI/corely/issues/310"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-TIME",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [12],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 291,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/291",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTscuw",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0X5s",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:time"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "TIME-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [12],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 339,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/339",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvieQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0arA",
+      "parent_key": "EP-TIME",
+      "dependency_keys": ["STR-01", "PEOPLE-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:time"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/291",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/291",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/305"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "TIME-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [12],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 340,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/340",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvnDA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0auM",
+      "parent_key": "EP-TIME",
+      "dependency_keys": ["TIME-01", "PLAT-02", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:time"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/291",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/291",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/339",
+        "https://github.com/Corely-AI/corely/issues/302",
+        "https://github.com/Corely-AI/corely/issues/310"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "TIME-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [12],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 341,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/341",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvqww",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0axc",
+      "parent_key": "EP-TIME",
+      "dependency_keys": ["TIME-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+        "paths": [
+          "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+          "packages/data/prisma/schema/20_workspaces.prisma",
+          "services/api/src/modules/integrations",
+          "services/api/src/modules/approvals/application/approval-gate.service.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:time"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/291",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/291",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/340"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-EXPENSES",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [16],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 292,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/292",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsgJw",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0X80",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:expenses"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "EXP-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [16],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 342,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/342",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvuOg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0a0Y",
+      "parent_key": "EP-EXPENSES",
+      "dependency_keys": ["STR-01", "PEOPLE-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:expenses"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/292",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/292",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/305",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EXP-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [16],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 343,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/343",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTvygA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0a3o",
+      "parent_key": "EP-EXPENSES",
+      "dependency_keys": ["EXP-01", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:expenses"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/292",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/292",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/342",
+        "https://github.com/Corely-AI/corely/issues/310"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EXP-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [16],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 344,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/344",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTv28A",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0a8Y",
+      "parent_key": "EP-EXPENSES",
+      "dependency_keys": ["EXP-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:expenses"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/292",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/292",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/343"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EXP-04",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [16],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 345,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/345",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTv7nQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0a_8",
+      "parent_key": "EP-EXPENSES",
+      "dependency_keys": ["EXP-01", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+        "paths": [
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/contracts/src/expenses",
+          "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+          "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+          "services/api/src/modules/expenses/expenses.manifest.ts",
+          "apps/web/src/modules/expenses",
+          "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+          "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+          "apps/e2e/tests/expenses.spec.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:expenses"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/292",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/292",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/342",
+        "https://github.com/Corely-AI/corely/issues/326"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-ASSETS",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [18],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 293,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/293",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsjvA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0X_Y",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:assets"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "ASSET-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [18],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 346,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/346",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwAlg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bEY",
+      "parent_key": "EP-ASSETS",
+      "dependency_keys": ["STR-01", "PEOPLE-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:assets"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/293",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/293",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/305",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "ASSET-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [18],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 347,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/347",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwE5w",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bKo",
+      "parent_key": "EP-ASSETS",
+      "dependency_keys": ["ASSET-01", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:assets"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/293",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/293",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/346",
+        "https://github.com/Corely-AI/corely/issues/310"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "ASSET-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [18],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 348,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/348",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwJ9A",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bNc",
+      "parent_key": "EP-ASSETS",
+      "dependency_keys": ["ASSET-02", "TASK-04", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+        "paths": [
+          "packages/data/prisma/schema/71_inventory.prisma",
+          "packages/data/prisma/schema/83_booking.prisma",
+          "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+          "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:assets"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/293",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/293",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/347",
+        "https://github.com/Corely-AI/corely/issues/315",
+        "https://github.com/Corely-AI/corely/issues/326"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-HELPDESK",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [21],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 294,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/294",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsnqg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YCo",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:helpdesk"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "HELP-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [21],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 349,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/349",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwN3w",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bQ0",
+      "parent_key": "EP-HELPDESK",
+      "dependency_keys": ["STR-01", "PLAT-02", "PEOPLE-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:helpdesk"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/294",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/294",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/302",
+        "https://github.com/Corely-AI/corely/issues/305"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "HELP-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [21],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 350,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/350",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwSdg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bUI",
+      "parent_key": "EP-HELPDESK",
+      "dependency_keys": ["HELP-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:helpdesk"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/294",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/294",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/349"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "HELP-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [21],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 351,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/351",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwXqA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bZU",
+      "parent_key": "EP-HELPDESK",
+      "dependency_keys": ["HELP-02", "REQ-02", "TASK-04"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:helpdesk"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/294",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/294",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/350",
+        "https://github.com/Corely-AI/corely/issues/310",
+        "https://github.com/Corely-AI/corely/issues/315"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "HELP-04",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [21],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 352,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/352",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwcLA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bdg",
+      "parent_key": "EP-HELPDESK",
+      "dependency_keys": ["HELP-02", "KNOW-03", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+        "paths": [
+          "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+          "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+          "packages/contracts/src/issues/issue.types.ts",
+          "packages/data/prisma/schema/77_issues.prisma",
+          "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+          "services/api/src/modules/issues/__tests__/issue-rules.spec.ts"
+        ],
+        "related_issues": [93]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:helpdesk"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/294",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/294",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/350",
+        "https://github.com/Corely-AI/corely/issues/325",
+        "https://github.com/Corely-AI/corely/issues/326"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-INVOICES",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [26],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 295,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/295",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsrIg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YFk",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:invoices"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "INV-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [26],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 353,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/353",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwg1Q",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0biE",
+      "parent_key": "EP-INVOICES",
+      "dependency_keys": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:invoices"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/295",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/295",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "INV-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [26],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 354,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/354",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwlbQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0blk",
+      "parent_key": "EP-INVOICES",
+      "dependency_keys": ["INV-01", "APT-03", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:invoices"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/295",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/295",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/353",
+        "https://github.com/Corely-AI/corely/issues/318",
+        "https://github.com/Corely-AI/corely/issues/326"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "INV-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [26],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 355,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/355",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwqPA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bpQ",
+      "parent_key": "EP-INVOICES",
+      "dependency_keys": ["INV-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:invoices"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/295",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/295",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/353"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "INV-04",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [26],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 356,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/356",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTwwDg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0buc",
+      "parent_key": "EP-INVOICES",
+      "dependency_keys": ["INV-01", "INV-03"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+        "paths": [
+          "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+          "packages/contracts/src/invoices",
+          "packages/data/prisma/schema/60_billing.prisma",
+          "apps/web/src/modules/invoices",
+          "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+          "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+          "apps/e2e/tests/invoices.spec.ts"
+        ],
+        "related_issues": [141]
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:invoices"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/295",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/295",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/353",
+        "https://github.com/Corely-AI/corely/issues/355"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-BILLS",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [27],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 296,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/296",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsumA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YIY",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:bills"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "BILL-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [27],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 357,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/357",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTw1ZA",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0bys",
+      "parent_key": "EP-BILLS",
+      "dependency_keys": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:bills"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/296",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/296",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/298",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "BILL-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [27],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 358,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/358",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTw6uQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0b3U",
+      "parent_key": "EP-BILLS",
+      "dependency_keys": ["BILL-01", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:bills"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/296",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/296",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/357",
+        "https://github.com/Corely-AI/corely/issues/326"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "BILL-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [27],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 359,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/359",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTw_6w",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0b8A",
+      "parent_key": "EP-BILLS",
+      "dependency_keys": ["BILL-01", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:bills"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/296",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/296",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/357",
+        "https://github.com/Corely-AI/corely/issues/310"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "BILL-04",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [27],
+      "disposition": "partial-gap",
+      "action": "create",
+      "issue_number": 360,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/360",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTxEwQ",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0cAQ",
+      "parent_key": "EP-BILLS",
+      "dependency_keys": ["BILL-03"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+        "paths": [
+          "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+          "services/api/src/modules/purchasing/purchasing.manifest.ts",
+          "packages/contracts/src/purchasing",
+          "packages/data/prisma/schema/69_purchasing.prisma",
+          "apps/web/src/modules/purchasing",
+          "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:bills"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/296",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/296",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/359"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "EP-BUDGETS",
+      "type": "Epic",
+      "priority": "P2",
+      "apps": [28],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 297,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/297",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTsx9w",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0YLE",
+      "parent_key": null,
+      "dependency_keys": [],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": [
+          "initiative:internal-ops-v1",
+          "roadmap:p2",
+          "type:epic",
+          "conditional",
+          "area:budgets"
+        ],
+        "issue_type": null,
+        "parent": null,
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": null,
+      "dependency_urls": [],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": null
+      }
+    },
+    {
+      "key": "BUD-01",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [28],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 361,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/361",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTxKVg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0cE4",
+      "parent_key": "EP-BUDGETS",
+      "dependency_keys": ["STR-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:budgets"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/297",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/297",
+      "dependency_urls": ["https://github.com/Corely-AI/corely/issues/298"],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "BUD-02",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [28],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 362,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/362",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTxPRg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0cH0",
+      "parent_key": "EP-BUDGETS",
+      "dependency_keys": ["BUD-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:budgets"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/297",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/297",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/361",
+        "https://github.com/Corely-AI/corely/issues/302"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "BUD-03",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [28],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 363,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/363",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTxTcw",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0cLI",
+      "parent_key": "EP-BUDGETS",
+      "dependency_keys": ["BUD-01", "BUD-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:budgets"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/297",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/297",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/361",
+        "https://github.com/Corely-AI/corely/issues/362"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    },
+    {
+      "key": "BUD-04",
+      "type": "Feature",
+      "priority": "P2",
+      "apps": [28],
+      "disposition": "create",
+      "action": "create",
+      "issue_number": 364,
+      "issue_url": "https://github.com/Corely-AI/corely/issues/364",
+      "issue_node_id": "I_kwDOQp5JFM8AAAABdTxYgg",
+      "project_item_id": "PVTI_lADODwg8Ws4BLrxqzhG0cPY",
+      "parent_key": "EP-BUDGETS",
+      "dependency_keys": ["BUD-03", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "evidence": {
+        "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+        "paths": [
+          "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+          "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+          "packages/contracts/src/reporting",
+          "packages/data/prisma/schema/65_expenses.prisma",
+          "packages/data/prisma/schema/69_purchasing.prisma"
+        ],
+        "related_issues": []
+      },
+      "coverage_url": null,
+      "fields_applied": {
+        "labels": ["initiative:internal-ops-v1", "roadmap:p2", "conditional", "area:budgets"],
+        "issue_type": "Feature",
+        "parent": "https://github.com/Corely-AI/corely/issues/297",
+        "status": "Backlog"
+      },
+      "verified": true,
+      "error": null,
+      "parent_url": "https://github.com/Corely-AI/corely/issues/297",
+      "dependency_urls": [
+        "https://github.com/Corely-AI/corely/issues/363",
+        "https://github.com/Corely-AI/corely/issues/326"
+      ],
+      "verification": {
+        "body": true,
+        "project_membership": true,
+        "status": "Backlog",
+        "labels": true,
+        "parent": true,
+        "dependencies": true,
+        "native_issue_type": "Feature"
+      }
+    }
+  ]
+}
