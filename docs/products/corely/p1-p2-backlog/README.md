@@ -5,6 +5,10 @@ It does not itself create GitHub issues or change the repository.
 
 ## Live reconciliation
 
+The [STR-01 capability reuse inventory](capability-reuse-inventory.md) maps all 13 apps and
+68 feature keys to existing owners/candidates, source evidence, closure reasons and residual gaps.
+Its [structured view](capability-reuse-inventory.json) is static evidence, not a readiness claim.
+
 Imported on 7 November 2026 for the existing [Corely organization project](https://github.com/orgs/Corely-AI/projects/1/views/1).
 The source specification contains 85 logical entries. The import creates 84 repository
 issues and maps `STR-02` to the existing [documentation alignment commit](https://github.com/Corely-AI/corely/commit/26d611e510c785ccad78341f6564ecdcf05de770).

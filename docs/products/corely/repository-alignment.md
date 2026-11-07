@@ -1,5 +1,9 @@
 # Repository alignment and evidence
 
+For the focused P1/P2 feature breakdown, see the newer
+[STR-01 reuse inventory](p1-p2-backlog/capability-reuse-inventory.md). It preserves this 32-app
+alignment and adds source/issue evidence and residual gaps for all 68 feature keys.
+
 ## Inspection metadata and limits
 
 - Initial inspection on **2026-11-07**, branch **`development`**, commit

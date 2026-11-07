@@ -1,0 +1,3007 @@
+{
+  "metadata": {
+    "issue": "https://github.com/Corely-AI/corely/issues/298",
+    "reviewed_on": "2026-11-07",
+    "source_branch": "development",
+    "source_commit": "fb7677cbc31715b6bebefe5c6c1f2d838d6be198",
+    "implementation_branch": "298-map-capabilities-and-reuse",
+    "scope": "Static P1/P2 reuse inventory, not runtime implementation or production readiness",
+    "repository_issue_count": 161,
+    "repository_pr_record_count": 203,
+    "issue_pagination": "REST --paginate exhausted; open and closed included; PRs excluded from issue counts",
+    "recent_issue_comments_since_2026_11_07": 0,
+    "tests": "Source/test assertions inspected; no application tests run for STR-01",
+    "source_policy": "Directory presence is inventory evidence only; selected implementation paths were inspected, not every file. Absence claims are restricted to tracked module/contract/UI/model inventories. External integrations, effective production configuration and customer decisions remain unknown."
+  },
+  "status_definitions": {
+    "code-present": "Concrete implementation for part of the named capability, not a complete journey or readiness rating",
+    "partial": "Adjacent/shared or incomplete implementation; exact target behavior not established",
+    "documented-only": "Target described in strategy/architecture without a dedicated implementation identified in reviewed inventories",
+    "not-found-in-reviewed-scope": "No dedicated target owner/model/route identified in scoped tracked inventories; not global absence",
+    "unknown": "Insufficient execution/operational evidence; a verification task must supply it"
+  },
+  "apps": [
+    {
+      "catalog_id": 2,
+      "name": "Corely People",
+      "roadmap_scope": "P1",
+      "evidence_bundle": "EP-PEOPLE",
+      "evidence_status": "partial",
+      "owner_or_candidate": "Employee owner undecided; Identity / Party / Booking adjacent",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 4,
+      "name": "Corely Requests",
+      "roadmap_scope": "P1",
+      "evidence_bundle": "EP-REQUESTS",
+      "evidence_status": "partial",
+      "owner_or_candidate": "Forms / Approvals / Workflow candidates",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 1,
+      "name": "Corely Tasks",
+      "roadmap_scope": "P1",
+      "evidence_bundle": "EP-TASKS",
+      "evidence_status": "partial",
+      "owner_or_candidate": "Employee task owner undecided; Workflow / CRM adjacent",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 3,
+      "name": "Corely Appointments",
+      "roadmap_scope": "P1",
+      "evidence_bundle": "EP-APPOINTMENTS",
+      "evidence_status": "code-present",
+      "owner_or_candidate": "Booking, including OpenBuk",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 5,
+      "name": "Corely Knowledge",
+      "roadmap_scope": "P1",
+      "evidence_bundle": "EP-KNOWLEDGE",
+      "evidence_status": "partial",
+      "owner_or_candidate": "Private policy owner undecided; Documents / CMS candidates",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 11,
+      "name": "Corely Shifts",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-SHIFTS",
+      "evidence_status": "documented-only",
+      "owner_or_candidate": "Roster owner undecided; Booking availability adjacent",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 12,
+      "name": "Corely Time",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-TIME",
+      "evidence_status": "partial",
+      "owner_or_candidate": "Provider/native authority undecided; integration-first",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 16,
+      "name": "Corely Expenses",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-EXPENSES",
+      "evidence_status": "code-present",
+      "owner_or_candidate": "Expenses, with Documents / Approvals",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 18,
+      "name": "Corely Assets",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-ASSETS",
+      "evidence_status": "documented-only",
+      "owner_or_candidate": "Custody owner undecided; Inventory / Booking adjacent",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 21,
+      "name": "Corely Helpdesk",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-HELPDESK",
+      "evidence_status": "partial",
+      "owner_or_candidate": "Assess existing Issues before new ownership",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 26,
+      "name": "Corely Invoices",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-INVOICES",
+      "evidence_status": "code-present",
+      "owner_or_candidate": "Invoices, not SaaS Billing",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 27,
+      "name": "Corely Bills",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-BILLS",
+      "evidence_status": "code-present",
+      "owner_or_candidate": "Purchasing / VendorBill",
+      "operational_readiness": "unknown"
+    },
+    {
+      "catalog_id": 28,
+      "name": "Corely Budgets",
+      "roadmap_scope": "P2",
+      "evidence_bundle": "EP-BUDGETS",
+      "evidence_status": "not-found-in-reviewed-scope",
+      "owner_or_candidate": "Plan/projection owner undecided; Reporting / source owners adjacent",
+      "operational_readiness": "unknown"
+    }
+  ],
+  "evidence_bundles": {
+    "EP-STRATEGY": {
+      "owner_or_candidate": "Product/docs",
+      "evidence_status": "partial",
+      "observation": "Canonical strategy, launch hypothesis, 32-app catalog and repository alignment already exist. STR-02 is covered by the documentation alignment commit; remaining work is per-feature reconciliation, adoption decisions and real pilot evidence. No customer validation is established.",
+      "paths": [
+        "AGENTS.md",
+        "README.md",
+        "docs/products/corely/README.md",
+        "docs/products/corely/app-catalog.md",
+        "docs/products/corely/launch-plan.md",
+        "docs/products/corely/repository-alignment.md"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "application": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "adapters_and_registration": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "ui": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "persistence": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "test_sources": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        }
+      }
+    },
+    "EP-PLATFORM": {
+      "owner_or_candidate": "Platform / Identity / Workspaces",
+      "evidence_status": "partial",
+      "observation": "App enablement/dependency resolution, tenant entitlements, menu composition, workspace authorization and shared frontend infrastructure exist. Complete only the operational package composition, role/private-data checks, shell and resumable staff setup gaps; current generic controls do not establish package readiness.",
+      "paths": [
+        "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+        "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+        "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+        "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+        "packages/contracts/src/platform/app-manifest.schema.ts",
+        "packages/data/prisma/schema/20_workspaces.prisma",
+        "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+        "services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts",
+        "services/api/src/modules/platform/infrastructure/registries/app-registry.ts",
+        "packages/contracts/src/platform/index.ts",
+        "services/api/src/modules/platform/infrastructure/adapters/prisma-seeded-record-meta-repository.adapter.ts",
+        "apps/web/src/modules/platform/index.ts"
+      ],
+      "related_issue_numbers": [112, 111, 170],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/platform/app-manifest.schema.ts",
+            "packages/contracts/src/platform/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/platform/application/use-cases/enable-app.usecase.ts",
+            "services/api/src/modules/platform/application/services/tenant-entitlement.service.ts",
+            "services/api/src/modules/platform/application/services/menu-builder.service.ts",
+            "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/platform/infrastructure/registries/app-registry.ts",
+            "services/api/src/modules/platform/infrastructure/adapters/prisma-seeded-record-meta-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "packages/web-shared/src/shared/workspaces/workspace-config-provider.tsx",
+            "apps/web/src/modules/platform/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/20_workspaces.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": ["services/api/src/modules/platform/__tests__/menu-builder.service.spec.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-PEOPLE": {
+      "owner_or_candidate": "Employee owner undecided; Identity / Party / Booking adjacent",
+      "evidence_status": "partial",
+      "observation": "Identity User/Membership, Party records and BookingResource exist and represent different concepts. No dedicated people owner was found in reviewed API module names; this is not evidence of absence across every integration. Define only the staff/availability/private absence/self-service delta and explicit links, without cloning accounts or booking resources.",
+      "paths": [
+        "packages/data/prisma/schema/10_identity.prisma",
+        "packages/data/prisma/schema/20_workspaces.prisma",
+        "packages/data/prisma/schema/45_party_crm.prisma",
+        "packages/data/prisma/schema/83_booking.prisma",
+        "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+        "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+        "packages/contracts/src/workspaces/workspace-members.schema.ts",
+        "packages/contracts/src/booking/index.ts",
+        "apps/openbuk-web/src/modules/studio/setup-form.tsx",
+        "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.spec.ts",
+        "packages/contracts/src/identity/index.ts",
+        "services/api/src/modules/identity/infrastructure/adapters/prisma-audit-repository.adapter.ts"
+      ],
+      "related_issue_numbers": [215, 111],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/workspaces/workspace-members.schema.ts",
+            "packages/contracts/src/booking/index.ts",
+            "packages/contracts/src/identity/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.usecase.ts",
+            "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.spec.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/identity/infrastructure/adapters/prisma-audit-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": ["apps/openbuk-web/src/modules/studio/setup-form.tsx"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": [
+            "packages/data/prisma/schema/10_identity.prisma",
+            "packages/data/prisma/schema/20_workspaces.prisma",
+            "packages/data/prisma/schema/45_party_crm.prisma",
+            "packages/data/prisma/schema/83_booking.prisma"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+            "services/api/src/modules/workspaces/application/use-cases/authorize-workspace.spec.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-REQUESTS": {
+      "owner_or_candidate": "Forms / Approvals / Workflow candidates",
+      "evidence_status": "partial",
+      "observation": "Forms definitions/submissions and ApprovalGateService/WorkflowService are existing reuse points. CreateForm currently derives its tenant value from workspaceId with tenantId fallback: resolve the actual identity boundary before reuse. Approval is not proof that an owning domain applied a decision. Issue #52 was closed not_planned; it is not completion evidence. Deliver only a selected private request journey and safe domain handoff.",
+      "paths": [
+        "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+        "services/api/src/modules/approvals/application/approval-gate.service.ts",
+        "services/api/src/modules/workflow/application/workflow.service.ts",
+        "packages/contracts/src/approvals/approval.schemas.ts",
+        "packages/data/prisma/schema/66_forms.prisma",
+        "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+        "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts",
+        "services/api/src/modules/approvals/adapters/http/approvals-requests.controller.ts",
+        "apps/web/src/modules/forms/screens/FormDetailPage.tsx",
+        "packages/contracts/src/forms/index.ts",
+        "services/api/src/modules/forms/infrastructure/adapters/prisma-form-repository.adapter.ts",
+        "apps/web/src/modules/forms/index.ts"
+      ],
+      "related_issue_numbers": [52],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/approvals/approval.schemas.ts",
+            "packages/contracts/src/forms/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/forms/application/use-cases/create-form.usecase.ts",
+            "services/api/src/modules/approvals/application/approval-gate.service.ts",
+            "services/api/src/modules/workflow/application/workflow.service.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/approvals/adapters/http/approvals-requests.controller.ts",
+            "services/api/src/modules/forms/infrastructure/adapters/prisma-form-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/web/src/modules/forms/screens/FormDetailPage.tsx",
+            "apps/web/src/modules/forms/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/66_forms.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/forms/__tests__/forms-api.int.test.ts",
+            "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-TASKS": {
+      "owner_or_candidate": "Employee task owner undecided; Workflow / CRM adjacent",
+      "evidence_status": "partial",
+      "observation": "Workflow execution tasks and CRM activities already exist; neither establishes employee daily work. No dedicated tasks owner was found in reviewed API module names. Define the employee-facing task/checklist slice and reuse workflow background execution, documents and notifications without repurposing their records blindly.",
+      "paths": [
+        "services/api/src/modules/workflow/application/workflow.service.ts",
+        "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+        "packages/core/src",
+        "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+        "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts",
+        "packages/contracts/src/workflows/index.ts",
+        "packages/data/prisma/schema/90_workflow.prisma"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": ["packages/contracts/src/workflows/index.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/workflow/application/workflow.service.ts",
+            "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/90_workflow.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/workflow/infrastructure/__tests__/workflow-queue.client.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-APPOINTMENTS": {
+      "owner_or_candidate": "Booking, including OpenBuk",
+      "evidence_status": "code-present",
+      "observation": "Booking owns reservations, resources and availability; OpenBuk already provides the EN/DE/VI public single-service/staff slice and workspace-scoped booking transaction. Legacy CreateBooking updates the hold before booking persistence and follows with audit/outbox; the manifest declares no operation permissions. Reuse existing Booking records and preserve public routes. Remaining acceptance covers team services/staff, availability/lifecycle, management tokens, delivery consumers, selected integration and distributed abuse protection; historical passes are not fresh results.",
+      "paths": [
+        "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+        "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts",
+        "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+        "services/api/src/modules/booking/booking.manifest.ts",
+        "services/api/src/modules/booking/http/openbuk.controller.ts",
+        "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+        "packages/contracts/src/booking",
+        "packages/data/prisma/schema/83_booking.prisma",
+        "apps/openbuk-web/src/app/app.tsx",
+        "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+        "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+        "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+        "docs/products/openbuk/README.md",
+        "apps/web/src/app/router/booking-routes.tsx",
+        "apps/e2e/tests/openbuk/openbuk.e2e.spec.ts",
+        "services/api/src/modules/booking/infrastructure/adapters/prisma-booking-repo.adapter.ts",
+        "packages/contracts/src/booking/index.ts",
+        "services/api/src/modules/booking/infrastructure/adapters/prisma-availability-rule-repo.adapter.ts",
+        "apps/web/src/modules/booking/queries.ts"
+      ],
+      "related_issue_numbers": [215],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": ["packages/contracts/src/booking", "packages/contracts/src/booking/index.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/booking/application/use-cases/create-booking.usecase.ts",
+            "services/api/src/modules/booking/application/use-cases/openbuk-studio.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/booking/infrastructure/adapters/prisma-openbuk-repository.adapter.ts",
+            "services/api/src/modules/booking/booking.manifest.ts",
+            "services/api/src/modules/booking/http/openbuk.controller.ts",
+            "services/api/src/modules/booking/http/openbuk-rate-limit.guard.ts",
+            "services/api/src/modules/booking/infrastructure/adapters/prisma-booking-repo.adapter.ts",
+            "services/api/src/modules/booking/infrastructure/adapters/prisma-availability-rule-repo.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/openbuk-web/src/app/app.tsx",
+            "apps/web/src/modules/booking/screens/BookingEditorPage.tsx",
+            "apps/web/src/app/router/booking-routes.tsx",
+            "apps/web/src/modules/booking/queries.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/83_booking.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+            "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+            "apps/e2e/tests/openbuk/openbuk.e2e.spec.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-KNOWLEDGE": {
+      "owner_or_candidate": "Private policy owner undecided; Documents / CMS candidates",
+      "evidence_status": "partial",
+      "observation": "Existing #130 is an open Articles/FAQ/Glossary epic with public pages and P0 body metadata. Preserve its scope/priority; this initiative is the distinct private approved-procedure slice. Documents/CMS are reuse candidates, not proof of private policy lifecycle or authorized cited answers. No knowledge owner was found in reviewed API module names; inspect access and versioning before implementation.",
+      "paths": [
+        "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+        "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+        "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+        "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts",
+        "packages/contracts/src/documents/index.ts",
+        "packages/contracts/src/cms/index.ts",
+        "packages/data/prisma/schema/70_documents.prisma",
+        "packages/data/prisma/schema/74_cms.prisma",
+        "services/api/src/modules/cms/infrastructure/prisma/prisma-cms-comment-repository.adapter.ts",
+        "apps/web/src/modules/cms/index.ts"
+      ],
+      "related_issue_numbers": [130, 131],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/documents/index.ts",
+            "packages/contracts/src/cms/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/documents/application/use-cases/get-document/get-document.usecase.ts",
+            "services/api/src/modules/cms/application/use-cases/get-public-cms-post.usecase.ts",
+            "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/cms/infrastructure/prisma/prisma-cms-comment-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": ["apps/web/src/modules/cms/index.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": [
+            "packages/data/prisma/schema/70_documents.prisma",
+            "packages/data/prisma/schema/74_cms.prisma"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/cms/__tests__/public-cms-posts.usecase.test.ts",
+            "services/api/src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-CONNECTED": {
+      "owner_or_candidate": "Owning domains + existing AI Copilot / Background",
+      "evidence_status": "partial",
+      "observation": "Existing copilot has a tool registry, context helpers and streaming replay/approval machinery; API-hosted background handlers and notifications are present. Tool context has a workspace-to-tenant fallback and must be reviewed per owner. The absence-to-conflict/Today/briefing/resolution flows are not established; implement only typed authorized proposals with deterministic revalidation and sensitive-action confirmation.",
+      "paths": [
+        "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+        "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+        "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+        "services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts",
+        "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts",
+        "services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts",
+        "docs/ai/ai-copilot.md",
+        "services/api/src/modules/ai-copilot/infrastructure/adapters/prisma-agent-run-repository.adapter.ts"
+      ],
+      "related_issue_numbers": [185, 196],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts",
+            "services/api/src/modules/notifications/application/use-cases/list-notifications.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts",
+            "services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts",
+            "services/api/src/modules/ai-copilot/infrastructure/adapters/prisma-agent-run-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "persistence": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "test_sources": {
+          "paths": ["services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-RELEASE": {
+      "owner_or_candidate": "Cross-owner acceptance; API Background / E2E reuse",
+      "evidence_status": "unknown",
+      "observation": "OpenBuk isolated PostgreSQL/browser and finance E2E source files exist. These were inspected, not executed. No current full-package acceptance, restore exercise, accessibility acceptance or pilot promotion evidence is established. Historical OpenBuk verification and worker-check notes must not be repeated as fresh results.",
+      "paths": [
+        "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+        "apps/e2e/tests/invoices.spec.ts",
+        "apps/e2e/tests/expenses.spec.ts",
+        "docs/products/openbuk/README.md",
+        "docs/products/corely/launch-plan.md",
+        "docs/products/corely/repository-alignment.md"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "application": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "adapters_and_registration": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "ui": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "persistence": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/booking/__tests__/openbuk.int.test.ts",
+            "apps/e2e/tests/invoices.spec.ts",
+            "apps/e2e/tests/expenses.spec.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-SHIFTS": {
+      "owner_or_candidate": "Roster owner undecided; Booking availability adjacent",
+      "evidence_status": "documented-only",
+      "observation": "Booking availability rules and workspace capability configuration are reuse points, not a published employee roster. No dedicated shifts owner was found in reviewed API module names. Define demand, versioned roster, coverage and swaps only after the conditional promotion decision; do not confuse POS register shifts with staff rosters.",
+      "paths": [
+        "packages/data/prisma/schema/83_booking.prisma",
+        "services/api/src/modules/booking/domain/openbuk-availability.ts",
+        "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+        "services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts",
+        "packages/contracts/src/booking/index.ts",
+        "apps/openbuk-web/src/modules/studio/setup-form.tsx",
+        "services/api/src/modules/booking/application/use-cases/upsert-availability-rule.usecase.ts",
+        "services/api/src/modules/booking/infrastructure/adapters/prisma-availability-rule-repo.adapter.ts",
+        "apps/web/src/modules/booking/queries.ts"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": ["packages/contracts/src/booking/index.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+            "services/api/src/modules/booking/application/use-cases/upsert-availability-rule.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/booking/infrastructure/adapters/prisma-availability-rule-repo.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/openbuk-web/src/modules/studio/setup-form.tsx",
+            "apps/web/src/modules/booking/queries.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/83_booking.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": ["services/api/src/modules/booking/__tests__/openbuk-availability.spec.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-TIME": {
+      "owner_or_candidate": "Provider/native authority undecided; integration-first",
+      "evidence_status": "partial",
+      "observation": "Workspace templates expose time.tracking as a capability key; no dedicated time owner was found in reviewed API module names. This does not prove actual time-recording integrations or absence of external systems. Validate one integration-first use case and correction/export boundaries before choosing new storage; no payroll or surveillance scope.",
+      "paths": [
+        "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+        "packages/data/prisma/schema/20_workspaces.prisma",
+        "services/api/src/modules/integrations",
+        "services/api/src/modules/approvals/application/approval-gate.service.ts",
+        "packages/contracts/src/integrations/index.ts",
+        "packages/data/prisma/schema/64_integrations.prisma",
+        "services/api/src/modules/integrations/infrastructure/prisma/prisma-integration-connection-repository.adapter.ts"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": ["packages/contracts/src/integrations/index.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/platform/application/services/workspace-template.service.ts",
+            "services/api/src/modules/approvals/application/approval-gate.service.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/integrations/infrastructure/prisma/prisma-integration-connection-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "persistence": {
+          "paths": [
+            "packages/data/prisma/schema/20_workspaces.prisma",
+            "packages/data/prisma/schema/64_integrations.prisma"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        }
+      }
+    },
+    "EP-EXPENSES": {
+      "owner_or_candidate": "Expenses, with Documents / Approvals",
+      "evidence_status": "code-present",
+      "observation": "Expense/ExpenseLine, capture, transitions, UI and adapter/E2E tests already exist. TransitionExpense updates the repository and then separately logs audit/enqueues an event; status names alone do not prove employee approval/reimbursement correctness. Reuse this owner and publish only staff-claim, reviewed policy/reimbursement/export and extraction-review gaps after scoped audit.",
+      "paths": [
+        "packages/data/prisma/schema/65_expenses.prisma",
+        "packages/contracts/src/expenses",
+        "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+        "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+        "services/api/src/modules/expenses/expenses.manifest.ts",
+        "apps/web/src/modules/expenses",
+        "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+        "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+        "apps/e2e/tests/expenses.spec.ts",
+        "packages/web-features/src/modules/expenses/index.ts",
+        "apps/web/src/modules/expenses/index.ts",
+        "services/api/src/modules/expenses/infrastructure/adapters/prisma-expense-repository.adapter.ts",
+        "packages/contracts/src/expenses/index.ts"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": ["packages/contracts/src/expenses", "packages/contracts/src/expenses/index.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/expenses/application/use-cases/create-expense.usecase.ts",
+            "services/api/src/modules/expenses/application/use-cases/transition-expense.usecase.ts",
+            "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/expenses/expenses.manifest.ts",
+            "services/api/src/modules/expenses/infrastructure/adapters/prisma-expense-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/web/src/modules/expenses",
+            "packages/web-features/src/modules/expenses/index.ts",
+            "apps/web/src/modules/expenses/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/65_expenses.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/expenses/application/use-cases/__tests__/create-expense.usecase.test.ts",
+            "services/api/src/modules/expenses/__tests__/expenses-api.int.test.ts",
+            "apps/e2e/tests/expenses.spec.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-ASSETS": {
+      "owner_or_candidate": "Custody owner undecided; Inventory / Booking adjacent",
+      "evidence_status": "documented-only",
+      "observation": "Inventory owns products, stock moves, reservations and locations; Booking has equipment resources. These are not established equipment custody/handovers. No dedicated assets owner was found in reviewed API module names. Determine the minimal custody delta and public owner interfaces before adding any records; reuse documents and Tasks for follow-up.",
+      "paths": [
+        "packages/data/prisma/schema/71_inventory.prisma",
+        "packages/data/prisma/schema/83_booking.prisma",
+        "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+        "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts",
+        "packages/contracts/src/inventory/index.ts",
+        "apps/web/src/modules/inventory/screens/ProductDetailPage.tsx",
+        "services/api/src/modules/inventory/infrastructure/adapters/prisma-document-repository.adapter.ts",
+        "apps/web/src/modules/inventory/index.ts"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": ["packages/contracts/src/inventory/index.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/inventory/application/use-cases/create-product.usecase.ts",
+            "services/api/src/modules/documents/application/use-cases/link-document/link-document.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/inventory/infrastructure/adapters/prisma-document-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/web/src/modules/inventory/screens/ProductDetailPage.tsx",
+            "apps/web/src/modules/inventory/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": [
+            "packages/data/prisma/schema/71_inventory.prisma",
+            "packages/data/prisma/schema/83_booking.prisma"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        }
+      }
+    },
+    "EP-HELPDESK": {
+      "owner_or_candidate": "Assess existing Issues before new ownership",
+      "evidence_status": "partial",
+      "observation": "Closed completed #93 and Issues code already cover intake, attachments, assignment, comments and lifecycle for field/customer/manufacturer contexts. Reuse and validate that owner rather than recreating a generic ticket system. The residual work is choosing an internal support function, private access, queue/response-target fit, safe follow-up and authorized Knowledge drafts; no internal-support readiness is inferred.",
+      "paths": [
+        "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+        "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+        "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts",
+        "packages/contracts/src/issues/issue.types.ts",
+        "packages/data/prisma/schema/77_issues.prisma",
+        "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+        "services/api/src/modules/issues/__tests__/issue-rules.spec.ts",
+        "services/api/src/modules/issues/domain/issue.rules.ts",
+        "services/api/src/modules/issues/infrastructure/prisma/prisma-issue-repository.adapter.ts",
+        "packages/contracts/src/issues/index.ts",
+        "services/api/src/modules/issues/infrastructure/documents/documents-port.adapter.ts",
+        "apps/web/src/modules/issues/index.ts"
+      ],
+      "related_issue_numbers": [93],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/issues/issue.types.ts",
+            "packages/contracts/src/issues/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/issues/application/use-cases/create-issue.usecase.ts",
+            "services/api/src/modules/issues/application/use-cases/assign-issue.usecase.ts",
+            "services/api/src/modules/issues/application/use-cases/resolve-issue.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/issues/infrastructure/prisma/prisma-issue-repository.adapter.ts",
+            "services/api/src/modules/issues/infrastructure/documents/documents-port.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/web/src/modules/issues/screens/IssuesListPage.tsx",
+            "apps/web/src/modules/issues/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/77_issues.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": ["services/api/src/modules/issues/__tests__/issue-rules.spec.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-INVOICES": {
+      "owner_or_candidate": "Invoices, not SaaS Billing",
+      "evidence_status": "code-present",
+      "observation": "Customer invoices already have create/finalize, reminder drafting, delivery and tax snapshot code plus UI/tests; SaaS subscriptions are separate. FinalizeInvoice requires workspace context and has accounting-related dependencies; optional-finance behavior needs scoped verification. Reuse existing functionality and #141 reminder work; the delta is pilot build-or-integrate choice, operational-source drafts, reviewed delivery/receivables and selected-format accountant handoff, not another invoice engine.",
+      "paths": [
+        "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+        "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+        "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+        "packages/contracts/src/invoices",
+        "packages/data/prisma/schema/60_billing.prisma",
+        "apps/web/src/modules/invoices",
+        "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+        "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+        "apps/e2e/tests/invoices.spec.ts",
+        "packages/web-features/src/modules/invoices/index.ts",
+        "services/api/src/modules/invoices/application/use-cases/send-invoice-reminders/send-invoice-reminders.usecase.test.ts",
+        "services/api/src/modules/invoices/infrastructure/adapters/prisma-invoice-repository.adapter.ts",
+        "packages/contracts/src/invoices/copilot/index.ts",
+        "services/api/src/modules/invoices/infrastructure/adapters/legal-entity-query.adapter.ts",
+        "apps/web/src/modules/invoices/index.ts"
+      ],
+      "related_issue_numbers": [141],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/invoices",
+            "packages/contracts/src/invoices/copilot/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/invoices/application/use-cases/create-invoice/create-invoice.usecase.ts",
+            "services/api/src/modules/invoices/application/use-cases/finalize-invoice/finalize-invoice.usecase.ts",
+            "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.ts",
+            "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+            "services/api/src/modules/invoices/application/use-cases/send-invoice-reminders/send-invoice-reminders.usecase.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/invoices/infrastructure/adapters/prisma-invoice-repository.adapter.ts",
+            "services/api/src/modules/invoices/infrastructure/adapters/legal-entity-query.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/web/src/modules/invoices",
+            "packages/web-features/src/modules/invoices/index.ts",
+            "apps/web/src/modules/invoices/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/60_billing.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [
+            "services/api/src/modules/invoices/__tests__/invoices-api.int.test.ts",
+            "services/api/src/modules/invoices/application/use-cases/copilot/draft-reminder-email.usecase.test.ts",
+            "apps/e2e/tests/invoices.spec.ts",
+            "services/api/src/modules/invoices/application/use-cases/send-invoice-reminders/send-invoice-reminders.usecase.test.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-BILLS": {
+      "owner_or_candidate": "Purchasing / VendorBill",
+      "evidence_status": "code-present",
+      "observation": "Purchasing already owns VendorBill, lines, BillPayment and supplier queries; create bill checks supplier and duplicate bill number and has idempotency helpers. Reuse Purchasing/Party/Documents and review existing approval/accounting settings. The residual is selected bill intake/extraction review, approval-versus-settlement semantics and reconciled accountant export; no duplicate supplier/payable ledger or fund release.",
+      "paths": [
+        "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+        "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts",
+        "services/api/src/modules/purchasing/purchasing.manifest.ts",
+        "packages/contracts/src/purchasing",
+        "packages/data/prisma/schema/69_purchasing.prisma",
+        "apps/web/src/modules/purchasing",
+        "services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts",
+        "services/api/src/modules/purchasing/infrastructure/adapters/prisma-vendor-bill-repository.adapter.ts",
+        "apps/web/src/modules/purchasing/screens/VendorBillDetailPage.tsx",
+        "packages/contracts/src/purchasing/index.ts",
+        "services/api/src/modules/purchasing/infrastructure/adapters/prisma-account-mapping-repository.adapter.ts",
+        "apps/web/src/modules/purchasing/index.ts"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/purchasing",
+            "packages/contracts/src/purchasing/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/purchasing/application/use-cases/create-vendor-bill.usecase.ts",
+            "services/api/src/modules/purchasing/application/use-cases/approve-vendor-bill.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/purchasing/purchasing.manifest.ts",
+            "services/api/src/modules/purchasing/infrastructure/adapters/prisma-vendor-bill-repository.adapter.ts",
+            "services/api/src/modules/purchasing/infrastructure/adapters/prisma-account-mapping-repository.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [
+            "apps/web/src/modules/purchasing",
+            "apps/web/src/modules/purchasing/screens/VendorBillDetailPage.tsx",
+            "apps/web/src/modules/purchasing/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "persistence": {
+          "paths": ["packages/data/prisma/schema/69_purchasing.prisma"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": ["services/api/src/modules/approvals/__tests__/approval-spec.builder.test.ts"],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        }
+      }
+    },
+    "EP-BUDGETS": {
+      "owner_or_candidate": "Plan/projection owner undecided; Reporting / source owners adjacent",
+      "evidence_status": "not-found-in-reviewed-scope",
+      "observation": "Reporting currently has an expense-count dashboard and monthly-pack owner; Purchasing/Expenses provide transaction-source candidates. No dedicated budgets owner was found in reviewed API module names. Select and reconcile one reliable spending basis/source before defining a projection. EXP-03/BILL-03/external sources are alternatives, not mandatory AND dependencies; no spending blocks or new ledger.",
+      "paths": [
+        "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+        "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts",
+        "packages/contracts/src/reporting",
+        "packages/data/prisma/schema/65_expenses.prisma",
+        "packages/data/prisma/schema/69_purchasing.prisma",
+        "services/api/src/modules/reporting/adapters/http/reporting.controller.ts",
+        "packages/contracts/src/reporting/index.ts",
+        "services/api/src/modules/reporting/infrastructure/prisma/prisma-reporting-query.adapter.ts"
+      ],
+      "related_issue_numbers": [],
+      "readiness": "unknown",
+      "layer_coverage": {
+        "contracts": {
+          "paths": [
+            "packages/contracts/src/reporting",
+            "packages/contracts/src/reporting/index.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "application": {
+          "paths": [
+            "services/api/src/modules/reporting/application/use-cases/get-dashboard-report.usecase.ts",
+            "services/api/src/modules/reporting/application/use-cases/get-monthly-pack.usecase.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "adapters_and_registration": {
+          "paths": [
+            "services/api/src/modules/reporting/adapters/http/reporting.controller.ts",
+            "services/api/src/modules/reporting/infrastructure/prisma/prisma-reporting-query.adapter.ts"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "ui": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        },
+        "persistence": {
+          "paths": [
+            "packages/data/prisma/schema/65_expenses.prisma",
+            "packages/data/prisma/schema/69_purchasing.prisma"
+          ],
+          "interpretation": "Existing/adjacent source candidates; see bundle observation for actual scope."
+        },
+        "test_sources": {
+          "paths": [],
+          "interpretation": "Not established for this layer in the selected bundle. No dedicated target-journey completeness claim; inspect the owning module before implementation."
+        }
+      }
+    }
+  },
+  "features": [
+    {
+      "key": "STR-01",
+      "title": "Map P1/P2 capabilities to code and existing issues",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/298",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Product/docs",
+      "reuse_evidence_bundle": "EP-STRATEGY",
+      "residual_gap_or_decision": "Review/integrate this 13-app and 68-feature inventory; later engineering tickets retain their own runtime verification.",
+      "verification_required": "Review the capability/evidence matrix and sample relevant source paths; report inspection limits and tests not run.",
+      "hard_prerequisites": [],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "STR-02",
+      "title": "Align AGENTS and canonical documentation with the app strategy",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": null,
+      "completed_coverage_url": "https://github.com/Corely-AI/corely/commit/26d611e510c785ccad78341f6564ecdcf05de770",
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Product/docs",
+      "reuse_evidence_bundle": "EP-STRATEGY",
+      "residual_gap_or_decision": "No duplicate implementation: retain the completed canonical alignment commit and maintain current guidance.",
+      "verification_required": "Scoped documentation/link/format checks and diff review. Reuse the earlier documentation-alignment prompt as a specification.",
+      "hard_prerequisites": ["STR-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": null
+    },
+    {
+      "key": "STR-03",
+      "title": "Choose the pilot booking authority and staff surface",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/299",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Product/docs",
+      "reuse_evidence_bundle": "EP-STRATEGY",
+      "residual_gap_or_decision": "Choose one pilot booking authority and staff surface with actual adoption feasibility evidence.",
+      "verification_required": "Review a synthetic adoption walkthrough and capture actual provider/migration constraints, not assumed integration support.",
+      "hard_prerequisites": ["STR-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "STR-04",
+      "title": "Define pilot evidence and P2 promotion criteria",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/300",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Product/docs",
+      "reuse_evidence_bundle": "EP-STRATEGY",
+      "residual_gap_or_decision": "Agree pilot observations, baseline measures and individual P2 promotion criteria without inventing customer results.",
+      "verification_required": "Review the research protocol and measurement dictionary; real interview/payment evidence is required later, not fabricated here.",
+      "hard_prerequisites": ["STR-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PLAT-01",
+      "title": "Compose the package using existing app manifests",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/301",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Platform / Identity / Workspaces",
+      "reuse_evidence_bundle": "EP-PLATFORM",
+      "residual_gap_or_decision": "Compose only the selected package and verify transitive defaults/optional finance instead of adding app registries.",
+      "verification_required": "Configuration integration tests for enabled/disabled dependencies and regression of existing product packages.",
+      "hard_prerequisites": ["STR-01", "STR-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PLAT-02",
+      "title": "Enforce operational roles and private-data access",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/302",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Platform / Identity / Workspaces",
+      "reuse_evidence_bundle": "EP-PLATFORM",
+      "residual_gap_or_decision": "Verify operation-level roles, trusted tenant/workspace boundaries and private personnel access with negative cases.",
+      "verification_required": "Negative API/tool/file/export tests with different roles and tenants; verify private-field redaction.",
+      "hard_prerequisites": ["STR-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PLAT-03",
+      "title": "Build the responsive manual-first operational shell",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/303",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Platform / Identity / Workspaces",
+      "reuse_evidence_bundle": "EP-PLATFORM",
+      "residual_gap_or_decision": "Deliver the selected responsive operational shell and manual-first navigation, not a second generic frontend framework.",
+      "verification_required": "Responsive navigation tests, keyboard smoke checks and an AI-disabled manual workflow.",
+      "hard_prerequisites": ["PLAT-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PLAT-04",
+      "title": "Support resumable pilot setup and staff invitations",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/304",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Platform / Identity / Workspaces",
+      "reuse_evidence_bundle": "EP-PLATFORM",
+      "residual_gap_or_decision": "Complete resumable staff setup/invitations across actual membership/onboarding APIs and partial failures.",
+      "verification_required": "E2E resumed setup, repeated invitation, timezone validation and unauthorized-publication tests.",
+      "hard_prerequisites": ["PLAT-01", "PLAT-02", "STR-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PEOPLE-01",
+      "title": "Maintain the staff directory and explicit identity links",
+      "catalog_apps": [2],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/305",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee owner undecided; Identity / Party / Booking adjacent",
+      "reuse_evidence_bundle": "EP-PEOPLE",
+      "residual_gap_or_decision": "Decide minimal employee ownership and explicit account/party/bookable-resource links without equating identities.",
+      "verification_required": "Profile and link validation, tenant/privacy tests, directory UI and archive-history integration.",
+      "hard_prerequisites": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PEOPLE-02",
+      "title": "Manage working patterns and dated availability exceptions",
+      "catalog_apps": [2],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/306",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee owner undecided; Identity / Party / Booking adjacent",
+      "reuse_evidence_bundle": "EP-PEOPLE",
+      "residual_gap_or_decision": "Define dated working patterns/exceptions and a neutral availability interface on top of existing booking rules.",
+      "verification_required": "Frozen-time/DST domain tests, effective-date cases and integration against authoritative Booking availability.",
+      "hard_prerequisites": ["PEOPLE-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PEOPLE-03",
+      "title": "Record private absences and neutral availability effects",
+      "catalog_apps": [2],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/307",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee owner undecided; Identity / Party / Booking adjacent",
+      "reuse_evidence_bundle": "EP-PEOPLE",
+      "residual_gap_or_decision": "Add the private absence lifecycle and authorized neutral effects; Booking rules do not establish personnel records.",
+      "verification_required": "Privacy, overlap, correction, transactional rollback and replay tests.",
+      "hard_prerequisites": ["PEOPLE-01", "PEOPLE-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "PEOPLE-04",
+      "title": "Deliver staff self-service and controlled onboarding/offboarding",
+      "catalog_apps": [2],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/308",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee owner undecided; Identity / Party / Booking adjacent",
+      "reuse_evidence_bundle": "EP-PEOPLE",
+      "residual_gap_or_decision": "Provide controlled staff self-service/onboarding/offboarding with membership revocation and task handoffs.",
+      "verification_required": "Role-escalation negatives, onboarding checklist reuse and departure with future commitments E2E.",
+      "hard_prerequisites": ["PEOPLE-01", "PLAT-04", "TASK-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "REQ-01",
+      "title": "Submit typed requests with supporting context",
+      "catalog_apps": [4],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/309",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Forms / Approvals / Workflow candidates",
+      "reuse_evidence_bundle": "EP-REQUESTS",
+      "residual_gap_or_decision": "Compose one typed private request flow using Forms; resolve workspace/tenant meaning before reusing its storage context.",
+      "verification_required": "Form/contract and submit/retry/withdraw tests plus private-file denial cases.",
+      "hard_prerequisites": ["PLAT-02", "PEOPLE-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "REQ-02",
+      "title": "Apply review decisions through safe domain handoffs",
+      "catalog_apps": [4],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/310",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Forms / Approvals / Workflow candidates",
+      "reuse_evidence_bundle": "EP-REQUESTS",
+      "residual_gap_or_decision": "Bind current reviewer decisions to owning-domain application, versions and retries; approval alone is not application.",
+      "verification_required": "Decision-race, stale-version, unauthorized/self-approval and failed-handoff replay tests.",
+      "hard_prerequisites": ["REQ-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "REQ-03",
+      "title": "Provide request tracking, the decision inbox and bounded reminders",
+      "catalog_apps": [4],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/311",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Forms / Approvals / Workflow candidates",
+      "reuse_evidence_bundle": "EP-REQUESTS",
+      "residual_gap_or_decision": "Compose request tracking/decision inbox and bounded reminders with safe private context and delivery status.",
+      "verification_required": "Inbox permission tests, reminder replay/cancellation and requester-to-reviewer E2E.",
+      "hard_prerequisites": ["REQ-02", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "TASK-01",
+      "title": "Create, assign and complete employee-facing tasks",
+      "catalog_apps": [1],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/312",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee task owner undecided; Workflow / CRM adjacent",
+      "reuse_evidence_bundle": "EP-TASKS",
+      "residual_gap_or_decision": "Define employee-owned assignment/completion records; workflow execution Task and CRM Activity are not substitutes.",
+      "verification_required": "Lifecycle, concurrency/idempotency and create-to-complete UI tests.",
+      "hard_prerequisites": ["STR-01", "PEOPLE-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "TASK-02",
+      "title": "Provide My work and simple team list/board views",
+      "catalog_apps": [1],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/313",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee task owner undecided; Workflow / CRM adjacent",
+      "reuse_evidence_bundle": "EP-TASKS",
+      "residual_gap_or_decision": "Build My work and a small team list/board using the employee task owner and selected shell.",
+      "verification_required": "Date/filter/query tests, board/list consistency, mobile and keyboard checks.",
+      "hard_prerequisites": ["TASK-01", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "TASK-03",
+      "title": "Generate recurring opening and closing checklists",
+      "catalog_apps": [1],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/314",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee task owner undecided; Workflow / CRM adjacent",
+      "reuse_evidence_bundle": "EP-TASKS",
+      "residual_gap_or_decision": "Generate dated recurring checklists with stable occurrence identity and retry/concurrency protection.",
+      "verification_required": "Frozen-clock recurrence/DST tests, parallel replay and template-to-completion E2E.",
+      "hard_prerequisites": ["TASK-01", "PEOPLE-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "TASK-04",
+      "title": "Attach context and link operational follow-up work",
+      "catalog_apps": [1],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/315",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Employee task owner undecided; Workflow / CRM adjacent",
+      "reuse_evidence_bundle": "EP-TASKS",
+      "residual_gap_or_decision": "Link documents/procedures/source work through public owners without copying records or leaking private previews.",
+      "verification_required": "File/link authorization tests, missing-source UI and follow-up replay tests.",
+      "hard_prerequisites": ["TASK-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "APT-01",
+      "title": "Extend services and eligible staff for a small team",
+      "catalog_apps": [3],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/316",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Booking, including OpenBuk",
+      "reuse_evidence_bundle": "EP-APPOINTMENTS",
+      "residual_gap_or_decision": "Extend existing services/resources for eligible team members and resolve employee-to-resource links.",
+      "verification_required": "Service/resource validation, historical-data regression and multi-service/staff setup E2E.",
+      "hard_prerequisites": ["STR-01", "PEOPLE-01", "STR-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "APT-02",
+      "title": "Unify availability inputs and harden booking concurrency",
+      "catalog_apps": [3],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/317",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Booking, including OpenBuk",
+      "reuse_evidence_bundle": "EP-APPOINTMENTS",
+      "residual_gap_or_decision": "Unify neutral availability inputs and verify all writers, holds, locks, outbox atomicity and workspace policy.",
+      "verification_required": "Disposable-Postgres race tests across OpenBuk and existing writers; DST/buffer/hold/rollback regressions.",
+      "hard_prerequisites": ["APT-01", "PEOPLE-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "APT-03",
+      "title": "Deliver the day/week agenda and reviewed booking lifecycle",
+      "catalog_apps": [3],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/318",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Booking, including OpenBuk",
+      "reuse_evidence_bundle": "EP-APPOINTMENTS",
+      "residual_gap_or_decision": "Complete day/week agenda and reviewed lifecycle over existing booking commands; preserve public compatibility.",
+      "verification_required": "Lifecycle E2E, stale-conflict handling, mobile/keyboard alternatives and customer-scope negatives.",
+      "hard_prerequisites": ["APT-02", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "APT-04",
+      "title": "Secure the existing guest booking and management journey",
+      "catalog_apps": [3],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/319",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Booking, including OpenBuk",
+      "reuse_evidence_bundle": "EP-APPOINTMENTS",
+      "residual_gap_or_decision": "Complete scoped revocable guest-management tokens and lifecycle; existing anonymous booking is already code-present.",
+      "verification_required": "Token scope/replay/revocation and legacy bypass tests; guest booking-to-management E2E.",
+      "hard_prerequisites": ["APT-02", "STR-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "APT-05",
+      "title": "Deliver observable confirmations and reminders",
+      "catalog_apps": [3],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/320",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Booking, including OpenBuk",
+      "reuse_evidence_bundle": "EP-APPOINTMENTS",
+      "residual_gap_or_decision": "Connect actual Booking confirmation/reminder consumers and observe delivery/retry outcomes, not just outbox enqueue.",
+      "verification_required": "Redelivery/provider-failure/cancellation tests, locale snapshots and isolated message delivery E2E.",
+      "hard_prerequisites": ["APT-03", "APT-04"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "APT-06",
+      "title": "Implement the selected import or calendar-connection path",
+      "catalog_apps": [3],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/321",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Booking, including OpenBuk",
+      "reuse_evidence_bundle": "EP-APPOINTMENTS",
+      "residual_gap_or_decision": "Implement only the adoption path chosen by STR-03, with real provider/import access, authority and reconciliation.",
+      "verification_required": "Selected-path retry/replay, missing-access, timezone and failed-cutover/sync tests; do not build both paths.",
+      "hard_prerequisites": ["STR-03", "APT-02", "PLAT-04"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "APT-07",
+      "title": "Close public-booking abuse and isolation release gaps",
+      "catalog_apps": [3],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/322",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Booking, including OpenBuk",
+      "reuse_evidence_bundle": "EP-APPOINTMENTS",
+      "residual_gap_or_decision": "Close distributed public abuse/isolation release gaps beyond the current bounded per-process guard.",
+      "verification_required": "Shared-limit/multi-instance tests, public isolation and security review evidence.",
+      "hard_prerequisites": ["APT-04"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "KNOW-01",
+      "title": "Publish a minimal private policy/procedure collection",
+      "catalog_apps": [5],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/323",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Private policy owner undecided; Documents / CMS candidates",
+      "reuse_evidence_bundle": "EP-KNOWLEDGE",
+      "residual_gap_or_decision": "Add a minimal private approved/versioned procedure collection; preserve the distinct public P0 scope of #130.",
+      "verification_required": "Publication, version, private/public access tests and author-to-reader UI flow.",
+      "hard_prerequisites": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "KNOW-02",
+      "title": "Find procedures and link them from operational work",
+      "catalog_apps": [5],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/324",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Private policy owner undecided; Documents / CMS candidates",
+      "reuse_evidence_bundle": "EP-KNOWLEDGE",
+      "residual_gap_or_decision": "Add permission-filtered procedure lookup and operational links with freshness/version visibility.",
+      "verification_required": "Search ACL/cache invalidation and task-to-procedure E2E.",
+      "hard_prerequisites": ["KNOW-01", "TASK-04", "REQ-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "KNOW-03",
+      "title": "Answer policy questions with accessible source citations",
+      "catalog_apps": [5],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/325",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Private policy owner undecided; Documents / CMS candidates",
+      "reuse_evidence_bundle": "EP-KNOWLEDGE",
+      "residual_gap_or_decision": "Answer from accessible approved versions with citations and uncertainty, including revocation/injection cases.",
+      "verification_required": "Grounding/abstention evaluation, prompt-injection and tenant-leakage tests, provider-disabled UI.",
+      "hard_prerequisites": ["KNOW-02", "OPS-01"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "OPS-01",
+      "title": "Expose authorized operational tools through the existing copilot",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/326",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Owning domains + existing AI Copilot / Background",
+      "reuse_evidence_bundle": "EP-CONNECTED",
+      "residual_gap_or_decision": "Expose only selected owner use cases through existing tools with retrieval/execution authorization and precise workspace identity.",
+      "verification_required": "Contract/access/stale-version tests, adversarial tool input, redacted audit and AI-disabled checks.",
+      "hard_prerequisites": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "OPS-02",
+      "title": "Propagate approved absence into scheduling conflict review",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/327",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Owning domains + existing AI Copilot / Background",
+      "reuse_evidence_bundle": "EP-CONNECTED",
+      "residual_gap_or_decision": "Propagate approved neutral absence into conflict review; no automatic booking cancellation or private reasons.",
+      "verification_required": "Approval-to-conflict E2E, reorder/replay/correction tests and privacy negatives.",
+      "hard_prerequisites": ["REQ-02", "PEOPLE-03", "APT-02", "TASK-04"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "OPS-03",
+      "title": "Build the Today view and operational exception inbox",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/328",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Owning domains + existing AI Copilot / Background",
+      "reuse_evidence_bundle": "EP-CONNECTED",
+      "residual_gap_or_decision": "Compose Today and an operational exception inbox from authoritative owners, with manual actions and freshness.",
+      "verification_required": "Projection reconciliation/rebuild/source-failure tests and staff/manager daily-work E2E.",
+      "hard_prerequisites": ["TASK-02", "REQ-03", "APT-03", "PLAT-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "OPS-04",
+      "title": "Generate a source-linked morning operations briefing",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/329",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Owning domains + existing AI Copilot / Background",
+      "reuse_evidence_bundle": "EP-CONNECTED",
+      "residual_gap_or_decision": "Prepare a source-linked morning briefing from the composed views, with clear unknowns and disabled-AI fallback.",
+      "verification_required": "Fixed-fixture factual/citation evaluation, role-specific cases and provider/source-failure tests.",
+      "hard_prerequisites": ["OPS-01", "OPS-02", "OPS-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "OPS-05",
+      "title": "Preview and apply manager-reviewed resolution plans",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/330",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Owning domains + existing AI Copilot / Background",
+      "reuse_evidence_bundle": "EP-CONNECTED",
+      "residual_gap_or_decision": "Preview/apply manager-reviewed typed plans with current versions, constraints and per-action failure/retry visibility.",
+      "verification_required": "Read-only preview, stale-plan/concurrent-booking, partial-failure/replay and explicit-send E2E.",
+      "hard_prerequisites": ["OPS-01", "OPS-02", "OPS-03", "APT-05"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "REL-01",
+      "title": "Verify complete pilot workflows and critical regressions",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/331",
+      "completed_coverage_url": null,
+      "evidence_status": "unknown",
+      "existing_owner_or_candidate": "Cross-owner acceptance; API Background / E2E reuse",
+      "reuse_evidence_bundle": "EP-RELEASE",
+      "residual_gap_or_decision": "Execute complete disposable-environment pilot scenarios and actual regressions; test files are not passing results.",
+      "verification_required": "Run agreed E2E/integration and relevant existing regression suites; report environment blockers honestly.",
+      "hard_prerequisites": [
+        "PLAT-04",
+        "PEOPLE-04",
+        "REQ-03",
+        "TASK-03",
+        "KNOW-03",
+        "OPS-04",
+        "OPS-05",
+        "APT-06",
+        "APT-07"
+      ],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "REL-02",
+      "title": "Complete mobile, accessibility and locale acceptance",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/332",
+      "completed_coverage_url": null,
+      "evidence_status": "unknown",
+      "existing_owner_or_candidate": "Cross-owner acceptance; API Background / E2E reuse",
+      "reuse_evidence_bundle": "EP-RELEASE",
+      "residual_gap_or_decision": "Record actual phone/desktop/keyboard/locale acceptance, preserving OpenBuk EN/DE/VI.",
+      "verification_required": "Automated accessibility checks plus manual keyboard/mobile/locale workflow review.",
+      "hard_prerequisites": ["PLAT-03", "APT-04", "TASK-02", "REQ-03", "KNOW-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "REL-03",
+      "title": "Verify operational telemetry, restore and data-handling runbooks",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/333",
+      "completed_coverage_url": null,
+      "evidence_status": "unknown",
+      "existing_owner_or_candidate": "Cross-owner acceptance; API Background / E2E reuse",
+      "reuse_evidence_bundle": "EP-RELEASE",
+      "residual_gap_or_decision": "Demonstrate isolated recovery/restore and support/data-handling runbooks; source instrumentation is insufficient.",
+      "verification_required": "Failure injection, restore/replay drill and redaction inspection with recorded limits.",
+      "hard_prerequisites": ["PLAT-02", "APT-05", "APT-07", "OPS-02"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "REL-04",
+      "title": "Review pilot evidence and decide which P2 work to promote",
+      "catalog_apps": [],
+      "roadmap_scope": "P1",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/334",
+      "completed_coverage_url": null,
+      "evidence_status": "unknown",
+      "existing_owner_or_candidate": "Cross-owner acceptance; API Background / E2E reuse",
+      "reuse_evidence_bundle": "EP-RELEASE",
+      "residual_gap_or_decision": "Collect actual pilot evidence and record continue/refine/stop plus individual P2 decisions; a plan cannot close this gate.",
+      "verification_required": "Review real pilot evidence against the defined protocol; retain unresolved questions and negative results.",
+      "hard_prerequisites": ["STR-04", "REL-01", "REL-02", "REL-03"],
+      "conditional_implementation_gate": null,
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "SHIFT-01",
+      "title": "Validate demand and define a versioned roster model",
+      "catalog_apps": [11],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/335",
+      "completed_coverage_url": null,
+      "evidence_status": "documented-only",
+      "existing_owner_or_candidate": "Roster owner undecided; Booking availability adjacent",
+      "reuse_evidence_bundle": "EP-SHIFTS",
+      "residual_gap_or_decision": "Validate a real coverage need, then define a versioned roster distinct from Booking and POS register sessions.",
+      "verification_required": "Roster lifecycle/permission/timezone tests and review of the validated problem and jurisdictional review gaps.",
+      "hard_prerequisites": ["PEOPLE-02", "STR-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "SHIFT-02",
+      "title": "Assign shifts and expose deterministic coverage gaps",
+      "catalog_apps": [11],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/336",
+      "completed_coverage_url": null,
+      "evidence_status": "documented-only",
+      "existing_owner_or_candidate": "Roster owner undecided; Booking availability adjacent",
+      "reuse_evidence_bundle": "EP-SHIFTS",
+      "residual_gap_or_decision": "Add deterministic assignment/coverage checks against neutral availability, eligibility and dated constraints.",
+      "verification_required": "Coverage/overlap/DST fixture tests, permission negatives and stale-edit cases.",
+      "hard_prerequisites": ["SHIFT-01", "PEOPLE-03"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "SHIFT-03",
+      "title": "Publish roster versions and expose approved booking availability",
+      "catalog_apps": [11],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/337",
+      "completed_coverage_url": null,
+      "evidence_status": "documented-only",
+      "existing_owner_or_candidate": "Roster owner undecided; Booking availability adjacent",
+      "reuse_evidence_bundle": "EP-SHIFTS",
+      "residual_gap_or_decision": "Publish roster versions with an explicit Booking availability policy and convergent event handling.",
+      "verification_required": "Publish-to-booking integration, replay/version ordering, conflict and mobile self-service tests.",
+      "hard_prerequisites": ["SHIFT-02", "APT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "SHIFT-04",
+      "title": "Handle open-shift claims and manager-reviewed swaps",
+      "catalog_apps": [11],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/338",
+      "completed_coverage_url": null,
+      "evidence_status": "documented-only",
+      "existing_owner_or_candidate": "Roster owner undecided; Booking availability adjacent",
+      "reuse_evidence_bundle": "EP-SHIFTS",
+      "residual_gap_or_decision": "Compose claims/swaps through Requests with current roster/availability validation and competing-claim protection.",
+      "verification_required": "Concurrent claims, stale approvals, replay and requester/manager swap E2E.",
+      "hard_prerequisites": ["SHIFT-03", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "TIME-01",
+      "title": "Choose the first time-recording use case and integration",
+      "catalog_apps": [12],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/339",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Provider/native authority undecided; integration-first",
+      "reuse_evidence_bundle": "EP-TIME",
+      "residual_gap_or_decision": "Choose working-time or project time and verify one integration/provider; a capability key is not recording support.",
+      "verification_required": "Provider proof of access using synthetic data and a written contract/ownership decision.",
+      "hard_prerequisites": ["STR-01", "PEOPLE-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "TIME-02",
+      "title": "Import or record time and support transparent corrections",
+      "catalog_apps": [12],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/340",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Provider/native authority undecided; integration-first",
+      "reuse_evidence_bundle": "EP-TIME",
+      "residual_gap_or_decision": "Implement selected source/import with visible original/correction history, deterministic duration and revocation handling.",
+      "verification_required": "Import replay/correction/version tests, DST/overlap fixtures and staff-access negatives.",
+      "hard_prerequisites": ["TIME-01", "PLAT-02", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "TIME-03",
+      "title": "Review periods and export approved time with traceability",
+      "catalog_apps": [12],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/341",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Provider/native authority undecided; integration-first",
+      "reuse_evidence_bundle": "EP-TIME",
+      "residual_gap_or_decision": "Review/export periods with stable batch/source identities and adjustment history; do not infer payroll correctness.",
+      "verification_required": "Period state and export reconciliation fixtures, correction-after-export and unauthorized export tests.",
+      "hard_prerequisites": ["TIME-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "EXP-01",
+      "title": "Audit and complete employee claim capture",
+      "catalog_apps": [16],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/342",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Expenses, with Documents / Approvals",
+      "reuse_evidence_bundle": "EP-EXPENSES",
+      "residual_gap_or_decision": "Audit existing capture and add only employee-claim ownership, evidence and submitted-history gaps.",
+      "verification_required": "Existing-expense regression, currency/validation and private-receipt access tests.",
+      "hard_prerequisites": ["STR-01", "PEOPLE-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "EXP-02",
+      "title": "Route claims for review and resolve policy exceptions",
+      "catalog_apps": [16],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/343",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Expenses, with Documents / Approvals",
+      "reuse_evidence_bundle": "EP-EXPENSES",
+      "residual_gap_or_decision": "Connect reviewed claim routing/version/self-approval policy to existing approvals, separate from reimbursement/posting.",
+      "verification_required": "Routing threshold, stale/concurrent decisions, resubmission and authorization tests.",
+      "hard_prerequisites": ["EXP-01", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "EXP-03",
+      "title": "Track reimbursement evidence and export claims for bookkeeping",
+      "catalog_apps": [16],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/344",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Expenses, with Documents / Approvals",
+      "reuse_evidence_bundle": "EP-EXPENSES",
+      "residual_gap_or_decision": "Record confirmed reimbursement evidence and reconciled accountant exports without releasing funds or requiring Accounting.",
+      "verification_required": "Export reconciliation, duplicate/partial reimbursement and accountant-handoff fixture review.",
+      "hard_prerequisites": ["EXP-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "EXP-04",
+      "title": "Prepare receipt extraction and duplicate-review suggestions",
+      "catalog_apps": [16],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/345",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Expenses, with Documents / Approvals",
+      "reuse_evidence_bundle": "EP-EXPENSES",
+      "residual_gap_or_decision": "Add source-preserving receipt suggestions and duplicate review with explicit confirmation and manual fallback.",
+      "verification_required": "Representative/ambiguous receipt fixtures, false-positive duplicate cases, prompt-injection and manual-fallback tests.",
+      "hard_prerequisites": ["EXP-01", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "ASSET-01",
+      "title": "Create the minimal equipment register",
+      "catalog_apps": [18],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/346",
+      "completed_coverage_url": null,
+      "evidence_status": "documented-only",
+      "existing_owner_or_candidate": "Custody owner undecided; Inventory / Booking adjacent",
+      "reuse_evidence_bundle": "EP-ASSETS",
+      "residual_gap_or_decision": "Validate custody demand and choose a minimal equipment register owner; stock quantity and bookable equipment are adjacent.",
+      "verification_required": "Identifier validation, custody/history preservation, file permissions and register UI tests.",
+      "hard_prerequisites": ["STR-01", "PEOPLE-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "ASSET-02",
+      "title": "Record assignments, handovers and returns",
+      "catalog_apps": [18],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/347",
+      "completed_coverage_url": null,
+      "evidence_status": "documented-only",
+      "existing_owner_or_candidate": "Custody owner undecided; Inventory / Booking adjacent",
+      "reuse_evidence_bundle": "EP-ASSETS",
+      "residual_gap_or_decision": "Record exclusive custody, handover/acknowledgment and returns with history and competing-write checks.",
+      "verification_required": "Concurrent custody/replay tests and employee departure-to-return workflow.",
+      "hard_prerequisites": ["ASSET-01", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "ASSET-03",
+      "title": "Provide warranty/return follow-up and source-linked assistance",
+      "catalog_apps": [18],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/348",
+      "completed_coverage_url": null,
+      "evidence_status": "documented-only",
+      "existing_owner_or_candidate": "Custody owner undecided; Inventory / Booking adjacent",
+      "reuse_evidence_bundle": "EP-ASSETS",
+      "residual_gap_or_decision": "Link due returns/warranties to deduplicated Tasks and authorized assistance; avoid implicit financial valuation.",
+      "verification_required": "Reminder deduplication, date/source checks, AI authorization and optional-integration absence tests.",
+      "hard_prerequisites": ["ASSET-02", "TASK-04", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "HELP-01",
+      "title": "Validate the support function and deliver ticket intake",
+      "catalog_apps": [21],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/349",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Assess existing Issues before new ownership",
+      "reuse_evidence_bundle": "EP-HELPDESK",
+      "residual_gap_or_decision": "Choose one internal support function; assess extending Issues site contexts and private requester access first.",
+      "verification_required": "Intake validation, tenant/requester privacy and existing-Issues regression tests.",
+      "hard_prerequisites": ["STR-01", "PLAT-02", "PEOPLE-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "HELP-02",
+      "title": "Manage queue assignment, replies and resolution history",
+      "catalog_apps": [21],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/350",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Assess existing Issues before new ownership",
+      "reuse_evidence_bundle": "EP-HELPDESK",
+      "residual_gap_or_decision": "Extend queue/reply semantics with internal-note privacy, current permissions and resolution history.",
+      "verification_required": "Private-versus-public reply tests, concurrent assignment, reopen and idempotent notification cases.",
+      "hard_prerequisites": ["HELP-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "HELP-03",
+      "title": "Add simple response targets and support follow-up",
+      "catalog_apps": [21],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/351",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Assess existing Issues before new ownership",
+      "reuse_evidence_bundle": "EP-HELPDESK",
+      "residual_gap_or_decision": "Define one response-target clock/pause policy and bounded follow-up; no employee scoring or SLA guarantee.",
+      "verification_required": "Clock/pause/closure fixtures, notification replay and linked-approval failure tests.",
+      "hard_prerequisites": ["HELP-02", "REQ-02", "TASK-04"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "HELP-04",
+      "title": "Draft support responses using authorized Knowledge",
+      "catalog_apps": [21],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/352",
+      "completed_coverage_url": null,
+      "evidence_status": "partial",
+      "existing_owner_or_candidate": "Assess existing Issues before new ownership",
+      "reuse_evidence_bundle": "EP-HELPDESK",
+      "residual_gap_or_decision": "Draft reviewed responses from accessible Knowledge, excluding internal notes and unrelated personnel data.",
+      "verification_required": "Grounded-response, unsupported-question and cross-role leakage evaluations; explicit-send and AI-off checks.",
+      "hard_prerequisites": ["HELP-02", "KNOW-03", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "INV-01",
+      "title": "Validate billing scope and close invoice-lifecycle gaps",
+      "catalog_apps": [26],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/353",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Invoices, not SaaS Billing",
+      "reuse_evidence_bundle": "EP-INVOICES",
+      "residual_gap_or_decision": "Validate build-versus-integrate scope and correction/credit lifecycle over Invoices/Tax/Party, including optional-Accounting behavior.",
+      "verification_required": "Existing invoice regression, numbering race/retry, currency/rounding and correction tests with reviewed fixtures.",
+      "hard_prerequisites": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "INV-02",
+      "title": "Prepare invoice drafts from approved operational records",
+      "catalog_apps": [26],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/354",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Invoices, not SaaS Billing",
+      "reuse_evidence_bundle": "EP-INVOICES",
+      "residual_gap_or_decision": "Prepare reviewed invoice drafts from permitted source work with duplicate/partial billing provenance and deterministic amounts.",
+      "verification_required": "Duplicate-source, partial billing, authorization, AI proposal review and manual-fallback tests.",
+      "hard_prerequisites": ["INV-01", "APT-03", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "INV-03",
+      "title": "Track invoice delivery, receivables and reviewed reminders",
+      "catalog_apps": [26],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/355",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Invoices, not SaaS Billing",
+      "reuse_evidence_bundle": "EP-INVOICES",
+      "residual_gap_or_decision": "Verify existing delivery/reminder/settlement behavior and residual reviewed-retry gaps; #141 was not_planned, not proof of delivery.",
+      "verification_required": "Delivery failure/retry, partial settlement/credit reconciliation and reminder cancellation tests.",
+      "hard_prerequisites": ["INV-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "INV-04",
+      "title": "Validate the selected invoice format and accountant handoff",
+      "catalog_apps": [26],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/356",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Invoices, not SaaS Billing",
+      "reuse_evidence_bundle": "EP-INVOICES",
+      "residual_gap_or_decision": "Select and validate the exact invoice/export format with actual accountant/specification evidence; no blanket compliance claims.",
+      "verification_required": "Format validator fixtures, export reconciliation, unsupported-format behavior and documented accountant acceptance.",
+      "hard_prerequisites": ["INV-01", "INV-03"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BILL-01",
+      "title": "Map existing payables and complete bill intake",
+      "catalog_apps": [27],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/357",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Purchasing / VendorBill",
+      "reuse_evidence_bundle": "EP-BILLS",
+      "residual_gap_or_decision": "Complete original-document bill intake and review over Purchasing/VendorBill/Party/Documents, not a second payable store.",
+      "verification_required": "Existing-payable regression, malformed document/amount validation and supplier/file authorization tests.",
+      "hard_prerequisites": ["STR-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BILL-02",
+      "title": "Extract bill fields and review duplicate or matching suggestions",
+      "catalog_apps": [27],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/358",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Purchasing / VendorBill",
+      "reuse_evidence_bundle": "EP-BILLS",
+      "residual_gap_or_decision": "Add evidence-backed field/duplicate/matching suggestions with reviewer confirmation; purchase matching remains optional.",
+      "verification_required": "Ambiguous/duplicate/partial-match fixtures, prompt injection, permissions and extraction-off manual entry.",
+      "hard_prerequisites": ["BILL-01", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BILL-03",
+      "title": "Approve bills and track due amounts separately from settlement",
+      "catalog_apps": [27],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/359",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Purchasing / VendorBill",
+      "reuse_evidence_bundle": "EP-BILLS",
+      "residual_gap_or_decision": "Connect configured approval/version review and reconciled due/settlement evidence, without equating approval to payment.",
+      "verification_required": "Approval race/replay, partial settlement/adjustment and due-balance reconciliation tests.",
+      "hard_prerequisites": ["BILL-01", "REQ-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BILL-04",
+      "title": "Export supplier documents and reconcile handoff corrections",
+      "catalog_apps": [27],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/360",
+      "completed_coverage_url": null,
+      "evidence_status": "code-present",
+      "existing_owner_or_candidate": "Purchasing / VendorBill",
+      "reuse_evidence_bundle": "EP-BILLS",
+      "residual_gap_or_decision": "Provide an agreed export batch/acknowledgment/correction trail preserving originals and stable source IDs.",
+      "verification_required": "Batch replay/reconciliation, rejected-row and post-export correction fixtures plus recipient review.",
+      "hard_prerequisites": ["BILL-03"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BUD-01",
+      "title": "Define spending basis, source ownership and promotion evidence",
+      "catalog_apps": [28],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/361",
+      "completed_coverage_url": null,
+      "evidence_status": "not-found-in-reviewed-scope",
+      "existing_owner_or_candidate": "Plan/projection owner undecided; Reporting / source owners adjacent",
+      "reuse_evidence_bundle": "EP-BUDGETS",
+      "residual_gap_or_decision": "Validate one reliable spending source/basis and non-double-counting rules before choosing a budget owner.",
+      "verification_required": "Review sample transaction lifecycle calculations and source reconciliation with the owner/accountant.",
+      "hard_prerequisites": ["STR-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BUD-02",
+      "title": "Manage budget periods, allocations and auditable versions",
+      "catalog_apps": [28],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/362",
+      "completed_coverage_url": null,
+      "evidence_status": "not-found-in-reviewed-scope",
+      "existing_owner_or_candidate": "Plan/projection owner undecided; Reporting / source owners adjacent",
+      "reuse_evidence_bundle": "EP-BUDGETS",
+      "residual_gap_or_decision": "Add authorized budget periods/allocations/version history without copying source transactions or requiring Accounting.",
+      "verification_required": "Version/amendment, permission, amount/period and retry tests.",
+      "hard_prerequisites": ["BUD-01", "PLAT-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BUD-03",
+      "title": "Project commitments and actuals from the selected sources",
+      "catalog_apps": [28],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/363",
+      "completed_coverage_url": null,
+      "evidence_status": "not-found-in-reviewed-scope",
+      "existing_owner_or_candidate": "Plan/projection owner undecided; Reporting / source owners adjacent",
+      "reuse_evidence_bundle": "EP-BUDGETS",
+      "residual_gap_or_decision": "Project only selected sources through contracts/events with replay/rebuild/reconciliation; EXP-03/BILL-03 are alternatives.",
+      "verification_required": "Lifecycle/replay/rebuild and source-total reconciliation tests, including partial/cancelled transactions.",
+      "hard_prerequisites": ["BUD-01", "BUD-02"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    },
+    {
+      "key": "BUD-04",
+      "title": "Explain variances and provide advisory spending warnings",
+      "catalog_apps": [28],
+      "roadmap_scope": "P2",
+      "issue_url": "https://github.com/Corely-AI/corely/issues/364",
+      "completed_coverage_url": null,
+      "evidence_status": "not-found-in-reviewed-scope",
+      "existing_owner_or_candidate": "Plan/projection owner undecided; Reporting / source owners adjacent",
+      "reuse_evidence_bundle": "EP-BUDGETS",
+      "residual_gap_or_decision": "Explain advisory variance from permitted sources/freshness and labeled assumptions; do not enforce automatic spending blocks.",
+      "verification_required": "Variance fixture/reconciliation checks, warning deduplication, explanation-grounding and AI-off tests.",
+      "hard_prerequisites": ["BUD-03", "OPS-01"],
+      "conditional_implementation_gate": "REL-04 or documented equivalent promotion decision",
+      "operational_readiness": "unknown",
+      "issue_state_at_collection": "open"
+    }
+  ],
+  "legacy_issue_inventory": [
+    {
+      "number": 253,
+      "url": "https://github.com/Corely-AI/corely/issues/253",
+      "title": "income tax filling",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 245,
+      "url": "https://github.com/Corely-AI/corely/issues/245",
+      "title": "preset",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 224,
+      "url": "https://github.com/Corely-AI/corely/issues/224",
+      "title": "integration modules",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 222,
+      "url": "https://github.com/Corely-AI/corely/issues/222",
+      "title": "pos",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 216,
+      "url": "https://github.com/Corely-AI/corely/issues/216",
+      "title": "upgrade crm deal",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 215,
+      "url": "https://github.com/Corely-AI/corely/issues/215",
+      "title": "Booking",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 213,
+      "url": "https://github.com/Corely-AI/corely/issues/213",
+      "title": "restaurant list",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 208,
+      "url": "https://github.com/Corely-AI/corely/issues/208",
+      "title": "education centre",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 206,
+      "url": "https://github.com/Corely-AI/corely/issues/206",
+      "title": "website templates",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 201,
+      "url": "https://github.com/Corely-AI/corely/issues/201",
+      "title": "Apartment leasing",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 200,
+      "url": "https://github.com/Corely-AI/corely/issues/200",
+      "title": "Thu Trang - case study",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 196,
+      "url": "https://github.com/Corely-AI/corely/issues/196",
+      "title": "notification module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 195,
+      "url": "https://github.com/Corely-AI/corely/issues/195",
+      "title": "crm-ai",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 191,
+      "url": "https://github.com/Corely-AI/corely/issues/191",
+      "title": "crm v2",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 188,
+      "url": "https://github.com/Corely-AI/corely/issues/188",
+      "title": "SSE",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 187,
+      "url": "https://github.com/Corely-AI/corely/issues/187",
+      "title": "phase 2",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 186,
+      "url": "https://github.com/Corely-AI/corely/issues/186",
+      "title": "phase 1",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 185,
+      "url": "https://github.com/Corely-AI/corely/issues/185",
+      "title": "Comand centre",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 182,
+      "url": "https://github.com/Corely-AI/corely/issues/182",
+      "title": "custom fields",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 174,
+      "url": "https://github.com/Corely-AI/corely/issues/174",
+      "title": "shipment",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 172,
+      "url": "https://github.com/Corely-AI/corely/issues/172",
+      "title": "AI tools for classes",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 170,
+      "url": "https://github.com/Corely-AI/corely/issues/170",
+      "title": "scalable app-grouped menu",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 158,
+      "url": "https://github.com/Corely-AI/corely/issues/158",
+      "title": "menu upgrade",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 156,
+      "url": "https://github.com/Corely-AI/corely/issues/156",
+      "title": "Worker scalable",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 152,
+      "url": "https://github.com/Corely-AI/corely/issues/152",
+      "title": "Email OTP login for students/guardians",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 151,
+      "url": "https://github.com/Corely-AI/corely/issues/151",
+      "title": "Student/Guardian Portal",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 149,
+      "url": "https://github.com/Corely-AI/corely/issues/149",
+      "title": "Worker Tick Orchestrator",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 148,
+      "url": "https://github.com/Corely-AI/corely/issues/148",
+      "title": "teacher dashboard",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 147,
+      "url": "https://github.com/Corely-AI/corely/issues/147",
+      "title": "Nachlife case study",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 145,
+      "url": "https://github.com/Corely-AI/corely/issues/145",
+      "title": "Truc case study",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 143,
+      "url": "https://github.com/Corely-AI/corely/issues/143",
+      "title": "catalog module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 141,
+      "url": "https://github.com/Corely-AI/corely/issues/141",
+      "title": "invoice reminder",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 140,
+      "url": "https://github.com/Corely-AI/corely/issues/140",
+      "title": "students module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 138,
+      "url": "https://github.com/Corely-AI/corely/issues/138",
+      "title": "classess module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 137,
+      "url": "https://github.com/Corely-AI/corely/issues/137",
+      "title": "mvp",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 136,
+      "url": "https://github.com/Corely-AI/corely/issues/136",
+      "title": "website module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 135,
+      "url": "https://github.com/Corely-AI/corely/issues/135",
+      "title": "website module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 134,
+      "url": "https://github.com/Corely-AI/corely/issues/134",
+      "title": "Soft delete",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/Corely-AI/corely/issues/131",
+      "title": "### EPIC: Public knowledge website foundation (routing, SEO, sitemap, analytics)",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 130,
+      "url": "https://github.com/Corely-AI/corely/issues/130",
+      "title": "EPIC: Knowledge module (Articles + FAQ + Glossary) - backend, admin, public",
+      "state": "open",
+      "state_reason": null
+    },
+    {
+      "number": 121,
+      "url": "https://github.com/Corely-AI/corely/issues/121",
+      "title": "vercel rewrite",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 120,
+      "url": "https://github.com/Corely-AI/corely/issues/120",
+      "title": "Reset password",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 114,
+      "url": "https://github.com/Corely-AI/corely/issues/114",
+      "title": "public web",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 112,
+      "url": "https://github.com/Corely-AI/corely/issues/112",
+      "title": "Tenant Entitlements & Feature Management",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 111,
+      "url": "https://github.com/Corely-AI/corely/issues/111",
+      "title": "Owner and Admin permission",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 110,
+      "url": "https://github.com/Corely-AI/corely/issues/110",
+      "title": "Portfolio public page",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 107,
+      "url": "https://github.com/Corely-AI/corely/issues/107",
+      "title": "Scan and update languages",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 94,
+      "url": "https://github.com/Corely-AI/corely/issues/94",
+      "title": "Cleanup GCP storage",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 93,
+      "url": "https://github.com/Corely-AI/corely/issues/93",
+      "title": "Issue module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 90,
+      "url": "https://github.com/Corely-AI/corely/issues/90",
+      "title": "Currency format",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 79,
+      "url": "https://github.com/Corely-AI/corely/issues/79",
+      "title": "Db schema refactor",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 78,
+      "url": "https://github.com/Corely-AI/corely/issues/78",
+      "title": "Production deployment",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 77,
+      "url": "https://github.com/Corely-AI/corely/issues/77",
+      "title": "Rental property module",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 75,
+      "url": "https://github.com/Corely-AI/corely/issues/75",
+      "title": "Rich text editor - ai native",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 72,
+      "url": "https://github.com/Corely-AI/corely/issues/72",
+      "title": "Workspace resolver for public users",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 71,
+      "url": "https://github.com/Corely-AI/corely/issues/71",
+      "title": "Portfolio v1",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 68,
+      "url": "https://github.com/Corely-AI/corely/issues/68",
+      "title": "Rentals",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 66,
+      "url": "https://github.com/Corely-AI/corely/issues/66",
+      "title": "4) Payments — /tax/payments (only if you need it)",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 65,
+      "url": "https://github.com/Corely-AI/corely/issues/65",
+      "title": "Audit/review codes",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 64,
+      "url": "https://github.com/Corely-AI/corely/issues/64",
+      "title": "3) Filing detail (Object Page) — /tax/filings/:id",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 62,
+      "url": "https://github.com/Corely-AI/corely/issues/62",
+      "title": "2) Filings (List Report) — /tax/filings",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 61,
+      "url": "https://github.com/Corely-AI/corely/issues/61",
+      "title": "Tax Center — /tax",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 59,
+      "url": "https://github.com/Corely-AI/corely/issues/59",
+      "title": "Phase 3",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 58,
+      "url": "https://github.com/Corely-AI/corely/issues/58",
+      "title": "Phase 2",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 57,
+      "url": "https://github.com/Corely-AI/corely/issues/57",
+      "title": "Phase 1",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 56,
+      "url": "https://github.com/Corely-AI/corely/issues/56",
+      "title": "Tax - Menu",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 54,
+      "url": "https://github.com/Corely-AI/corely/issues/54",
+      "title": "Review tax module",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 53,
+      "url": "https://github.com/Corely-AI/corely/issues/53",
+      "title": "Review cash management",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 52,
+      "url": "https://github.com/Corely-AI/corely/issues/52",
+      "title": "Form module",
+      "state": "closed",
+      "state_reason": "not_planned"
+    },
+    {
+      "number": 51,
+      "url": "https://github.com/Corely-AI/corely/issues/51",
+      "title": "Standardize list screen",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 50,
+      "url": "https://github.com/Corely-AI/corely/issues/50",
+      "title": "Standard list",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 31,
+      "url": "https://github.com/Corely-AI/corely/issues/31",
+      "title": "langfuse",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 28,
+      "url": "https://github.com/Corely-AI/corely/issues/28",
+      "title": "tax modul",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 26,
+      "url": "https://github.com/Corely-AI/corely/issues/26",
+      "title": "implemnt dashboard mode for freelancer vs company",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 25,
+      "url": "https://github.com/Corely-AI/corely/issues/25",
+      "title": "Prepare spec for freelancer use case",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 24,
+      "url": "https://github.com/Corely-AI/corely/issues/24",
+      "title": "Fix prepush Husky",
+      "state": "closed",
+      "state_reason": "completed"
+    },
+    {
+      "number": 1,
+      "url": "https://github.com/Corely-AI/corely/issues/1",
+      "title": "Workspace/legal entity management",
+      "state": "closed",
+      "state_reason": "completed"
+    }
+  ],
+  "related_prs": [
+    {
+      "baseRefName": "development",
+      "headRefName": "openbuk",
+      "mergeCommit": {
+        "oid": "e95e77dc6db62176b376a6c1e9ffddf0e2417c35"
+      },
+      "mergedAt": "2026-11-07T14:59:45Z",
+      "number": 280,
+      "state": "MERGED",
+      "title": "feat(openbuk): add multilingual booking product vertical slice",
+      "url": "https://github.com/Corely-AI/corely/pull/280"
+    },
+    {
+      "baseRefName": "development",
+      "headRefName": "215-booking",
+      "mergeCommit": {
+        "oid": "a3d4620076c591fa4de4742be1b60512c8430a50"
+      },
+      "mergedAt": "2026-02-23T16:33:17Z",
+      "number": 217,
+      "state": "MERGED",
+      "title": "Fix booking module type errors",
+      "url": "https://github.com/Corely-AI/corely/pull/217"
+    },
+    {
+      "baseRefName": "development",
+      "headRefName": "215-booking",
+      "mergeCommit": {
+        "oid": "54b3a068ad0b963ce32b5d4bc5893e8aa751a03c"
+      },
+      "mergedAt": "2026-02-23T20:26:59Z",
+      "number": 218,
+      "state": "MERGED",
+      "title": "215 booking",
+      "url": "https://github.com/Corely-AI/corely/pull/218"
+    },
+    {
+      "baseRefName": "main",
+      "headRefName": "development",
+      "mergeCommit": {
+        "oid": "1ab9e46043190402342e06cb13036398dafbbdb6"
+      },
+      "mergedAt": "2026-02-23T20:29:51Z",
+      "number": 219,
+      "state": "MERGED",
+      "title": "booking",
+      "url": "https://github.com/Corely-AI/corely/pull/219"
+    },
+    {
+      "baseRefName": "development",
+      "headRefName": "93-issue-module",
+      "mergeCommit": {
+        "oid": "b27993928fdb2a9c5354b86058d71351971d4fc4"
+      },
+      "mergedAt": "2026-02-02T14:49:49Z",
+      "number": 106,
+      "state": "MERGED",
+      "title": "93 issue module",
+      "url": "https://github.com/Corely-AI/corely/pull/106"
+    },
+    {
+      "baseRefName": "development",
+      "headRefName": "112-tenant-entitlements-feature-management",
+      "mergeCommit": {
+        "oid": "431cf15b06f28f88402a5048457e1f83a176c231"
+      },
+      "mergedAt": "2026-02-03T11:07:50Z",
+      "number": 113,
+      "state": "MERGED",
+      "title": "112 tenant entitlements feature management",
+      "url": "https://github.com/Corely-AI/corely/pull/113"
+    },
+    {
+      "baseRefName": "development",
+      "headRefName": "196-notification-module",
+      "mergeCommit": {
+        "oid": "d0e1fe53d223d30ec96f674891d306001a35e87c"
+      },
+      "mergedAt": "2026-02-27T20:33:00Z",
+      "number": 231,
+      "state": "MERGED",
+      "title": "196 notification module",
+      "url": "https://github.com/Corely-AI/corely/pull/231"
+    },
+    {
+      "baseRefName": "development",
+      "headRefName": "185-comand-centre",
+      "mergeCommit": {
+        "oid": "b57ae5dc75bd91087ff2ae9abb42b59d77b9722c"
+      },
+      "mergedAt": "2026-02-14T15:39:49Z",
+      "number": 189,
+      "state": "MERGED",
+      "title": "185 comand centre",
+      "url": "https://github.com/Corely-AI/corely/pull/189"
+    },
+    {
+      "baseRefName": "development",
+      "headRefName": "170-scalable-app-grouped-menu",
+      "mergeCommit": {
+        "oid": "e21b3aae49ee99b9e2846920f9669f7f82d8c1cb"
+      },
+      "mergedAt": "2026-02-11T21:37:54Z",
+      "number": 171,
+      "state": "MERGED",
+      "title": "170 scalable app grouped menu",
+      "url": "https://github.com/Corely-AI/corely/pull/171"
+    }
+  ],
+  "retained_api_module_inventory": [
+    "accounting",
+    "ai-copilot",
+    "ai-richtext",
+    "approvals",
+    "automation",
+    "background",
+    "billing",
+    "booking",
+    "cash-management",
+    "catalog",
+    "classes",
+    "cms",
+    "coaching-engagements",
+    "crm",
+    "crm-mail",
+    "customization",
+    "directory",
+    "documents",
+    "engagement",
+    "expenses",
+    "forms",
+    "identity",
+    "import",
+    "integrations",
+    "inventory",
+    "invoices",
+    "issues",
+    "notifications",
+    "onboarding",
+    "party",
+    "payment-methods",
+    "platform",
+    "platform-custom-attributes",
+    "platform-entitlements",
+    "portal",
+    "portfolio",
+    "pos",
+    "privacy",
+    "purchasing",
+    "rentals",
+    "reporting",
+    "restaurant",
+    "sales",
+    "shared",
+    "tax",
+    "test-harness",
+    "website",
+    "workflow",
+    "workspaces"
+  ],
+  "inventory_roots": [
+    "services/api/src/modules",
+    "packages/contracts/src",
+    "packages/data/prisma/schema",
+    "apps/web/src/modules",
+    "packages/web-features/src/modules",
+    "apps/openbuk-web/src",
+    "apps/public-web/src"
+  ],
+  "dedicated_target_names_not_found": [
+    "tasks",
+    "people",
+    "requests",
+    "knowledge",
+    "shifts",
+    "time",
+    "assets",
+    "helpdesk",
+    "bills",
+    "budgets"
+  ]
+}
