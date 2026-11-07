@@ -46,6 +46,20 @@ pnpm test
 - Update relevant docs in `docs/` when behavior changes.
 - Keep module docs in sync with contracts and mock-server routes.
 
+## Repository hygiene
+
+- Keep root files for project entry points, required configuration and build tooling.
+- Put maintained documentation under `docs/`; dated plans/status reports belong in
+  [the archive](docs/archive/README.md), with current guidance linked separately.
+- Put reusable development utilities in `scripts/`; keep one-off scratch work outside
+  the repository or in ignored `tmp/`.
+- Keep screenshots intended as documentation beside the owning document. Generated
+  test reports/captures go in ignored output folders; do not commit diagnostics,
+  credentials, `.NET` `bin`/`obj`, dependency trees or build caches.
+- Preserve local environment/configuration files and installed dependencies during
+  routine cleanup. Do not move source modules or deployment configuration merely
+  to make the root look smaller.
+
 ## DCO sign-off (required)
 
 We use the Developer Certificate of Origin (DCO). Sign your commits:

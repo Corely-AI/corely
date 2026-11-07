@@ -131,6 +131,8 @@ General developer guides and references.
 
 ### 📂 Other Resources
 
+- [Historical plans and status reports](./archive/README.md)
+
 - [Platform Menu API](./platform/menu.md)
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
@@ -142,4 +144,5 @@ General developer guides and references.
 
 ## Products
 
-- [OpenBuk](products/openbuk/README.md) — independent booking product and implementation roadmap.
+- [OpenBuk](products/openbuk/README.md) — focused booking product and implementation roadmap.
+- [OpenBuk screenshot walkthrough](products/openbuk/screenshots.md)

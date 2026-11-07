@@ -1,5 +1,10 @@
 # 🎯 Implementation Summary - CRM Sequence Automation
 
+> Archived on 2026-11-07 from `IMPLEMENTATION_SUMMARY_EXECUTIVE.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 **Date**: February 15, 2026  
 **Phase**: Phase 3 - Automation Engine & AI Tools  
 **Status**: ✅ **COMPLETE**
@@ -20,10 +25,10 @@
 
 ### Documentation
 
-1. ✅ **[SEQUENCE_IMPLEMENTATION_COMPLETE.md](./SEQUENCE_IMPLEMENTATION_COMPLETE.md)** - Quick start guide
-2. ✅ **[TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md)** - Comprehensive testing
-3. ✅ **[implementation_summary_phase3.md](./implementation_summary_phase3.md)** - Detailed breakdown
-4. ✅ **[seed-test-sequence.ts](./packages/data/scripts/seed-test-sequence.ts)** - Test data seeder
+1. ✅ **[SEQUENCE_IMPLEMENTATION_COMPLETE.md](sequence-implementation-summary.md)** - Quick start guide
+2. ✅ **[TESTING_GUIDE_SEQUENCES.md](sequence-testing-guide.md)** - Comprehensive testing
+3. ✅ **[implementation_summary_phase3.md](phase3-summary.md)** - Detailed breakdown
+4. ✅ **[seed-test-sequence.ts](../../../packages/data/scripts/seed-test-sequence.ts)** - Test data seeder
 
 ---
 
@@ -284,7 +289,7 @@
 ### For Developer
 
 1. **Review** this summary
-2. **Read** [TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md)
+2. **Read** [TESTING_GUIDE_SEQUENCES.md](sequence-testing-guide.md)
 3. **Seed** test data
 4. **Test** each feature
 5. **Report** any issues
@@ -332,4 +337,4 @@ All following clean architecture principles and maintaining the high code qualit
 ---
 
 **Questions or Issues?**  
-Refer to the [Testing Guide](./TESTING_GUIDE_SEQUENCES.md) for detailed instructions.
+Refer to the [Testing Guide](sequence-testing-guide.md) for detailed instructions.

@@ -1,5 +1,10 @@
 # Repo Gap Analysis Report — Import/LandedCost/LotExpiry/Sales/VAT/Excise
 
+> Archived on 2026-11-07 from `REPO_GAP_ANALYSIS_IMPORT_LANDED_COST.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 ## 1. Executive Summary
 
 **What exists:**
@@ -62,10 +67,10 @@
 
 ### Evidence References
 
-- Module boundaries: [docs/architecture/BOUNDARIES.md](docs/architecture/BOUNDARIES.md)
-- Persistence strategy: [docs/architecture/DATABASE_PERSISTENCE_STRATEGY.md](docs/architecture/DATABASE_PERSISTENCE_STRATEGY.md)
-- Module guide: [docs/guides/MODULE_IMPLEMENTATION_GUIDE.md](docs/guides/MODULE_IMPLEMENTATION_GUIDE.md)
-- Catalog feature: [docs/features/catalog.md](docs/features/catalog.md)
+- Module boundaries: [docs/architecture/BOUNDARIES.md](../../architecture/BOUNDARIES.md)
+- Persistence strategy: [docs/architecture/DATABASE_PERSISTENCE_STRATEGY.md](../../architecture/DATABASE_PERSISTENCE_STRATEGY.md)
+- Module guide: [docs/guides/MODULE_IMPLEMENTATION_GUIDE.md](../../guides/MODULE_IMPLEMENTATION_GUIDE.md)
+- Catalog feature: [docs/features/catalog.md](../../features/catalog.md)
 
 ---
 

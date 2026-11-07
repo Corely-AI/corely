@@ -35,3 +35,9 @@ output/playwright/
 **/bin/
 **/obj/
 TestResults/
+
+# Generated root-level captures and scratch diagnostics
+/output/
+/tmp/
+/typecheck_errors*.txt
+/web_typecheck_errors*.txt

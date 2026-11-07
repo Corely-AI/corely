@@ -1,5 +1,10 @@
 # CRM E2E Implementation Plan
 
+> Archived on 2026-11-07 from `CRM_E2E_IMPLEMENTATION_PLAN.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 **Date**: February 15, 2026
 **Status**: In Progress
 **Branch**: CRM-v2

@@ -23,6 +23,8 @@ are retained as historical evidence, not fresh tests from this documentation tas
 The historical architecture-check failure must be reverified before treating it as
 current. This alignment changes no code, licensing, deployment or free/paid policy.
 
+[Screenshot walkthrough](screenshots.md) · captured 2026-10-04; retained historical evidence.
+
 ## Repository findings and implementation plan
 
 The repository already owns booking in `services/api/src/modules/booking`, contracts in

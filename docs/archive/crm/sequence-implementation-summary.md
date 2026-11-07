@@ -1,5 +1,10 @@
 # 🎉 CRM Sequence Automation - Implementation Complete!
 
+> Archived on 2026-11-07 from `SEQUENCE_IMPLEMENTATION_COMPLETE.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 ## ✅ What Was Implemented
 
 ### Backend (API Service)
@@ -80,7 +85,7 @@ Navigate to: `http://localhost:5173/crm/sequences`
 
 ## 📋 Test Checklist
 
-Run through the [TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md):
+Run through the [TESTING_GUIDE_SEQUENCES.md](sequence-testing-guide.md):
 
 - [ ] List sequences in UI
 - [ ] Create sequence via API
@@ -92,9 +97,9 @@ Run through the [TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md):
 
 ## 📚 Documentation
 
-1. **[implementation_summary_phase3.md](./implementation_summary_phase3.md)** - Detailed implementation overview
-2. **[TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md)** - Comprehensive testing guide
-3. **[seed-test-sequence.ts](./packages/data/scripts/seed-test-sequence.ts)** - Sample data seeder
+1. **[implementation_summary_phase3.md](phase3-summary.md)** - Detailed implementation overview
+2. **[TESTING_GUIDE_SEQUENCES.md](sequence-testing-guide.md)** - Comprehensive testing guide
+3. **[seed-test-sequence.ts](../../../packages/data/scripts/seed-test-sequence.ts)** - Sample data seeder
 
 ## 🎯 Next Steps
 
@@ -253,4 +258,4 @@ Implemented with care following:
 
 **Status**: ✅ **COMPLETE & READY FOR TESTING**
 
-Start with the [Testing Guide](./TESTING_GUIDE_SEQUENCES.md) to verify everything works!
+Start with the [Testing Guide](sequence-testing-guide.md) to verify everything works!

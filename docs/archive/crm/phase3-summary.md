@@ -1,5 +1,10 @@
 # Phase 3: Automation Engine & AI Tools - Implementation Summary
 
+> Archived on 2026-11-07 from `implementation_summary_phase3.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 ## Overview
 
 Phase 3 has been successfully implemented, adding automation capabilities through sequence-based workflows and AI-powered tools for the CRM module.

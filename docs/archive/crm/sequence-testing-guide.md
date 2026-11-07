@@ -1,5 +1,10 @@
 # CRM Sequence Automation - Testing Guide
 
+> Archived on 2026-11-07 from `TESTING_GUIDE_SEQUENCES.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -395,7 +400,7 @@ Once basic testing is complete:
 
 ## 📚 Additional Resources
 
-- [Implementation Summary](./implementation_summary_phase3.md)
-- [Prisma Schema](./packages/data/prisma/schema/45_party_crm.prisma)
-- [API Documentation](./docs/api/crm-sequences.md) (TODO)
-- [Worker Configuration](./docs/worker-configuration.md) (TODO)
+- [Implementation Summary](phase3-summary.md)
+- [Prisma Schema](../../../packages/data/prisma/schema/45_party_crm.prisma)
+- API Documentation (`docs/api/crm-sequences.md`, historical path absent at reorganization) (TODO)
+- Worker Configuration (`docs/worker-configuration.md`, historical path absent at reorganization) (TODO)

@@ -1,5 +1,10 @@
 # Phase 1 Implementation Plan: Core CRM Records & Leads
 
+> Archived on 2026-11-07 from `implementation_plan_phase1.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 ## Overview
 
 This phase establishes the core CRM entities linked to the `Deals` system. We will enhance the existing `Party` module to support distinct `Individual` (Contact) and `Organization` (Company) records, and introduce a dedicated `Lead` entity in the `CRM` module for pre-qualification intake.

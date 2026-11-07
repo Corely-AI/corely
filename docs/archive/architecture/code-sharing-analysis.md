@@ -1,5 +1,10 @@
 # Web App vs POS App - Code Sharing Analysis
 
+> Archived on 2026-11-07 from `CODE_SHARING_ANALYSIS.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 ## 🎉 RESOLVED - December 29, 2025
 
 ### Executive Summary
@@ -85,7 +90,7 @@
 
 ### 1. API Client Wrapper 🔴 CRITICAL
 
-**Web Implementation** ([apps/web/src/lib/api-client.ts](apps/web/src/lib/api-client.ts)):
+**Web Implementation** (apps/web/src/lib/api-client.ts (`apps/web/src/lib/api-client.ts`, historical path absent at reorganization)):
 
 ```typescript
 // Web wraps @corely/api-client with token refresh
@@ -123,7 +128,7 @@ class ApiClient {
 }
 ```
 
-**POS Implementation** ([apps/pos/src/services/apiClient.ts](apps/pos/src/services/apiClient.ts)):
+**POS Implementation** (apps/pos/src/services/apiClient.ts (`apps/pos/src/services/apiClient.ts`, historical path absent at reorganization)):
 
 ```typescript
 // POS DUPLICATES the same logic!!!
@@ -183,7 +188,7 @@ export class PosApiClient {
 
 ### 2. Auth Client & Token Management 🔴 CRITICAL
 
-**Web Implementation** ([apps/web/src/lib/auth-client.ts](apps/web/src/lib/auth-client.ts)):
+**Web Implementation** (apps/web/src/lib/auth-client.ts (`apps/web/src/lib/auth-client.ts`, historical path absent at reorganization)):
 
 ```typescript
 class AuthClient {
@@ -227,7 +232,7 @@ class AuthClient {
 }
 ```
 
-**POS Implementation** ([apps/pos/src/stores/authStore.ts](apps/pos/src/stores/authStore.ts)):
+**POS Implementation** ([apps/pos/src/stores/authStore.ts](../../../apps/pos/src/stores/authStore.ts)):
 
 ```typescript
 // POS DUPLICATES auth logic with different storage!!!

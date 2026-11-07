@@ -1,5 +1,10 @@
 # PR1: InventoryLot Model + Basic CRUD - COMPLETION SUMMARY
 
+> Archived on 2026-11-07 from `PR1_COMPLETION_SUMMARY.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 **Status:** ✅ COMPLETE
 **Date:** 2026-02-07
 **Implemented By:** Claude (AI Agent)

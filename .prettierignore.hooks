@@ -22,3 +22,12 @@ apps/e2e/
 **/.next.bak.*/**
 output/playwright/
 .dotnet/
+
+# Generated artifacts are not source-formatting inputs
+**/bin/
+**/obj/
+**/TestResults/
+**/test-results/
+**/playwright-report/
+/output/
+/tmp/

@@ -1,6 +1,14 @@
-# DI Integration Test Scripts
+# Development and Maintenance Scripts
 
 Automated scripts for running DI integration tests with external infrastructure.
+
+## Manual streaming example
+
+[`test-stream.sh`](test-stream.sh) is the relocated legacy curl example for the
+Copilot streaming endpoint. It contains placeholder credentials and tenant IDs;
+review the current [Copilot API guidance](../docs/ai/ai-copilot.md) and supply the
+appropriate authenticated context before using it. Run from the repository root
+with `./scripts/test-stream.sh`. Relocation does not verify the endpoint contract.
 
 ## Available Scripts
 

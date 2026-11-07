@@ -1,5 +1,10 @@
 # Auto-generated Prompt for CRM Resend Feature Implementation
 
+> Archived on 2026-11-07 from `CRM_RESEND_FEATURE_PROMPT.md`. This is historical planning or reporting,
+> not current implementation or fresh verification. Commands and code paths are
+> retained as historical examples; run any reviewed commands from the repository
+> root. Follow the [current product strategy](../../products/corely/README.md) for new work.
+
 ```markdown
 **System context:**
 We are working on a Monorepo using NestJS, Prisma, and a Domain-Driven Design architecture. We have a `crm` module, `crm-mail` module, `workflow` module, and an `integrations` module.
