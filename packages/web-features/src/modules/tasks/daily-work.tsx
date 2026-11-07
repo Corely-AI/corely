@@ -103,6 +103,17 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
       }
     } catch (error: unknown) {
       if (mounted.current) {
+        if ([401, 403, 404].includes(statusOf(error))) {
+          // Current authority/ownership no longer permits this projection. Fetch it again
+          // only on explicit retry; keep drafts solely for conflict/transient recovery.
+          setData(undefined);
+          setAssignees([]);
+          setEditing(null);
+          setTitle("");
+          setOwner("");
+          setDue("");
+          commandKeys.current.clear();
+        }
         setError(
           statusOf(error) === 409
             ? "conflict"

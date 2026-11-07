@@ -36,6 +36,8 @@ export default function StudioPage() {
   useEffect(() => {
     let active = true;
     async function load() {
+      setLoading(true);
+      setFailed(false);
       await auth.loadStoredTokens();
       if (!auth.getAccessToken()) {
         navigate("/login", { replace: true });
@@ -58,6 +60,16 @@ export default function StudioPage() {
         setWorkspace(chosen);
         if (chosen) {
           await storage.setActiveWorkspaceId(chosen.id);
+          if (!active) {
+            return;
+          }
+          if (tasksRoute) {
+            // Daily Work depends on workspace authority and Tasks/People, not Booking setup.
+            setStudio(null);
+            setDraft(null);
+            setCanManage(false);
+            return;
+          }
           const data = await api.request<OpenBukStudioResponse>("/openbuk/studio");
           const setup = data.canManage
             ? await api.request<OpenBukSetupDraftResponse>("/openbuk/setup")
@@ -83,7 +95,7 @@ export default function StudioPage() {
     return () => {
       active = false;
     };
-  }, [navigate]);
+  }, [navigate, tasksRoute]);
   useEffect(() => {
     if (!studio || !day || !canManage || tasksRoute) {
       return;

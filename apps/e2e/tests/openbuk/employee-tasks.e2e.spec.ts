@@ -46,6 +46,11 @@ test("Daily Work creates, assigns, completes and reopens one task, including sta
   const workspaceResponse = await page.request.get("/api/workspaces", { headers: ownerHeaders });
   const workspace = ((await workspaceResponse.json()) as ListWorkspacesOutput).workspaces[0];
   const scopeHeaders = { ...ownerHeaders, "x-workspace-id": workspace.id };
+  const bookingRequests: string[] = [];
+  await page.route("**/api/openbuk/**", async (route) => {
+    bookingRequests.push(new URL(route.request().url()).pathname);
+    await route.abort("failed");
+  });
   await page.goto("/app/tasks");
   await expect(page.getByRole("alert")).toContainText("Daily Work is unavailable");
   await page.screenshot({
@@ -263,5 +268,33 @@ test("Daily Work creates, assigns, completes and reopens one task, including sta
     ).toMatchObject({ status: "OPEN" });
     await adminContext.close();
   }
+  expect(bookingRequests).toEqual([]);
+  await page.unroute("**/api/openbuk/**");
+  await page.getByRole("combobox", { name: "Ngôn ngữ giao diện" }).selectOption("en");
+  await page.getByRole("link", { name: "Studio settings", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Save draft", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Daily Work", exact: true }).click();
+  await expect(card).toBeVisible();
+  // Simulate a current access/ownership denial after the page was already loaded.
+  await page.route("**/api/tasks/**", async (route) => {
+    if (route.request().method() === "POST")
+      await route.fulfill({
+        status: 403,
+        contentType: "application/json",
+        body: JSON.stringify({ statusCode: 403, message: "Access changed" }),
+      });
+    else await route.continue();
+  });
+  await card.getByRole("button", { name: /^(Complete|Reopen)$/ }).click();
+  await expect(page.getByRole("alert")).toContainText("Daily Work is unavailable");
+  await expect(card).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "New task", exact: true })).toHaveCount(0);
+  await page.screenshot({
+    path: testInfo.outputPath("tasks-access-changed-mobile.png"),
+    fullPage: true,
+  });
+  await page.unroute("**/api/tasks/**");
+  await page.getByRole("button", { name: "Retry", exact: true }).click();
+  await expect(card).toBeVisible();
   await staffContext.close();
 });

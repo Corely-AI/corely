@@ -96,6 +96,9 @@ describe.skipIf(!enabled)("Employee tasks persisted lifecycle and trust boundari
       { title: " " },
       { title: "x".repeat(241) },
       { dueAt: "tomorrow" },
+      { dueAt: "2026-11-09T09:00:00+24:00" },
+      { dueAt: "2026-11-09T09:00:00+99:99" },
+      { dueAt: "9999-12-31T23:59:59-01:00" },
       { ownerStaffId: randomUUID() },
       { status: "COMPLETED" },
     ]) {

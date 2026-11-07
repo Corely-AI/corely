@@ -7,7 +7,9 @@ const fields = {
   dueAt: z
     .string()
     .datetime({ offset: true })
+    .refine((value) => Number.isFinite(Date.parse(value)), "Invalid due time offset")
     .transform((value) => new Date(value).toISOString())
+    .pipe(z.string().datetime())
     .nullable()
     .default(null),
 };
@@ -56,3 +58,18 @@ export type CreateEmployeeTask = z.infer<typeof CreateEmployeeTaskSchema>;
 export type UpdateEmployeeTask = z.infer<typeof UpdateEmployeeTaskSchema>;
 export type EmployeeTaskList = z.infer<typeof EmployeeTaskListSchema>;
 export type TaskAssignee = z.infer<typeof TaskAssigneeSchema>;
+
+// Neutral lifecycle facts consumed by the API-hosted outbox; no personnel details.
+export const EmployeeTaskEventTypeSchema = z.enum([
+  "tasks.task.create",
+  "tasks.task.update",
+  "tasks.task.complete",
+  "tasks.task.reopen",
+]);
+export const EmployeeTaskEventPayloadSchema = z
+  .object({
+    workspaceId: z.string().min(1),
+    taskId: z.string().uuid(),
+    version: z.number().int().positive(),
+  })
+  .strict();

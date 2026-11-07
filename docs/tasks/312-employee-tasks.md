@@ -102,8 +102,44 @@ Additive contracts, module/manifest/routes, small extension-storage namespace; n
 new service, finance activation or Projects dependency. Platform/Identity/People public read
 ports accept an optional transaction so authorization and assignment checks reuse the write
 connection; ordinary callers keep their existing behavior. Audit/outbox/replay records commit
-with task changes. No background event consumer or notification delivery is added.
+with task changes. The existing API-hosted dispatcher acknowledges validated task lifecycle facts without adding
+notification delivery or other external side effects.
 
 App installation and role grants remain explicit provisioning steps. Shared frontend type debt, the stale architecture-check path and the existing oversized Billing
 files remain review blockers. Keep the PR Draft; no merge,
 deployment, pilot acceptance or downstream #313–#315 work is included.
+
+## PR #376 review follow-up (2026-11-08)
+
+Reviewed head `45bfb1ec0` against `development` at `426954b774`. There were no posted inline
+review threads; the confirmed findings below came from source review and reproductions.
+
+| Finding                                          | Reproduction and correction                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P2 — invalid due offsets escape validation       | `+24:00`/`+99:99` passed the original Zod datetime check and threw `RangeError`; offset normalization at the year bounds could also produce an unreadable stored date. Reject non-finite dates and require the normalized output to satisfy the UTC wire schema. Five contract cases and HTTP 400 regression checks pass.                      |
+| P2 — Daily Work depends on Booking endpoints     | Blocking `/openbuk/*` made `/app/tasks` fail before Tasks loaded. Skip Booking discovery/setup on that route and reload Booking state when navigating back to settings. The browser test first failed with the generic Booking error; it now completes the task journey with zero Booking requests and resumes the saved setup afterward.      |
+| P2 — valid task events permanently fail dispatch | The four new lifecycle types had no handler and the existing poller classified them as permanent failures. Register narrow, payload-validating acknowledgements in that dispatcher, retaining normal sent-event history and adding no external delivery. The regression changed from four errors to zero; unknown/malformed events still fail. |
+| P2 — denied actions retain the old projection    | 401/403/404 responses left previously loaded team records and an editor visible. Clear the projection, choices, drafts and replay keys, then require a fresh read on explicit retry. Five component tests cover access/ownership denial and preservation of drafts for 409/500 recovery.                                                       |
+
+Fresh follow-up verification (these are new runs, separate from the initial delivery above):
+
+- API: **37 passed** across seven lifecycle/SQL, dispatcher, Billing, entitlement and package test files.
+- Shared Daily Work component: **5 passed**; before the fix, all three denial cases failed.
+- OpenBuk Playwright configuration: **3 passed**, with both clients against an isolated
+  `openbuk_test_376` API and provider/background delivery disabled. Public booking and private
+  setup/invitations remain covered. The access-denial browser response is deliberately simulated;
+  persisted authorization boundaries are covered separately by the SQL HTTP tests.
+- API and OpenBuk typecheck/build, contracts build and changed-source ESLint pass.
+- Follow-up staged ESLint/formatting, 500-line source gate, whitespace and relative-link checks passed. The two
+  oversized Billing files in the original PR remain an existing full-PR size-gate limitation;
+  this correction does not add a gate exemption or change those files.
+
+Visually inspected the unchanged desktop task flow with Booking blocked and the new phone
+access-denial state. [Working task flow while Booking requests are blocked](./assets/312/tasks-booking-blocked-desktop.png)
+(1280×720); [cleared projection after denied action](./assets/312/tasks-access-changed-mobile.png)
+(390×844). No tokens, invitation links or customer data are in these captures.
+
+The initial broad frontend/architecture limitations remain documented above; these fixes do
+not claim those gates passed. GitHub checks on the reviewed head also failed: Quality/unit jobs lack generated Prisma Client
+exports, browser CI calls the missing `e2e:smoke` script, and Vercel reports its daily deployment
+quota. Keep this PR Draft. No merge, release or real provider delivery was run.

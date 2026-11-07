@@ -19,6 +19,21 @@ describe("Employee task contracts and lifecycle", () => {
       }).success
     ).toBe(false);
   });
+  it.each([
+    "2026-11-09T09:00:00+99:99",
+    "2026-11-09T09:00:00+24:00",
+    "2026-11-09T09:00:00-24:00",
+    "0000-01-01T00:00:00+01:00",
+    "9999-12-31T23:59:59-01:00",
+  ])("rejects unparseable offsets as validation errors: %s", (dueAt) => {
+    expect(
+      CreateEmployeeTaskSchema.safeParse({
+        title: "Opening",
+        ownerStaffId: "35f708b5-cbda-4bc1-bcee-51506c9e6018",
+        dueAt,
+      }).success
+    ).toBe(false);
+  });
   it("preserves identity and assignment through completion and reopening", () => {
     const record: TaskRecord = {
       id: "task",

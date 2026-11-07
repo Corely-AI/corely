@@ -35,8 +35,7 @@ contacts, account IDs or party IDs appear in task responses or assignee choices.
 ## Lifecycle and persistence
 
 A task has an immutable ID and workspace, title (1–240 characters), required staff owner,
-optional due instant, `OPEN`/`COMPLETED` status, version and timestamps. Due times are normalized
-to UTC; clients display their device timezone explicitly. Completing records `completedAt`;
+optional due instant, `OPEN`/`COMPLETED` status, version and timestamps. Due times must parse and normalize to a valid UTC wire instant (including offset/year bounds); clients display their device timezone explicitly. Completing records `completedAt`;
 reopening clears it. Ordinary editing preserves status. New/reassigned owners must be active
 in the same workspace. Existing archived owners retain their task history; managers can finish,
 edit or reassign that work. Archival does not erase tasks or turn staff into login accounts.
@@ -67,8 +66,11 @@ Replay records are scoped by actor/workspace and store only fingerprint and reco
 
 Task, audit (`tasks.task.create|update|complete|reopen`), outbox event and replay marker commit
 or roll back together. Events contain workspace/task IDs and version, not titles or personnel
-contacts. This slice records events; it does not promise notification delivery or register a
-new worker. A downstream consumer must use the existing API-hosted background runtime.
+contacts. The existing API-hosted dispatcher explicitly acknowledges these four lifecycle facts after
+validating their neutral payloads, so ordinary task writes do not enter its dead-letter queue.
+Unknown event types and malformed facts remain failures. This acknowledgement has no outbound
+notification or workflow side effect; future delivery consumers must extend it explicitly.
+No separate worker or provider delivery is introduced.
 
 ## Verification and limits
 
