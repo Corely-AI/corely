@@ -1,3 +1,9 @@
+import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
+import { WorkspacesModule } from "../workspaces";
+import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
+import { OpenBukAdminController, OpenBukPublicController } from "./http/openbuk.controller";
+import { OPENBUK_REPOSITORY } from "./application/ports/openbuk-repository.port";
+import { PrismaOpenBukRepositoryAdapter } from "./infrastructure/adapters/prisma-openbuk-repository.adapter";
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { EnvService } from "@corely/config";
@@ -57,8 +63,10 @@ import { UpsertAvailabilityRuleUseCase } from "./application/use-cases/upsert-av
 import { GetAvailabilityUseCase } from "./application/use-cases/get-availability.usecase";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, CrmModule],
+  imports: [WorkspacesModule, DataModule, KernelModule, IdentityModule, CrmModule],
   controllers: [
+    OpenBukAdminController,
+    OpenBukPublicController,
     BookingResourceController,
     BookingServiceController,
     BookingController,
@@ -66,6 +74,9 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     PublicBookingController,
   ],
   providers: [
+    OpenBukRateLimitGuard,
+    OpenBukStudioUseCase,
+    { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },
     { provide: BOOKING_REPOSITORY, useClass: PrismaBookingRepoAdapter },

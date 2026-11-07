@@ -27,6 +27,7 @@ export default tseslint.config(
       "**/*.spec.ts",
       "**/prisma.config.ts",
       "**/vitest.config.ts",
+      "**/vitest.openbuk.config.ts",
       "vitest.workspace.ts",
       "vitest.workspace.int.ts",
       "**/vite.config.ts",

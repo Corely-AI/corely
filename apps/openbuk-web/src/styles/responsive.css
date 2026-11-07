@@ -1,0 +1,270 @@
+@media (min-width: 1450px) {
+  .hero h1 {
+    font-size: 66px;
+  }
+  .hero-art {
+    padding-right: 25px;
+  }
+}
+@media (max-width: 1050px) {
+  .wrap {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+  .hero {
+    gap: 20px;
+  }
+  .hero-art {
+    padding: 20px;
+  }
+  .hero h1 {
+    font-size: 48px;
+  }
+  .preview-card {
+    max-width: 340px;
+  }
+  .ownership {
+    margin: 0 30px;
+  }
+  .live-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .studio-main {
+    padding: 40px 30px;
+  }
+  .sidebar {
+    width: 200px;
+    padding: 30px 16px;
+  }
+  .studio-main {
+    margin-left: 200px;
+    width: calc(100% - 200px);
+  }
+}
+@media (max-width: 720px) {
+  .wrap {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .marketing-nav {
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  .marketing-nav nav {
+    display: contents;
+  }
+  .marketing-nav .language-select {
+    justify-self: end;
+  }
+  .marketing-nav .button {
+    grid-column: 1 / -1;
+  }
+  .marketing-nav nav > a:not(.button) {
+    display: none;
+  }
+  .logo {
+    font-size: 25px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: 30px;
+    padding-bottom: 45px;
+    gap: 30px;
+  }
+  .hero h1 {
+    font-size: 48px;
+  }
+  .hero-sub {
+    font-size: 16px;
+  }
+  .lead {
+    font-size: 15px;
+  }
+  .hero-art {
+    max-width: 420px;
+    width: 100%;
+    margin: auto;
+    padding: 20px 25px;
+  }
+  .art-circle {
+    inset: 0;
+  }
+  .preview-card {
+    max-width: 330px;
+  }
+  .sparkle {
+    right: 0;
+    bottom: 20px;
+    font-size: 50px;
+  }
+  .promise-strip .wrap {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    padding: 20px;
+  }
+  .section {
+    padding-top: 55px;
+    padding-bottom: 55px;
+  }
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin-top: 28px;
+  }
+  .feature-grid article {
+    padding-top: 18px;
+  }
+  .step-number {
+    margin-bottom: 14px;
+  }
+  h2 {
+    font-size: 29px;
+  }
+  .ownership {
+    margin: 0 16px;
+    padding: 30px;
+  }
+  .ownership-symbol {
+    display: none;
+  }
+  .ownership p:last-child {
+    font-size: 14px;
+  }
+  .final-cta h2 {
+    font-size: 34px;
+  }
+  footer {
+    flex-wrap: wrap;
+  }
+  footer p {
+    font-size: 10px;
+  }
+  .studio-layout {
+    display: block;
+  }
+  .sidebar {
+    position: relative;
+    width: 100%;
+    padding: 18px 22px;
+    display: block;
+    border-bottom: 1px solid var(--line);
+  }
+  .sidebar > .eyebrow {
+    display: none;
+  }
+  .sidebar nav {
+    flex-direction: row;
+    margin-top: 19px;
+    gap: 5px;
+  }
+  .sidebar nav a {
+    padding: 10px;
+    font-size: 12px;
+    gap: 7px;
+  }
+  .sidebar-bottom {
+    position: static;
+    margin-top: 16px;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .sidebar-bottom .text-button {
+    font-size: 11px;
+    padding: 8px;
+  }
+  .studio-main {
+    margin: 0;
+    width: 100%;
+    padding: 30px 20px;
+  }
+  .studio-main h1 {
+    font-size: 32px;
+  }
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0;
+  }
+  .page-heading .field {
+    width: 100%;
+  }
+  .live-card {
+    margin-top: 7px;
+    padding: 19px;
+  }
+  .live-card .actions {
+    width: 100%;
+  }
+  .live-card .button {
+    flex: 1;
+    font-size: 10px;
+    padding: 10px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  fieldset {
+    padding: 18px;
+  }
+  .hours-row {
+    gap: 8px;
+  }
+  .hours-row .check-label {
+    min-width: 108px;
+    font-size: 11px;
+  }
+  .hours-row input[type="time"] {
+    width: 92px;
+    padding: 9px 5px;
+    font-size: 12px;
+  }
+  .appointment {
+    gap: 14px;
+    padding: 18px;
+  }
+  .appointment-person {
+    padding-left: 12px;
+  }
+  .appointment .badge {
+    font-size: 9px;
+  }
+  .appointment p {
+    font-size: 10px;
+  }
+  .booking-shell {
+    margin: 25px 14px 15px;
+  }
+  .booking-banner {
+    padding: 26px 20px;
+  }
+  .booking-banner h1 {
+    font-size: 29px;
+  }
+  .booking-body {
+    padding: 25px;
+  }
+  .slot-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .confirmation {
+    padding: 30px 22px;
+  }
+  .auth-card {
+    margin-top: 45px;
+  }
+  .selected-service > strong {
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

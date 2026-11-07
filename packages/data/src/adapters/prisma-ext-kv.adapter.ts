@@ -1,3 +1,5 @@
+import type { TransactionContext } from "@corely/kernel";
+import { getPrismaClient } from "../uow/prisma-unit-of-work.adapter";
 import { Injectable } from "@nestjs/common";
 import type { ExtKv as PrismaExtKvRecord } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
@@ -25,8 +27,8 @@ export class PrismaExtKvAdapter implements ExtKvPort {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async get(input: KvGetInput): Promise<KvEntry | null> {
-    const record = await this.prisma.extKv.findUnique({
+  async get(input: KvGetInput, tx?: TransactionContext): Promise<KvEntry | null> {
+    const record = await getPrismaClient(this.prisma, tx).extKv.findUnique({
       where: {
         tenantId_moduleId_scope_key: {
           tenantId: input.tenantId,
@@ -40,14 +42,14 @@ export class PrismaExtKvAdapter implements ExtKvPort {
     return record ? this.toDomain(record) : null;
   }
 
-  async set(input: KvSetInput): Promise<KvEntry> {
+  async set(input: KvSetInput, tx?: TransactionContext): Promise<KvEntry> {
     // Validate payload size
     const valueStr = JSON.stringify(input.value);
     if (Buffer.byteLength(valueStr, "utf8") > this.MAX_VALUE_SIZE) {
       throw new Error(`ExtKv value exceeds maximum size of ${this.MAX_VALUE_SIZE} bytes`);
     }
 
-    const record = await this.prisma.extKv.upsert({
+    const record = await getPrismaClient(this.prisma, tx).extKv.upsert({
       where: {
         tenantId_moduleId_scope_key: {
           tenantId: input.tenantId,

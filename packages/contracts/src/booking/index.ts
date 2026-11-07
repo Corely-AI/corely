@@ -5,3 +5,5 @@ export * from "./create-service.schema";
 export * from "./create-hold.schema";
 export * from "./availability-rule.schema";
 export * from "./public-booking.schema";
+
+export * from "./openbuk.schema";

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, ConflictException } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type { HoldRepositoryPort } from "../../application/ports/booking-repo.ports";
 import { BookingHold, type BookingHoldStatus } from "../../domain/booking.entities";
@@ -30,26 +30,58 @@ export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
   }
 
   async create(hold: BookingHold): Promise<BookingHold> {
-    const created = await this.prisma.bookingHold.create({
-      data: {
-        id: hold.id,
-        tenantId: hold.tenantId,
-        workspaceId: hold.workspaceId,
-        status: hold.status as BookingHoldStatus,
-        startAt: hold.startAt,
-        endAt: hold.endAt,
-        serviceOfferingId: hold.serviceOfferingId,
-        resourceIds: hold.resourceIds,
-        expiresAt: hold.expiresAt,
-        bookedByPartyId: hold.bookedByPartyId,
-        bookedByName: hold.bookedByName,
-        bookedByEmail: hold.bookedByEmail,
-        notes: hold.notes,
-        confirmedBookingId: hold.confirmedBookingId,
-        createdByUserId: hold.createdByUserId,
-        createdAt: hold.createdAt,
+    const created = await this.prisma.$transaction(
+      async (tx) => {
+        for (const resourceId of [...new Set(hold.resourceIds)].sort()) {
+          await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${hold.tenantId}:${resourceId}`}, 0))::text`;
+          const [booking, activeHold] = await Promise.all([
+            tx.bookingAllocation.findFirst({
+              where: {
+                tenantId: hold.tenantId,
+                resourceId,
+                startAt: { lt: hold.endAt },
+                endAt: { gt: hold.startAt },
+                booking: { status: { in: ["CONFIRMED", "HOLD"] } },
+              },
+            }),
+            tx.bookingHold.findFirst({
+              where: {
+                tenantId: hold.tenantId,
+                resourceIds: { has: resourceId },
+                status: "ACTIVE",
+                expiresAt: { gt: new Date() },
+                startAt: { lt: hold.endAt },
+                endAt: { gt: hold.startAt },
+              },
+            }),
+          ]);
+          if (booking || activeHold) {
+            throw new ConflictException("Booking:SlotUnavailable");
+          }
+        }
+        return tx.bookingHold.create({
+          data: {
+            id: hold.id,
+            tenantId: hold.tenantId,
+            workspaceId: hold.workspaceId,
+            status: hold.status as BookingHoldStatus,
+            startAt: hold.startAt,
+            endAt: hold.endAt,
+            serviceOfferingId: hold.serviceOfferingId,
+            resourceIds: hold.resourceIds,
+            expiresAt: hold.expiresAt,
+            bookedByPartyId: hold.bookedByPartyId,
+            bookedByName: hold.bookedByName,
+            bookedByEmail: hold.bookedByEmail,
+            notes: hold.notes,
+            confirmedBookingId: hold.confirmedBookingId,
+            createdByUserId: hold.createdByUserId,
+            createdAt: hold.createdAt,
+          },
+        });
       },
-    });
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+    );
     return this.mapToDomain(created);
   }
 

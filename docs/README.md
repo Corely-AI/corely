@@ -121,3 +121,7 @@ General developer guides and references.
 - [Platform](./platform/)
 - [Workflows](./workflows/)
 - [Trademarks](./TRADEMARKS.md)
+
+## Products
+
+- [OpenBuk](products/openbuk/README.md) — independent booking product and implementation roadmap.

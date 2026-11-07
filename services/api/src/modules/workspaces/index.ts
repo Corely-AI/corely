@@ -5,3 +5,5 @@ export * from "./application/use-cases/get-workspace.usecase";
 export * from "./application/use-cases/update-workspace.usecase";
 export * from "./application/use-cases/upgrade-workspace.usecase";
 export * from "./application/use-cases/list-workspace-members.usecase";
+
+export * from "./application/use-cases/authorize-workspace.usecase";
