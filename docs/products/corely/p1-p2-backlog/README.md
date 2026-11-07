@@ -5,6 +5,10 @@ It does not itself create GitHub issues or change the repository.
 
 ## Live reconciliation
 
+The [STR-04 research protocol](../pilot-research-protocol.md) defines proposed
+pilot/baseline measures; [P2 checklists](../p2-promotion-criteria.md) cover all eight
+conditional epics. Actual observations and promotion decisions remain REL-04 work.
+
 The [STR-01 capability reuse inventory](capability-reuse-inventory.md) maps all 13 apps and
 68 feature keys to existing owners/candidates, source evidence, closure reasons and residual gaps.
 Its [structured view](capability-reuse-inventory.json) is static evidence, not a readiness claim.

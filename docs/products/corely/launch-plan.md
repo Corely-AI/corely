@@ -87,6 +87,11 @@ policies; this proposed workflow does not disable them.
 
 ## Evidence-led phases
 
+The [pilot research protocol and measurement dictionary](pilot-research-protocol.md)
+defines participant hypotheses, collection/entry gates and comparable measurements.
+The [eight P2 checklists](p2-promotion-criteria.md) keep expansion conditional until
+actual evidence is reviewed under REL-04. Neither document records pilot outcomes.
+
 All counts/thresholds below are proposals, not observed results, validated targets,
 or delivery dates.
 
@@ -129,6 +134,10 @@ These are gates to verify, not claims that current controls are audited. No
 environment-dependent tests or migrations were run for this prose alignment.
 
 ## Expansion gate
+
+Apply the common and individual [P2 promotion criteria](p2-promotion-criteria.md).
+Agree actual thresholds before observation; proposed values are unvalidated.
+Missing evidence leaves an epic conditional, including after this protocol is merged.
 
 Require repeated team usage, improvement against baseline, willingness to pay,
 feasible adoption, sustainable support costs and reliability/security evidence.
