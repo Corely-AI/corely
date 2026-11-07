@@ -3,7 +3,8 @@
 - Issue: [#306 / PEOPLE-02](https://github.com/Corely-AI/corely/issues/306).
 - Parent: [#283](https://github.com/Corely-AI/corely/issues/283).
 - Prerequisite #305 is merged through #373 into `development`.
-- Branch: `306-staff-availability`; base: `development` at `c4d2241e7`.
+- Branch: `306-staff-availability`; initial base: `development` at `c4d2241e7`; rebased onto `426954b77`
+  after #304 / PR #374 merged. Both pilot publication and staff constraints are preserved.
 - Outcome: explicit recurring staff hours, effective dates, IANA timezone and neutral
   dated exceptions constrain linked Booking resources. Future conflicts are flagged;
   commitments are never automatically rewritten or cancelled.
@@ -46,6 +47,16 @@ is added. The task-owned server is stopped after verification.
 | Installed Prettier on all changed text files; `git diff --check`; local documentation references                                                                                                                                                                                     | Passed                                                                                                           |
 | `pnpm --filter @corely/web typecheck`                                                                                                                                                                                                                                                | Blocked by 8 unchanged Assistant/Cash errors, outside this diff                                                  |
 | `pnpm arch:check`                                                                                                                                                                                                                                                                    | Existing checker crashes scanning absent historical `services/worker/src`; checker and absent path are unchanged |
+
+After rebasing onto #304, reran the API command above with
+`src/modules/workspaces/__tests__/pilot-setup.int.test.ts` and
+`src/modules/workspaces/application/use-cases/authorize-workspace.spec.ts` added:
+**74 tests / 8 files passed, no skips**, including 11 pilot setup and 6 workspace
+authorization cases. Full AppModule DI (10 checks), API typecheck/build, web build
+and the rendered browser flow were checked again on this base. Combined with the
+15 People UI tests, this is **99 targeted passing tests**. The conflict resolution
+keeps both `PilotSetupUseCase.publish` and the neutral People constraint dependency;
+the existing pilot fixtures explicitly represent unlinked resources.
 
 Cases include civil-date and UTC effective boundaries, pending timezone replacement,
 exclusive expiry/no fallback, DST gap/fold, skipped civil dates, overnight spill,

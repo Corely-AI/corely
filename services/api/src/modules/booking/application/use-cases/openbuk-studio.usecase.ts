@@ -50,7 +50,7 @@ export class OpenBukStudioUseCase {
     private readonly authorize: Pick<AuthorizeWorkspaceUseCase, "execute">,
     @Inject(PilotSetupUseCase) private readonly pilot: Pick<PilotSetupUseCase, "publish">,
     @Inject(StaffAvailabilityConstraintService)
-    private readonly staffAvailability: StaffAvailabilityConstraintService
+    private readonly staffAvailability: Pick<StaffAvailabilityConstraintService, "windows">
   ) {}
 
   private scope(ctx: UseCaseContext): StudioScope {
