@@ -89,6 +89,7 @@ export interface BookingPage {
 }
 
 export interface BookingRepositoryPort {
+  /** Recheck availability and, when holdId is set, consume the active hold atomically. */
   create(booking: BookingEntity, allocations: BookingAllocation[]): Promise<BookingEntity>;
   findById(id: string, tenantId: string): Promise<BookingEntity | null>;
   findMany(

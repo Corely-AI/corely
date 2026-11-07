@@ -39,6 +39,8 @@ import {
   type StaffScope,
 } from "./ports/staff-repository.port";
 
+import { STAFF_BOOKING, type StaffBookingPort } from "./ports/staff-availability.port";
+
 type Command = "create" | "update" | "archive" | "private";
 @Injectable()
 export class StaffDirectoryUseCase {
@@ -51,7 +53,8 @@ export class StaffDirectoryUseCase {
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
     @Inject(TenantEntitlementService)
-    private readonly entitlements: Pick<TenantEntitlementService, "isAppEnabled">
+    private readonly entitlements: Pick<TenantEntitlementService, "isAppEnabled">,
+    @Inject(STAFF_BOOKING) private readonly booking: StaffBookingPort
   ) {}
   private async authorize(
     ctx: UseCaseContext,
@@ -110,9 +113,9 @@ export class StaffDirectoryUseCase {
     const scope = await this.authorize(ctx, ["people.directory.read"]);
     return directoryEntry(await this.profile(scope, id));
   }
-  async managementDetail(id: string, ctx: UseCaseContext) {
-    const scope = await this.authorize(ctx, ["people.directory.read", "people.profile.manage"]);
-    return this.profile(scope, id);
+  async managementDetail(id: string, ctx: UseCaseContext, tx?: TransactionContext) {
+    const scope = await this.authorize(ctx, ["people.directory.read", "people.profile.manage"], tx);
+    return this.profile(scope, id, tx);
   }
   async privateDetail(id: string, ctx: UseCaseContext) {
     const scope = await this.authorize(ctx, ["people.directory.read", "people.private.read"]);
@@ -242,6 +245,12 @@ export class StaffDirectoryUseCase {
           }
         }
       }
+      // Link/archive changes serialize with bookings just like pattern changes.
+      await this.booking.lock(
+        scope,
+        [previous?.resourceId, next.resourceId].filter((id): id is string => Boolean(id)),
+        tx
+      );
       await this.repo.save(scope, next, tx);
       await this.audit.log(
         {

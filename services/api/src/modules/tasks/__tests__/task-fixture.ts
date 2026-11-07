@@ -1,3 +1,6 @@
+import { StaffBookingAdapter } from "../../booking/public";
+import { StaffAvailabilityUseCase } from "../../people/application/staff-availability.usecase";
+import { ExtStaffAvailabilityAdapter } from "../../people/infrastructure/ext-staff-availability.adapter";
 import { tasksAppManifest } from "../tasks.manifest";
 import { EmployeeTasksUseCase } from "../application/employee-tasks.usecase";
 import { EmployeeTasksController } from "../adapters/http/employee-tasks.controller";
@@ -169,6 +172,7 @@ export async function tasksFixture(prisma: PrismaService) {
   ]) {
     await enableApp.execute({ tenantId, actorUserId, appId: "tasks" });
   }
+  const booking = new StaffBookingAdapter(prisma);
   const usecase = new StaffDirectoryUseCase(
     repo,
     permissions,
@@ -177,7 +181,17 @@ export async function tasksFixture(prisma: PrismaService) {
     resourceLookup,
     audit,
     outbox,
-    platformEntitlements
+    platformEntitlements,
+    booking
+  );
+  const availability = new StaffAvailabilityUseCase(
+    usecase,
+    repo,
+    new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma)),
+    booking,
+    audit,
+    outbox,
+    { now: () => new Date("2026-11-08T00:00:00Z") }
   );
   const taskRepo = new ExtTaskRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma));
   const tasks = new EmployeeTasksUseCase(
@@ -216,6 +230,7 @@ export async function tasksFixture(prisma: PrismaService) {
     providers: [
       { provide: EmployeeTasksUseCase, useValue: tasks },
       { provide: StaffDirectoryUseCase, useValue: usecase },
+      { provide: StaffAvailabilityUseCase, useValue: availability },
       { provide: AuthGuard, useValue: auth },
     ],
   })
@@ -243,6 +258,7 @@ export async function tasksFixture(prisma: PrismaService) {
   return {
     app,
     tasks,
+    availability,
     taskRepo,
     prisma,
     repo,

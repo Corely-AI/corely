@@ -6,8 +6,9 @@ The reusable screens are exported from `@corely/web-features/modules/people`.
 The People manifest contributes discovery/menu metadata through the existing app
 registry. Enable the People app through the existing platform app controls to
 include it in the configured menu; permissions remain independently required.
-This slice does not establish pilot readiness or implement working patterns,
-absence, self-service, payroll, exports, attachments, or AI tools.
+Working patterns are extended by [PEOPLE-02](./people-availability.md).
+These slices do not establish pilot readiness or implement absence, self-service,
+payroll, exports, attachments, or AI tools.
 
 ## Ownership and persistence
 
@@ -107,8 +108,8 @@ permission failures still require reload rather than blindly repeating a stale s
 The UI provides list/search/status filters, pagination, detail/create/edit routes,
 optional link fields, restricted private details, and archive confirmation with
 historical retention copy. English, German and Vietnamese copy is included.
-Manual actions do not depend on AI. Existing OpenBuk public booking is unchanged;
-this ticket adds no new client deployment or OpenBuk studio screen.
+Manual actions do not depend on AI. PEOPLE-02 adds the manager availability editor
+and linked Booking constraints; neither ticket adds a new client deployment.
 
 ## Verification
 

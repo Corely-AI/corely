@@ -143,3 +143,19 @@ The initial broad frontend/architecture limitations remain documented above; the
 not claim those gates passed. GitHub checks on the reviewed head also failed: Quality/unit jobs lack generated Prisma Client
 exports, browser CI calls the missing `e2e:smoke` script, and Vercel reports its daily deployment
 quota. Keep this PR Draft. No merge, release or real provider delivery was run.
+
+### Integration with merged staff availability
+
+While the review was in progress, `development` advanced to `35afaf73f` (PR #375, #306).
+Merged that base and resolved the three overlaps in contract exports, People providers/exports
+and its public API by retaining both Tasks and availability. The task HTTP fixture now supplies
+People's Booking/availability dependencies. Availability reauthorization uses the same optional
+transaction support as Tasks; an added SQL case completes concurrent task commands and availability
+reads using a five-connection pool. The directory's no-duplicate-master-data assertion now counts
+only its test-owned tenant, avoiding interference from parallel availability fixtures.
+
+Fresh combined verification: 79 API tests across 11 files, 5 Daily Work component checks,
+5 availability component checks and all 3 OpenBuk browser journeys passed against this merged
+API. API/contracts build, API/OpenBuk typecheck, OpenBuk build, staged lint/formatting, the staged
+500-line source gate, whitespace and local documentation links passed. The original unrelated full-PR limits
+remain; no new schema or deployment was introduced by conflict resolution.

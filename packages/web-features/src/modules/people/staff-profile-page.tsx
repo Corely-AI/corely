@@ -6,6 +6,7 @@ import type { StaffProfile } from "@corely/contracts";
 import { peopleApi } from "./people-api";
 import { usePeopleAccess, usePeopleLoad, usePeopleMounted } from "./use-people";
 import { StaffProfileForm } from "./staff-profile-form";
+import { StaffAvailability } from "./staff-availability";
 import { StaffPrivateDetails } from "./staff-private-details";
 export function StaffProfilePage() {
   const access = usePeopleAccess();
@@ -165,6 +166,13 @@ export function StaffProfilePage() {
                     </div>
                   )}
                 </section>
+                {manage && (
+                  <StaffAvailability
+                    key={`${access.scope}:${profile.id}`}
+                    id={profile.id}
+                    archived={Boolean(profile.archivedAt)}
+                  />
+                )}
                 <StaffPrivateDetails
                   key={`${access.scope}:${profile.id}:${access.can("private.read")}`}
                   id={profile.id}

@@ -1,3 +1,7 @@
+import { StaffAvailabilityConstraintService } from "../../people/public";
+import { ExtStaffRepositoryAdapter } from "../../people/infrastructure/ext-staff-repository.adapter";
+import { ExtStaffAvailabilityAdapter } from "../../people/infrastructure/ext-staff-availability.adapter";
+import { BookingStaffConstraintAdapter } from "../infrastructure/adapters/booking-staff-constraint.adapter";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import {
@@ -21,6 +25,7 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
   let prisma: PrismaService;
   let repo: PrismaOpenBukRepositoryAdapter;
   let app: OpenBukStudioUseCase;
+  let staff: StaffAvailabilityConstraintService;
   const tenantId = randomUUID();
   const workspaceId = randomUUID();
   const scope = { tenantId, workspaceId };
@@ -41,6 +46,10 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
     process.env.DATABASE_URL = url!;
     prisma = new PrismaService();
     await prisma.$connect();
+    staff = new StaffAvailabilityConstraintService(
+      new ExtStaffRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma)),
+      new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma))
+    );
     repo = new PrismaOpenBukRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma));
     app = new OpenBukStudioUseCase(
       repo,
@@ -49,7 +58,8 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
       new PrismaOutboxAdapter(prisma),
       { now: () => now },
       { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-      { publish: async () => {} }
+      { publish: async () => {} },
+      staff
     );
     const { serviceId, staffId, slug, ...setup } = studioFixture();
     await app.configure(setup, ctx);
@@ -168,7 +178,8 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
       },
       { now: () => now },
       { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-      { publish: async () => {} }
+      { publish: async () => {} },
+      staff
     );
     const key = randomUUID();
     const body = await input("2026-10-05T11:00:00Z");
@@ -216,7 +227,10 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
     );
     const results = await Promise.allSettled([
       app.book(body, randomUUID(), ctx),
-      new PrismaBookingRepoAdapter(prisma).create(entity, [allocation]),
+      new PrismaBookingRepoAdapter(prisma, new BookingStaffConstraintAdapter(prisma, staff)).create(
+        entity,
+        [allocation]
+      ),
     ]);
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
   });

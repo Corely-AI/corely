@@ -289,6 +289,23 @@ describe.skipIf(!enabled)("Employee tasks persisted lifecycle and trust boundari
       expect((await create({ title: "Rollback" }, key)).status).toBe(201);
     }
   });
+  it("shares a bounded connection pool with People availability without losing transaction authority", async () => {
+    const results = await Promise.all(
+      Array.from({ length: 10 }, (_, index) =>
+        index % 2
+          ? f.availability.detail(owner.id, f.ctx)
+          : f.tasks.command(
+              "create",
+              null,
+              { title: `Coexisting work ${index}`, ownerStaffId: owner.id },
+              randomUUID(),
+              f.ctx
+            )
+      )
+    );
+    expect(results).toHaveLength(10);
+    expect(results.filter((r) => "status" in r)).toHaveLength(5);
+  }, 20000);
   it("preserves archival history while rejecting new assignments to archived profiles", async () => {
     const archived = await f.usecase.command(
       "create",

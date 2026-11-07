@@ -16,12 +16,16 @@ import {
 import { ZodError } from "zod";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { toUseCaseContext, type ContextAwareRequest } from "../../../../shared/request-context";
+import { StaffAvailabilityUseCase } from "../../application/staff-availability.usecase";
 import { StaffDirectoryUseCase } from "../../application/staff-directory.usecase";
 
 @Controller("people/staff")
 @UseGuards(AuthGuard)
 export class StaffController {
-  constructor(@Inject(StaffDirectoryUseCase) private readonly staff: StaffDirectoryUseCase) {}
+  constructor(
+    @Inject(StaffDirectoryUseCase) private readonly staff: StaffDirectoryUseCase,
+    @Inject(StaffAvailabilityUseCase) private readonly availability: StaffAvailabilityUseCase
+  ) {}
   // All People DTOs, including neutral ones, bypass shared/browser caches.
   @Get()
   @Header("Cache-Control", "private, no-store")
@@ -37,6 +41,22 @@ export class StaffController {
   @Header("Cache-Control", "private, no-store")
   management(@Param("id") id: string, @Req() req: ContextAwareRequest) {
     return this.staff.managementDetail(id, toUseCaseContext(req));
+  }
+  @Get(":id/availability")
+  @Header("Cache-Control", "private, no-store")
+  availabilityDetail(@Param("id") id: string, @Req() req: ContextAwareRequest) {
+    return this.availability.detail(id, toUseCaseContext(req));
+  }
+  @Post(":id/availability")
+  @Header("Cache-Control", "private, no-store")
+  availabilitySave(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Req() req: ContextAwareRequest
+  ) {
+    return this.parse(() =>
+      this.availability.save(id, body, resolveIdempotencyKey(req), toUseCaseContext(req))
+    );
   }
   @Get(":id/private")
   @Header("Cache-Control", "private, no-store")

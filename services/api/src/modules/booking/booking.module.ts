@@ -1,3 +1,5 @@
+import { PeopleModule } from "../people/people.module";
+import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking-staff-constraint.adapter";
 import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
 import { WorkspacesModule } from "../workspaces";
 import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
@@ -63,7 +65,7 @@ import { UpsertAvailabilityRuleUseCase } from "./application/use-cases/upsert-av
 import { GetAvailabilityUseCase } from "./application/use-cases/get-availability.usecase";
 
 @Module({
-  imports: [WorkspacesModule, DataModule, KernelModule, IdentityModule, CrmModule],
+  imports: [PeopleModule, WorkspacesModule, DataModule, KernelModule, IdentityModule, CrmModule],
   controllers: [
     OpenBukAdminController,
     OpenBukPublicController,
@@ -74,6 +76,7 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     PublicBookingController,
   ],
   providers: [
+    BookingStaffConstraintAdapter,
     OpenBukRateLimitGuard,
     OpenBukStudioUseCase,
     { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },

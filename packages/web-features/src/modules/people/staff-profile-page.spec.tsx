@@ -17,6 +17,7 @@ vi.mock("./use-people", async (original) => ({
     can: () => true,
   }),
 }));
+vi.mock("./staff-availability", () => ({ StaffAvailability: () => null }));
 vi.mock("./staff-private-details", () => ({ StaffPrivateDetails: () => null }));
 vi.mock("./staff-profile-form", () => ({
   StaffProfileForm: () => {
