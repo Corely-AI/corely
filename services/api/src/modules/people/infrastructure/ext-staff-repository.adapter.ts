@@ -30,11 +30,15 @@ export class ExtStaffRepositoryAdapter implements StaffRepositoryPort {
     return this.prisma.$transaction(
       async (client) => {
         // Serialize every People writer in this workspace, including duplicate-link checks.
-        await client.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify(["people", scope.tenantId, scope.workspaceId])}, 0))::text`;
+        await this.lock(scope, client as unknown as TransactionContext);
         return work(client as unknown as TransactionContext);
       },
       { timeout: 15000 }
     );
+  }
+  async lock(scope: StaffScope, tx: TransactionContext): Promise<void> {
+    await getPrismaClient(this.prisma, tx)
+      .$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify(["people", scope.tenantId, scope.workspaceId])}, 0))::text`;
   }
   async list(scope: StaffScope, tx?: TransactionContext) {
     const key = keyFor(scope, "profiles", "");

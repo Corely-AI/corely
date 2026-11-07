@@ -26,7 +26,10 @@ export interface BillingAccessPort {
     tenantId: string,
     productKey?: BillingProductKey
   ): Promise<Record<string, unknown>>;
-  getAllPlanFeatureValues(tenantId: string): Promise<Record<string, unknown>>;
+  getAllPlanFeatureValues(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<Record<string, unknown>>;
   getTrial(tenantId: string, productKey?: BillingProductKey): Promise<BillingTrial>;
   getUpgradeContext(
     tenantId: string,

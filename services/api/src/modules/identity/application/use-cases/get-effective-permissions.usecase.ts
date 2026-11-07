@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { EffectivePermissionsResponse } from "@corely/contracts";
-import type { UseCaseContext } from "@corely/kernel";
+import type { UseCaseContext, TransactionContext } from "@corely/kernel";
 import type { RolePermissionGrantRepositoryPort } from "../ports/role-permission-grant-repository.port";
 import { ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN } from "../ports/role-permission-grant-repository.port";
 import {
@@ -19,7 +19,10 @@ export class GetEffectivePermissionsUseCase {
     private readonly authorizeWorkspace: AuthorizeWorkspaceUseCase
   ) {}
 
-  async execute(ctx: UseCaseContext): Promise<EffectivePermissionsResponse> {
+  async execute(
+    ctx: UseCaseContext,
+    tx?: TransactionContext
+  ): Promise<EffectivePermissionsResponse> {
     if (!ctx.userId || ctx.tenantId === undefined) {
       return {
         permissions: {
@@ -30,8 +33,13 @@ export class GetEffectivePermissionsUseCase {
       };
     }
 
+    const txArgs: [] | [TransactionContext] = tx ? [tx] : [];
     // Role IDs carried by a token or caller are not current membership authority.
-    const membership = await this.memberships.findByTenantAndUser(ctx.tenantId, ctx.userId);
+    const membership = await this.memberships.findByTenantAndUser(
+      ctx.tenantId,
+      ctx.userId,
+      ...txArgs
+    );
     if (!membership) {
       return { permissions: { allowAll: false, allowed: [], denied: [] } };
     }
@@ -39,18 +47,21 @@ export class GetEffectivePermissionsUseCase {
       if (!ctx.tenantId) {
         return { permissions: { allowAll: false, allowed: [], denied: [] } };
       }
-      await this.authorizeWorkspace.execute({
-        tenantId: ctx.tenantId,
-        workspaceId: ctx.workspaceId,
-        userId: ctx.userId,
-      });
+      await this.authorizeWorkspace.execute(
+        {
+          tenantId: ctx.tenantId,
+          workspaceId: ctx.workspaceId,
+          userId: ctx.userId,
+        },
+        ...txArgs
+      );
     }
     const roleIds = [membership.getRoleId()];
 
     const grants =
       ctx.tenantId === null
-        ? await this.grantRepo.listByRoleIds(roleIds)
-        : await this.grantRepo.listByRoleIdsAndTenant(ctx.tenantId, roleIds);
+        ? await this.grantRepo.listByRoleIds(roleIds, ...txArgs)
+        : await this.grantRepo.listByRoleIdsAndTenant(ctx.tenantId, roleIds, ...txArgs);
 
     const effective = computeEffectivePermissionSet(grants);
 

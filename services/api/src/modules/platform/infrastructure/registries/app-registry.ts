@@ -1,3 +1,4 @@
+import { tasksAppManifest } from "../../../tasks/tasks.manifest";
 import { peopleAppManifest } from "../../../people/people.manifest";
 import { Injectable } from "@nestjs/common";
 import type { AppManifest } from "@corely/contracts";
@@ -123,6 +124,7 @@ export class AppRegistry implements AppRegistryPort {
     this.register(directoryAppManifest);
     this.register(bookingAppManifest);
     this.register(peopleAppManifest);
+    this.register(tasksAppManifest);
     this.register(formsAppManifest);
     this.register(coachingEngagementsAppManifest);
     this.register(restaurantAppManifest);

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { DailyWork, createTasksClient } from "@corely/web-features/modules/tasks";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import type {
   ListWorkspacesOutput,
@@ -19,8 +20,10 @@ export default function StudioPage() {
   const { t, locale } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const tasksRoute = location.pathname.endsWith("/tasks");
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [workspace, setWorkspace] = useState<WorkspaceDto | null>(null);
+  const tasksClient = useMemo(() => createTasksClient(api, workspace?.id ?? ""), [workspace?.id]);
   const [studio, setStudio] = useState<OpenBukStudio | null>(null);
   const [draft, setDraft] = useState<OpenBukSetupDraft | null>(null);
   const [canManage, setCanManage] = useState(false);
@@ -82,7 +85,7 @@ export default function StudioPage() {
     };
   }, [navigate]);
   useEffect(() => {
-    if (!studio || !day || !canManage) {
+    if (!studio || !day || !canManage || tasksRoute) {
       return;
     }
     const controller = new AbortController();
@@ -111,7 +114,7 @@ export default function StudioPage() {
         }
       });
     return () => controller.abort();
-  }, [studio, day, canManage]);
+  }, [studio, day, canManage, tasksRoute]);
   const setup =
     !studio ||
     !workspace?.publicEnabled ||
@@ -127,6 +130,7 @@ export default function StudioPage() {
             [
               ["/app", "today", "◷"],
               ["/app/calendar", "calendar", "▦"],
+              ["/app/tasks", "dailyWork", "✓"],
               ["/app/settings", "settings", "⚙"],
             ] as const
           ).map(([href, key, icon]) => (
@@ -173,6 +177,8 @@ export default function StudioPage() {
               </button>
             ))}
           </section>
+        ) : workspace && tasksRoute ? (
+          <DailyWork key={workspace.id} client={tasksClient} locale={locale} />
         ) : workspace && !canManage ? (
           <section>
             <h1>{t("staffJoined")}</h1>

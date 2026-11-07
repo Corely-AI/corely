@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import type { StaffLinkLookup, StaffLinkScope } from "@corely/contracts";
 import { AuthorizeWorkspaceUseCase } from "../../../workspaces/public";
 @Injectable()
@@ -8,9 +9,9 @@ export class StaffAccountLookupAdapter implements StaffLinkLookup {
     private readonly prisma: PrismaService,
     private readonly workspaces: AuthorizeWorkspaceUseCase
   ) {}
-  async exists(scope: StaffLinkScope, id: string): Promise<boolean> {
+  async exists(scope: StaffLinkScope, id: string, tx?: TransactionContext): Promise<boolean> {
     if (
-      !(await this.prisma.membership.findFirst({
+      !(await getPrismaClient(this.prisma, tx).membership.findFirst({
         where: { tenantId: scope.tenantId, userId: id, user: { status: "ACTIVE" } },
         select: { id: true },
       }))
@@ -18,7 +19,7 @@ export class StaffAccountLookupAdapter implements StaffLinkLookup {
       return false;
     }
     try {
-      await this.workspaces.execute({ ...scope, userId: id });
+      await this.workspaces.execute({ ...scope, userId: id }, tx);
       return true;
     } catch {
       return false;

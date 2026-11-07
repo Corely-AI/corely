@@ -111,7 +111,7 @@ export interface BillingAccountRepoPort {
     },
     tx?: TransactionContext
   ): Promise<BillingAccountRecord>;
-  getTenantProfile(tenantId: string): Promise<BillingTenantProfile>;
+  getTenantProfile(tenantId: string, tx?: TransactionContext): Promise<BillingTenantProfile>;
 }
 
 export interface BillingSubscriptionRepoPort {

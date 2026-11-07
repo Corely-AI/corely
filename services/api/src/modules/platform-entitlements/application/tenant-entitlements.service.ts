@@ -1,5 +1,6 @@
 import { Injectable, Inject, ConflictException, NotFoundException, Optional } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import { FeatureCatalogService } from "./feature-catalog.service";
 import {
   type FeatureSource,
@@ -22,7 +23,11 @@ export class TenantEntitlementsService {
     private readonly billingAccess?: BillingAccessPort
   ) {}
 
-  async getEntitlements(tenantId: string): Promise<TenantEntitlements> {
+  async getEntitlements(tenantId: string, tx?: TransactionContext): Promise<TenantEntitlements> {
+    // Command authorization must see current overrides on the command connection.
+    if (tx) {
+      return this.computeEntitlements(tenantId, tx);
+    }
     const cached = this.cache.get(tenantId);
     if (cached && cached.expiresAt > Date.now()) {
       return cached.data;
@@ -33,10 +38,13 @@ export class TenantEntitlementsService {
     return entitlements;
   }
 
-  private async computeEntitlements(tenantId: string): Promise<TenantEntitlements> {
+  private async computeEntitlements(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<TenantEntitlements> {
     // 1. Fetch overrides
 
-    const overrides = await this.prisma.tenantFeatureOverride.findMany({
+    const overrides = await getPrismaClient(this.prisma, tx).tenantFeatureOverride.findMany({
       where: { tenantId },
     });
     const overrideMap = new Map<string, unknown>(
@@ -44,7 +52,9 @@ export class TenantEntitlementsService {
     );
 
     const planFeatures = this.billingAccess
-      ? await this.billingAccess.getAllPlanFeatureValues(tenantId).catch(() => ({}))
+      ? tx
+        ? await this.billingAccess.getAllPlanFeatureValues(tenantId, tx)
+        : await this.billingAccess.getAllPlanFeatureValues(tenantId).catch(() => ({}))
       : {};
 
     // 2. Resolve Features

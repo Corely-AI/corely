@@ -395,3 +395,5 @@ export const EVENT_NAMES = {
 export * from "./common/customization/custom-field";
 export * from "./common/customization/custom-attributes";
 export * from "./people/staff.schema";
+
+export * from "./tasks";

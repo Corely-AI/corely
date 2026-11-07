@@ -1,5 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import { Membership } from "../../domain/entities/membership.entity";
 import { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
 
@@ -68,8 +69,12 @@ export class PrismaMembershipRepository implements MembershipRepositoryPort {
     return data.map((item) => Membership.restore(item));
   }
 
-  async findByTenantAndUser(tenantId: string | null, userId: string): Promise<Membership | null> {
-    const data = await this.prisma.membership.findFirst({
+  async findByTenantAndUser(
+    tenantId: string | null,
+    userId: string,
+    tx?: TransactionContext
+  ): Promise<Membership | null> {
+    const data = await getPrismaClient(this.prisma, tx).membership.findFirst({
       where: { tenantId, userId },
     });
 

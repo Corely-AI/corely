@@ -118,3 +118,12 @@ checks use two tenants, three workspaces and actual Staff/Manager grants with th
 real Identity/Workspaces policies and People repository/projections. Their token
 verification boundary is synthetic; they do not establish production JWT issuance,
 deployment, customer adoption, universal authorization or compliance.
+
+## Operational task references
+
+Tasks consumes the People public `StaffOperationsLookup` projection (ID, display name and
+archive state). Account resolution stays inside People; task callers never receive account
+links or private fields. The public lock method lets task assignment coordinate with the
+same workspace transaction lock used by archival. People authorization and identity-reference
+validation accept the owning transaction so waiting task writers do not exhaust a separate
+connection pool. See [employee tasks](./employee-tasks.md).

@@ -1,3 +1,4 @@
+import { DailyWorkPage } from "@corely/web-features/modules/tasks/daily-work-page";
 import { PeopleDirectoryPage, StaffProfilePage } from "@corely/web-features/modules/people";
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
@@ -118,6 +119,7 @@ export const appShellRoutes = (
   <Route element={<RequireAuth />}>
     <Route element={<AppShell />}>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
+      <Route path="/tasks" element={<DailyWorkPage />} />
       <Route path="/people/staff" element={<PeopleDirectoryPage />} />
       <Route path="/people/staff/new" element={<StaffProfilePage />} />
       <Route path="/people/staff/:id" element={<StaffProfilePage />} />

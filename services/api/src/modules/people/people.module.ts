@@ -1,3 +1,4 @@
+import { StaffOperationsLookup } from "./application/staff-operations-lookup";
 import { PlatformModule } from "../platform/platform.module";
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
@@ -19,6 +20,7 @@ import { StaffController } from "./adapters/http/staff.controller";
   imports: [DataModule, IdentityModule, WorkspacesModule, PlatformModule],
   controllers: [StaffController],
   providers: [
+    StaffOperationsLookup,
     StaffDirectoryUseCase,
     ExtStaffRepositoryAdapter,
     StaffAccountLookupAdapter,
@@ -29,6 +31,6 @@ import { StaffController } from "./adapters/http/staff.controller";
     { provide: STAFF_PARTY_LOOKUP, useExisting: StaffPartyLookupAdapter },
     { provide: STAFF_RESOURCE_LOOKUP, useExisting: StaffResourceLookupAdapter },
   ],
-  exports: [StaffDirectoryUseCase],
+  exports: [StaffDirectoryUseCase, StaffOperationsLookup],
 })
 export class PeopleModule {}

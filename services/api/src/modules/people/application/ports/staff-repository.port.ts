@@ -1,11 +1,20 @@
-import type { StaffProfile, StaffPrivate, StaffLinkScope } from "@corely/contracts";
+import type {
+  StaffProfile,
+  StaffPrivate,
+  StaffLinkScope,
+  StaffLinkLookup,
+} from "@corely/contracts";
 import type { TransactionContext } from "@corely/kernel";
 export type StaffScope = StaffLinkScope;
+export interface TransactionalStaffLinkLookup extends StaffLinkLookup {
+  exists(scope: StaffScope, id: string, tx?: TransactionContext): Promise<boolean>;
+}
 export interface StaffReplay {
   fingerprint: string;
   staffId: string;
 }
 export interface StaffRepositoryPort {
+  lock(scope: StaffScope, tx: TransactionContext): Promise<void>;
   transaction<T>(scope: StaffScope, work: (tx: TransactionContext) => Promise<T>): Promise<T>;
   list(scope: StaffScope, tx?: TransactionContext): Promise<StaffProfile[]>;
   get(scope: StaffScope, id: string, tx?: TransactionContext): Promise<StaffProfile | null>;
