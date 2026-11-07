@@ -15,7 +15,14 @@ export const buildDefaultRoleGrants = (
   const allKeys = catalog.flatMap((group) => group.permissions.map((permission) => permission.key));
 
   const uniqueKeys = Array.from(new Set(allKeys));
-  const readKeys = uniqueKeys.filter((key) => key.endsWith(".read"));
+  const sensitiveKeys = new Set(
+    catalog.flatMap((group) =>
+      group.permissions
+        .filter((permission) => permission.danger)
+        .map((permission) => permission.key)
+    )
+  );
+  const readKeys = uniqueKeys.filter((key) => key.endsWith(".read") && !sensitiveKeys.has(key));
 
   const accountantKeys = uniqueKeys.filter(
     (key) =>
@@ -27,7 +34,7 @@ export const buildDefaultRoleGrants = (
   );
 
   const staffKeys = uniqueKeys.filter(
-    (key) => key.endsWith(".read") && !key.startsWith("settings.")
+    (key) => key.endsWith(".read") && !key.startsWith("settings.") && !sensitiveKeys.has(key)
   );
 
   const readOnlyKeys = readKeys.filter((key) => !key.startsWith("settings."));

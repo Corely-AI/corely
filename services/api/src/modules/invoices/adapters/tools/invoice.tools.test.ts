@@ -123,7 +123,8 @@ describe("invoice tools", () => {
     const draftTool = tools.find((tool) => tool.name === "invoice_draft_issue_email");
 
     const result = await draftTool?.execute?.({
-      tenantId: "workspace-1",
+      tenantId: "tenant-1",
+      workspaceId: "workspace-1",
       userId: "user-1",
       input: {
         invoiceId: "inv-1",
@@ -145,7 +146,7 @@ describe("invoice tools", () => {
         tone: "friendly",
       },
       expect.objectContaining({
-        tenantId: "workspace-1",
+        tenantId: "tenant-1",
         workspaceId: "workspace-1",
         correlationId: "tool-2",
       })

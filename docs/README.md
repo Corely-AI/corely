@@ -141,6 +141,7 @@ General developer guides and references.
 
 - [Historical plans and status reports](./archive/README.md)
 
+- [Operational access and private-data policy](./platform/operational-access.md)
 - [Platform Menu API](./platform/menu.md)
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)

@@ -116,7 +116,7 @@ describe("classes tools", () => {
     );
   });
 
-  it("falls back workspaceId to tenantId when workspaceId is missing", async () => {
+  it("leaves missing workspace context for the owning use case to reject", async () => {
     const deps = makeDeps();
     const tool = buildClassesTools(deps).find(
       (item) => item.name === "classes_getTeacherDashboardUnpaidInvoices"
@@ -133,7 +133,7 @@ describe("classes tools", () => {
     expect((deps.getUnpaidInvoices as any).execute).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "tenant-1",
-        workspaceId: "tenant-1",
+        workspaceId: undefined,
       }),
       {}
     );

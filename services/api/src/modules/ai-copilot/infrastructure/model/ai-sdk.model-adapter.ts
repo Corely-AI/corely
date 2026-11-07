@@ -1,3 +1,4 @@
+import { AuthorizeToolService } from "../../application/services/authorize-tool.service";
 import { Injectable, Logger } from "@nestjs/common";
 import type { EnvService } from "@corely/config";
 import { streamText, convertToModelMessages, stepCountIs, validateUIMessages } from "ai";
@@ -74,7 +75,8 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     private readonly env: EnvService,
     private readonly observability: ObservabilityPort,
     private readonly promptRegistry: PromptRegistry,
-    private readonly promptUsageLogger: PromptUsageLogger
+    private readonly promptUsageLogger: PromptUsageLogger,
+    private readonly authorizeTool: AuthorizeToolService
   ) {
     this.openai = createOpenAI({
       apiKey: this.env.OPENAI_API_KEY || "",
@@ -105,7 +107,14 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       .reverse()
       .find((message) => message.role === "user")
       ?.parts.find((part) => part.type === "text")?.text;
-    const aiTools = buildAiTools(params.tools, {
+    const toolContext = {
+      tenantId: toolTenantId,
+      workspaceId: params.workspaceId,
+      userId: params.userId,
+    };
+    const tools = await this.authorizeTool.filterAllowed(params.tools, toolContext);
+    const aiTools = buildAiTools(tools, {
+      authorize: (candidate) => this.authorizeTool.assert(candidate, toolContext),
       toolExecutions: this.toolExecutions,
       audit: this.audit,
       outbox: this.outbox,

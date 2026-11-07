@@ -1,3 +1,4 @@
+import { AuthorizeToolService } from "./application/services/authorize-tool.service";
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { CopilotController } from "./adapters/http/copilot.controller";
@@ -99,6 +100,7 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     IdempotencyService,
     PrismaCopilotIdempotencyAdapter,
     TenantGuard,
+    AuthorizeToolService,
     AiSdkTextAdapter,
     { provide: AI_TEXT_PORT, useExisting: AiSdkTextAdapter },
     { provide: "COPILOT_LOGGER", useClass: NestLoggerAdapter },
@@ -112,7 +114,8 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
         logger: NestLoggerAdapter,
         observability: ObservabilityPort,
         promptRegistry: PromptRegistry,
-        promptUsageLogger: PromptUsageLogger
+        promptUsageLogger: PromptUsageLogger,
+        authorizeTool: AuthorizeToolService
       ) => {
         logger.debug("Creating AiSdkModelAdapter");
         return new AiSdkModelAdapter(
@@ -122,7 +125,8 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
           env,
           observability,
           promptRegistry,
-          promptUsageLogger
+          promptUsageLogger,
+          authorizeTool
         );
       },
       inject: [
@@ -134,6 +138,7 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
         "OBSERVABILITY_PORT",
         PromptRegistry,
         PromptUsageLogger,
+        AuthorizeToolService,
       ],
     },
     {
