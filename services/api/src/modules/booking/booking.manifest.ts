@@ -1,4 +1,4 @@
-import type { AppManifest } from "@corely/contracts";
+import { OpenBukBookingEnabledKey, type AppManifest } from "@corely/contracts";
 
 export const bookingAppManifest: AppManifest = {
   appId: "booking",
@@ -10,6 +10,26 @@ export const bookingAppManifest: AppManifest = {
   allowedSurfaces: ["platform"],
   capabilities: ["booking.basic"],
   permissions: [],
+  operationalExperiences: [
+    {
+      experienceId: "schedule",
+      route: "/app",
+      allowedSurfaces: ["platform"],
+      requiredCapabilities: ["booking.basic"],
+      requiresWorkspaceAdmin: true,
+      requiredFeatureKey: OpenBukBookingEnabledKey,
+    },
+  ],
+  features: [
+    {
+      key: OpenBukBookingEnabledKey,
+      type: "boolean",
+      defaultValue: true,
+      title: "OpenBuk booking",
+      description: "Booking access for the existing OpenBuk free product.",
+      tenantOverridable: true,
+    },
+  ],
   entitlement: {
     enabledFeatureKey: "app.booking.enabled",
     defaultEnabled: true,

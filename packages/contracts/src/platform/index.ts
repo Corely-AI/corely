@@ -8,6 +8,7 @@ export * from "./app-manifest.schema";
 export * from "./experience-evaluator";
 export * from "./experience-targeting.schema";
 export * from "./surface.schema";
+export * from "./operational-package.schema";
 
 // Template Definition
 export * from "./template-definition.schema";

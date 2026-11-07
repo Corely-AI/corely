@@ -12,6 +12,7 @@ import type {
   UpgradeWorkspaceInput,
   UpgradeWorkspaceOutput,
   WorkspaceConfig,
+  WorkspacePackageId,
   WorkspaceOnboardingStatusResponse,
   DeleteWorkspaceInput,
   DeleteWorkspaceOutput,
@@ -59,10 +60,14 @@ class WorkspacesApi {
 
   async getWorkspaceConfig(
     workspaceId: string,
-    options?: { scope?: "web" | "pos" }
+    options?: { scope?: "web" | "pos"; packageId?: WorkspacePackageId }
   ): Promise<WorkspaceConfig> {
     const scope = options?.scope ?? "web";
-    return apiClient.get<WorkspaceConfig>(`/workspaces/${workspaceId}/config?scope=${scope}`);
+    const query = new URLSearchParams({ scope });
+    if (options?.packageId) {
+      query.set("packageId", options.packageId);
+    }
+    return apiClient.get<WorkspaceConfig>(`/workspaces/${workspaceId}/config?${query}`);
   }
 
   async upgradeWorkspace(

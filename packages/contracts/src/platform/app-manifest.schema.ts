@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { AllowedSurfacesSchema } from "./surface.schema";
 import { AllowedVerticalsSchema } from "./experience-targeting.schema";
+import { OperationalExperienceContributionSchema } from "./operational-package.schema";
 
 /**
  * Menu Contribution - Defines a menu item contributed by an app
@@ -51,6 +52,7 @@ export const AppManifestSchema = z.object({
     .describe("Fine-grained capability strings provided by this app"),
   permissions: z.array(z.string()).describe("RBAC permission keys used by this app"),
   menu: z.array(MenuContributionSchema).describe("Menu contributions from this app"),
+  operationalExperiences: z.array(OperationalExperienceContributionSchema).optional(),
   settingsSchema: z.any().optional().describe("JSON Schema for tenant-specific app settings"),
 
   // Entitlement & Features

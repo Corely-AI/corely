@@ -142,6 +142,7 @@ General developer guides and references.
 - [Historical plans and status reports](./archive/README.md)
 
 - [Platform Menu API](./platform/menu.md)
+- [Operational package configuration](./platform/operational-package.md) — existing OpenBuk client, manifest composition and independent access gates
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)
