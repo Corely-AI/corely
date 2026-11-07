@@ -4,7 +4,8 @@
 
 - Issue: [#302 / PLAT-02](https://github.com/Corely-AI/corely/issues/302); parent #282; prerequisite #298 complete.
 - Foundation: `302-enforce-workspace-access`; [PR #368](https://github.com/Corely-AI/corely/pull/368) merged into `development`.
-- Continuation: `302-complete-access-boundaries`, based on merged `development` at `48f61bc6929a22ab6fa637a13192e024fabb467e`, delivered through a follow-up Draft PR for #302.
+- Continuation: `302-complete-access-boundaries`, based on merged `development` at `48f61bc6929a22ab6fa637a13192e024fabb467e`; [PR #371](https://github.com/Corely-AI/corely/pull/371) merged into `development`.
+- Acceptance handoff: `302-access-foundation-acceptance`, based on merged `development` at `b7ec3bf9ff` (merge of #371); documentation-only [Draft PR #372](https://github.com/Corely-AI/corely/pull/372).
 - Base: initially `4ed3292a2c556cff9d13b2cb6c85672be48fb2f3`, rebased onto `1bdae26ddd43ac1d0e4bad0cd754139f7b2186b5` before publication. Range-diff confirmed the original implementation patch was unchanged.
 - Outcome: current membership and stored grants authorize authenticated workspace operations, independently of menus and stale token roles. System role names add no permission bypass.
 - Scope: existing Identity/Workspaces authorization, permission defaults, Documents and Copilot gates, plus compatible auth/workspace bootstrap. No People records, new app/module/schema or production migration.
@@ -216,8 +217,69 @@ Fresh checks for this client-only correction:
 [Desktop post-create dashboard](302-assets/onboarding-router-fixed-desktop.png) ·
 [Phone post-create dashboard](302-assets/onboarding-router-fixed-mobile.png)
 
+## Foundation acceptance handoff
+
+On 2026-11-07 the maintainer explicitly selected: finish #302 as the shared access
+foundation; retain People requirements in their owning tickets. This supersedes the
+earlier interpretation that #302 must await unimplemented People features. #305 already
+depends on #302. The [policy acceptance matrix](../platform/operational-access.md#foundation-delivery-and-downstream-acceptance)
+maps the four foundation criteria to the merged implementation and executable checks;
+it retains field/attachment/export/audit requirements in #305, #307 and #308.
+
+Fresh checks on `development` at `b7ec3bf9ff`, before this prose-only handoff:
+
+- **97 API tests passed across 13 files**, no skips: operational-access (20),
+  auth-workspace-bootstrap (12), authorize-workspace (6), request-context.resolver (9),
+  effective-permissions (4), run-access (10), private-retrieval.http (11), tool-registry
+  (11), stream-copilot-chat.persistence (1), proxy-download (7), get-download-url (1),
+  get-public-file-url (2) and tools.factory (3). The tools.factory suite executes the
+  actual SDK callback, including conflicting model selectors and execution-time denial.
+- **16 web tests passed across six files**, no skips: workspace-scope (2), offline-scope
+  (3), workspace-recovery (4), workspace-navigation (2), require-auth (3) and
+  role-permissions (2). Existing i18next/router warnings remain.
+- The three changed Markdown files pass installed Prettier, 124 local path/anchor
+  reference checks and `git diff --check`.
+- SQL integration, full-root checks, builds/typechecks and browser journeys were not
+  rerun for this documentation-only change. Prior results and baseline limits above
+  remain historical; no deployed privacy or universal legacy-domain audit is claimed.
+
+UI/UX: N/A for this handoff; it changes policy/tracking prose only. Prior screenshots
+remain evidence for the already merged UI changes.
+
+Reproduce the fresh acceptance checks (the API files were run in two invocations):
+
+```sh
+pnpm --dir services/api exec vitest run --config vitest.config.ts \
+  src/modules/identity/__tests__/operational-access.spec.ts \
+  src/modules/identity/__tests__/auth-workspace-bootstrap.spec.ts \
+  src/modules/workspaces/application/use-cases/authorize-workspace.spec.ts \
+  src/shared/request-context/__tests__/request-context.resolver.spec.ts \
+  src/shared/permissions/__tests__/effective-permissions.unit.test.ts \
+  src/modules/ai-copilot/__tests__/run-access.spec.ts \
+  src/modules/ai-copilot/__tests__/private-retrieval.http.spec.ts \
+  src/modules/ai-copilot/__tests__/tool-registry.spec.ts \
+  src/modules/ai-copilot/__tests__/stream-copilot-chat.persistence.spec.ts \
+  src/modules/documents/application/use-cases/proxy-download/proxy-download.usecase.test.ts \
+  src/modules/documents/application/use-cases/get-download-url/get-download-url.usecase.test.ts \
+  src/modules/documents/__tests__/get-public-file-url.usecase.test.ts \
+  --maxWorkers=1 --minWorkers=1
+pnpm --dir services/api exec vitest run --config vitest.config.ts \
+  src/modules/ai-copilot/__tests__/tools.factory.spec.ts --maxWorkers=1 --minWorkers=1
+pnpm --dir apps/web exec vitest run --config vitest.config.ts \
+  src/app/router/workspace-scope.spec.tsx src/app/router/offline-scope.spec.ts \
+  src/app/router/workspace-recovery.spec.tsx src/app/router/workspace-navigation.spec.tsx \
+  src/app/router/require-auth.spec.tsx src/modules/settings/screens/role-permissions.spec.tsx \
+  --maxWorkers=1 --minWorkers=1
+```
+
 ## Impact and remaining work
 
-#302 remains open / In progress. The merged foundation and follow-up provide common enforcement and policy; private People field/search/cache/export projections and personnel attachment ownership require owner-level implementation and acceptance tests. A synthetic directory fixture is not a deployed private-field redactor. Generic documents remain tenant-owned; signed URLs already issued remain valid until their storage TTL.
+#302 remains open pending integration of acceptance handoff #372. Under the confirmed
+scope, the merged foundation and follow-up provide common enforcement and policy;
+private People field/search/cache/export/audit projections and personnel attachment
+ownership remain required in #305, #307 and #308. Closing the foundation does not close
+those tickets or establish People readiness. A synthetic directory fixture is not a
+deployed private-field redactor. Generic documents remain tenant-owned; signed URLs
+already issued remain valid until their storage TTL.
 
 Existing stored roles require explicit new document grants; no automatic permission backfill is performed. Other undeclared legacy server tools remain restricted. Rollback is reverting the source; the review-only local database is independent of application migrations and production data.
