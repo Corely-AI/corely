@@ -127,6 +127,11 @@ remount workspace views so old local drafts/stream state cannot follow the new s
 Only the current tenant's authorized workspace-discovery list is retained. Callers should
 still include scope in query keys; scope changes are not an authorization grant.
 
+The reset boundary is the authenticated app shell's routed content, inside the router.
+The router, shared providers, login and public routes remain mounted, so a pending
+workspace-creation action can finish discovery and navigate to the rendered dashboard.
+Public-route form state is not reset by an authenticated workspace selection change.
+
 Offline restore/write completion must still match its captured user/workspace subscription
 and current selection. Old subscriptions cannot hydrate a new workspace after a delayed
 IndexedDB read. The `workspace-scope-v2` cache buster discards earlier query snapshots, and

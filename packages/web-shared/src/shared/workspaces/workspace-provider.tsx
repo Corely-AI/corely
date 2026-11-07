@@ -126,11 +126,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     },
   };
 
-  return (
-    <WorkspaceContext.Provider value={value}>
-      <React.Fragment key={activeId ?? "no-workspace"}>{children}</React.Fragment>
-    </WorkspaceContext.Provider>
-  );
+  return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 };
 
 export const useWorkspace = (): WorkspaceContextValue => {

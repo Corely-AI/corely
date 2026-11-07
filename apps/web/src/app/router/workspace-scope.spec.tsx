@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AppShell } from "@corely/web-shared/layout/app-shell";
 import { afterEach, expect, it, vi } from "vitest";
 import type { WorkspaceDto } from "@corely/contracts";
 import {
@@ -20,6 +22,10 @@ vi.mock("@corely/web-shared/lib/auth-provider", () => ({
 }));
 vi.mock("@corely/web-shared/shared/workspaces/workspaces-api", () => ({
   workspacesApi: { listWorkspaces: list },
+}));
+vi.mock("@corely/web-shared/layout/app-sidebar", () => ({ AppSidebar: () => null }));
+vi.mock("@corely/web-shared/shared/workspaces/workspace-config-provider", () => ({
+  useWorkspaceConfig: () => ({ config: null, navigationGroups: [], isLoading: false, error: null }),
 }));
 
 function Probe() {
@@ -128,7 +134,21 @@ it("discards cached payloads and local view state before fetching in a new works
   render(
     <QueryClientProvider client={client}>
       <WorkspaceProvider>
-        <PrivateView />
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+            <Route
+              element={
+                <AppShell
+                  navigationGroups={[]}
+                  includeWorkspaceQuickActions={false}
+                  renderSidebar={() => null}
+                />
+              }
+            >
+              <Route path="*" element={<PrivateView />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </WorkspaceProvider>
     </QueryClientProvider>
   );

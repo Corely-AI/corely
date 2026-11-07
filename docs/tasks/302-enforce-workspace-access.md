@@ -183,6 +183,39 @@ personnel redaction is claimed. Native clients and German/Vietnamese were not ex
 - [After switching to workspace C, desktop](302-assets/workspace-switch-after-desktop.png)
 - [Return to workspace B, phone](302-assets/workspace-switch-after-mobile.png)
 
+## PR #371 router review correction
+
+Review at `00c915728` reproduced a navigation regression: the workspace key also
+remounted BrowserRouter. Creating a workspace selected its ID before awaiting discovery;
+the old navigate callback then updated the URL while the new router kept showing a reset
+onboarding wizard. The same broad boundary also reset unrelated public-route local state.
+
+The key now sits on the shared app shell's routed-content container. Authenticated views
+still discard private drafts/stream state when the workspace changes. Router, shared
+providers and public/auth routes remain mounted; query cancellation/removal and guarded
+offline persistence remain unchanged. Focused clients reuse the same app shell.
+
+Fresh checks for this client-only correction:
+
+- **16 web tests passed** across six files. New cases use the actual onboarding page,
+  BrowserRouter and shared AppShell: delayed post-create discovery reaches the dashboard
+  DOM as well as its URL; a non-workspace form keeps its draft through selection changes.
+  Both new cases fail before the correction. Existing scope tests now render the actual
+  app shell and still prove private draft/cache reset and rejection of late old responses.
+- Web-shared typecheck passed. Changed-production ESLint passed with three existing console
+  warnings. Changed files pass Prettier and diff whitespace checks.
+- Full web-app typecheck reproduces the same eight unchanged Assistant/Cash Management
+  errors. Backend/SQL/full-root checks above were not rerun for this client-only change.
+- Real local API/JWT/PostgreSQL creation succeeds at **1440×1000** and **390×844** using
+  the existing synthetic Owner B. GET workspace discovery is delayed 750 ms without
+  mocking the response. Both journeys reach `/dashboard` with the actual “Welcome back”
+  dashboard and no onboarding wizard; phone horizontal overflow is absent.
+- Shared boundaries are covered locally; focused-client/native browser journeys and
+  German/Vietnamese were not exercised. No backend, schema, migration or release changed.
+
+[Desktop post-create dashboard](302-assets/onboarding-router-fixed-desktop.png) ·
+[Phone post-create dashboard](302-assets/onboarding-router-fixed-mobile.png)
+
 ## Impact and remaining work
 
 #302 remains open / In progress. The merged foundation and follow-up provide common enforcement and policy; private People field/search/cache/export projections and personnel attachment ownership require owner-level implementation and acceptance tests. A synthetic directory fixture is not a deployed private-field redactor. Generic documents remain tenant-owned; signed URLs already issued remain valid until their storage TTL.
