@@ -25,7 +25,7 @@ Implementation evidence, target design and unvalidated hypotheses are kept separ
 - [Repository alignment and discrepancies](./products/corely/repository-alignment.md)
 - [Connected-app architecture and ownership](./architecture/connected-apps.md)
 - [Positioning decision](./decisions/ADR-0002-connected-operations-apps.md)
-- [Focused App Center, Invoice and HR surfaces](./decisions/ADR-0003-focused-app-surfaces.md) — proposed ADR and host/callback matrix awaiting owner review
+- [Focused App Center, Invoice and HR surfaces](./decisions/ADR-0003-focused-app-surfaces.md) — approved application host plan, callback matrix and retained legacy-traffic gates
 - [Focused-surface source, host and backlog inventory](./architecture/focused-app-surfaces-inventory.md) — current reuse evidence, legacy routes and bounded deployment observations
 
 Dated implementation/status reports retain historical context; they do not prove

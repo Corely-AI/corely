@@ -102,10 +102,11 @@ identities, bookings, approvals, documents, customers, suppliers or permissions.
 
 ## Surfaces and reusable UI
 
-The proposed [focused-surface ADR](../decisions/ADR-0003-focused-app-surfaces.md)
-and [current inventory](focused-app-surfaces-inventory.md) assess App Center +
-Invoice first, then HR over the existing People owner. They require owner review
-of host/callback and legacy-entry treatment; they do not change the selected
+The [focused-surface ADR](../decisions/ADR-0003-focused-app-surfaces.md) and
+[current inventory](focused-app-surfaces-inventory.md) record the maintainer's
+approved App Center + Invoice first, then HR surface plan. The accepted hosts
+are `app.corely.one`, `invoice.app.corely.one` and `hr.app.corely.one`, with
+legacy traffic retained until gated cutover. This does not change the selected
 OpenBuk operational pilot or promote conditional invoice business expansion.
 
 Prefer an existing surface for the focused package unless a separately reviewed

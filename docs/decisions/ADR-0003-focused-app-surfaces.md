@@ -2,11 +2,17 @@
 
 ## Status and scope
 
-2026-11-08 · **Proposed for platform, security and product review.**
+2026-11-08 · **Host/surface plan approved by the requesting maintainer; runtime delivery pending.**
 Deliverable for [SURF-01 / #381](https://github.com/Corely-AI/corely/issues/381),
-under [#380](https://github.com/Corely-AI/corely/issues/380). Approval of this ADR
-and its host/callback matrix is still required; no approval, identity registration,
-domain move or deployment is asserted by this document.
+under [#380](https://github.com/Corely-AI/corely/issues/380). The architecture and
+reuse inventory was merged in [#406](https://github.com/Corely-AI/corely/pull/406).
+The maintainer then explicitly selected `app.corely.one`,
+`invoice.app.corely.one` and `hr.app.corely.one`, approved that host plan and
+instructed alignment of both ADRs and closure of #381. The
+[approval record](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+accepts the corresponding callback/logout matrix and retained legacy-traffic
+gates below. This records the maintainer decision, not a separate specialist or
+GitHub review, a choice of SSO implementation, identity registration or deployment.
 
 The [current-source and backlog inventory](../architecture/focused-app-surfaces-inventory.md)
 records evidence at `development` commit
@@ -26,7 +32,7 @@ application title. Rebinding that entire host to a launcher would risk existing
 routes, bookmarks and auth state. DNS resolution of the requested Invoice/HR
 hosts does not establish usable TLS or a deployed focused app.
 
-## Proposed decision
+## Approved surface decision and delivery boundaries
 
 1. Validate **App Center + Invoice first**, using existing invoice behavior as the
    cross-app navigation/session proof. HR is a second reuse proof over People.
@@ -42,11 +48,12 @@ hosts does not establish usable TLS or a deployed focused app.
    **`appId: "people"`**. Preserve record IDs, permissions, stored installations,
    public routes and events. No HR backend, schema-per-app, new worker or
    catalog-wide frontend scaffolding follows from this decision.
-4. Central identity must preserve existing user/membership identities. Prefer
-   the chosen issuer's hosted/themed login at `login.corely.one`; create
-   `apps/login` only if SURF-02 explicitly justifies a Corely-owned frontend.
-   Provider, identity mapping, session storage/operations and migration design
-   remain [SURF-02 / #382](https://github.com/Corely-AI/corely/issues/382).
+4. Central identity must preserve existing user/membership identities. Its entry
+   remains `login.corely.one`; the owning SURF-02 decision determines whether
+   `apps/login` or another supported login frontend serves it. Identity mapping,
+   session storage/operations and migration design remain
+   [SURF-02 / #382](https://github.com/Corely-AI/corely/issues/382). Host approval
+   does not select or override that ticket's SSO implementation.
 5. New browser surfaces use host-specific server-managed sessions through one
    reusable session/BFF adapter in front of the existing API. It owns transport,
    callback validation and session lifecycle, not invoice/People business rules.
@@ -70,7 +77,7 @@ hosts does not establish usable TLS or a deployed focused app.
 ```text
 Browser -> selected app origin -> shared session adapter -> existing services/api
                  |                        |                  |
-           shared UI/features      chosen central issuer   owning use cases
+           shared UI/features      central identity owner   owning use cases
                                                           / persistence / outbox
 ```
 
@@ -82,36 +89,38 @@ pending actions. Neutral operational availability does not carry private absence
 reasons or personnel attachments. Existing Documents, Party, Identity, Workspaces,
 Copilot and audit interfaces remain the owners of supporting capabilities.
 
-## Host and callback matrix for approval
+## Approved application host and callback matrix
 
-These are **proposed exact registrations**, not an export of an existing issuer
-configuration. All callback paths must be handled by the server session adapter
-before SPA fallbacks. SURF-02 confirms the protocol/issuer requirements; SURF-04
-registers the reviewed URLs. No wildcard callback or arbitrary return URL is allowed.
+The three application origins and their exact callback/logout paths are the
+accepted planning matrix. This is not an export of active identity configuration.
+All callback paths must be handled by the server session adapter before SPA
+fallbacks. SURF-02 owns protocol details; SURF-04 configures the accepted URLs.
+No wildcard callback or arbitrary return URL is allowed. Staging, local and
+compatibility origins retain the verification/activation limits stated below.
 
-| Origin                                                                    | Intended owner and rollout                                                                                    | Callback URI                                                                            | Post-logout URI                                  |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `https://app.corely.one`                                                  | New App Center; root changes only at gated cutover; legacy paths retained below                               | `https://app.corely.one/auth/callback`                                                  | `https://app.corely.one/auth/logged-out`         |
-| `https://invoice.app.corely.one`                                          | New Invoice client; first wave; `invoices` owner                                                              | `https://invoice.app.corely.one/auth/callback`                                          | `https://invoice.app.corely.one/auth/logged-out` |
-| `https://hr.app.corely.one`                                               | New HR client; second wave; `people` owner                                                                    | `https://hr.app.corely.one/auth/callback`                                               | `https://hr.app.corely.one/auth/logged-out`      |
-| `https://login.corely.one`                                                | Central identity entry, preferably hosted/themed; provider-specific endpoints decided in SURF-02              | Not an application callback                                                             | Provider-specific; not registered by this ADR    |
-| `https://admin.corely.one`                                                | Proposed compatibility alias to retained `apps/web`; verify ownership/binding before use; no new app required | Retain legacy auth initially; any later central callback requires explicit registration | Retain legacy behavior initially                 |
-| `https://api.corely.one`                                                  | Existing shared business API; preserve existing clients                                                       | Not a browser login callback                                                            | Not applicable                                   |
-| `https://portal.corely.one` and workspace portal URLs                     | Existing `apps/portal`; preserve student/guardian auth and `/w/:slug` URLs                                    | Preserve existing portal contract; no new central callback in this slice                | Preserve portal logout                           |
-| Existing CRM, POS, freelancer, cash-management and public/OpenBuk origins | Preserve existing routes and auth; no forced migration                                                        | Inventory actual registrations before any future change                                 | Preserve existing behavior                       |
+| Origin                                                                    | Intended owner and rollout                                                                                    | Callback URI                                                                            | Post-logout URI                                          |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `https://app.corely.one`                                                  | New App Center; root changes only at gated cutover; legacy paths retained below                               | `https://app.corely.one/auth/callback`                                                  | `https://app.corely.one/auth/logged-out`                 |
+| `https://invoice.app.corely.one`                                          | New Invoice client; first wave; `invoices` owner                                                              | `https://invoice.app.corely.one/auth/callback`                                          | `https://invoice.app.corely.one/auth/logged-out`         |
+| `https://hr.app.corely.one`                                               | New HR client; second wave; `people` owner                                                                    | `https://hr.app.corely.one/auth/callback`                                               | `https://hr.app.corely.one/auth/logged-out`              |
+| `https://login.corely.one`                                                | Central identity entry; implementation/endpoints owned by SURF-02                                             | Not an application callback                                                             | Central identity contract; no live registration asserted |
+| `https://admin.corely.one`                                                | Proposed compatibility alias to retained `apps/web`; verify ownership/binding before use; no new app required | Retain legacy auth initially; any later central callback requires explicit registration | Retain legacy behavior initially                         |
+| `https://api.corely.one`                                                  | Existing shared business API; preserve existing clients                                                       | Not a browser login callback                                                            | Not applicable                                           |
+| `https://portal.corely.one` and workspace portal URLs                     | Existing `apps/portal`; preserve student/guardian auth and `/w/:slug` URLs                                    | Preserve existing portal contract; no new central callback in this slice                | Preserve portal logout                                   |
+| Existing CRM, POS, freelancer, cash-management and public/OpenBuk origins | Preserve existing routes and auth; no forced migration                                                        | Inventory actual registrations before any future change                                 | Preserve existing behavior                               |
 
 The compatibility alias is a recommendation requiring the same owner review as
 the requested hosts; it has not been probed, provisioned or selected in a provider.
 If that alias cannot be approved, keep the current `app.corely.one` binding and
 defer its root cutover rather than invent a working fallback origin.
 
-Staging uses separate issuer clients and an isolated API/data environment. Proposed
+Staging uses separate identity registrations and an isolated API/data environment. Proposed
 origins are `https://app.staging.corely.one`,
 `https://invoice.app.staging.corely.one`, `https://hr.app.staging.corely.one` and
 `https://login.staging.corely.one`. The three application origins reserve their
 own exact `/auth/callback` and `/auth/logged-out` URLs as above. They are not
 verified hosts. SURF-19 must approve/provision the concrete bindings and TLS;
-unapproved origins are never enabled in the issuer.
+unapproved origins are never enabled in identity configuration.
 
 SURF-18 supplies exact local origins/ports and callback pairs before local SSO
 implementation; use separate development clients. Ephemeral preview URLs do not
@@ -119,12 +128,12 @@ enter a wildcard allowlist: use a reviewed fixed preview origin or keep SSO off.
 Do not assume an `*.corely.one` certificate covers `invoice.app.corely.one` or
 `hr.app.corely.one`; verify each hostname's certificate and route.
 
-The concurrent [SURF-02 draft PR #405](https://github.com/Corely-AI/corely/pull/405)
-proposes `apps.corely.one`, `invoice.corely.one` and `hr.corely.one` instead,
-leaving the legacy app host unchanged. Those are unapproved alternatives to the
-parent epic's requested URLs used here. Resolve this topology difference in both
-ADRs before either registration set is approved; do not silently register both
-sets or infer that the separate identity proposal changes the requested scope.
+The maintainer's [recorded choice](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+resolves the former topology difference with
+[SURF-02 / PR #405](https://github.com/Corely-AI/corely/pull/405).
+`apps.corely.one`, `invoice.corely.one` and `hr.corely.one` are withdrawn
+alternatives. Both ADRs use the three approved application hosts above; do not
+register the withdrawn names as additional clients.
 
 ### Existing `app.corely.one` traffic
 
@@ -171,7 +180,7 @@ Reuse applicable shared changes; do not replace its pilot acceptance.
    search/file/privacy checks and HR reruns of SURF-21/22/23 before enabling it.
    The parent remains incomplete while approved HR scope remains undelivered.
 
-The proposed invoice-first decision covers **surface validation only**: existing
+The approved invoice-first surface decision covers **surface validation only**: existing
 records/APIs, create/list/detail/edit/audit and necessary supporting workflows.
 New operational-source drafting, expanded receivables/reminders, invoice lifecycle
 changes, e-invoice formats and accountant handoff remain #353–356, with #334's
@@ -207,16 +216,17 @@ remove old routes only through a separate evidence-based deprecation decision.
 | Shared parent-domain browser token                              | Rejected for new surfaces: weakens origin isolation and does not solve callback/CSRF/revocation design.                                   |
 | Thin focused clients with reusable sessions and one modular API | Proposed: reuses owners and isolates navigation; adds origin/TLS/session/CI/compatibility operational work that needs explicit evidence.  |
 
-## Review and acceptance still required
+## Approval and remaining delivery evidence
 
-- Platform/product: approve the first-wave surface scope, retained OpenBuk pilot,
-  compatibility alias, legacy root/deep-link treatment and host matrix.
-- Security/platform: review the matrix with SURF-02's issuer, account mapping,
-  callbacks, CSRF, trusted proxy, session isolation, logout and outage design.
-- Hosting/release owner: supply authoritative project/domain/certificate and
-  identity registration readbacks under SURF-19/04 before activation.
+The [maintainer approval](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+completes #381's host-plan decision and authorizes its closure with the merged
+architecture/reuse evidence. Keep App Center + Invoice first and HR second;
+retain the OpenBuk pilot and independent conditional invoice business gates.
+Existing `app.corely.one` traffic follows the gated legacy treatment above.
 
-These are named responsibilities, not invented assignees or recorded approvals.
-#381 stays open until the required architecture/host-matrix review is recorded.
-This draft changes documentation only; no frontend, DNS, auth, database or
-deployment settings change, and no production-readiness claim is made.
+SURF-02 still owns the identity/session protocol and its security requirements.
+SURF-04/18/19/24 must obtain actual identity registration, local origin, hosting,
+certificate, routing, rollout and recovery evidence before activation. Staging
+origins and the conditional compatibility alias are not provisioned or operationally
+accepted by the three-host approval. No live cutover, separate specialist review,
+runtime implementation or production-readiness claim follows from closing #381.

@@ -14,9 +14,10 @@
   `development`; architecture/host-matrix review remains pending.
 - Outcome: [ADR-0003](../decisions/ADR-0003-focused-app-surfaces.md) and
   [source/host/backlog inventory](../architecture/focused-app-surfaces-inventory.md).
-- Acceptance: ownership/reuse, complete capability map, reversible legacy-host
-  treatment and host/callback matrix prepared; platform/security/product review
-  and matrix approval remain outstanding. Do not close the issue on draft creation.
+- Acceptance: architecture/reuse inventory merged in #406. The maintainer
+  [approved the host plan](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+  on 2026-11-08 and explicitly instructed alignment of both ADRs and closure.
+  Runtime implementation/registration evidence remains in follow-on tickets.
 - Exclusions: runtime implementation, provider/DNS/auth/database changes,
   deployment, billing-roadmap promotion and changes to existing issue scopes.
 
@@ -56,12 +57,14 @@ rendered screenshots/recordings and interaction evidence.
 
 ## Impact and remaining work
 
-No runtime compatibility, configuration or persistence change. Rejecting the ADR
-requires only revising/reverting documentation. Platform/security/product owners
-must review the proposed first-wave scope, host/callback matrix and legacy alias/
-route treatment. The Corely hosting/identity owners must provide authoritative
-bindings/registrations before activation. #381 remains open while approval is
-outstanding; no review approval or production readiness is inferred.
+The maintainer's [host-plan approval](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+selects `app.corely.one`, `invoice.app.corely.one` and `hr.app.corely.one` and
+withdraws the alternative names from #405. The corresponding callback/logout
+matrix and gated legacy-traffic treatment are recorded in both ADRs. Closure of
+#381 is explicitly authorized; no SSO provider/protocol decision, separate
+specialist/GitHub review, deployment or runtime readiness is inferred.
 
-The parallel #382 [draft PR #405](https://github.com/Corely-AI/corely/pull/405)
-proposes different hosts; reconcile both ADRs before approving issuer URLs.
+This approval follow-up uses `381-record-approved-hosts` from the merged #406
+base, isolated from concurrent #382 edits. It changes documentation only and is
+published as a linked Draft PR; no automatic merge is performed. Authoritative
+bindings, TLS, registrations and rollout evidence remain follow-on work.
