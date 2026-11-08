@@ -1,0 +1,118 @@
+# 385 — Host-specific sessions and shared API transport
+
+## Tracking and outcome
+
+- Issue: [#385](https://github.com/Corely-AI/corely/issues/385), parent [#380](https://github.com/Corely-AI/corely/issues/380).
+- Prerequisites: #382 design and #384 central login are closed and integrated in the verified base.
+- Branch: `385-host-specific-sessions`; base: `corely/development` at `d3dedf3655` (default branch verified with remote readback).
+- PR: [Draft #410](https://github.com/Corely-AI/corely/pull/410), targeting `development`.
+- Outcome: existing host-bound opaque sessions authenticate allowlisted business routes in the existing shared API; browser JavaScript receives only CSRF/expiry metadata.
+- Excludes client migration (#386), versioned context/global logout/cleanup and active-stream revocation (#387), deployment, live routing and new domain owners.
+
+## Reuse and implementation
+
+Reused Identity's central families, hashed app handles, registration/crypto,
+account/membership/tenant adapters, existing request-context authorization and
+Workspaces policy. No table, migration, external issuer, JWT-returning browser
+endpoint or additional business backend was added. See maintained
+[behavior and integration contract](../backend/host-sessions.md).
+
+- Added current-session metadata and atomic explicit handle/CSRF rotation.
+  Idle renewal checks family/account/password/access on every request; absolute
+  expiry is immutable. Rotation audits and its outbox event commit together.
+- Added `/api/bff/*` dispatch into the original Express/Nest handlers. A private
+  in-process principal reaches the existing AuthGuard; tenant/workspace inputs
+  remain revalidated selection hints. Existing operation policies still apply.
+- Added exact Origin/CSRF checks, no credentialed CORS, strict route roots,
+  header sanitization, body limits and private/no-store responses. Existing
+  legacy bearer/public/POS contracts are untouched.
+- Preserved JSON/base64 attachment contracts, binary download bytes, query,
+  trace/idempotency headers, incremental SSE and cancellation. No automatic
+  request replay or session-refresh loop exists.
+
+## Verification
+
+All checks below were run on 2026-11-08. The integration target was a new,
+test-owned PostgreSQL 17 cluster on loopback port 55485, database
+`corely_384_surf05` (the prerequisite fixture deliberately restricts that prefix).
+Schema SQL was generated from the current Prisma schema and applied only there;
+background dispatch was disabled, email was fake and fixtures used synthetic data.
+
+| Command / check                                                                                                                                                                | Actual result / limits                                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scoped Vitest command in [host session docs](../backend/host-sessions.md#verification-and-activation), plus `sso-security.spec.ts`, `sso.int.test.ts`, `sso-email.int.test.ts` | **84 passed across six files**, no skips in this execution. Includes real PostgreSQL rotation races, expiry/revocation/access/password rejection, audit rollback and existing login/email regressions.                              |
+| Existing Invoice and People HTTP controller dispatch                                                                                                                           | Passed with real session/account/context adapters and substituted business use cases; not live business-domain persistence acceptance.                                                                                              |
+| Transfer probes                                                                                                                                                                | Passed JSON/base64 upload, byte-exact binary download, query/idempotency/trace preservation, SSE first event before completion, completed stream and cancellation. Declared and chunked oversized JSON return 413.                  |
+| `pnpm --filter @corely/api typecheck`                                                                                                                                          | Passed.                                                                                                                                                                                                                             |
+| `pnpm --filter @corely/contracts typecheck`                                                                                                                                    | Passed.                                                                                                                                                                                                                             |
+| `pnpm --filter @corely/api build`                                                                                                                                              | Passed with decorator metadata preserved.                                                                                                                                                                                           |
+| Targeted ESLint on changed production TypeScript                                                                                                                               | Passed, zero errors; two existing `any` warnings in unchanged legacy body-parser callbacks in `main.ts`. Test files are excluded by repository ESLint configuration.                                                                |
+| `pnpm arch:check`                                                                                                                                                              | Stops on the pre-existing absent `services/worker/src` scan; no checker or runtime infrastructure rewrite included.                                                                                                                 |
+| Root `pnpm typecheck`                                                                                                                                                          | Failed in untouched `packages/web-features` frontend/test files (including cash-management types and unresolved offline package declarations). API/contracts scoped typechecks pass; a baseline whole-tree typecheck was not rerun. |
+| Whole-repository Prettier with pre-push ignore file                                                                                                                            | Failed only on untouched `apps/login/src/login-page.tsx`; its blob is identical to the verified base. Changed-file formatting passes.                                                                                               |
+| Root `pnpm lint`                                                                                                                                                               | Could not complete: ESLint exhausted the configured 8 GiB JavaScript heap. Targeted lint and pre-commit lint pass.                                                                                                                  |
+| Root `pnpm test:unit` with the pre-push hook's test environment                                                                                                                | **1,282 passed, seven existing skips across 297 files**.                                                                                                                                                                            |
+| Changed-file Prettier, local documentation links, diff whitespace and staged line limits                                                                                       | Passed on changed files; six new/updated task/behavior local references resolve.                                                                                                                                                    |
+| UI/browser screenshots                                                                                                                                                         | N/A: backend transport/contracts/docs only; no rendered client is changed.                                                                                                                                                          |
+| Shared/live database, real mail, deployed hosts, migration or rollout                                                                                                          | Not run or changed.                                                                                                                                                                                                                 |
+
+Initial fixture setup failed because Prisma environment logging polluted stdout
+SQL; regenerating via Prisma's `--output` produced clean schema SQL. A new
+size-limit regression caught a premature early response causing a client reset;
+letting the bounded parser drain/handle the request fixed both declared-length
+and chunked cases. The final six-suite run above passed after those corrections.
+
+## Impact and remaining work
+
+The existing SSO flag remains off by default. Ingress uses the same registered
+origins/private assertion contract; live bindings require separate authorization
+and verification. There are no dependency, migration or environment-key changes.
+Do not interpret test-controller substitution or a Draft PR as deployed app
+acceptance, security certification or a full audit of existing owner permissions.
+
+Rotation is explicitly coordinated by a client; losing its response requires
+reauthentication. This slice checks expiry/revocation at request admission;
+terminating admitted streams on revocation remains #387. Per-request context
+hints are not persisted context-switch/version semantics. Shared client adoption
+and cache isolation remain #386. Unsupported raw/multipart upload contracts return
+415; existing JSON/base64 uploads have a 16 MiB transport limit.
+
+Rollback disables new reserved routing/SSO and requires legacy reauthentication;
+it does not restore rotated or revoked handles. Keep the PR Draft through human
+review and required checks. No merge or deployment is authorized by this delivery.
+
+The disposable PostgreSQL cluster was stopped after the final passing run.
+GitHub Actions were pending at PR creation; six Vercel preview statuses report
+“Deployment rate limited — retry in 24 hours.” No deployment retry was triggered.
+The pre-push wrapper was skipped after manual checks to avoid duplicate suite/build
+runs; pre-commit formatting, lint and staged line checks passed.
+
+## Review corrections — 2026-11-08
+
+- **P2 — CSRF exemption for an effectful GET/HEAD:** the allowlisted existing
+  Invoice PDF GET handler invokes `GetInvoicePdfUseCase`, which can enqueue
+  generation, including `forceRegenerate`. Method-only CSRF classification
+  admitted it without a proof when Origin/Fetch Metadata were absent (for example,
+  a navigation in a browser lacking those headers). A regression using the real
+  Invoice controller reached its substituted PDF application handler and returned
+  202 instead of the expected 401 before the fix. This BFF route now requires a
+  session-bound CSRF token for GET and HEAD as well; case/trailing-slash variants
+  are covered. Foreign Origin is rejected, while a valid same-origin fetch can
+  supply CSRF without Origin, which browsers may omit on GET. Legacy bearer
+  routes retain their existing contract.
+- **P2 — supported Content-Type rejected on empty requests:** Express `req.is`
+  returns null when there is no request body, so a bodyless GET carrying
+  `Content-Type: application/json` incorrectly returned 415. Payload media-type
+  validation now runs only when a body is present. Regressions cover bodyless
+  JSON GET and zero-length JSON POST while retaining cookie/CSRF checks and
+  rejecting unsupported actual payloads.
+- Corrected the oversized chunked regression itself: Superagent's `.send` added
+  Content-Length alongside an explicit Transfer-Encoding, producing an invalid
+  request and EPIPE. A native HTTP request now sends real chunks without
+  Content-Length and verifies 413. The initial implementation's test name claimed
+  chunked coverage but its committed test only sent a declared-length payload.
+- Fresh verification: **86 tests passed across the six targeted SSO/session
+  suites**, no skips, against the same test-owned loopback PostgreSQL cluster.
+  API typecheck, targeted production-code lint, changed-file Prettier and diff whitespace checks passed. No UI
+  source changed; visual evidence remains N/A. Whole-repository checks were not
+  repeated; their earlier failures/limits above remain unresolved.

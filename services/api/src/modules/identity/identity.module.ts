@@ -1,3 +1,4 @@
+import { SsoSessionService } from "./application/services/sso-session.service";
 import { randomBytes } from "node:crypto";
 import { AssociateInvitedAccountUseCase } from "./application/use-cases/associate-invited-account.usecase";
 import { SsoController } from "./adapters/http/sso.controller";
@@ -107,6 +108,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
   providers: [
     SsoRegistrationService,
     SsoService,
+    SsoSessionService,
     SsoEmailCodeService,
     DeliverSsoEmailCodeUseCase,
     {

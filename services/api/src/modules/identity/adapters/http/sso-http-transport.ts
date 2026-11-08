@@ -34,7 +34,7 @@ export function configureSsoHttpTransport(app: INestApplication) {
     });
   });
   app.enableCors((req: Request, callback) => {
-    const sso = isSsoRoute(req.path);
+    const sso = isSsoRoute((req.originalUrl ?? req.url).split("?")[0]);
     callback(null, { origin: !sso, credentials: !sso });
   });
 }

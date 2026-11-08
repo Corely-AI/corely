@@ -53,6 +53,15 @@ export interface SsoEmailChallenge {
   consumedAt: Date | null;
 }
 export interface SsoStorePort {
+  /** Validate current family/account/access and atomically touch or rotate one host session. */
+  useSession(input: {
+    handleHash: string;
+    environment: string;
+    appKey: string;
+    now: Date;
+    idleExpiresAt: Date;
+    replacementHash?: string;
+  }): Promise<SsoAppSession>;
   prepareEmailChallenge(challenge: SsoEmailChallenge): Promise<void>;
   findEmailChallenge(id: string): Promise<SsoEmailChallenge | null>;
   markEmailDelivered(id: string): Promise<void>;
