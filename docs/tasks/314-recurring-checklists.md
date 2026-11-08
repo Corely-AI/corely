@@ -5,7 +5,7 @@
 - Issue: https://github.com/Corely-AI/corely/issues/314; parent #285.
 - Prerequisites #312 and #306 are closed/merged. #313 remains gated by #303 and is excluded.
 - Branch: `314-recurring-checklists`; base: `corely/development` at `8ef16a66db`.
-- PR: pending.
+- PR: [Draft #378](https://github.com/Corely-AI/corely/pull/378), targeting `development`.
 - Outcome: managers publish bounded recurring checklists which generate the same employee task records.
 - Excludes My Work/boards (#313), comments/files (#315), new frontend/services/tables, AI and provider delivery.
 
