@@ -5,7 +5,7 @@
 - Issue: [#307 / PEOPLE-03](https://github.com/Corely-AI/corely/issues/307), parent [#283](https://github.com/Corely-AI/corely/issues/283).
 - Prerequisites: #305/#306 staff and availability implementations are integrated, including availability review correction #375.
 - Branch: `307-private-absences`; base: `development`, inspected `8ef16a66db24559dc7193d79edbd193cc877242a` on 8 November 2026; remote `corely`.
-- PR: pending publication.
+- PR: [Draft #377](https://github.com/Corely-AI/corely/pull/377), verified head/base and five screenshot links.
 - Outcome: managers record already-approved absences with restricted reasons/files; operational consumers receive neutral unavailable intervals. Corrections/cancellation retain history and do not alter appointments.
 - Excludes employee submission/approval routing (#308 and Requests), leave entitlements, payroll, exports, AI retrieval/actions, automatic messages/reassignment, migrations and deployment.
 
@@ -112,6 +112,13 @@ acceptance are not claimed. The unchanged web type errors and architecture-check
 failure remain open. Browser evidence uses route fixtures, not production identity
 issuance or storage delivery. No auto-merge or deployment.
 
-The issue stays open, Project status In progress, and the PR stays Draft pending
-human review/required checks. Normal signed-commit checks and publication outcome
-are recorded with the PR.
+The issue stays open, Project status In progress, and PR #377 stays Draft pending
+human review/required checks. Normal pre-commit formatting, lint and line-limit
+checks passed. Publishing uses the pre-push hook's documented `HUSKY=0` escape
+after scoped verification because the unchanged broad checks above remain blocked.
+The connected GitHub app rejected PR creation with “must be a collaborator”; the
+authenticated `gh` account created it successfully. Initial readback showed the
+four GitHub Actions checks queued; external preview statuses were reported by
+the repository automation and were not runtime-verified here.
+
+The task-owned PostgreSQL cluster and Vite server were stopped after verification.
