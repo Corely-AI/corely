@@ -5,7 +5,7 @@
 - Issue: [#386](https://github.com/Corely-AI/corely/issues/386), parent [#380](https://github.com/Corely-AI/corely/issues/380).
 - Prerequisite #385 / [PR #410](https://github.com/Corely-AI/corely/pull/410) was verified merged on 2026-11-08 at `2b79fa5a4c`.
 - Branch: `386-shared-session-transport`; intended PR base: `development` at that merge. The initial local dependent branch was rebased once the maintainer merged #410; the delivery diff excludes prerequisite changes.
-- PR: pending Draft publication.
+- PR: [Draft #411](https://github.com/Corely-AI/corely/pull/411), verified against `development`.
 - Outcome: explicit new-surface session provider/client package exports with verified account bootstrap, safe auth states and one-attempt API transport.
 - Excludes product-app scaffolding, legacy/POS migration, global logout, persistent context switching, offline pending-write disposal, deployment and live identity/host activation.
 
@@ -91,3 +91,8 @@ their existing adapters until an explicit migration.
 Keep Draft for human review/required checks. Feature/host activation and real
 multi-origin client acceptance require separately verified follow-on delivery.
 Rollback stops using the new package entry point; no database rollback is needed.
+
+Delivery: signed commits published to the ticket branch; pre-commit checks passed.
+The pre-push wrapper was skipped after the recorded manual checks. The disposable
+PostgreSQL cluster and all three test-owned Vite servers were stopped. Browser
+diagnostics remain under ignored output; screenshot evidence is linked above.
