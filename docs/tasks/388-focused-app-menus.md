@@ -5,7 +5,7 @@
 - [Issue #388](https://github.com/Corely-AI/corely/issues/388), parent [#380](https://github.com/Corely-AI/corely/issues/380).
 - Prerequisite #383 is complete and integrated; initial base `366df0955c6a0e7436709b1ba5903dec1285b673`; rebased onto `corely/development` at `75d1f3888aaa480b0858fb8eac737988ccfc560a` after #412 merged.
 - Branch: `388-focused-app-menus`; intended PR base: `development`.
-- PR: pending Draft publication.
+- PR: [Draft #413](https://github.com/Corely-AI/corely/pull/413), base `development`.
 - #412 / #387 was merged independently during verification; its changes are inherited from the updated base, not part of this PR diff.
 - Outcome: optional focused Invoice/HR navigation through existing contracts and composers, plus evidenced HTTP authorization/enablement gaps closed with existing guards.
 
