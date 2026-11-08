@@ -1,71 +1,74 @@
-# 382 — Central identity and per-app session design
+# 382 — Corely-native SSO and per-app session design
 
 ## Tracking and outcome
 
-- Issue: [#382 / SURF-02](https://github.com/Corely-AI/corely/issues/382).
-- Parent: [#380](https://github.com/Corely-AI/corely/issues/380).
-- Hard prerequisite: [#381](https://github.com/Corely-AI/corely/issues/381), open at inspection; no approved host matrix established.
-- Branch: `382-central-identity-sessions`; intended PR base: `development` on `corely` (`Corely-AI/corely`), verified through GitHub and fetch.
+- Issue: [#382 / SURF-02](https://github.com/Corely-AI/corely/issues/382); parent [#380](https://github.com/Corely-AI/corely/issues/380).
+- Hard prerequisite: [#381 / PR #406](https://github.com/Corely-AI/corely/pull/406), still open at reconciliation.
+- Branch: `382-central-identity-sessions`; PR base: verified `development` on `corely` (`Corely-AI/corely`).
 - PR: [Draft #405](https://github.com/Corely-AI/corely/pull/405).
-- Outcome: [proposed ADR-0004](../decisions/ADR-0004-central-identity-app-sessions.md) provides the current auth trace, provider/operation proposal, session/API contracts, five sequences, abuse cases and compatibility/migration/rollback plan.
-- Exclusions: runtime auth changes, provider provisioning, domain moves, migrations, POS/portal migration, deployment and roadmap promotion.
+- Outcome: [ADR-0004](../decisions/ADR-0004-central-identity-app-sessions.md) specifies Corely-native central SSO, per-app sessions, the existing auth trace, five sequences, abuse cases and compatible migration/rollback.
+- This ticket delivers the design; runtime delivery stays in [#384](https://github.com/Corely-AI/corely/issues/384), [#385](https://github.com/Corely-AI/corely/issues/385), [#386](https://github.com/Corely-AI/corely/issues/386) and [#387](https://github.com/Corely-AI/corely/issues/387), on separate ticket branches/PRs.
+- Exclusions: provider provisioning, live routing, migrations, POS/portal migration, deployment and roadmap promotion.
 
-## Reuse and plan
+## Reuse and decisions
 
 Inspected baseline `3a3492196497d38da088b5222b96cd42bd01ad21`, matching fetched
 `corely/development` on 2026-11-08. Working tree was clean. No existing #382 PR
-was returned by GitHub search. The checkout started on `381-focused-surface-adr`
-at that same baseline with no prerequisite changes; this branch was created
-independently from `corely/development`.
+was found initially. This branch was created independently from that base.
 
-Identity owns users, membership, custom JWTs, refresh and tenant switching.
-Shared AuthClient and WebStorageAdapter currently persist browser tokens;
-POS uses native SecureStore with a web localStorage fallback. Portal has a
-separate OTP/cookie flow. Preserve these contracts and identities while adding
-the future OIDC/BFF path. No source security finding is claimed from this trace.
+Identity owns existing users, memberships, password verification, custom JWTs,
+refresh and tenant switching. Shared AuthClient/WebStorageAdapter persist browser
+tokens; POS uses native SecureStore with a web localStorage fallback. Portal has
+a separate OTP/cookie flow. Preserve those identities and old-client contracts.
+Source links and limits are recorded in the ADR; no runtime vulnerability is claimed.
 
-The proposed choice is self-hosted Keycloak plus per-host server sessions.
-Provider operation is a decision requiring an accepting operator, not a claim
-that hosting/support exists. #381 remains a prerequisite to binding hostnames.
-ADR-0003 is reserved for that focused-surface decision; ADR-0004 is proposed here.
+The requesting maintainer initially approved PR #405's design at
+`175a61cceaf9cb087afb1752480073ad4865cd52` with “approve and continue”. After
+clarifying the infrastructure cost, the maintainer instructed: “use corely auth
+as SSO, add more code if needed”. This supersedes the Keycloak selection and
+keeps cross-app SSO in scope. The revised ADR uses the existing Identity/API
+runtime, central session families and one-time app-bound handoffs. It does not
+claim those extensions are already implemented or interoperable OAuth/OIDC.
+
+Reconciled the host mismatch against parent #380 and SURF-01 PR #406 at
+`e3754d5758ef1d5840e72e04308df34a66643d45`: use `app.corely.one`,
+`invoice.app.corely.one` and `hr.app.corely.one`; withdraw the shorter alternative
+hosts. Preserve #381's staged root cutover and legacy auth/deep-link routing.
+New session endpoints use `/api/session/*` and `/api/bff/*`, without taking over
+all legacy `/auth/*` or `/api/*` routes. No other branch's files were copied.
 
 ## Verification
 
-| Command or manual check                                                                    | Result and limits                                                           |
-| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `gh repo view Corely-AI/corely --json defaultBranchRef` and `git fetch corely development` | Passed with network access; default is development and baseline matched.    |
-| Identity/shared-client/POS/portal source trace                                             | Recorded with local source links in ADR; source evidence only.              |
-| Official RFC/OIDC/Keycloak reference inspection                                            | Reviewed protocol/provider docs; no live IdP or domain inventory.           |
-| Formatting, local paths and whitespace                                                     | Passed; final results recorded below.                                       |
-| Application/security integration tests                                                     | Not run: documentation only; proposed abuse outcomes are not passing tests. |
+| Check                                                              | Result and limits                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Default/base and source                                            | GitHub default and fetch verified development at inspected baseline.                                                                                                                                                                                                                                                                                                                     |
+| Current auth trace                                                 | Identity, shared client, native POS storage and portal auth reviewed; not a deployed/client inventory.                                                                                                                                                                                                                                                                                   |
+| Prettier                                                           | Existing installed gateway Prettier used on all three changed Markdown files; passed; no tooling installed.                                                                                                                                                                                                                                                                              |
+| Local links and whitespace                                         | Targeted local path validation and staged whitespace passed; refreshed counts recorded in PR.                                                                                                                                                                                                                                                                                            |
+| Source line limit                                                  | `node scripts/check-staged-line-limit.mjs` passed.                                                                                                                                                                                                                                                                                                                                       |
+| Five sequence diagrams                                             | Manual participant/branch review; no browser rendering or protocol execution claimed.                                                                                                                                                                                                                                                                                                    |
+| Local pre-push unit hook                                           | Failed before test execution: `vitest: command not found`; checkout has no node_modules. Applicable Markdown hook checks ran directly; commits/push use `HUSKY=0`.                                                                                                                                                                                                                       |
+| CI on pre-revision head 175a61cce                                  | Cash integration passed. Quality/typecheck failed with missing generated Prisma exports. Unit job failed loading `.prisma/client/default`. Browser E2E failed before running tests because workflow invokes absent `e2e:smoke`. See [run](https://github.com/Corely-AI/corely/actions/runs/42499876814). These are observed pre-revision failures, not a fresh base-branch reproduction. |
+| Vercel previews                                                    | Seven statuses failed on the provider's daily deployment quota, not an established source regression; no hosting upgrade/config change attempted.                                                                                                                                                                                                                                        |
+| Runtime SSO/security tests, full local lint/typecheck and Mintlify | Not run for documentation-only delivery; required native-protocol outcomes remain future tests.                                                                                                                                                                                                                                                                                          |
+
+Prettier executable:
+`/Users/hadoan/Documents/sennder/truckerpoints-gateway/node_modules/prettier/bin/prettier.cjs`.
 
 ## UI/UX evidence
 
-N/A: documentation-only design. No interface or runtime authentication behavior
-changed. Diagrams specify future interactions; no rendered app evidence is claimed.
+N/A: no interface or runtime authentication behavior changed. Diagrams specify
+future flows and do not substitute for the implementation tickets' UI evidence.
 
 ## Impact and remaining work
 
-No runtime, configuration or schema changes. Reverting documentation is the
-entire rollback for this PR. Keep Draft and #382 open: #381 host approval,
-platform/provider support acceptance, security approval of diagrams/abuse cases,
-and product acceptance of recovery/migration remain outstanding. No owner
-assignment, project reprioritization, human approval or IdP registration is inferred.
+The selected architecture needs no external identity server or account migration;
+it does require new Corely authentication/session code and operational validation.
+#382 records that decision, while #384–387 own implementation. #381's final
+host/legacy-traffic approval and integration remain a hard prerequisite.
 
-Final documentation checks: installed Prettier from the existing gateway checkout
-(`/Users/hadoan/Documents/sennder/truckerpoints-gateway/node_modules/prettier/bin/prettier.cjs`)
-was used with `--check` on the three changed Markdown files; passed. Targeted
-Python local-path validation checked 124 references, none missing. Five Mermaid
-sequence blocks were inspected for participants, branches and balanced delimiters;
-no browser diagram rendering or protocol execution is claimed.
-`git diff --cached --check` and `node scripts/check-staged-line-limit.mjs` passed.
-The checkout has no node_modules; the lint-staged hook cannot run here. Its only
-applicable Markdown action (Prettier) was run directly with an existing installation,
-and the staged line-limit check was run separately; commit uses `HUSKY=0`.
-No tooling was installed. Full lint/typecheck/application suites and Mintlify
-`docs:check` were not run for this prose-only change.
-
-The first push ran the pre-push unit-test hook and failed before test execution:
-`vitest: command not found` (no installed dependencies). This is an environment
-limit, not a passing test or an observed application failure. The documentation
-branch is pushed with `HUSKY=0` after the targeted checks above.
+Keep PR #405 Draft and #382 open while prerequisites and required checks remain
+unresolved. User selection is recorded without inventing specialist review,
+GitHub approval, completed registration, merge or deployment. Reverting this
+PR's documentation is its entire rollback. Do not bypass failing CI or broaden
+this auth design ticket into unrelated workflow repair.

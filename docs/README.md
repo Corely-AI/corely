@@ -25,7 +25,7 @@ Implementation evidence, target design and unvalidated hypotheses are kept separ
 - [Repository alignment and discrepancies](./products/corely/repository-alignment.md)
 - [Connected-app architecture and ownership](./architecture/connected-apps.md)
 - [Positioning decision](./decisions/ADR-0002-connected-operations-apps.md)
-- [Proposed central identity and app sessions](./decisions/ADR-0004-central-identity-app-sessions.md) — SURF-02 design; provider operation, host matrix and approval remain pending
+- [Corely-native SSO and app sessions](./decisions/ADR-0004-central-identity-app-sessions.md) — existing Identity selected; host integration and runtime delivery remain pending
 
 Dated implementation/status reports retain historical context; they do not prove
 current readiness or authorize implementing the catalog.
