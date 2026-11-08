@@ -35,7 +35,7 @@ employee/account duplication, membership promotion or business API fork.
 
 | Check                                                           | Actual result / limits                                                                                                                                                                                                              |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Targeted SSO + neighboring auth tests                           | 87 passed across seven files (including legacy portal OTP regressions); PostgreSQL integration tests actually executed with a disposable `corely_384_sso` database on 127.0.0.1:55484.                                              |
+| Targeted SSO + neighboring auth tests                           | 95 passed across eight files (including legacy portal OTP regressions); PostgreSQL integration tests actually executed with a disposable `corely_384_sso` database on 127.0.0.1:55484.                                              |
 | Browser SSO tests                                               | 6 passed in installed Chrome over HTTPS and three isolated test app origins; fresh password and email-code login, second-app SSO, error focus, cancellation, expiry, network retry and mobile DE/VI.                                |
 | API/login/config/contracts/kernel/data typechecks               | Passed after building the existing prompts/email-template dependencies; initial missing-dist diagnostics were resolved locally without source changes to those packages.                                                            |
 | API, login and contracts builds                                 | Passed; focused UI bundle approximately 236 KB / 72 KB gzip.                                                                                                                                                                        |
@@ -74,6 +74,28 @@ context. Signup/recovery links target existing auth routes in a separate tab.
 Verification used the scoped commands documented in [SSO testing](../backend/sso.md).
 The push hook was bypassed after these manual checks; whole-repository formatting,
 lint and recursive typechecks were not repeated. Pre-commit checks still run.
+
+## Review corrections
+
+- **P1 — prefixed workspace aliases:** `/auth/w/team/callback` and
+  `/api/w/team/session/preauth` bypassed the root-only alias rejection, allowing
+  legacy credentialed CORS and workspace URL logging before controller checks.
+  The guard now matches the actual middleware's prefix and URL normalization
+  before any rewrite/logging. Four regression cases failed before the fix;
+  eight transport tests now pass, including ordinary public booking behavior.
+- **P2 — default browser test collection:** the general and API Playwright
+  configurations also collected the dedicated SSO specs and failed without
+  `SSO_TEST_OUTPUT_DIR`. They now exclude that directory; SSO remains required
+  under its own explicit configuration. General/API collection succeeds without
+  the SSO fixture; dedicated SSO execution still passes all six tests.
+- Fresh review checks: 95 auth/transport/portal tests passed across eight files;
+  API typecheck and targeted production-code lint passed. The new spec is ignored
+  by the repository ESLint configuration. No UI behavior changed, so the existing
+  rendered evidence remains applicable.
+- Existing CI run `42506723856` failed quality/unit jobs on an ungenerated Prisma
+  client; browser CI invoked absent `e2e:smoke`. These repository workflow paths
+  are unchanged by this PR. Vercel project checks remain rate limited. This
+  correction does not claim the full CI suite is green.
 
 ## Impact and remaining work
 

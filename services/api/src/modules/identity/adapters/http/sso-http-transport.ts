@@ -7,10 +7,12 @@ export function configureSsoHttpTransport(app: INestApplication) {
   const parseJson = json({ limit: "4kb" });
   const parseForm = urlencoded({ limit: "4kb", extended: false });
   app.use((req: Request, res: Response, next: NextFunction) => {
-    // The global public-workspace middleware otherwise rewrites /w/:slug/* and
-    // logs the original URL. SSO has exact paths, never workspace aliases.
-    const unwrapped = req.path.replace(/^\/w\/[^/]+(?=\/)/i, "");
-    if (unwrapped !== req.path && isSsoRoute(unwrapped)) {
+    // Match the public-workspace middleware, including prefixes and URL
+    // normalization, before it can rewrite a protocol URL or log its proofs.
+    const pathname = new URL(req.originalUrl ?? req.url, "http://local").pathname;
+    const workspace = pathname.match(/^(.*?)\/w\/[^/]+(\/.*)?$/);
+    const unwrapped = workspace ? `${workspace[1]}${workspace[2] ?? "/"}` : pathname;
+    if (workspace && isSsoRoute(unwrapped)) {
       res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" });
       res.status(404).end();
       return;

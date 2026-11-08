@@ -128,7 +128,8 @@ SSO_TEST_DATABASE_URL=postgresql://127.0.0.1:55484/corely_384_sso OUTBOX_DISPATC
   pnpm --dir services/api exec vitest run --config vitest.config.ts \
   src/modules/identity/__tests__/sso.int.test.ts \
   src/modules/identity/__tests__/sso-email.int.test.ts \
-  src/modules/identity/__tests__/sso-security.spec.ts
+  src/modules/identity/__tests__/sso-security.spec.ts \
+  src/modules/identity/__tests__/sso-transport.spec.ts
 pnpm --filter @corely/login typecheck
 pnpm --filter @corely/login build
 pnpm --filter @corely/api typecheck
@@ -156,6 +157,9 @@ first-wave production UI or real email delivery is simulated as verified.
 SSO_BROWSER_CHANNEL=chrome SSO_TEST_OUTPUT_DIR=/private/tmp/corely-384-browser \
   pnpm --dir apps/e2e exec playwright test --config playwright.sso.config.ts
 ```
+
+The general and API Playwright configurations exclude `tests/sso`; run these
+fixture-dependent tests explicitly with `playwright.sso.config.ts`.
 
 Use the matching installed Playwright browser by default; the channel override
 permits an already installed Chrome. Traces are disabled to avoid persisting
