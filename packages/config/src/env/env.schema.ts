@@ -219,6 +219,8 @@ export const envSchema = z.object({
   // SECURITY & AUTH
   // ============================================================================
   JWT_SECRET: z.string().optional(),
+  CORELY_LAUNCH_INVOICE_ORIGIN: z.string().url().optional(),
+  CORELY_LAUNCH_HR_ORIGIN: z.string().url().optional(),
   WEB_BASE_URL: z.string().url().optional(),
   PASSWORD_RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
   CORELY_PROXY_KEY_APP: z.string().min(1).optional(),
