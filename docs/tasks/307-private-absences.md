@@ -122,3 +122,54 @@ four GitHub Actions checks queued; external preview statuses were reported by
 the repository automation and were not runtime-verified here.
 
 The task-owned PostgreSQL cluster and Vite server were stopped after verification.
+
+## Review corrections — 8 November 2026
+
+Reviewed PR #377 at `3c2ee0fce` against `development` (`8ef16a66d`). Two P2
+findings were confirmed and corrected on the same ticket branch:
+
+1. Personnel upload keys ignored `STORAGE_KEY_PREFIX`. The Documents adapter now
+   receives the typed EnvService prefix and applies it to new object keys, matching
+   ordinary uploads. The file row stores that same key. Downloads continue using
+   stored keys, preserving existing unprefixed files without migration.
+2. The partial-day correction form truncated accepted UTC seconds/milliseconds
+   before submission. It now retains the complete timestamp without the terminal
+   UTC marker and allows precise native datetime input. Editing only a reason
+   preserves the original interval; explicit precise time changes still save.
+
+Regression proof before the fixes: both new seconds/milliseconds UI cases failed,
+while six existing absence cases passed. The configured-prefix adapter case also
+failed; the no-prefix case passed. The corrected code passes all four new cases.
+
+Fresh correction checks (119 tests total, no skips):
+
+- The API command in the original verification table plus
+  `src/modules/documents/__tests__/personnel-documents.spec.ts`:
+  **86 tests / 12 files passed**, using the task-owned PostgreSQL cluster and
+  isolated `people_test_307` / `openbuk_test_307` databases.
+- `pnpm --dir packages/web-features exec vitest run src/modules/people`:
+  **23 tests / 6 files passed**.
+- The full AppModule DI command above: **10 tests passed**, including typed
+  EnvService injection into the personnel Documents adapter.
+- `pnpm --filter @corely/api typecheck`, API build and web build: passed.
+- Changed-file ESLint/Prettier and diff whitespace: passed; API test exclusions
+  retain the repository's existing lint configuration.
+- Web typechecking was refreshed and still reports only the same eight unchanged
+  Assistant/Cash errors. No CI repair or broader architecture rewrite is included.
+  The 18 Tasks passes above remain initial-delivery evidence, not a fresh fix run.
+
+Rendered the actual staff detail with synthetic route fixtures in Chrome at
+1440×1100 and 390×844. Verified native control validity, reason-only round-trip of
+`09:00:45.123–10:00:45.987` UTC, explicit millisecond edits, keyboard navigation
+through native date/time segments, and no horizontal overflow. Inspected the
+[desktop precise-time editor](./assets/307/precision-desktop.png) and
+[phone precise-time editor](./assets/307/precision-mobile.png). Original lifecycle
+and permissions evidence remains above. The browser fixture does not verify
+production identity or GCS/IAM.
+
+The repository's existing CI failures were inspected during review: generated
+Prisma client/type information is missing for quality/unit checks, and browser CI
+invokes absent `e2e:smoke`. Those paths are unchanged. PR #377 remains Draft;
+no merge or release is performed. Normal signed-commit hooks are retained, and
+publication continues to use the documented pre-push escape for the broader
+verification blockers. Task-owned PostgreSQL and Vite are stopped after checks.

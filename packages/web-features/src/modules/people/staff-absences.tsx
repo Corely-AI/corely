@@ -385,8 +385,9 @@ function AbsenceForm({
                   id="absence-start"
                   name="startAt"
                   type="datetime-local"
+                  step="any"
                   required
-                  defaultValue={current?.startAt.slice(0, 16)}
+                  defaultValue={current?.startAt.slice(0, -1)}
                 />
               </div>
               <div>
@@ -396,8 +397,9 @@ function AbsenceForm({
                   id="absence-end"
                   name="endAt"
                   type="datetime-local"
+                  step="any"
                   required
-                  defaultValue={current?.endAt.slice(0, 16)}
+                  defaultValue={current?.endAt.slice(0, -1)}
                 />
               </div>
             </>

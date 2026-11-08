@@ -19,7 +19,9 @@ table, migration, duplicate staff resource or competing Booking schedule is adde
   civil date: DST produces 23/25-hour days, and wholly skipped dates are rejected.
 - Partial days use explicit UTC instants with a timezone retained for context.
   The editor labels these inputs **UTC**, including overnight and repeated times.
-  It never guesses which occurrence of a repeated local time was intended.
+  Existing seconds and milliseconds remain intact when editing reasons/notes;
+  native time controls accept precise edits. It never guesses which occurrence
+  of a repeated local time was intended.
 - Ranges must be positive and at most 366 days. Equal/reversed boundaries and
   invalid dates/timezones are rejected. Approved intervals use half-open overlap
   checks: touching endpoints are allowed; overlapping future intervals for the
@@ -111,7 +113,10 @@ of legacy document consumers.
 Attachments are created from bounded base64 content: PDF, PNG, JPEG or text, up to
 1 MiB and ten files per absence. Type validation is an allowlist, not a malware or
 content inspection guarantee. Storage object paths contain generated IDs, never
-private filenames/reasons. The dedicated list returns metadata only after the
+private filenames/reasons. New uploads honor the configured `STORAGE_KEY_PREFIX`,
+matching ordinary Documents uploads. Reads use the persisted object key, so
+existing unprefixed attachments remain readable without migration. The dedicated
+list returns metadata only after the
 private/document grants and owning relation pass.
 
 **No signed upload or download URL is issued for personnel files.** Downloads use

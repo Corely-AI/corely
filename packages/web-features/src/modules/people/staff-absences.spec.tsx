@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { StaffAbsence } from "@corely/contracts";
+import { RecordStaffAbsenceSchema, type StaffAbsence } from "@corely/contracts";
 import type * as PeopleHooks from "./use-people";
 import { peopleCopy } from "./people-copy";
 import { StaffAbsences } from "./staff-absences";
@@ -123,6 +123,33 @@ describe("Private absence manager flow", () => {
     });
     expect(fixture.command.mock.calls[0][4]).toBe(fixture.command.mock.calls[1][4]);
   });
+  it.each(["45.000", "45.123"])(
+    "preserves UTC seconds/milliseconds %s when only the private reason changes",
+    async (seconds) => {
+      const startAt = `2030-01-07T09:00:${seconds}Z`;
+      const endAt = `2030-01-07T10:00:${seconds}Z`;
+      const fields = RecordStaffAbsenceSchema.parse({
+        range: { kind: "partial-day", timezone: "Europe/Berlin", startAt, endAt },
+        reason: "Synthetic private value",
+      });
+      const existing = record();
+      existing.revisions[0] = { ...existing.revisions[0], ...fields, startAt, endAt };
+      fixture.load.mockResolvedValue({ items: [existing] });
+      fixture.command.mockResolvedValue(existing);
+      render(tree());
+      fireEvent.click(await screen.findByRole("button", { name: "Correct absence" }));
+      fireEvent.change(screen.getByLabelText("Private reason"), {
+        target: { value: "Corrected private value" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Save correction" }));
+      await waitFor(() => expect(fixture.command).toHaveBeenCalledOnce());
+      expect(fixture.command.mock.calls[0][3]).toMatchObject({
+        version: 1,
+        reason: "Corrected private value",
+        range: fields.range,
+      });
+    }
+  );
   it("corrects partial UTC instants with the observed version and confirms cancellation", async () => {
     fixture.load.mockResolvedValue({ items: [record()] });
     fixture.command.mockResolvedValue(record());

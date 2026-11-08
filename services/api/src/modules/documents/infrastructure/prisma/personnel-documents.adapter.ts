@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { EnvService } from "@corely/config";
 import { randomUUID } from "node:crypto";
 import { PrismaService, PrismaExtKvAdapter, getPrismaClient } from "@corely/data";
 import { GcsObjectStorageAdapter } from "@corely/storage";
@@ -17,7 +18,8 @@ export class PersonnelDocumentsAdapter implements PersonnelDocumentsPort {
   constructor(
     private readonly prisma: PrismaService,
     private readonly kv: PrismaExtKvAdapter,
-    @Inject(GcsObjectStorageAdapter) private readonly storage: ObjectStoragePort
+    @Inject(GcsObjectStorageAdapter) private readonly storage: ObjectStoragePort,
+    @Inject(EnvService) private readonly env: Pick<EnvService, "STORAGE_KEY_PREFIX">
   ) {}
   async list(owner: PersonnelAttachmentOwner, tx: TransactionContext) {
     const key = keyFor(owner, "");
@@ -37,7 +39,8 @@ export class PersonnelDocumentsAdapter implements PersonnelDocumentsPort {
     const documentId = `${PERSONNEL_DOCUMENT_PREFIX}${randomUUID()}`;
     const fileId = randomUUID();
     // Never encode reasons, filenames or subject names into storage paths.
-    const objectKey = `tenant/${owner.tenantId}/personnel/${documentId}/${fileId}`;
+    const prefix = this.env.STORAGE_KEY_PREFIX ? `${this.env.STORAGE_KEY_PREFIX}/` : "";
+    const objectKey = `${prefix}tenant/${owner.tenantId}/personnel/${documentId}/${fileId}`;
     const createdAt = new Date();
     await this.storage.putObject({
       tenantId: owner.tenantId,

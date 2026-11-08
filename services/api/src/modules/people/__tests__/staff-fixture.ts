@@ -220,7 +220,8 @@ export async function staffFixture(
   const documents = new PersonnelDocumentsAdapter(
     prisma,
     new PrismaExtKvAdapter(prisma),
-    objectStorage
+    objectStorage,
+    { STORAGE_KEY_PREFIX: process.env.STORAGE_KEY_PREFIX }
   );
   const absenceUseCase = new StaffAbsenceUseCase(
     repo,
