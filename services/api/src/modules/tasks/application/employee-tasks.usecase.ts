@@ -1,3 +1,4 @@
+import { authorizeTasks } from "./task-access-policy";
 import { persistTaskMutation } from "./task-mutation";
 import {
   BadRequestException,
@@ -47,31 +48,13 @@ export class EmployeeTasksUseCase {
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
   ) {}
   async authorize(ctx: UseCaseContext, tx?: TransactionContext) {
-    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) {
-      throw new ForbiddenException("Workspace membership required");
-    }
-    const { permissions } = await this.permissions.execute(ctx, tx);
-    const can = (key: string) =>
-      !permissions.denied.includes(key) &&
-      (permissions.allowAll || permissions.allowed.includes(key));
-    if (!can("tasks.read")) {
-      throw new ForbiddenException("Task access denied");
-    }
-    for (const app of ["tasks", "people"]) {
-      if (!(await this.entitlements.isAppEnabled(ctx.tenantId, app, tx))) {
-        throw new ForbiddenException("Tasks and People must be enabled");
-      }
-    }
-    const scope: TaskScope = { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId };
-    const self = await this.staff.forAccount(scope, ctx.userId, tx);
-    return {
-      scope,
-      self,
-      actorUserId: ctx.userId,
-      manage: can("tasks.manage"),
-      completeOwn: can("tasks.own.update"),
-    };
+    return authorizeTasks(
+      { permissions: this.permissions, staff: this.staff, entitlements: this.entitlements },
+      ctx,
+      tx
+    );
   }
+
   private async projection(
     scope: TaskScope,
     record: TaskRecord,

@@ -32,7 +32,7 @@ const en = {
     "This invitation could not be accepted. Use the invited email address or ask the owner for a current link.",
   staffJoined: "Workspace membership is active",
   staffAccess:
-    "Your account is linked. This initial schedule requires owner or admin access. Employee self-service is not available yet.",
+    "Your account is linked. Use Your staff profile or Daily Work once your manager links your staff profile. The studio schedule requires owner or admin access.",
 
   tagline: "Open-source booking for salons & studios.",
   hero: "A little more calm.\nA lot less scheduling.",
@@ -80,6 +80,7 @@ const en = {
   logout: "Log out",
   today: "Today",
   dailyWork: "Daily Work",
+  myProfile: "Your staff profile",
   calendar: "Schedule",
   settings: "Studio settings",
   studio: "Your studio",
@@ -172,7 +173,7 @@ const de: Record<Key, string> = {
     "Die Einladung konnte nicht angenommen werden. Nutze die eingeladene E-Mail-Adresse oder bitte um einen aktuellen Link.",
   staffJoined: "Mitgliedschaft ist aktiv",
   staffAccess:
-    "Dein Konto ist verknüpft. Dieser erste Kalender erfordert Inhaber- oder Adminrechte. Mitarbeiter-Self-Service ist noch nicht verfügbar.",
+    "Dein Konto ist verknüpft. Nutze dein Mitarbeiterprofil und die Tagesarbeit, sobald deine Leitung dein Profil verknüpft hat. Der Studiokalender erfordert Inhaber- oder Adminrechte.",
 
   tagline: "Open-Source-Buchungen für Salons & Studios.",
   hero: "Mehr Ruhe.\nWeniger Terminplanung.",
@@ -220,6 +221,7 @@ const de: Record<Key, string> = {
   logout: "Abmelden",
   today: "Heute",
   dailyWork: "Tagesarbeit",
+  myProfile: "Ihr Mitarbeiterprofil",
   calendar: "Termine",
   settings: "Studioeinstellungen",
   studio: "Dein Studio",
@@ -310,7 +312,7 @@ const vi: Record<Key, string> = {
     "Không thể chấp nhận lời mời. Hãy dùng email được mời hoặc yêu cầu chủ sở hữu cấp liên kết còn hiệu lực.",
   staffJoined: "Tư cách thành viên đã có hiệu lực",
   staffAccess:
-    "Tài khoản đã được liên kết. Lịch ban đầu yêu cầu quyền chủ sở hữu hoặc quản trị viên. Tự phục vụ dành cho nhân viên chưa khả dụng.",
+    "Tài khoản đã được liên kết. Dùng hồ sơ nhân viên và công việc hằng ngày sau khi quản lý liên kết hồ sơ. Lịch cơ sở yêu cầu quyền chủ sở hữu hoặc quản trị viên.",
 
   tagline: "Đặt lịch mã nguồn mở cho salon và studio.",
   hero: "Thêm chút thảnh thơi.\nBớt lo xếp lịch.",
@@ -358,6 +360,7 @@ const vi: Record<Key, string> = {
   logout: "Đăng xuất",
   today: "Hôm nay",
   dailyWork: "Công việc hằng ngày",
+  myProfile: "Hồ sơ nhân viên của bạn",
   calendar: "Lịch hẹn",
   settings: "Cài đặt cơ sở",
   studio: "Cơ sở của bạn",

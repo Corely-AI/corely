@@ -1,3 +1,9 @@
+import { StaffSelfServiceController } from "../../people/adapters/http/staff-self-service.controller";
+import { StaffSelfServiceUseCase } from "../../people/application/staff-self-service.usecase";
+import { StaffLifecycleUseCase } from "../../people/application/staff-lifecycle.usecase";
+import { ExtStaffLifecycleAdapter } from "../../people/infrastructure/ext-staff-lifecycle.adapter";
+import { StaffWorkspaceAccessAdapter } from "../../workspaces/public";
+import { StaffTasksAdapter } from "../public";
 import { ExtStaffAbsenceAdapter } from "../../people/infrastructure/ext-staff-absence.adapter";
 import { ExtRecurringChecklistAdapter } from "../infrastructure/ext-recurring-checklist.adapter";
 import { RecurringChecklistsUseCase } from "../application/recurring-checklists.usecase";
@@ -65,6 +71,8 @@ export async function tasksFixture(prisma: PrismaService) {
     "tasks.manage",
     "tasks.own.update",
     "people.directory.read",
+    "people.self.read",
+    "people.self.update",
     "people.profile.manage",
     "people.private.read",
     "people.private.manage",
@@ -101,7 +109,13 @@ export async function tasksFixture(prisma: PrismaService) {
       await prisma.membership.create({ data: { tenantId, userId: id, roleId } });
       const keys =
         name === "Staff"
-          ? ["people.directory.read", "tasks.read", "tasks.own.update"]
+          ? [
+              "people.directory.read",
+              "people.self.read",
+              "people.self.update",
+              "tasks.read",
+              "tasks.own.update",
+            ]
           : managerKeys;
       await prisma.rolePermissionGrant.createMany({
         data: keys.map((permissionKey) => ({ tenantId, roleId, permissionKey, effect: "ALLOW" })),
@@ -241,6 +255,39 @@ export async function tasksFixture(prisma: PrismaService) {
     materializer,
     clock
   );
+  const lifecycleRepo = new ExtStaffLifecycleAdapter(new PrismaExtKvAdapter(prisma));
+  const taskStaff = new StaffTasksAdapter(
+    prisma,
+    new PrismaExtKvAdapter(prisma),
+    permissions,
+    platformEntitlements,
+    staffOps,
+    audit,
+    outbox,
+    clock
+  );
+  const staffAccess = new StaffWorkspaceAccessAdapter(prisma, authorizeWorkspace, audit, outbox);
+  const self = new StaffSelfServiceUseCase(
+    usecase,
+    repo,
+    new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma)),
+    taskStaff,
+    lifecycleRepo,
+    audit,
+    outbox,
+    clock
+  );
+  const lifecycle = new StaffLifecycleUseCase(
+    usecase,
+    repo,
+    taskStaff,
+    staffAccess,
+    lifecycleRepo,
+    booking,
+    audit,
+    outbox,
+    clock
+  );
   const tokens = {
     manager: { userId: manager, tenantId: tenantA },
     staff: { userId: staff, tenantId: tenantA },
@@ -265,11 +312,18 @@ export async function tasksFixture(prisma: PrismaService) {
     new AuthorizeRequestContextUseCase(memberships, authorizeWorkspace)
   );
   const module = await Test.createTestingModule({
-    controllers: [StaffController, RecurringChecklistsController, EmployeeTasksController],
+    controllers: [
+      StaffSelfServiceController,
+      StaffController,
+      RecurringChecklistsController,
+      EmployeeTasksController,
+    ],
     providers: [
       { provide: EmployeeTasksUseCase, useValue: tasks },
       { provide: RecurringChecklistsUseCase, useValue: checklists },
       { provide: StaffDirectoryUseCase, useValue: usecase },
+      { provide: StaffSelfServiceUseCase, useValue: self },
+      { provide: StaffLifecycleUseCase, useValue: lifecycle },
       { provide: StaffAvailabilityUseCase, useValue: availability },
       { provide: AuthGuard, useValue: auth },
     ],
@@ -297,6 +351,11 @@ export async function tasksFixture(prisma: PrismaService) {
   }
   return {
     app,
+    self,
+    lifecycle,
+    lifecycleRepo,
+    taskStaff,
+    staffAccess,
     tasks,
     checklists,
     generation,

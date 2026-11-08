@@ -7,6 +7,16 @@ export const identityPermissions: PermissionGroup[] = [
     permissions: [
       { key: "people.directory.read", group: "people", label: "Read neutral staff directory" },
       {
+        key: "people.self.read",
+        group: "people",
+        label: "Read own staff profile and working pattern",
+      },
+      {
+        key: "people.self.update",
+        group: "people",
+        label: "Update own display name and personal contacts",
+      },
+      {
         key: "people.profile.manage",
         group: "people",
         label: "Manage operational staff profiles",

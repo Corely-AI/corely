@@ -1,3 +1,14 @@
+import { StaffSelfServiceUseCase } from "./application/staff-self-service.usecase";
+import { StaffLifecycleUseCase } from "./application/staff-lifecycle.usecase";
+import { StaffSelfServiceController } from "./adapters/http/staff-self-service.controller";
+import { ExtStaffLifecycleAdapter } from "./infrastructure/ext-staff-lifecycle.adapter";
+import { StaffTasksAdapter } from "../tasks/public";
+import { StaffWorkspaceAccessAdapter } from "../workspaces/public";
+import {
+  STAFF_TASKS,
+  STAFF_WORKSPACE_ACCESS,
+  STAFF_LIFECYCLE_REPOSITORY,
+} from "./application/ports/staff-lifecycle.port";
 import { DocumentsModule } from "../documents/documents.module";
 import { StaffAbsenceUseCase } from "./application/staff-absence.usecase";
 import { StaffAbsenceController } from "./adapters/http/staff-absence.controller";
@@ -40,8 +51,16 @@ import { StaffController } from "./adapters/http/staff.controller";
     PlatformModule,
     KernelModule,
   ],
-  controllers: [StaffController, StaffAbsenceController],
+  controllers: [StaffSelfServiceController, StaffController, StaffAbsenceController],
   providers: [
+    StaffSelfServiceUseCase,
+    StaffLifecycleUseCase,
+    ExtStaffLifecycleAdapter,
+    StaffTasksAdapter,
+    StaffWorkspaceAccessAdapter,
+    { provide: STAFF_TASKS, useExisting: StaffTasksAdapter },
+    { provide: STAFF_WORKSPACE_ACCESS, useExisting: StaffWorkspaceAccessAdapter },
+    { provide: STAFF_LIFECYCLE_REPOSITORY, useExisting: ExtStaffLifecycleAdapter },
     StaffAbsenceUseCase,
     ExtStaffAbsenceAdapter,
     { provide: STAFF_ABSENCE_REPOSITORY, useExisting: ExtStaffAbsenceAdapter },

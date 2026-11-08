@@ -408,8 +408,11 @@ describe("Operational authorization HTTP and tool boundaries", () => {
   });
   it("excludes sensitive reads from automatic staff/read-only grants", () => {
     const defaults = buildDefaultRoleGrants(identityPermissions);
+    expect(defaults.STAFF).toContainEqual({ key: "people.self.update", effect: "ALLOW" });
+    expect(defaults.READ_ONLY.some((grant) => grant.key === "people.self.update")).toBe(false);
     for (const key of ["STAFF", "READ_ONLY"] as const) {
       expect(defaults[key].some((x) => x.key === "people.directory.read")).toBe(true);
+      expect(defaults[key].some((x) => x.key === "people.self.read")).toBe(true);
       expect(
         defaults[key].some(
           (x) =>

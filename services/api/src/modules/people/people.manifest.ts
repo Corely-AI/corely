@@ -10,6 +10,8 @@ export const peopleAppManifest: AppManifest = {
   capabilities: ["people.directory"],
   permissions: [
     "people.directory.read",
+    "people.self.read",
+    "people.self.update",
     "people.profile.manage",
     "people.private.read",
     "people.private.manage",

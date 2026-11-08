@@ -1,11 +1,10 @@
+import { staffJourneyCopy } from "./staff-journey-copy";
 import { StaffAbsences } from "./staff-absences";
-import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Button, Badge } from "@corely/ui";
-import { ConfirmDeleteDialog } from "@corely/web-shared/shared/crud";
 import type { StaffProfile } from "@corely/contracts";
 import { peopleApi } from "./people-api";
-import { usePeopleAccess, usePeopleLoad, usePeopleMounted } from "./use-people";
+import { usePeopleAccess, usePeopleLoad } from "./use-people";
 import { StaffProfileForm } from "./staff-profile-form";
 import { StaffAvailability } from "./staff-availability";
 import { StaffPrivateDetails } from "./staff-private-details";
@@ -13,8 +12,6 @@ export function StaffProfilePage() {
   const access = usePeopleAccess();
   const { id } = useParams<{ id: string }>();
   const { pathname } = useLocation();
-  const routeKey = JSON.stringify([access.scope, pathname]);
-  const mounted = usePeopleMounted(routeKey);
   const create = pathname.endsWith("/new");
   const editing = create || pathname.endsWith("/edit");
   const manage = access.can("profile.manage");
@@ -24,70 +21,16 @@ export function StaffProfilePage() {
     `${access.scope}:${id}:${manage}:${pathname}`,
     !create && !access.loading && access.can("directory.read")
   );
-  const [archiveTarget, setArchiveTarget] = useState<{
-    id: string;
-    version: number;
-    routeKey: string;
-  } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
   const profile = result.data;
-  const archiveOpen = Boolean(
-    archiveTarget &&
-    archiveTarget.routeKey === routeKey &&
-    archiveTarget.id === id &&
-    manage &&
-    profile &&
-    !profile.archivedAt
-  );
-  useEffect(() => {
-    setArchiveTarget(null);
-    setBusy(false);
-    setFailed(false);
-  }, [routeKey]);
+  const journey =
+    staffJourneyCopy[access.locale === "de" || access.locale === "vi" ? access.locale : "en"];
   if (access.loading) {
     return <p role="status">{t.loading}</p>;
   }
   if (!access.can("directory.read") || (editing && !manage)) {
     return <p role="alert">{t.denied}</p>;
   }
-  const reload = () => {
-    setFailed(false);
-    result.reload();
-  };
-  const archive = async () => {
-    if (
-      !archiveTarget ||
-      archiveTarget.routeKey !== routeKey ||
-      archiveTarget.id !== id ||
-      !manage
-    ) {
-      return;
-    }
-    setBusy(true);
-    try {
-      await peopleApi.command(
-        `/${archiveTarget.id}/archive`,
-        "POST",
-        { version: archiveTarget.version },
-        crypto.randomUUID()
-      );
-      if (mounted.current) {
-        reload();
-      }
-    } catch {
-      if (!mounted.current) {
-        return;
-      }
-      setFailed(true);
-      result.reload();
-    } finally {
-      if (mounted.current) {
-        setBusy(false);
-        setArchiveTarget(null);
-      }
-    }
-  };
+  const reload = () => result.reload();
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6 lg:p-8">
       <Link className="text-sm underline" to="/people/staff">
@@ -99,14 +42,6 @@ export function StaffProfilePage() {
         </h1>
         {profile && <Badge variant="outline">{profile.archivedAt ? t.archived : t.active}</Badge>}
       </div>
-      {failed && (
-        <div role="alert">
-          {t.changed}
-          <Button variant="outline" onClick={reload}>
-            {t.reload}
-          </Button>
-        </div>
-      )}
       {create ? (
         <StaffProfileForm copy={t} onReload={() => window.location.reload()} />
       ) : result.loading ? (
@@ -156,15 +91,14 @@ export function StaffProfilePage() {
                       <Button asChild>
                         <Link to={`/people/staff/${profile.id}/edit`}>{t.edit}</Link>
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          setArchiveTarget({ id: profile.id, version: profile.version, routeKey })
-                        }
-                      >
-                        {t.archive}
-                      </Button>
                     </div>
+                  )}
+                  {manage && (
+                    <p className="mt-4">
+                      <Link className="underline" to={`/people/staff/${profile.id}/lifecycle`}>
+                        {journey.lifecycle} →
+                      </Link>
+                    </p>
                   )}
                 </section>
                 {manage && (
@@ -193,21 +127,6 @@ export function StaffProfilePage() {
           </>
         )
       )}
-      <ConfirmDeleteDialog
-        trigger={null}
-        title={t.archiveTitle}
-        description={t.archiveHint}
-        confirmLabel={t.archive}
-        cancelLabel={t.cancel}
-        open={archiveOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setArchiveTarget(null);
-          }
-        }}
-        isLoading={busy}
-        onConfirm={archive}
-      />
     </div>
   );
 }

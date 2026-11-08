@@ -1,4 +1,8 @@
 import {
+  StaffSelfService,
+  createStaffJourneyClient,
+} from "@corely/web-features/modules/people/self-service";
+import {
   DailyWork,
   createTasksClient,
   RecurringChecklists,
@@ -25,10 +29,16 @@ export default function StudioPage() {
   const { t, locale } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const selfRoute = location.pathname.endsWith("/me");
   const templatesRoute = location.pathname.endsWith("/tasks/templates");
   const tasksRoute = location.pathname.endsWith("/tasks") || templatesRoute;
+  const operationalRoute = tasksRoute || selfRoute;
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [workspace, setWorkspace] = useState<WorkspaceDto | null>(null);
+  const staffClient = useMemo(
+    () => createStaffJourneyClient(api, workspace?.id ?? ""),
+    [workspace?.id]
+  );
   const checklistsClient = useMemo(
     () => createChecklistsClient(api, workspace?.id ?? ""),
     [workspace?.id]
@@ -73,7 +83,7 @@ export default function StudioPage() {
           if (!active) {
             return;
           }
-          if (tasksRoute) {
+          if (operationalRoute) {
             // Daily Work depends on workspace authority and Tasks/People, not Booking setup.
             setStudio(null);
             setDraft(null);
@@ -105,9 +115,9 @@ export default function StudioPage() {
     return () => {
       active = false;
     };
-  }, [navigate, tasksRoute]);
+  }, [navigate, operationalRoute]);
   useEffect(() => {
-    if (!studio || !day || !canManage || tasksRoute) {
+    if (!studio || !day || !canManage || operationalRoute) {
       return;
     }
     const controller = new AbortController();
@@ -136,7 +146,7 @@ export default function StudioPage() {
         }
       });
     return () => controller.abort();
-  }, [studio, day, canManage, tasksRoute]);
+  }, [studio, day, canManage, operationalRoute]);
   const setup =
     !studio ||
     !workspace?.publicEnabled ||
@@ -153,6 +163,7 @@ export default function StudioPage() {
               ["/app", "today", "◷"],
               ["/app/calendar", "calendar", "▦"],
               ["/app/tasks", "dailyWork", "✓"],
+              ["/app/me", "myProfile", "○"],
               ["/app/settings", "settings", "⚙"],
             ] as const
           ).map(([href, key, icon]) => (
@@ -205,6 +216,13 @@ export default function StudioPage() {
               </button>
             ))}
           </section>
+        ) : workspace && selfRoute ? (
+          <StaffSelfService
+            key={workspace.id}
+            client={staffClient}
+            locale={locale}
+            tasksHref="/app/tasks"
+          />
         ) : workspace && tasksRoute ? (
           templatesRoute ? (
             <RecurringChecklists
