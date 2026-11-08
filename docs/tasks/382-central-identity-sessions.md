@@ -64,3 +64,8 @@ applicable Markdown action (Prettier) was run directly with an existing installa
 and the staged line-limit check was run separately; commit uses `HUSKY=0`.
 No tooling was installed. Full lint/typecheck/application suites and Mintlify
 `docs:check` were not run for this prose-only change.
+
+The first push ran the pre-push unit-test hook and failed before test execution:
+`vitest: command not found` (no installed dependencies). This is an environment
+limit, not a passing test or an observed application failure. The documentation
+branch is pushed with `HUSKY=0` after the targeted checks above.
