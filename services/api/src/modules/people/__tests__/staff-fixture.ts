@@ -1,3 +1,26 @@
+import { StaffAbsenceController } from "../adapters/http/staff-absence.controller";
+import { StaffAbsenceUseCase } from "../application/staff-absence.usecase";
+import { ExtStaffAbsenceAdapter } from "../infrastructure/ext-staff-absence.adapter";
+import { PersonnelDocumentsAdapter } from "../../documents/infrastructure/prisma/personnel-documents.adapter";
+import { FakeObjectStoragePort } from "../../documents/testkit/fakes/fake-object-storage";
+import { DocumentsController } from "../../documents/adapters/http/documents.controller";
+import { PublicDocumentsController } from "../../documents/adapters/http/public-documents.controller";
+import { DocumentsApplication } from "../../documents/application/documents.application";
+import { ProxyDownloadUseCase } from "../../documents/application/use-cases/proxy-download/proxy-download.usecase";
+import { GetDownloadUrlUseCase } from "../../documents/application/use-cases/get-download-url/get-download-url.usecase";
+import { GetPublicFileUrlUseCase } from "../../documents/application/use-cases/get-public-file-url/get-public-file-url.usecase";
+import { CompleteUploadUseCase } from "../../documents/application/use-cases/complete-upload/complete-upload.usecase";
+import { GetDocumentUseCase } from "../../documents/application/use-cases/get-document/get-document.usecase";
+import { LinkDocumentUseCase } from "../../documents/application/use-cases/link-document/link-document.usecase";
+import { ListLinkedDocumentsUseCase } from "../../documents/application/use-cases/list-linked-documents/list-linked-documents.usecase";
+import { UnlinkDocumentUseCase } from "../../documents/application/use-cases/unlink-document/unlink-document.usecase";
+import { PrismaDocumentRepoAdapter } from "../../documents/infrastructure/prisma/prisma-document-repo.adapter";
+import { PrismaFileRepoAdapter } from "../../documents/infrastructure/prisma/prisma-file-repo.adapter";
+import { PrismaDocumentLinkAdapter } from "../../documents/infrastructure/prisma/prisma-document-link.adapter";
+import { NoopLogger } from "@corely/kernel";
+import { Reflector } from "@nestjs/core";
+import { RbacGuard } from "../../identity/adapters/http/rbac.guard";
+import type { ObjectStoragePort } from "@corely/kernel";
 import { StaffAvailabilityUseCase } from "../application/staff-availability.usecase";
 import { ExtStaffAvailabilityAdapter } from "../infrastructure/ext-staff-availability.adapter";
 import { StaffAvailabilityConstraintService } from "../application/staff-availability-constraint.service";
@@ -39,7 +62,8 @@ import type { UseCaseContext } from "@corely/kernel";
 
 export async function staffFixture(
   prisma: PrismaService,
-  clock: ClockPort = { now: () => new Date() }
+  clock: ClockPort = { now: () => new Date() },
+  storage?: ObjectStoragePort
 ) {
   const uid = () => randomUUID();
   const tenantA = uid(),
@@ -58,6 +82,7 @@ export async function staffFixture(
     "people.profile.manage",
     "people.private.read",
     "people.private.manage",
+    "people.documents.read",
   ];
   for (const [tenantId, workspaces, users] of [
     [
@@ -168,7 +193,8 @@ export async function staffFixture(
   }
   const booking = new StaffBookingAdapter(prisma);
   const schedules = new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma));
-  const constraint = new StaffAvailabilityConstraintService(repo, schedules);
+  const absences = new ExtStaffAbsenceAdapter(prisma, new PrismaExtKvAdapter(prisma));
+  const constraint = new StaffAvailabilityConstraintService(repo, schedules, absences);
   const usecase = new StaffDirectoryUseCase(
     repo,
     permissions,
@@ -187,8 +213,50 @@ export async function staffFixture(
     booking,
     audit,
     outbox,
+    clock,
+    absences
+  );
+  const objectStorage = storage ?? new FakeObjectStoragePort();
+  const documents = new PersonnelDocumentsAdapter(
+    prisma,
+    new PrismaExtKvAdapter(prisma),
+    objectStorage,
+    { STORAGE_KEY_PREFIX: process.env.STORAGE_KEY_PREFIX }
+  );
+  const absenceUseCase = new StaffAbsenceUseCase(
+    repo,
+    absences,
+    permissions,
+    platformEntitlements,
+    booking,
+    documents,
+    audit,
+    outbox,
     clock
   );
+  const docRepo = new PrismaDocumentRepoAdapter(prisma),
+    fileRepo = new PrismaFileRepoAdapter(prisma),
+    linkRepo = new PrismaDocumentLinkAdapter(prisma);
+  const deps = {
+    documentRepo: docRepo,
+    fileRepo,
+    objectStorage,
+    logger: new NoopLogger(),
+    clock,
+    linkRepo,
+    downloadTtlSeconds: 60,
+  };
+  const genericDocuments = {
+    proxyDownload: new ProxyDownloadUseCase(deps),
+    getDownloadUrl: new GetDownloadUrlUseCase(deps),
+    getPublicFileUrl: new GetPublicFileUrlUseCase(deps),
+    getDocument: new GetDocumentUseCase(deps),
+    completeUpload: new CompleteUploadUseCase(deps),
+    linkDocument: new LinkDocumentUseCase(deps),
+    listLinkedDocuments: new ListLinkedDocumentsUseCase(deps),
+    unlinkDocument: new UnlinkDocumentUseCase(deps),
+  };
+  const rbac = new RbacGuard(new Reflector(), permissions);
   const tokens = {
     manager: { userId: manager, tenantId: tenantA },
     staff: { userId: staff, tenantId: tenantA },
@@ -213,13 +281,23 @@ export async function staffFixture(
     new AuthorizeRequestContextUseCase(memberships, authorizeWorkspace)
   );
   const module = await Test.createTestingModule({
-    controllers: [StaffController],
+    controllers: [
+      StaffController,
+      StaffAbsenceController,
+      DocumentsController,
+      PublicDocumentsController,
+    ],
     providers: [
+      { provide: DocumentsApplication, useValue: genericDocuments },
+      { provide: RbacGuard, useValue: rbac },
+      { provide: StaffAbsenceUseCase, useValue: absenceUseCase },
       { provide: StaffDirectoryUseCase, useValue: usecase },
       { provide: StaffAvailabilityUseCase, useValue: availability },
       { provide: AuthGuard, useValue: auth },
     ],
   })
+    .overrideGuard(RbacGuard)
+    .useValue(rbac)
     .overrideGuard(AuthGuard)
     .useValue(auth)
     .compile();
@@ -230,7 +308,12 @@ export async function staffFixture(
   async function cleanup() {
     await app.close();
     for (const tenantId of [tenantA, tenantB]) {
-      await prisma.extKv.deleteMany({ where: { tenantId, moduleId: "people" } });
+      await prisma.extKv.deleteMany({
+        where: { tenantId, moduleId: { in: ["people", "documents"] } },
+      });
+      await prisma.documentLink.deleteMany({ where: { tenantId } });
+      await prisma.file.deleteMany({ where: { tenantId } });
+      await prisma.document.deleteMany({ where: { tenantId } });
       await prisma.auditLog.deleteMany({ where: { tenantId } });
       await prisma.outboxEvent.deleteMany({ where: { tenantId } });
       await prisma.bookingAllocation.deleteMany({ where: { tenantId } });
@@ -249,6 +332,13 @@ export async function staffFixture(
   }
   return {
     app,
+    absences,
+    absenceUseCase,
+    genericDocuments,
+    docRepo,
+    fileRepo,
+    linkRepo,
+    documents,
     booking,
     schedules,
     constraint,

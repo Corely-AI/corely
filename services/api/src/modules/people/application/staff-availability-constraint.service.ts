@@ -1,3 +1,5 @@
+import { absenceBlocks, subtractAbsences } from "../domain/staff-absence";
+import { STAFF_ABSENCE_REPOSITORY, type StaffAbsenceRepository } from "./ports/staff-absence.port";
 import { BadRequestException, ConflictException, Inject, Injectable } from "@nestjs/common";
 import type { StaffLinkScope } from "@corely/contracts";
 import type { TransactionContext } from "@corely/kernel";
@@ -12,7 +14,8 @@ import { staffAvailabilityWindows } from "../domain/staff-availability";
 export class StaffAvailabilityConstraintService {
   constructor(
     @Inject(STAFF_REPOSITORY) private readonly staff: StaffRepositoryPort,
-    @Inject(STAFF_AVAILABILITY_REPOSITORY) private readonly schedules: StaffAvailabilityRepository
+    @Inject(STAFF_AVAILABILITY_REPOSITORY) private readonly schedules: StaffAvailabilityRepository,
+    @Inject(STAFF_ABSENCE_REPOSITORY) private readonly absences: StaffAbsenceRepository
   ) {}
   async windows(
     scope: StaffLinkScope,
@@ -33,7 +36,10 @@ export class StaffAvailabilityConstraintService {
         "Staff availability ranges must be positive and at most 62 days"
       );
     }
-    return staffAvailabilityWindows(await this.schedules.get(scope, profiles[0].id, tx), from, to);
+    return subtractAbsences(
+      staffAvailabilityWindows(await this.schedules.get(scope, profiles[0].id, tx), from, to),
+      absenceBlocks(await this.absences.list(scope, profiles[0].id, tx))
+    );
   }
   async assertAvailable(
     scope: StaffLinkScope,

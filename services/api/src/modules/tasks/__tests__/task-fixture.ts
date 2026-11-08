@@ -1,3 +1,4 @@
+import { ExtStaffAbsenceAdapter } from "../../people/infrastructure/ext-staff-absence.adapter";
 import { ExtRecurringChecklistAdapter } from "../infrastructure/ext-recurring-checklist.adapter";
 import { RecurringChecklistsUseCase } from "../application/recurring-checklists.usecase";
 import { RecurringGenerationUseCase } from "../application/recurring-generation.usecase";
@@ -197,7 +198,8 @@ export async function tasksFixture(prisma: PrismaService) {
     booking,
     audit,
     outbox,
-    { now: () => new Date("2026-11-08T00:00:00Z") }
+    { now: () => new Date("2026-11-08T00:00:00Z") },
+    new ExtStaffAbsenceAdapter(prisma, new PrismaExtKvAdapter(prisma))
   );
   const taskRepo = new ExtTaskRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma));
   const tasks = new EmployeeTasksUseCase(

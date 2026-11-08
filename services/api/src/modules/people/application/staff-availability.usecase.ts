@@ -1,3 +1,5 @@
+import { absenceBlocks, subtractAbsences } from "../domain/staff-absence";
+import { STAFF_ABSENCE_REPOSITORY, type StaffAbsenceRepository } from "./ports/staff-absence.port";
 import {
   BadRequestException,
   ConflictException,
@@ -35,7 +37,11 @@ import {
   type StaffAvailabilityRepository,
   type StaffBookingPort,
 } from "./ports/staff-availability.port";
-import { staffCovers, staffDateStart, staffLocalDate } from "../domain/staff-availability";
+import {
+  staffAvailabilityWindows,
+  staffDateStart,
+  staffLocalDate,
+} from "../domain/staff-availability";
 
 @Injectable()
 export class StaffAvailabilityUseCase {
@@ -46,7 +52,8 @@ export class StaffAvailabilityUseCase {
     @Inject(STAFF_BOOKING) private readonly booking: StaffBookingPort,
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
-    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
+    @Inject(STAFF_ABSENCE_REPOSITORY) private readonly absences: StaffAbsenceRepository
   ) {}
   private async scope(id: string, ctx: UseCaseContext): Promise<StaffScope> {
     await this.directory.managementDetail(id, ctx);
@@ -72,6 +79,7 @@ export class StaffAvailabilityUseCase {
     const commitments = profile.resourceId
       ? await this.booking.commitments(scope, profile.resourceId, now, tx)
       : [];
+    const blocks = absenceBlocks(await this.absences.list(scope, profile.id, tx));
     return {
       ...schedule,
       profileVersion: profile.version,
@@ -81,7 +89,13 @@ export class StaffAvailabilityUseCase {
         // Preparation may already be underway for an upcoming appointment.
         // Check its remaining occupancy without re-evaluating elapsed history.
         const remainingStart = new Date(Math.max(now.getTime(), Date.parse(c.startAt)));
-        return profile.archivedAt || !staffCovers(schedule, remainingStart, new Date(c.endAt));
+        if (profile.archivedAt || Date.parse(c.endAt) - remainingStart.getTime() > 62 * 86400000) {
+          return true;
+        }
+        return !subtractAbsences(
+          staffAvailabilityWindows(schedule, remainingStart, new Date(c.endAt)),
+          blocks
+        ).some((w) => Date.parse(w.startAt) <= remainingStart.getTime() && w.endAt >= c.endAt);
       }),
     };
   }

@@ -3,7 +3,9 @@
 [PEOPLE-02 / #306](https://github.com/Corely-AI/corely/issues/306) adds working
 patterns to the manager's staff detail at `/people/staff/:id`. Staff profiles can
 have patterns without login accounts or Booking resources. This is availability
-configuration, not absence requests, private reasons, approvals or payroll.
+configuration. [Private absences](people-absences.md) separately own approved
+absence intervals and restricted reasons/files; those intervals further constrain
+the existing neutral windows. Neither slice implements payroll or an entitlement engine.
 
 ## Authoritative inputs
 
@@ -12,6 +14,7 @@ configuration, not absence requests, private reasons, approvals or payroll.
 | Staff identity and optional resource link                                               | People staff profile, existing extension storage                                              | Booking receives only the linked resource's neutral availability windows                                                    |
 | Staff recurring hours, IANA timezone, effective dates, dated exceptions                 | People, `ext.kv`, module `people`, actual tenant, `workspace:<id>:availability`, staff ID key | One versioned plan timeline per staff; never copied into Booking rules                                                      |
 | Resource opening hours, blackouts, service duration, buffers, notice and advance limits | Existing Booking resource/rule/service and OpenBuk configuration owners                       | Public slot calculation intersects these with People windows                                                                |
+| Approved absence intervals and private history                                          | People, existing extension storage; [absence owner](people-absences.md)                       | Subtract neutral absence intervals from pattern windows; private reasons/files never cross into Booking                     |
 | Reservations, allocations and active holds                                              | Existing Booking repositories                                                                 | Booking checks occupancy; People reads IDs and allocation intervals through a public owner adapter to flag future conflicts |
 
 People uses Booking's public existence, lock and commitment interfaces; it never

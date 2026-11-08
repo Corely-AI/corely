@@ -13,6 +13,7 @@ export const peopleAppManifest: AppManifest = {
     "people.profile.manage",
     "people.private.read",
     "people.private.manage",
+    "people.documents.read",
   ],
   entitlement: { enabledFeatureKey: "app.people.enabled", defaultEnabled: true },
   menu: [

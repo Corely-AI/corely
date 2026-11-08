@@ -1,3 +1,4 @@
+import { StaffAbsences } from "./staff-absences";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Button, Badge } from "@corely/ui";
@@ -173,6 +174,11 @@ export function StaffProfilePage() {
                     archived={Boolean(profile.archivedAt)}
                   />
                 )}
+                <StaffAbsences
+                  id={profile.id}
+                  archived={Boolean(profile.archivedAt)}
+                  onSaved={reload}
+                />
                 <StaffPrivateDetails
                   key={`${access.scope}:${profile.id}:${access.can("private.read")}`}
                   id={profile.id}
