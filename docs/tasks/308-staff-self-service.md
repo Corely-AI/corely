@@ -4,7 +4,7 @@
 
 - Issue #308, parent #283. Hard prerequisites #304/#305/#312 are closed and merged.
 - Branch `308-staff-self-service`, base `corely/development` at `0ef158482a` (merged #378).
-- PR pending. #307 remains separate and its dirty primary checkout is preserved.
+- Draft PR [#379](https://github.com/Corely-AI/corely/pull/379). #307 remains separate and its primary checkout is preserved.
 - Staff read their own permitted profile/published availability and edit display name/personal
   contact details only. Managers approve one onboarding task with checklist checkboxes and review
   unfinished work/bookings/access before departure. No payroll, absence handling, scoring or global
@@ -90,3 +90,7 @@ No migration, automatic sensitive access, booking cancellation, deployment or me
 staff and account identities remain separate. No #307 unmerged file/absence behavior is claimed.
 Current behavior and policy: [staff self-service](../backend/staff-self-service.md).
 Draft delivery retains the existing unrelated check limitations above; human review remains pending.
+
+PR readback confirmed head `308-staff-self-service` and base `development`. The seven
+Vercel surface checks currently fail with the provider’s build-rate-limit URL; no preview
+or deployment success is claimed. Keep Draft pending human review and check resolution.
