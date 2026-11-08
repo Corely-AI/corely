@@ -68,6 +68,7 @@ Backend specific documentation.
 - [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files
 - [Focused app launch catalog](./backend/app-launch-catalog.md) — additive descriptors, scoped product contexts and validated deployment origins
 - [Auth](./backend/AUTH.md)
+- [Central SSO login and callbacks](./backend/sso.md) — passwordless email codes, password fallback, registered handoffs and isolated verification
 - [Background Module](./backend/background.md)
 - [Events](./backend/EVENTS.md)
 - [Dependency Injection](./di/)

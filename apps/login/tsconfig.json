@@ -1,0 +1,16 @@
+{
+  "extends": "@corely/tsconfig/react.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@corely/contracts": ["../../packages/contracts/src/index.ts"],
+      "@corely/ui": ["../../packages/ui/src/index.ts"],
+      "@corely/contracts/identity/sso": ["../../packages/contracts/src/identity/sso.schema.ts"],
+      "@corely/ui/auth-primitives": ["../../packages/ui/src/auth-primitives.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

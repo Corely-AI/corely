@@ -1,3 +1,8 @@
+import { IdentityModule } from "../../../../identity";
+import {
+  SsoEmailCodeRequestedHandler,
+  createSsoRecordedEventHandlers,
+} from "../identity/sso-email-code-requested.handler";
 import { createStaffLifecycleEventHandlers } from "../tasks/staff-lifecycle-recorded.handler";
 import { createChecklistEventHandlers } from "../tasks/recurring-checklist-recorded.handler";
 import { createEmployeeTaskEventHandlers } from "../tasks/employee-task-recorded.handler";
@@ -59,6 +64,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
 
 @Module({
   imports: [
+    IdentityModule,
     KernelModule,
     AccountingWorkerModule,
     IssuesWorkerModule,
@@ -75,6 +81,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     CoachingWorkerModule,
   ],
   providers: [
+    SsoEmailCodeRequestedHandler,
     {
       provide: ID_GENERATOR_TOKEN,
       useFactory: (): IdGeneratorPort => ({
@@ -142,9 +149,12 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         coachingPrepFormSubmittedHandler: CoachingPrepFormSubmittedHandler,
         coachingSessionCompletedHandler: CoachingSessionCompletedHandler,
         coachingDebriefRequestedHandler: CoachingDebriefRequestedHandler,
-        coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler
+        coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler,
+        ssoEmailHandler: SsoEmailCodeRequestedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
+          ssoEmailHandler,
+          ...createSsoRecordedEventHandlers(),
           ...createEmployeeTaskEventHandlers(),
           ...createChecklistEventHandlers(),
           ...createStaffLifecycleEventHandlers(),
@@ -191,6 +201,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         CoachingSessionCompletedHandler,
         CoachingDebriefRequestedHandler,
         CoachingExportBundleRequestedHandler,
+        SsoEmailCodeRequestedHandler,
       ],
     },
   ],

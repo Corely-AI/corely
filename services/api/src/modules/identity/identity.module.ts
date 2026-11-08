@@ -1,4 +1,19 @@
+import { randomBytes } from "node:crypto";
 import { AssociateInvitedAccountUseCase } from "./application/use-cases/associate-invited-account.usecase";
+import { SsoController } from "./adapters/http/sso.controller";
+import { SsoHttpSecurity } from "./adapters/http/sso-http-security";
+import { SsoService } from "./application/services/sso.service";
+import { SsoRegistrationService } from "./application/services/sso-registration.service";
+import { PrismaSsoStore } from "./infrastructure/adapters/prisma-sso-store.adapter";
+import { SSO_STORE } from "./application/ports/sso-store.port";
+import { SSO_CRYPTO } from "./application/ports/sso-crypto.port";
+import {
+  SsoEmailCodeService,
+  DeliverSsoEmailCodeUseCase,
+} from "./application/services/sso-email-code.service";
+import { SSO_EMAIL } from "./application/ports/sso-email.port";
+import { ResendSsoEmailAdapter } from "./infrastructure/adapters/resend-sso-email.adapter";
+import { SsoCrypto } from "./infrastructure/security/sso-crypto";
 import { INVITED_ACCOUNT_PORT } from "./application/ports/invited-account.port";
 import { PrismaInvitedAccountAdapter } from "./infrastructure/adapters/prisma-invited-account.adapter";
 /* eslint @typescript-eslint/no-explicit-any: "error" */
@@ -82,8 +97,45 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     forwardRef(() => PlatformModule),
     forwardRef(() => WorkspacesModule),
   ],
-  controllers: [AuthController, RolesController, PermissionsController, TenantsController],
+  controllers: [
+    AuthController,
+    RolesController,
+    PermissionsController,
+    TenantsController,
+    SsoController,
+  ],
   providers: [
+    SsoRegistrationService,
+    SsoService,
+    SsoEmailCodeService,
+    DeliverSsoEmailCodeUseCase,
+    {
+      provide: SSO_EMAIL,
+      useFactory: (env: EnvService, registrations: SsoRegistrationService) => {
+        if (!registrations.enabled) {
+          return {
+            sendCode: async () => {
+              throw new Error("SSO disabled");
+            },
+          };
+        }
+        if (env.EMAIL_PROVIDER !== "resend" || !env.RESEND_API_KEY || !env.RESEND_FROM) {
+          throw new Error("SSO email codes require the configured Resend sender");
+        }
+        return new ResendSsoEmailAdapter(env.RESEND_API_KEY, env.RESEND_FROM, env.RESEND_REPLY_TO);
+      },
+      inject: [EnvService, SsoRegistrationService],
+    },
+    SsoHttpSecurity,
+    { provide: SSO_STORE, useClass: PrismaSsoStore },
+    {
+      provide: SSO_CRYPTO,
+      useFactory: (registration: SsoRegistrationService) =>
+        new SsoCrypto(
+          registration.enabled ? registration.encryptionKey : randomBytes(32).toString("hex")
+        ),
+      inject: [SsoRegistrationService],
+    },
     AssociateInvitedAccountUseCase,
     { provide: INVITED_ACCOUNT_PORT, useClass: PrismaInvitedAccountAdapter },
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()
@@ -202,6 +254,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     PermissionCatalogRegistry,
   ],
   exports: [
+    DeliverSsoEmailCodeUseCase,
     AssociateInvitedAccountUseCase,
     GetEffectivePermissionsUseCase,
     AuthorizeRequestContextUseCase,

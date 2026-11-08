@@ -7,7 +7,9 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./theme-tokens.css": "./src/theme-tokens.css",
+    "./auth-primitives": "./src/auth-primitives.ts"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.11",

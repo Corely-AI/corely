@@ -15,8 +15,8 @@ export class PrismaOutboxAdapter implements OutboxPort {
   async enqueue(
     event: {
       eventType: string;
-      payload: any;
-      tenantId: string;
+      payload: unknown;
+      tenantId: string | null;
       correlationId?: string;
       availableAt?: Date;
     },
