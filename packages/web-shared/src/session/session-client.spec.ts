@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { describe, expect, it, vi } from "vitest";
 import { SessionClient } from "./session-client";
 export const bootstrapData = {
@@ -149,6 +150,123 @@ describe("opt-in session transport", () => {
     abort.abort();
     expect(requestSignal?.aborted).toBe(true);
     await reader.cancel();
+    client.dispose();
+  });
+  it("rejects an old account's in-flight JSON after bootstrap verifies another account", async () => {
+    let finish!: (response: Response) => void;
+    let oldSignal: AbortSignal | null | undefined;
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(bootstrapData))
+      .mockImplementationOnce((_input, init) => {
+        oldSignal = init?.signal;
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      })
+      .mockResolvedValueOnce(
+        json({
+          ...bootstrapData,
+          csrfToken: "b".repeat(43),
+          user: { ...bootstrapData.user, userId: "colleague-2" },
+        })
+      );
+    const client = new SessionClient({ appKey: "invoice" }, fetcher);
+    await client.bootstrap();
+    const oldRequest = client.json("/invoices", z.object({ privateOwner: z.string() }));
+    const current = await client.bootstrap();
+    expect(current.user.userId).toBe("colleague-2");
+    // This fake transport deliberately resolves despite cancellation to check the epoch guard too.
+    finish(json({ privateOwner: "colleague-1" }));
+    await expect(oldRequest).rejects.toMatchObject({ name: "AbortError" });
+    expect(oldSignal?.aborted).toBe(true);
+    client.dispose();
+  });
+  it("can rotate after an unauthenticated refresh failure followed by successful bootstrap", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(bootstrapData))
+      .mockResolvedValueOnce(
+        json({ csrfToken: "b".repeat(43), expiresAt: bootstrapData.expiresAt })
+      );
+    const client = new SessionClient({ appKey: "invoice" }, fetcher);
+    await expect(client.rotate()).rejects.toMatchObject({ kind: "unauthenticated" });
+    await client.bootstrap();
+    await expect(client.rotate()).resolves.toBeUndefined();
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher.mock.calls[1][0]).toBe("/api/session/rotate");
+    client.dispose();
+  });
+  it("classifies an interrupted response body as unavailable and notifies the provider once", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(bootstrapData))
+      .mockResolvedValueOnce(
+        new Response(
+          new ReadableStream({
+            start(sink) {
+              sink.error(new TypeError("network interrupted after headers"));
+            },
+          })
+        )
+      );
+    const client = new SessionClient({ appKey: "invoice" }, fetcher);
+    const failed = vi.fn();
+    client.onFailure(failed);
+    await client.bootstrap();
+    await expect(client.json("/invoices", z.unknown())).rejects.toMatchObject({
+      status: 503,
+      kind: "unavailable",
+    });
+    expect(failed).toHaveBeenCalledTimes(1);
+    expect(failed).toHaveBeenCalledWith("unavailable");
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+  it("preserves caller cancellation after headers without publishing an outage", async () => {
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(bootstrapData))
+      .mockResolvedValueOnce(
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(sink) {
+              source = sink;
+            },
+          })
+        )
+      );
+    const client = new SessionClient({ appKey: "invoice" }, fetcher);
+    const failure = vi.fn();
+    client.onFailure(failure);
+    await client.bootstrap();
+    const controller = new AbortController();
+    const response = await client.request("/documents/id/download", { signal: controller.signal });
+    const read = response.arrayBuffer();
+    controller.abort();
+    source.error(new DOMException("Caller cancelled", "AbortError"));
+    await expect(read).rejects.toMatchObject({ name: "AbortError" });
+    expect(failure).not.toHaveBeenCalled();
+    client.dispose();
+  });
+  it("keeps ordinary domain errors separate from session failures", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(bootstrapData))
+      .mockResolvedValueOnce(json({}, 400))
+      .mockResolvedValueOnce(json({ ok: true }));
+    const client = new SessionClient({ appKey: "invoice" }, fetcher);
+    const failure = vi.fn();
+    client.onFailure(failure);
+    await client.bootstrap();
+    await expect(client.request("/invoices", { method: "POST" })).rejects.toMatchObject({
+      status: 400,
+      kind: "request",
+    });
+    expect(failure).not.toHaveBeenCalled();
+    await expect(client.json("/invoices", z.object({ ok: z.boolean() }))).resolves.toEqual({
+      ok: true,
+    });
     client.dispose();
   });
   it("starts central login with a validated relative destination and no bearer response", async () => {

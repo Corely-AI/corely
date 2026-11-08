@@ -1,3 +1,4 @@
+import { z } from "zod";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -17,6 +18,18 @@ const data = {
 };
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+function BodyRequest() {
+  const { client } = useSession();
+  return (
+    <button
+      onClick={() => {
+        void client.json("/invoices", z.unknown()).catch(() => {});
+      }}
+    >
+      Load protected data
+    </button>
+  );
+}
 function Protected() {
   const session = useSession();
   return (
@@ -111,6 +124,30 @@ describe("shared session provider", () => {
     );
     expect(screen.queryByText(/First account/)).toBeNull();
     expect(await screen.findByText(/Second account/)).toBeVisible();
+  });
+  it("hides protected children when the connection fails after response headers", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(data))
+      .mockResolvedValueOnce(
+        new Response(
+          new ReadableStream({
+            start(sink) {
+              sink.error(new TypeError("connection lost"));
+            },
+          })
+        )
+      );
+    render(
+      <SessionProviders config={{ appKey: "invoice" }} fetchFn={fetcher}>
+        <Protected />
+        <BodyRequest />
+      </SessionProviders>
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Load protected data" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("temporarily unavailable");
+    expect(screen.queryByText(/Private colleague/)).toBeNull();
+    expect(fetcher).toHaveBeenCalledTimes(2);
   });
   it("does not restore auth after an obsolete bootstrap resolves", async () => {
     let stale!: (value: Response) => void;

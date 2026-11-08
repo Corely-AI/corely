@@ -96,3 +96,40 @@ Delivery: signed commits published to the ticket branch; pre-commit checks passe
 The pre-push wrapper was skipped after the recorded manual checks. The disposable
 PostgreSQL cluster and all three test-owned Vite servers were stopped. Browser
 diagnostics remain under ignored output; screenshot evidence is linked above.
+
+## PR #411 review corrections — 2026-11-08
+
+- **P1 — stale account response after re-bootstrap:** when another tab changed
+  the host session, bootstrap could verify a different account without changing
+  the client's generation. An already-running typed JSON request could then
+  resolve with the previous account's data. The regression returned colleague-1
+  payload after colleague-2 bootstrap before the fix. A verified account change
+  now invalidates the old generation and aborts its outstanding requests before
+  installing the new session; a fake transport that ignores cancellation is also
+  rejected by the generation guard. Existing provider retry cache clearing remains.
+- **P2 — rejected rotation promise survives recovery:** calling refresh without
+  an authenticated in-memory session invalidated the generation before its
+  rejected promise was stored. Generation-based cleanup then retained that
+  promise, so rotation still failed after a successful bootstrap. Cleanup now
+  uses promise identity, preserving deduplication while allowing recovery and
+  avoiding removal of a different in-flight rotation.
+- **P2 — response-body transport failure misses outage state:** an interrupted
+  JSON/download/SSE body after successful headers escaped as a raw error without
+  the failure notification. The provider kept protected children mounted.
+  Live body connection failures now produce the same typed 503/unavailable
+  notification and invalidation as pre-header failures. Intentional cancellation
+  and obsolete-scope errors do not report an outage to a newer scope; ordinary
+  400 domain errors also retain the session.
+- Reproduction: four regression tests failed before these corrections (three
+  client cases and the rendered provider case). After fixes, **25 focused tests
+  passed across the client/provider suites**, including caller-cancellation and
+  ordinary-domain-error negative controls. Shared-web typecheck and targeted lint passed; formatting, local references,
+  whitespace and source-size checks passed before publication.
+  Backend code/contracts are unchanged; backend/full-repository suites were not
+  repeated, so earlier results above remain dated evidence rather than new runs.
+- Rendered the actual provider via the synthetic `?fault=body` fixture, clicked
+  the interruption action and verified that private content disappeared in favor
+  of the outage/retry boundary. Inspected fresh [desktop 1280×720](386-assets/body-failure-desktop.png)
+  and [mobile 390×844](386-assets/body-failure-mobile.png) captures. Layout/copy of
+  existing states is unchanged, and earlier EN/DE/VI evidence remains applicable.
+  No live identity/business request, deployment or shared database operation.

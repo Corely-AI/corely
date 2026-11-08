@@ -72,13 +72,13 @@ gets pre-auth CSRF and initiates the existing central handoff; only the server's
 HTTPS authorize URL is navigated. Callback redemption stays server-side; after
 the clean redirect the provider bootstraps instead of parsing proofs from URLs.
 
-`refresh()` explicitly rotates the app cookie/proof and rechecks the user. The
+`refresh()` explicitly rotates the app cookie/proof and rechecks the user. A failed early refresh does not prevent rotation after a later successful bootstrap. The
 client deduplicates bootstrap and same-instance rotation. Rotation failure is
 not replayed; losing a rotation response can require reauthentication. Cross-tab
 rotation coordination is not claimed. An expired session or business 401 clears
 in-memory session state, cancels outstanding requests and hides protected UI.
 A 403 is distinct from 401 and does not initiate central login. Network/5xx/429
-failures become temporarily unavailable; ordinary 4xx domain errors do not
+failures, including interrupted response bodies after headers, become temporarily unavailable; ordinary 4xx domain errors do not
 pretend that the user signed out.
 
 ## Requests and retry ownership
@@ -96,7 +96,7 @@ new QueryClient also disables retries. Bootstrap, rotation and login never fall
 back to legacy token refresh, and an unsafe mutation is never automatically
 replayed after 401. Callers should pass an AbortSignal and existing idempotency
 key where their operation requires it. Cancellation stays attached through body
-consumption; disposing a scope aborts outstanding requests and rejects stale
+consumption; disposing a scope or verifying a changed account aborts outstanding requests and rejects stale
 bootstrap/JSON completion. No session/CSRF metadata is persisted in browser storage.
 
 ## Verification

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { SessionProviders } from "../../src/session/session-provider";
@@ -13,6 +14,15 @@ let expired = false;
 const fetchFn: typeof fetch = async (_input) => {
   if (query.get("state") === "booting") {
     return new Promise(() => {});
+  }
+  if (expired && query.get("fault") === "body") {
+    return new Response(
+      new ReadableStream({
+        start(sink) {
+          sink.error(new TypeError("Synthetic connection interruption after headers"));
+        },
+      })
+    );
   }
   const status = expired
     ? 401
@@ -54,10 +64,12 @@ function Protected() {
         <Button
           onClick={() => {
             expired = true;
-            void client.request("/invoices").catch(() => {});
+            void client.json("/invoices", z.unknown()).catch(() => {});
           }}
         >
-          Simulate expired session
+          {query.get("fault") === "body"
+            ? "Simulate interrupted response"
+            : "Simulate expired session"}
         </Button>
       </section>
     </main>

@@ -135,7 +135,14 @@ export class SessionClient {
             }
           } catch (error) {
             cleanup();
-            sink.error(error);
+            // Headers are not the end of a fetch: downloads/SSE/JSON can fail later.
+            // Preserve intentional cancellation and stale-scope errors without changing
+            // the new scope's state; normalize a live connection failure exactly once.
+            sink.error(
+              controller.signal.aborted || generation !== this.generation
+                ? error
+                : this.fail(new SessionRequestError(503, "unavailable"))
+            );
           }
         },
         cancel: async (reason) => {
@@ -183,6 +190,11 @@ export class SessionClient {
           }
           if (result.appKey !== this.config.appKey || Date.parse(result.expiresAt) <= Date.now()) {
             throw new Error("Invalid session binding");
+          }
+          if (this.session && this.session.user.userId !== result.user.userId) {
+            // A host cookie can change in another tab. Do not admit the former
+            // account's outstanding responses into a newly verified account.
+            this.dispose();
           }
           this.session = result;
           return result;
@@ -261,12 +273,14 @@ export class SessionClient {
   }
   rotate(): Promise<void> {
     if (!this.rotationPending) {
-      const generation = this.generation;
-      this.rotationPending = this.rotateOnce().finally(() => {
-        if (generation === this.generation) {
+      const pending: Promise<void> = this.rotateOnce().finally(() => {
+        // A synchronous preflight failure also invalidates the generation. Clear
+        // this promise by identity so it cannot poison rotation after recovery.
+        if (this.rotationPending === pending) {
           this.rotationPending = null;
         }
       });
+      this.rotationPending = pending;
     }
     return this.rotationPending;
   }
