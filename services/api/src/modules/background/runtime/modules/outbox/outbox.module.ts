@@ -1,3 +1,4 @@
+import { createStaffLifecycleEventHandlers } from "../tasks/staff-lifecycle-recorded.handler";
 import { createChecklistEventHandlers } from "../tasks/recurring-checklist-recorded.handler";
 import { createEmployeeTaskEventHandlers } from "../tasks/employee-task-recorded.handler";
 import { Module } from "@nestjs/common";
@@ -146,6 +147,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         return new OutboxPollerService(repo, env, [
           ...createEmployeeTaskEventHandlers(),
           ...createChecklistEventHandlers(),
+          ...createStaffLifecycleEventHandlers(),
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,

@@ -8,7 +8,9 @@
     ".": "./src/index.ts",
     "./*": "./src/*",
     "./modules/tasks": "./src/modules/tasks/index.ts",
-    "./modules/tasks/daily-work-page": "./src/modules/tasks/daily-work-page.tsx"
+    "./modules/tasks/daily-work-page": "./src/modules/tasks/daily-work-page.tsx",
+    "./modules/people": "./src/modules/people/index.ts",
+    "./modules/people/self-service": "./src/modules/people/self-service.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"

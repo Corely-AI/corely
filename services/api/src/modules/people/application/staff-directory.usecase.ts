@@ -56,7 +56,7 @@ export class StaffDirectoryUseCase {
     private readonly entitlements: Pick<TenantEntitlementService, "isAppEnabled">,
     @Inject(STAFF_BOOKING) private readonly booking: StaffBookingPort
   ) {}
-  private async authorize(
+  async authorize(
     ctx: UseCaseContext,
     required: string[],
     tx?: TransactionContext
@@ -127,14 +127,15 @@ export class StaffDirectoryUseCase {
     id: string | null,
     body: unknown,
     key: string | undefined,
-    ctx: UseCaseContext
+    ctx: UseCaseContext,
+    transaction?: TransactionContext
   ) {
     const required = [
       "people.directory.read",
       "people.profile.manage",
       ...(kind === "private" ? ["people.private.manage"] : []),
     ];
-    const scope = await this.authorize(ctx, required);
+    const scope = await this.authorize(ctx, required, transaction);
     if (!key || key.length > 160 || !/^[\w-]+$/.test(key)) {
       throw new BadRequestException("A valid Idempotency-Key is required");
     }
@@ -152,7 +153,10 @@ export class StaffDirectoryUseCase {
     const commandKey = createHash("sha256")
       .update(JSON.stringify([ctx.userId, key]))
       .digest("hex");
-    return this.repo.transaction(scope, async (tx) => {
+    const work = async (tx: TransactionContext) => {
+      if (transaction) {
+        await this.repo.lock(scope, tx);
+      }
       // Recheck current authority after acquiring the write lock, including retries.
       await this.authorize(ctx, required, tx);
       const replay = await this.repo.replay(scope, commandKey, tx);
@@ -274,6 +278,7 @@ export class StaffDirectoryUseCase {
       );
       await this.repo.saveReplay(scope, commandKey, { fingerprint, staffId: next.id }, tx);
       return directoryEntry(next);
-    });
+    };
+    return transaction ? work(transaction) : this.repo.transaction(scope, work);
   }
 }

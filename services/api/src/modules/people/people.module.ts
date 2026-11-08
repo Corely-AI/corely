@@ -1,3 +1,14 @@
+import { StaffSelfServiceUseCase } from "./application/staff-self-service.usecase";
+import { StaffLifecycleUseCase } from "./application/staff-lifecycle.usecase";
+import { StaffSelfServiceController } from "./adapters/http/staff-self-service.controller";
+import { ExtStaffLifecycleAdapter } from "./infrastructure/ext-staff-lifecycle.adapter";
+import { StaffTasksAdapter } from "../tasks/public";
+import { StaffWorkspaceAccessAdapter } from "../workspaces/public";
+import {
+  STAFF_TASKS,
+  STAFF_WORKSPACE_ACCESS,
+  STAFF_LIFECYCLE_REPOSITORY,
+} from "./application/ports/staff-lifecycle.port";
 import { StaffWorkdayLookup } from "./application/staff-workday-lookup";
 import { StaffOperationsLookup } from "./application/staff-operations-lookup";
 import { PlatformModule } from "../platform/platform.module";
@@ -28,8 +39,16 @@ import { ExtStaffRepositoryAdapter } from "./infrastructure/ext-staff-repository
 import { StaffController } from "./adapters/http/staff.controller";
 @Module({
   imports: [DataModule, IdentityModule, WorkspacesModule, PlatformModule, KernelModule],
-  controllers: [StaffController],
+  controllers: [StaffSelfServiceController, StaffController],
   providers: [
+    StaffSelfServiceUseCase,
+    StaffLifecycleUseCase,
+    ExtStaffLifecycleAdapter,
+    StaffTasksAdapter,
+    StaffWorkspaceAccessAdapter,
+    { provide: STAFF_TASKS, useExisting: StaffTasksAdapter },
+    { provide: STAFF_WORKSPACE_ACCESS, useExisting: StaffWorkspaceAccessAdapter },
+    { provide: STAFF_LIFECYCLE_REPOSITORY, useExisting: ExtStaffLifecycleAdapter },
     StaffOperationsLookup,
     StaffWorkdayLookup,
     StaffDirectoryUseCase,

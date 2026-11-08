@@ -11,10 +11,11 @@ import {
   Badge,
 } from "@corely/ui";
 import { CrudListPageLayout, CrudRowActions } from "@corely/web-shared/shared/crud";
+import { staffJourneyCopy } from "./staff-journey-copy";
 import { peopleApi } from "./people-api";
 import { usePeopleAccess, usePeopleLoad } from "./use-people";
 export function PeopleDirectoryPage() {
-  const { scope, copy: t, can, loading } = usePeopleAccess();
+  const { scope, copy: t, can, loading, locale } = usePeopleAccess();
   const [params, setParams] = useSearchParams();
   const query = new URLSearchParams({
     q: params.get("q") ?? "",
@@ -58,6 +59,11 @@ export function PeopleDirectoryPage() {
       }
       toolbar={
         <>
+          {can("self.read") && (
+            <Link className="underline" to="/people/me">
+              {staffJourneyCopy[locale === "de" || locale === "vi" ? locale : "en"].title}
+            </Link>
+          )}
           <Input
             className="max-w-md"
             aria-label={t.search}

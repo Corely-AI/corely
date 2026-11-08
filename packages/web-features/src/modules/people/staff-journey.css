@@ -1,0 +1,163 @@
+.staff-journey {
+  --staff-ink: hsl(var(--foreground, 153 37% 16%));
+  --staff-muted: hsl(var(--muted-foreground, 158 10% 38%));
+  --staff-card: hsl(var(--card, 0 0% 100%));
+  --staff-border: hsl(var(--border, 150 15% 81%));
+  color: var(--staff-ink);
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.staff-journey * {
+  box-sizing: border-box;
+}
+.staff-journey h1 {
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  line-height: 1.2;
+  margin: 0.5rem 0;
+}
+.staff-journey h2 {
+  font-size: 1.15rem;
+  font-weight: 650;
+  margin: 0.2rem 0 0.8rem;
+}
+.staff-journey p {
+  line-height: 1.65;
+  margin: 0.4rem 0;
+}
+.staff-journey a {
+  text-decoration: underline;
+  color: inherit;
+}
+.staff-journey header {
+  margin-bottom: 1.5rem;
+}
+.staff-card {
+  border: 1px solid var(--staff-border);
+  border-radius: 12px;
+  padding: 1.4rem;
+  background: var(--staff-card);
+  margin: 1.3rem 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.staff-muted {
+  color: var(--staff-muted);
+  font-size: 0.9rem;
+}
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.staff-journey label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.staff-journey input {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--staff-border);
+  background: var(--staff-card);
+  border-radius: 7px;
+  padding: 0.65rem 0.8rem;
+}
+.staff-journey button {
+  min-height: 44px;
+  height: auto;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  white-space: normal;
+  cursor: pointer;
+}
+.staff-journey button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.staff-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+.staff-journey .staff-primary {
+  background: #205d49;
+  color: white;
+  border: 1px solid #205d49;
+}
+.staff-journey .staff-secondary {
+  background: var(--staff-card);
+  color: var(--staff-ink);
+  border: 1px solid var(--staff-border);
+}
+.staff-journey :is(a, button, input, summary):focus-visible {
+  outline: 3px solid #80a992;
+  outline-offset: 3px;
+}
+.staff-journey .staff-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 44px;
+}
+.staff-check input {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+  flex-shrink: 0;
+  accent-color: #205d49;
+}
+.staff-error {
+  background: hsl(var(--card, 0 80% 98%));
+  border: 1px solid #d89696;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.staff-notice {
+  background: #e1f0e7;
+  color: #205d49;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+}
+.staff-journey ul,
+.staff-journey ol {
+  padding-left: 1.3rem;
+  line-height: 1.8;
+  list-style: disc;
+}
+.staff-journey ol {
+  list-style: decimal;
+}
+.staff-step-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: end;
+}
+.staff-step-row label {
+  flex: 1;
+  min-width: 0;
+}
+.staff-step-row button {
+  margin-bottom: 1rem;
+}
+.staff-journey summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0.6rem 0;
+}
+@media (max-width: 640px) {
+  .staff-grid {
+    grid-template-columns: 1fr;
+  }
+  .staff-card {
+    padding: 1rem;
+  }
+}
