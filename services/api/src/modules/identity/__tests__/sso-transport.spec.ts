@@ -25,6 +25,8 @@ describe("SSO transport before public workspace rewriting", () => {
   });
   it.each([
     "/w/team/auth/callback",
+    "/w/team/api/bff/invoices",
+    "/api/w/team/bff/invoices",
     "/auth/w/team/callback",
     "/auth/other/../w/team/callback",
     "/api/%2e/w/team/session/preauth",

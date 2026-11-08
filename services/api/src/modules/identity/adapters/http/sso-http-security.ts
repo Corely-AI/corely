@@ -11,7 +11,7 @@ export const SSO_COOKIES = {
 } as const;
 
 export function isSsoRoute(path: string): boolean {
-  return /^\/(?:sso(?:\/|$)|api\/session(?:\/|$)|auth\/(?:callback|logged-out)(?:\/|$))/i.test(
+  return /^\/(?:sso(?:\/|$)|api\/(?:session|bff)(?:\/|$)|auth\/(?:callback|logged-out)(?:\/|$))/i.test(
     path
   );
 }
@@ -51,6 +51,9 @@ export class SsoHttpSecurity {
       throw new UnauthorizedException("Unregistered SSO origin");
     }
     return origin;
+  }
+  appKey(origin: string) {
+    return this.registrations.app(origin).key;
   }
   mutation(req: Request, central = false) {
     const origin = this.origin(req, central);

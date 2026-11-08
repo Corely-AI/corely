@@ -30,6 +30,14 @@ export const SsoContextSchema = z.object({
   expiresAt: z.string().datetime(),
 });
 export type SsoContext = z.infer<typeof SsoContextSchema>;
+/** Host session metadata; no access/refresh token or opaque cookie handle is exposed. */
+export const SsoSessionSchema = z
+  .object({
+    csrfToken: SsoHandleSchema,
+    expiresAt: z.string().datetime(),
+  })
+  .strict();
+export type SsoSession = z.infer<typeof SsoSessionSchema>;
 export const SsoRedirectSchema = z.object({ redirectTo: z.string().url() });
 
 export function isSafeSsoReturnPath(path: string): boolean {

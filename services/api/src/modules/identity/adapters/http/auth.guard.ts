@@ -1,3 +1,4 @@
+import { getSsoSessionPrincipal } from "./sso-session-principal";
 import {
   Injectable,
   CanActivate,
@@ -26,6 +27,12 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<ContextAwareRequest>();
+    const sessionPrincipal = getSsoSessionPrincipal(request);
+    if (sessionPrincipal) {
+      request.user = { ...sessionPrincipal };
+      await this.validateContext(request);
+      return true;
+    }
     const authHeader = request.headers.authorization;
     if (!authHeader) {
       // Small bypass for integration tests that use headers instead of tokens

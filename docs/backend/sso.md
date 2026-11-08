@@ -2,9 +2,8 @@
 
 Implementation for [#384](https://github.com/Corely-AI/corely/issues/384), following
 [ADR-0004](../decisions/ADR-0004-central-identity-app-sessions.md). This is the
-central entry/handoff foundation. Business API session transport, shared client
-adoption and global logout remain [#385](https://github.com/Corely-AI/corely/issues/385),
-[#386](https://github.com/Corely-AI/corely/issues/386) and
+central entry/handoff foundation. [Host-specific session transport](host-sessions.md)
+implements #385. Shared client adoption and global logout remain [#386](https://github.com/Corely-AI/corely/issues/386) and
 [#387](https://github.com/Corely-AI/corely/issues/387). No deployment is asserted.
 
 ## Behavior and existing owners
@@ -20,10 +19,9 @@ routes in a new tab; expired invitations require the existing invitation flow.
 The central and app HTTP adapters run in `services/api`. They do not create
 business backends or a separate identity server. Five additive tables in the
 existing Identity schema hold central sessions, app sessions, transactions,
-attempt budgets and email challenges. App sessions currently establish identity
-only: no tenant/workspace authority or access to business endpoints is inferred.
-The existing API guards still enforce their legacy contract until #385 adds the
-reviewed session transport and current context checks.
+attempt budgets and email challenges. App sessions establish identity; the [host session adapter](host-sessions.md)
+validates current tenant/workspace intent before dispatching business requests.
+Legacy bearer routes retain their existing contract.
 
 | Route                                | Contract                                                                                                                                                                  |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -109,7 +107,7 @@ requests and the API does not query the new tables. Enabling requires:
    working passwordless option that cannot deliver. Test provider delivery in an
    approved environment before activation.
 6. The follow-on session/client/logout implementation and operational acceptance.
-   This ticket does not implement `/api/bff/*` or migrate existing clients.
+   The [host session adapter](host-sessions.md) implements `/api/bff/*`; existing clients are not migrated.
 
 Rollback: disable new SSO initiation/routing, restore the approved legacy route
 map and require legacy reauthentication. Retain additive records for diagnosis;

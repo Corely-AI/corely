@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { configureSsoSessionTransport } from "./modules/identity/adapters/http/sso-session-transport";
 import { loadEnv } from "@corely/config";
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
@@ -27,6 +28,7 @@ async function bootstrap() {
     bodyParser: false,
   });
 
+  configureSsoSessionTransport(app);
   configureSsoHttpTransport(app);
 
   app.use(

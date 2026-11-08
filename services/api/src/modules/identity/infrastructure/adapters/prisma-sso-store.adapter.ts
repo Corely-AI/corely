@@ -19,6 +19,58 @@ export class PrismaSsoStore implements SsoStorePort {
     @Inject(AUDIT_PORT_TOKEN) private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
   ) {}
+  async useSession(input: Parameters<SsoStorePort["useSession"]>[0]) {
+    return this.prisma.$transaction(async (tx) => {
+      const candidate = await tx.ssoAppSession.findUnique({
+        where: { handleHash: input.handleHash },
+      });
+      if (!candidate) {
+        throw new UnauthorizedException("Session expired; sign in again");
+      }
+      // Family first: serialize with handoff/revocation, then compare the handle under lock.
+      await tx.$queryRaw`SELECT id FROM identity."SsoCentralSession" WHERE id = ${candidate.familyId} FOR UPDATE`;
+      await tx.$queryRaw`SELECT id FROM identity."SsoAppSession" WHERE id = ${candidate.id} FOR UPDATE`;
+      const session = await tx.ssoAppSession.findUnique({ where: { id: candidate.id } });
+      const family = await tx.ssoCentralSession.findUnique({ where: { id: candidate.familyId } });
+      if (
+        !session ||
+        !family ||
+        session.handleHash !== input.handleHash ||
+        session.environment !== input.environment ||
+        session.appKey !== input.appKey ||
+        family.environment !== input.environment ||
+        family.userId !== session.userId ||
+        session.revokedAt ||
+        family.revokedAt ||
+        session.expiresAt <= input.now ||
+        session.idleExpiresAt <= input.now ||
+        family.expiresAt <= input.now ||
+        family.idleExpiresAt <= input.now
+      ) {
+        throw new UnauthorizedException("Session expired; sign in again");
+      }
+      await this.requireAccess(tx, session.userId, family.credentialHash);
+      const idleExpiresAt = new Date(
+        Math.min(
+          input.idleExpiresAt.getTime(),
+          session.expiresAt.getTime(),
+          family.expiresAt.getTime()
+        )
+      );
+      await tx.ssoCentralSession.update({ where: { id: family.id }, data: { idleExpiresAt } });
+      const updated = await tx.ssoAppSession.update({
+        where: { id: session.id },
+        data: {
+          idleExpiresAt,
+          ...(input.replacementHash ? { handleHash: input.replacementHash } : {}),
+        },
+      });
+      if (input.replacementHash) {
+        await this.record(tx, "identity.sso.app_session_rotated", session.userId, session.id);
+      }
+      return { ...updated, appKey: SsoAppKeySchema.parse(updated.appKey) };
+    });
+  }
   async createTransaction(transaction: SsoTransaction) {
     await this.prisma.ssoLoginTransaction.create({ data: transaction });
   }
