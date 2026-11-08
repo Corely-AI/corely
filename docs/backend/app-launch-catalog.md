@@ -49,7 +49,9 @@ API `EnvService` reads optional `CORELY_LAUNCH_INVOICE_ORIGIN` and
 `AppLaunchOriginsSchema` at initialization, failing startup for malformed or
 ambiguous configuration. Both can be absent. Origins must be distinct and exact:
 HTTPS, no credentials, paths, query, fragments or wildcards. HTTP is allowed only
-on localhost, `.localhost`, `127.0.0.1` or `::1` loopback hosts for local development.
+on localhost, `.localhost`, `127.0.0.1` or `::1` loopback hosts in development/test
+mode. When `NODE_ENV=production` (including deployed staging), all configured
+launch origins must use HTTPS; local HTTP values fail startup.
 
 | Environment                  | Invoice                                  | HR                                  |
 | ---------------------------- | ---------------------------------------- | ----------------------------------- |

@@ -72,3 +72,27 @@ are optional and not bound by the deployment workflow; absent configuration fail
 closed. Invalid configured values fail platform initialization. Tenant app
 installation state remains distinct from effective entitlement and user access.
 Keep the PR Draft; human review/CI and owning runtime rollout work remain.
+
+## Review and correction — 2026-11-08
+
+Reviewed the complete PR diff, existing catalog callers, registration, typed
+configuration and request-surface boundaries at `17dfa1de1`.
+
+- Fixed P2: the deployment provider accepted the loopback HTTP exception even with
+  `NODE_ENV=production`. A copied local origin could become a user's loopback launch
+  destination once a focused client is released. The provider now rejects all HTTP
+  origins in production mode, including deployed staging; development/test retains
+  loopback HTTP. Generic shared origin parsing stays environment-independent.
+- Reproduction: four production-mode initialization cases (localhost, `.localhost`,
+  IPv4 and IPv6 loopback) resolved before the fix instead of rejecting. All now
+  reject. Additional checks preserve development/test HTTP and production/staging
+  HTTPS. No other material correctness findings were confirmed.
+- Verification: all eight affected suites passed together, 64 tests total, using
+  the same inert `DATABASE_URL` above. API typecheck, changed-provider ESLint,
+  changed TS/Markdown Prettier and whitespace checks passed.
+- Existing CI limit confirmed from the completed Browser E2E job
+  [128807921348](https://github.com/Corely-AI/corely/actions/runs/42505762261/job/128807921348):
+  `ERR_PNPM_NO_SCRIPT` for `e2e:smoke`. The workflow and root scripts are unchanged
+  by this ticket. Vercel preview checks report the account's deployment rate limit.
+  These and the architecture check's removed-worker reference remain outside this
+  catalog correction. No CI workflow, hosting setting or deployment was changed.
