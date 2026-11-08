@@ -17,7 +17,12 @@ After the existing callback sets `__Host-corely-session`, use same-origin calls:
 | `/api/bff/<existing-route>` | Dispatches an allowed route to its existing API controller and guards using a server-established principal.                                    |
 
 Mutations require the exact registered `Origin` and `x-csrf-token`. Reads reject
-foreign Origin and non-same-origin Fetch Metadata when supplied. CORS is disabled
+foreign Origin and non-same-origin Fetch Metadata when supplied. The retained
+Invoice `GET`/`HEAD /api/bff/invoices/:invoiceId/pdf` route can enqueue generation
+or regeneration, so it also requires `x-csrf-token`. Same-origin browser reads
+can omit Origin; a supplied Origin must still match. Other unsafe methods require
+Origin explicitly. Use fetch with the CSRF header for these PDF requests.
+CORS is disabled
 on these paths, including rejected and workspace-prefixed variants. SameSite is
 an additional control; it is not the CSRF policy. The cookie retains Secure,
 HttpOnly, SameSite=Lax, Path=/, `__Host-` semantics and no Domain attribute.
@@ -67,7 +72,7 @@ or additional business server. Request/response streams, aborts, query strings,
 trace and idempotency headers reach the existing handlers. Controllers/use cases
 retain responsibility for idempotent effects. Existing JSON/base64 attachment
 uploads and binary downloads are supported, with a 16 MiB JSON/form body limit
-(including streamed/chunked JSON). Unsupported content types return 415; no new
+(including streamed/chunked JSON). Unsupported payload content types return 415; bodyless requests may retain a Content-Type header; no new
 multipart/raw-upload endpoint is implied. Session metadata/rotation accept no body.
 Responses enforce private/no-store even when a stream handler sets cache headers.
 

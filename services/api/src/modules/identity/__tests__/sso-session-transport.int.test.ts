@@ -1,3 +1,4 @@
+import { request as httpRequest } from "node:http";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Controller, Get, Post, Req, Res, UseGuards, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -16,6 +17,7 @@ import { PrismaTenantRepository } from "../infrastructure/adapters/prisma-tenant
 import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
 import { PrismaWorkspaceRepository } from "../../workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
 import { InvoicesHttpController } from "../../invoices/adapters/http/invoices.controller";
+import { DocumentsApplication } from "../../documents/application/documents.application";
 import { InvoicesApplication } from "../../invoices/application/invoices.application";
 import { StaffController } from "../../people/adapters/http/staff.controller";
 import { StaffDirectoryUseCase } from "../../people/application/staff-directory.usecase";
@@ -93,10 +95,18 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
     let handle: string;
     let csrfToken: string;
     const invoiceList = vi.fn(async () => ok({ invoices: [], nextCursor: null }));
+    const invoiceDetail = vi.fn(async (_input: unknown, _ctx: unknown) =>
+      ok({ invoice: { id: "synthetic-invoice", status: "DRAFT" } })
+    );
+    const invoicePdf = vi.fn(async (_input: unknown, _ctx: unknown) =>
+      ok({ status: "PENDING", retryAfterMs: 1000 })
+    );
     const staffList = vi.fn(async () => ({ items: [] }));
     beforeEach(async () => {
       streamClosed.mockClear();
       invoiceList.mockClear();
+      invoiceDetail.mockClear();
+      invoicePdf.mockClear();
       staffList.mockClear();
       fixture = await createSsoTestContext();
       const members = new PrismaMembershipRepository(fixture.prisma);
@@ -128,7 +138,14 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
           },
           { provide: AuthorizeRequestContextUseCase, useValue: authorize },
           { provide: TOKEN_SERVICE_TOKEN, useValue: { verifyAccessToken: async () => null } },
-          { provide: InvoicesApplication, useValue: { listInvoices: { execute: invoiceList } } },
+          {
+            provide: InvoicesApplication,
+            useValue: {
+              listInvoices: { execute: invoiceList },
+              getInvoiceById: { execute: invoiceDetail },
+            },
+          },
+          { provide: DocumentsApplication, useValue: { getInvoicePdf: { execute: invoicePdf } } },
           { provide: StaffDirectoryUseCase, useValue: { list: staffList } },
           { provide: StaffAvailabilityUseCase, useValue: {} },
         ],
@@ -184,6 +201,59 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         .set("x-workspace-id", "another-workspace")
         .expect(403);
       expect(invoiceList).toHaveBeenCalledTimes(1);
+    });
+    it("protects PDF GET/HEAD generation with CSRF and origin validation", async () => {
+      for (const method of ["get", "head"] as const) {
+        // No Fetch Metadata/Origin models a navigation from a browser lacking those headers.
+        await request(app.getHttpServer())
+          [method]("/api/bff/invoices/synthetic-invoice/PDF/?forceRegenerate=true")
+          .set(headers())
+          .expect(401);
+      }
+      await request(app.getHttpServer())
+        .get("/api/bff/invoices/synthetic-invoice/pdf?forceRegenerate=true")
+        .set(headers())
+        .set("Origin", origins.invoice)
+        .expect(401);
+      await request(app.getHttpServer())
+        .get("/api/bff/invoices/synthetic-invoice/pdf?forceRegenerate=true")
+        .set(headers())
+        .set("Origin", origins.invoice)
+        .set("x-csrf-token", "forged")
+        .expect(401);
+      await request(app.getHttpServer())
+        .get("/api/bff/invoices/synthetic-invoice/pdf?forceRegenerate=true")
+        .set(headers())
+        .set("Origin", origins.hr)
+        .set("x-csrf-token", csrfToken)
+        .expect(401);
+      expect(invoicePdf).not.toHaveBeenCalled();
+      // Same-origin browser GETs may omit Origin and cannot set that forbidden header.
+      await request(app.getHttpServer())
+        .get("/api/bff/invoices/synthetic-invoice/pdf?forceRegenerate=true&waitMs=0")
+        .set(headers())
+        .set("x-csrf-token", csrfToken)
+        .expect(202);
+      expect(invoicePdf).toHaveBeenCalledTimes(1);
+      expect(invoicePdf.mock.calls[0]?.[0]).toMatchObject({
+        invoiceId: "synthetic-invoice",
+        forceRegenerate: true,
+      });
+    });
+    it("accepts supported Content-Type headers on bodyless reads and commands", async () => {
+      await request(app.getHttpServer())
+        .get("/api/bff/invoices")
+        .set(headers())
+        .set("Content-Type", "application/json; charset=utf-8")
+        .expect(200);
+      await request(app.getHttpServer())
+        .post("/api/bff/documents/probe")
+        .set(headers())
+        .set("Origin", origins.invoice)
+        .set("x-csrf-token", csrfToken)
+        .set("Content-Type", "application/json")
+        .set("Content-Length", "0")
+        .expect(201);
     });
     it("returns only CSRF/expiry and sets a rotated Secure HttpOnly host-only cookie", async () => {
       const response = await request(app.getHttpServer())
@@ -347,6 +417,32 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         .set("x-csrf-token", csrfToken)
         .send({ content: "x".repeat(16 * 1024 * 1024) })
         .expect(413);
+      const oversized = JSON.stringify({ content: "x".repeat(16 * 1024 * 1024) });
+      const chunkedUrl = `${await app.getUrl()}/api/bff/documents/probe`;
+      const chunkedStatus = await new Promise<number | undefined>((resolve, reject) => {
+        // Native HTTP avoids Superagent adding Content-Length alongside Transfer-Encoding.
+        const req = httpRequest(
+          chunkedUrl,
+          {
+            method: "POST",
+            headers: {
+              ...headers(),
+              Origin: origins.invoice,
+              "x-csrf-token": csrfToken,
+              "Content-Type": "application/json",
+              "Transfer-Encoding": "chunked",
+            },
+          },
+          (res) => {
+            res.resume();
+            res.on("end", () => resolve(res.statusCode));
+          }
+        );
+        req.on("error", reject);
+        req.write(oversized.slice(0, 1024));
+        req.end(oversized.slice(1024));
+      });
+      expect(chunkedStatus).toBe(413);
       await request(app.getHttpServer())
         .post("/api/bff/documents/probe")
         .set(headers())

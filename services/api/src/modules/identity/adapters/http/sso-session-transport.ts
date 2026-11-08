@@ -49,6 +49,8 @@ export function configureSsoSessionTransport(app: INestApplication): void {
   const parseForm = urlencoded({ limit: "16mb", extended: false });
   app.use(async (req: Request, res: Response, next: NextFunction) => {
     const path = req.url.split("?")[0];
+    const hasBody =
+      Boolean(req.headers["transfer-encoding"]) || Number(req.headers["content-length"] ?? 0) > 0;
     const isBff = /^\/api\/bff(?:\/|$)/i.test(path);
     const isSession = /^\/api\/session\/(?:current|rotate)\/?$/i.test(path);
     if (!isBff && !isSession) {
@@ -73,12 +75,16 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       if (!["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
         return res.status(405).end();
       }
+      // The retained invoice PDF GET/HEAD handler can enqueue generation (including
+      // forceRegenerate). Cookie authentication must protect its effects as a command.
       const mutation = !["GET", "HEAD"].includes(req.method);
+      const requiresProof =
+        mutation || (isBff && /^\/api\/bff\/invoices\/[^/]+\/pdf\/?$/i.test(path));
       if (mutation) {
         security.mutation(req);
       }
       const csrf = req.headers["x-csrf-token"];
-      if (mutation && (typeof csrf !== "string" || !csrf)) {
+      if (requiresProof && (typeof csrf !== "string" || !csrf)) {
         throw new UnauthorizedException("Session CSRF token required");
       }
       const rotate = path === "/api/session/rotate";
@@ -96,11 +102,7 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       if (isBff && !target) {
         return res.status(404).end();
       }
-      if (
-        isBff &&
-        !req.headers["content-type"] &&
-        (req.headers["transfer-encoding"] || Number(req.headers["content-length"] ?? 0) > 0)
-      ) {
+      if (isBff && !req.headers["content-type"] && hasBody) {
         return res.status(415).json({ message: "A supported Content-Type is required" });
       }
       // Reject conflicting identity assertions. Bearer tokens never bypass cookie checks here.
@@ -111,16 +113,13 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       ) {
         throw new UnauthorizedException("Client identity assertions are forbidden");
       }
-      if (
-        isSession &&
-        (req.headers["transfer-encoding"] || Number(req.headers["content-length"] ?? 0) > 0)
-      ) {
+      if (isSession && hasBody) {
         return res.status(413).json({ message: "This session endpoint accepts no request body" });
       }
       const result = await sessions.authenticate(
         origin,
         security.cookie(req, SSO_COOKIES.app),
-        mutation ? (csrf as string) : undefined,
+        requiresProof ? (csrf as string) : undefined,
         rotate
       );
       if (isSession) {
@@ -148,6 +147,7 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       // Keep the same request/response streams, cancellation, idempotency and trace headers.
       req.url = target + req.url.slice(path.length);
       if (
+        hasBody &&
         req.headers["content-type"] &&
         !req.is("application/json") &&
         !req.is("application/x-www-form-urlencoded")

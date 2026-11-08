@@ -86,3 +86,33 @@ GitHub Actions were pending at PR creation; six Vercel preview statuses report
 “Deployment rate limited — retry in 24 hours.” No deployment retry was triggered.
 The pre-push wrapper was skipped after manual checks to avoid duplicate suite/build
 runs; pre-commit formatting, lint and staged line checks passed.
+
+## Review corrections — 2026-11-08
+
+- **P2 — CSRF exemption for an effectful GET/HEAD:** the allowlisted existing
+  Invoice PDF GET handler invokes `GetInvoicePdfUseCase`, which can enqueue
+  generation, including `forceRegenerate`. Method-only CSRF classification
+  admitted it without a proof when Origin/Fetch Metadata were absent (for example,
+  a navigation in a browser lacking those headers). A regression using the real
+  Invoice controller reached its substituted PDF application handler and returned
+  202 instead of the expected 401 before the fix. This BFF route now requires a
+  session-bound CSRF token for GET and HEAD as well; case/trailing-slash variants
+  are covered. Foreign Origin is rejected, while a valid same-origin fetch can
+  supply CSRF without Origin, which browsers may omit on GET. Legacy bearer
+  routes retain their existing contract.
+- **P2 — supported Content-Type rejected on empty requests:** Express `req.is`
+  returns null when there is no request body, so a bodyless GET carrying
+  `Content-Type: application/json` incorrectly returned 415. Payload media-type
+  validation now runs only when a body is present. Regressions cover bodyless
+  JSON GET and zero-length JSON POST while retaining cookie/CSRF checks and
+  rejecting unsupported actual payloads.
+- Corrected the oversized chunked regression itself: Superagent's `.send` added
+  Content-Length alongside an explicit Transfer-Encoding, producing an invalid
+  request and EPIPE. A native HTTP request now sends real chunks without
+  Content-Length and verifies 413. The initial implementation's test name claimed
+  chunked coverage but its committed test only sent a declared-length payload.
+- Fresh verification: **86 tests passed across the six targeted SSO/session
+  suites**, no skips, against the same test-owned loopback PostgreSQL cluster.
+  API typecheck, targeted production-code lint, changed-file Prettier and diff whitespace checks passed. No UI
+  source changed; visual evidence remains N/A. Whole-repository checks were not
+  repeated; their earlier failures/limits above remain unresolved.
