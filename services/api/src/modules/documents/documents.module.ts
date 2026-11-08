@@ -16,6 +16,7 @@ import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port"
 import { OUTBOX_PORT } from "@corely/kernel";
 import type { OutboxPort } from "@corely/kernel";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
+import { PlatformModule } from "../platform/platform.module";
 import { IdentityModule } from "../identity/identity.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 
@@ -33,7 +34,12 @@ import { UploadFileUseCase } from "./application/use-cases/upload-file/upload-fi
 import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/proxy-download.usecase";
 
 @Module({
-  imports: [forwardRef(() => IdentityModule), KernelModule, DataModule],
+  imports: [
+    forwardRef(() => IdentityModule),
+    forwardRef(() => PlatformModule),
+    KernelModule,
+    DataModule,
+  ],
   controllers: [DocumentsController, InvoicePdfController, PublicDocumentsController],
   providers: [
     PersonnelDocumentsAdapter,

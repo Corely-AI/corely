@@ -1,3 +1,4 @@
+import { ssoInvoiceReadProviders } from "../testkit/sso-invoice-read-providers";
 import { PrismaUserRepository } from "../infrastructure/adapters/prisma-user-repository.adapter";
 import { request as httpRequest } from "node:http";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -133,6 +134,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         controllers: [InvoicesHttpController, StaffController, TransferProbe],
         providers: [
           AuthGuard,
+          ...ssoInvoiceReadProviders(fixture.tenantId),
           { provide: SsoSessionService, useValue: sessions },
           {
             provide: SsoHttpSecurity,

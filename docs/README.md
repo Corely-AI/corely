@@ -156,6 +156,7 @@ General developer guides and references.
 
 - [Operational access and private-data policy](./platform/operational-access.md) — shared foundation acceptance, current membership, conversation/file access, workspace caches and linked People owner requirements.
 - [Opt-in browser session providers](frontend/browser-sessions.md) — shared bootstrap, logout, stale-tab isolation and legacy-origin migration.
+- [Focused app navigation and API access](backend/focused-app-navigation.md) — menu contexts and separate operation authorization.
 - [Host-specific sessions and shared API transport](backend/host-sessions.md) — Identity-owned cookie transport and verification limits.
 - [Platform Menu API](./platform/menu.md)
 - [Resumable pilot setup](./platform/pilot-setup.md) — private OpenBuk checkpoints, explicit publication and manually shared staff invitations

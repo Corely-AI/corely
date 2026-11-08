@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AppLaunchIdSchema } from "../platform/app-launch.schema";
 import { MenuItemSchema } from "../platform/menu.schema";
 import { SurfaceIdSchema } from "../platform/surface.schema";
 import { PosVerticalIdSchema } from "../platform/experience-targeting.schema";
@@ -98,6 +99,7 @@ export const WorkspaceNavigationSchema = z.object({
 export type WorkspaceNavigation = z.infer<typeof WorkspaceNavigationSchema>;
 
 export const WorkspaceConfigSchema = z.object({
+  launchId: AppLaunchIdSchema.optional(),
   workspaceId: z.string(),
   surfaceId: SurfaceIdSchema,
   verticalId: PosVerticalIdSchema.nullable().optional(),

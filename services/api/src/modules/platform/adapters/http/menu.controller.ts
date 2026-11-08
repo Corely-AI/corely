@@ -30,7 +30,10 @@ import {
   type RolePermissionGrantRepositoryPort,
 } from "../../../identity/application/ports/role-permission-grant-repository.port";
 import { toAllowedPermissionKeys } from "../../../../shared/permissions/effective-permissions";
-import { resolveRequestContext } from "../../../../shared/request-context";
+import {
+  resolveRequestContext,
+  type ContextAwareRequest,
+} from "../../../../shared/request-context";
 
 @Controller("menu")
 @UseGuards(AuthGuard)
@@ -50,9 +53,14 @@ export class MenuController {
     @CurrentTenantId() tenantId: string,
     @CurrentUserId() userId: string,
     @CurrentRoleIds() roleIds: string[],
-    @Req() req: Request
+    @Req() req: Request,
+    @Query("launchId") launchId?: unknown
   ) {
-    const validatedScope = this.parseScope(scope);
+    const query = GetMenuQuerySchema.safeParse({ scope, launchId });
+    if (!query.success) {
+      throw new BadRequestException(query.error.message);
+    }
+    const validatedScope = query.data.scope;
     if (!tenantId || !userId) {
       throw new BadRequestException("Missing tenant or user context");
     }
@@ -63,14 +71,15 @@ export class MenuController {
         ? await this.grantRepo.listByRoleIdsAndTenant(tenantId, requestedRoles)
         : [];
     const permissions = toAllowedPermissionKeys(grants);
-    const ctx = (req as any).context ?? resolveRequestContext(req as any);
+    const ctx = resolveRequestContext(req as ContextAwareRequest);
 
     return await this.composeMenuUseCase.execute({
       tenantId,
       userId,
       permissions,
       scope: validatedScope,
-      workspaceId, // Include workspace ID for metadata
+      launchId: query.data.launchId,
+      workspaceId: ctx.workspaceId ?? workspaceId, // Use the same selector AuthGuard authorized.
       surfaceId: ctx.surfaceId,
       trustedSurfaceId: ctx.trustedSurfaceId,
       declaredSurfaceId: ctx.declaredSurfaceId,
