@@ -5,7 +5,7 @@
 - Issue: [SURF-03 / #383](https://github.com/Corely-AI/corely/issues/383), parent [#380](https://github.com/Corely-AI/corely/issues/380).
 - Prerequisite: [SURF-01 / #381](https://github.com/Corely-AI/corely/issues/381), closed with maintainer-approved host matrix; ADRs present in base.
 - Branch: `383-launchable-app-catalog`; base: `corely/development` at `05e42f0ff8`.
-- PR: pending publication.
+- PR: [Draft #408](https://github.com/Corely-AI/corely/pull/408). Project #1 remains In progress pending review/integration.
 - Goal: additive launch descriptors, safe configured destinations and a lightweight projection through the existing catalog.
 - Excluded: frontend delivery, SSO/session implementation, live configuration, deployment, entitlement redesign and storage changes.
 
