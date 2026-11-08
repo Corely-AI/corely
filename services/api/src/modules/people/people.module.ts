@@ -9,6 +9,11 @@ import {
   STAFF_WORKSPACE_ACCESS,
   STAFF_LIFECYCLE_REPOSITORY,
 } from "./application/ports/staff-lifecycle.port";
+import { DocumentsModule } from "../documents/documents.module";
+import { StaffAbsenceUseCase } from "./application/staff-absence.usecase";
+import { StaffAbsenceController } from "./adapters/http/staff-absence.controller";
+import { ExtStaffAbsenceAdapter } from "./infrastructure/ext-staff-absence.adapter";
+import { STAFF_ABSENCE_REPOSITORY } from "./application/ports/staff-absence.port";
 import { StaffWorkdayLookup } from "./application/staff-workday-lookup";
 import { StaffOperationsLookup } from "./application/staff-operations-lookup";
 import { PlatformModule } from "../platform/platform.module";
@@ -38,8 +43,15 @@ import { StaffDirectoryUseCase } from "./application/staff-directory.usecase";
 import { ExtStaffRepositoryAdapter } from "./infrastructure/ext-staff-repository.adapter";
 import { StaffController } from "./adapters/http/staff.controller";
 @Module({
-  imports: [DataModule, IdentityModule, WorkspacesModule, PlatformModule, KernelModule],
-  controllers: [StaffSelfServiceController, StaffController],
+  imports: [
+    DocumentsModule,
+    DataModule,
+    IdentityModule,
+    WorkspacesModule,
+    PlatformModule,
+    KernelModule,
+  ],
+  controllers: [StaffSelfServiceController, StaffController, StaffAbsenceController],
   providers: [
     StaffSelfServiceUseCase,
     StaffLifecycleUseCase,
@@ -49,6 +61,9 @@ import { StaffController } from "./adapters/http/staff.controller";
     { provide: STAFF_TASKS, useExisting: StaffTasksAdapter },
     { provide: STAFF_WORKSPACE_ACCESS, useExisting: StaffWorkspaceAccessAdapter },
     { provide: STAFF_LIFECYCLE_REPOSITORY, useExisting: ExtStaffLifecycleAdapter },
+    StaffAbsenceUseCase,
+    ExtStaffAbsenceAdapter,
+    { provide: STAFF_ABSENCE_REPOSITORY, useExisting: ExtStaffAbsenceAdapter },
     StaffOperationsLookup,
     StaffWorkdayLookup,
     StaffDirectoryUseCase,

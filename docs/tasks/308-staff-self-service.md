@@ -3,8 +3,8 @@
 ## Tracking and outcome
 
 - Issue #308, parent #283. Hard prerequisites #304/#305/#312 are closed and merged.
-- Branch `308-staff-self-service`, base `corely/development` at `0ef158482a` (merged #378).
-- Draft PR [#379](https://github.com/Corely-AI/corely/pull/379). #307 remains separate and its primary checkout is preserved.
+- Branch `308-staff-self-service`, current base `corely/development` at `012158eb17` (merged #307); original base `0ef158482a` (#378).
+- Draft PR [#379](https://github.com/Corely-AI/corely/pull/379). #307 is integrated through the current development base; its absence/file behavior is preserved.
 - Staff read their own permitted profile/published availability and edit display name/personal
   contact details only. Managers approve one onboarding task with checklist checkboxes and review
   unfinished work/bookings/access before departure. No payroll, absence handling, scoring or global
@@ -94,3 +94,44 @@ Draft delivery retains the existing unrelated check limitations above; human rev
 PR readback confirmed head `308-staff-self-service` and base `development`. The seven
 Vercel surface checks currently fail with the provider’s build-rate-limit URL; no preview
 or deployment success is claimed. Keep Draft pending human review and check resolution.
+
+## Development conflict resolution — 8 November 2026
+
+Merged `corely/development` at `012158eb17ddedeb6753feb53881bfa471527a05`
+(#307 / private absences) into this ticket branch. Resolved three overlapping files:
+
+- `people.module.ts`: retain Documents/absence providers and controller together with
+  self-service/lifecycle and Tasks/Workspaces owner adapters.
+- `staff-profile-page.tsx`: retain the absence component and the controlled lifecycle
+  link, removing obsolete React imports from the replaced immediate archive dialog.
+- Tasks fixture: retain both lifecycle setup and the new absence repository argument
+  required by the availability use case.
+
+No owning rules, routes, contracts, styles or layouts were changed by conflict resolution.
+The diff against current development remains confined to #308 work.
+
+Fresh verification on the combined tree:
+
+- People/Tasks suites, Booking OpenBuk/availability, Documents proxy/personnel files,
+  operational access and Tasks/People outbox facts: **158 tests / 21 files passed**.
+- People/Tasks UI command above: **45 tests / 9 files passed**.
+- `DATABASE_URL=<owned> SKIP_PRISMA_CONNECT=true pnpm --dir services/api exec vitest run
+src/__tests__/di-smoke.int.test.ts --maxWorkers=1 --minWorkers=1`:
+  **10 tests passed**, including full AppModule construction with both feature sets.
+  The first DI collection lacked an unbuilt local integration library; after building
+  API dependencies, the rerun passed. No test was skipped.
+- API typecheck/build, `pnpm build:api` with its required dependency-output guard,
+  Contracts build, and OpenBuk typecheck/production build: passed. The dependency
+  guard reports optional CJS outputs as warnings; required runtime outputs are present.
+- Scoped ESLint/Prettier, conflict-marker/unmerged-entry scan, whitespace and staged
+  source line limit: passed explicitly.
+
+Regression databases were newly created on a task-owned PostgreSQL cluster at loopback
+port 55448: `people_test_308_merge`, `tasks_test_308_merge`, `openbuk_test_308_merge`.
+Only those disposable databases received schema setup and fixture mutations. The owning
+schema is unchanged; no migration/shared reset/provider delivery occurred. The cluster
+was stopped and removed after verification.
+
+Browser E2E was not rerun for this import/wiring-only resolution; earlier feature
+screenshots and browser results above remain historical evidence. Existing global-check
+and preview-rate-limit limitations remain recorded; no PR merge or deployment is authorized.

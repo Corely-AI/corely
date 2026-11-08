@@ -1,4 +1,5 @@
 import { staffJourneyCopy } from "./staff-journey-copy";
+import { StaffAbsences } from "./staff-absences";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Button, Badge } from "@corely/ui";
 import type { StaffProfile } from "@corely/contracts";
@@ -107,6 +108,11 @@ export function StaffProfilePage() {
                     archived={Boolean(profile.archivedAt)}
                   />
                 )}
+                <StaffAbsences
+                  id={profile.id}
+                  archived={Boolean(profile.archivedAt)}
+                  onSaved={reload}
+                />
                 <StaffPrivateDetails
                   key={`${access.scope}:${profile.id}:${access.can("private.read")}`}
                   id={profile.id}
