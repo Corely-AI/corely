@@ -70,3 +70,21 @@ function hasForbiddenCharacters(value: string): boolean {
   }
   return false;
 }
+
+/** Server-verified staff bootstrap. Memberships describe choices, not resource grants. */
+export const SsoSessionUserSchema = SsoSessionSchema.extend({
+  appKey: SsoAppKeySchema,
+  user: z
+    .object({
+      userId: z.string().min(1),
+      email: z.string().email(),
+      name: z.string().nullable(),
+      memberships: z.array(
+        z
+          .object({ tenantId: z.string().min(1), tenantName: z.string(), roleId: z.string() })
+          .strict()
+      ),
+    })
+    .strict(),
+}).strict();
+export type SsoSessionUser = z.infer<typeof SsoSessionUserSchema>;

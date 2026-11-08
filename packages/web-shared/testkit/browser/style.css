@@ -1,0 +1,13 @@
+@import "@corely/ui/theme-tokens.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+button {
+  min-height: 44px;
+}

@@ -52,7 +52,7 @@ export function configureSsoSessionTransport(app: INestApplication): void {
     const hasBody =
       Boolean(req.headers["transfer-encoding"]) || Number(req.headers["content-length"] ?? 0) > 0;
     const isBff = /^\/api\/bff(?:\/|$)/i.test(path);
-    const isSession = /^\/api\/session\/(?:current|rotate)\/?$/i.test(path);
+    const isSession = /^\/api\/session\/(?:current|user|rotate)\/?$/i.test(path);
     if (!isBff && !isSession) {
       return next();
     }
@@ -91,7 +91,7 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       if (
         isSession &&
         !(
-          (path === "/api/session/current" && req.method === "GET") ||
+          (["/api/session/current", "/api/session/user"].includes(path) && req.method === "GET") ||
           (rotate && req.method === "POST")
         )
       ) {
@@ -126,7 +126,19 @@ export function configureSsoSessionTransport(app: INestApplication): void {
         if (result.handle) {
           security.setCookie(res, SSO_COOKIES.app, result.handle, result.maxAge);
         }
-        return res.json({ csrfToken: result.csrfToken, expiresAt: result.expiresAt });
+        if (path === "/api/session/user") {
+          const tenantHint = hint(req, "x-tenant-id");
+          const workspaceHint = hint(req, "x-workspace-id");
+          if (tenantHint || workspaceHint) {
+            await sessions.principal(result.userId, tenantHint, workspaceHint);
+          }
+        }
+        const metadata = { csrfToken: result.csrfToken, expiresAt: result.expiresAt };
+        return res.json(
+          path === "/api/session/user"
+            ? { ...metadata, appKey, user: await sessions.profile(result.userId) }
+            : metadata
+        );
       }
       const principal = await sessions.principal(
         result.userId,

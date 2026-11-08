@@ -1,3 +1,4 @@
+import { PrismaUserRepository } from "../infrastructure/adapters/prisma-user-repository.adapter";
 import { request as httpRequest } from "node:http";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Controller, Get, Post, Req, Res, UseGuards, type INestApplication } from "@nestjs/common";
@@ -121,7 +122,8 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         { now: () => new Date() },
         members,
         new PrismaTenantRepository(fixture.prisma),
-        authorize
+        authorize,
+        new PrismaUserRepository(fixture.prisma)
       );
       const login = await fixture.login(origins.invoice);
       handle = (await fixture.service.callback(origins.invoice, login.callback, login.handle))
@@ -168,6 +170,33 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         Cookie: `${SSO_COOKIES.app}=${cookie}`,
       };
     }
+    it("bootstraps a verified user without credentials or inactive team memberships", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/session/user")
+        .set(headers())
+        .expect(200);
+      expect(response.body).toMatchObject({
+        appKey: "invoice",
+        user: {
+          userId: fixture.userId,
+          email: fixture.email,
+          memberships: [{ tenantId: fixture.tenantId, tenantName: "Synthetic SSO team" }],
+        },
+      });
+      expect(JSON.stringify(response.body)).not.toMatch(/password|handle|accessToken|refreshToken/);
+      await request(app.getHttpServer())
+        .get("/api/session/user")
+        .set(headers())
+        .set("x-workspace-id", "foreign-workspace")
+        .expect(403);
+      await request(app.getHttpServer())
+        .get("/api/session/user")
+        .set(headers())
+        .set("x-tenant-id", "foreign-team")
+        .expect(403);
+      await fixture.prisma.membership.delete({ where: { id: fixture.membership.id } });
+      await request(app.getHttpServer()).get("/api/session/user").set(headers()).expect(401);
+    });
     it("dispatches to the original Invoice and HR controllers with revalidated membership", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/bff/invoices")
@@ -194,7 +223,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         .get("/api/bff/invoices")
         .set(headers())
         .set("x-tenant-id", "another-tenant")
-        .expect(401);
+        .expect(403);
       await request(app.getHttpServer())
         .get("/api/bff/invoices")
         .set(headers())
