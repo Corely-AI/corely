@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import type { MenuGroup, MenuItem, PosVerticalId, SurfaceId } from "@corely/contracts";
+import type { AppLaunchId, MenuGroup, MenuItem, PosVerticalId, SurfaceId } from "@corely/contracts";
 import { MenuBuilderService } from "./menu-builder.service";
 import { TenantEntitlement } from "../../domain/entitlement.aggregate";
 
 interface ComposeMenuInput {
+  launchId?: AppLaunchId;
   tenantId: string;
   userId: string;
   permissions: Set<string>;

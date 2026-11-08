@@ -19,8 +19,14 @@ export class EntitlementGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredApp = this.reflector.get<string>(REQUIRE_APP, context.getHandler());
-    const requiredCapability = this.reflector.get<string>(REQUIRE_CAPABILITY, context.getHandler());
+    const requiredApp = this.reflector.getAllAndOverride<string>(REQUIRE_APP, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    const requiredCapability = this.reflector.getAllAndOverride<string>(REQUIRE_CAPABILITY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // If no requirements, allow
     if (!requiredApp && !requiredCapability) {

@@ -19,7 +19,10 @@ import {
   type RolePermissionGrantRepositoryPort,
 } from "../../../identity/application/ports/role-permission-grant-repository.port";
 import { toAllowedPermissionKeys } from "../../../../shared/permissions/effective-permissions";
-import { resolveRequestContext } from "../../../../shared/request-context";
+import {
+  resolveRequestContext,
+  type ContextAwareRequest,
+} from "../../../../shared/request-context";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { GetWorkspaceConfigQuerySchema } from "@corely/contracts";
 import { GetWorkspaceConfigUseCase } from "../../application/use-cases/get-workspace-config.usecase";
@@ -50,7 +53,7 @@ export class WorkspaceConfigController {
       throw new BadRequestException("Missing tenant or user context");
     }
 
-    const ctx = (req as any).context ?? resolveRequestContext(req as any);
+    const ctx = resolveRequestContext(req as ContextAwareRequest);
     const workspaceId = ctx.workspaceId ?? workspaceIdParam;
 
     const requestedRoles = Array.isArray(roleIds) ? roleIds : [];
@@ -67,6 +70,7 @@ export class WorkspaceConfigController {
       permissions,
       scope: parsed.data.scope,
       packageId: parsed.data.packageId,
+      launchId: parsed.data.launchId,
       surfaceId: ctx.surfaceId,
       trustedSurfaceId: ctx.trustedSurfaceId,
       declaredSurfaceId: ctx.declaredSurfaceId,

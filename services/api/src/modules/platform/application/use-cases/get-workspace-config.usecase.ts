@@ -7,6 +7,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import type {
+  AppLaunchId,
   MenuGroup,
   SurfaceId,
   WorkspaceConfig,
@@ -35,6 +36,7 @@ import { randomUUID } from "crypto";
 import { OperationalPackageService } from "../services/operational-package.service";
 
 export interface GetWorkspaceConfigInput {
+  launchId?: AppLaunchId;
   tenantId: string;
   userId: string;
   workspaceId: string;
@@ -67,11 +69,20 @@ export class GetWorkspaceConfigUseCase {
   ) {}
 
   async execute(input: GetWorkspaceConfigInput): Promise<WorkspaceConfig> {
+    if (input.packageId && input.launchId) {
+      throw new BadRequestException("Choose either an operational package or a focused app");
+    }
     if (
       input.packageId &&
       (input.scope !== "web" || !["platform", "app"].includes(input.surfaceId))
     ) {
       throw new BadRequestException("The operational package uses the existing OpenBuk web client");
+    }
+    if (
+      input.launchId &&
+      (input.scope !== "web" || !["platform", "app"].includes(input.surfaceId))
+    ) {
+      throw new BadRequestException("Focused apps require the platform web surface");
     }
     const surfaceLogFields = buildSurfaceResolutionLogFields({
       requestContext: {
@@ -159,6 +170,7 @@ export class GetWorkspaceConfigUseCase {
 
     const installedDefaults =
       !input.packageId &&
+      !input.launchId &&
       (await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind));
     if (installedDefaults) {
       experience = await this.experienceResolver.resolve({
@@ -173,6 +185,7 @@ export class GetWorkspaceConfigUseCase {
     const menu = input.packageId
       ? { groups: [] }
       : await this.menuComposer.composeMenuTree({
+          launchId: input.launchId,
           tenantId: input.tenantId,
           userId: input.userId,
           permissions: experience.permissions,
@@ -195,6 +208,7 @@ export class GetWorkspaceConfigUseCase {
       : undefined;
 
     return {
+      ...(input.launchId ? { launchId: input.launchId } : {}),
       workspaceId: workspace.id,
       surfaceId: experience.surfaceId,
       verticalId: experience.verticalId,
@@ -205,7 +219,10 @@ export class GetWorkspaceConfigUseCase {
         groups: this.buildNavigationGroups(menu.groups),
       },
       home: {
-        widgets: input.packageId ? [] : this.templateService.getDefaultHomeWidgets(workspaceKind),
+        widgets:
+          input.packageId || input.launchId
+            ? []
+            : this.templateService.getDefaultHomeWidgets(workspaceKind),
       },
       currentUser: {
         membershipRole,

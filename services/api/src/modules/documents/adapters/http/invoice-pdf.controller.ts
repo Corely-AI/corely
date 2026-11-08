@@ -3,14 +3,19 @@ import type { Request } from "express";
 import { RequestInvoicePdfInputSchema } from "@corely/contracts";
 import { DocumentsApplication } from "../../application/documents.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { EntitlementGuard, RequireApp, RequireCapability } from "../../../platform/public";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 
 @Controller("invoices")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard, EntitlementGuard)
+@RequireApp("invoices")
 export class InvoicePdfController {
   constructor(private readonly app: DocumentsApplication) {}
 
   @Post(":invoiceId/pdf")
+  @RequirePermission("sales.invoices.read")
+  @RequireCapability("invoices.pdf")
   async requestInvoicePdf(
     @Param("invoiceId") invoiceId: string,
     @Body() body: unknown,

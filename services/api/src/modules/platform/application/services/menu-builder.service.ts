@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import {
   isExperienceTargetVisible,
   type MenuContribution,
@@ -7,6 +7,7 @@ import {
   type MenuOverrides,
   type PosVerticalId,
   type SurfaceId,
+  type AppLaunchId,
 } from "@corely/contracts";
 import { TenantEntitlementService } from "./tenant-entitlement.service";
 import { TenantEntitlement } from "../../domain/entitlement.aggregate";
@@ -18,6 +19,7 @@ import {
 } from "../ports/tenant-menu-override-repository.port";
 
 export interface BuildMenuInput {
+  launchId?: AppLaunchId;
   tenantId: string;
   userId: string;
   permissions: Set<string>;
@@ -65,12 +67,25 @@ export class MenuBuilderService {
   ) {}
 
   async build(input: BuildMenuInput): Promise<BuildMenuOutput> {
+    if (
+      input.launchId &&
+      (input.scope !== "web" || !["platform", "app"].includes(input.surfaceId))
+    ) {
+      throw new BadRequestException("Focused apps require the platform web surface");
+    }
     const entitlement =
       input.entitlement ?? (await this.entitlementService.getTenantEntitlement(input.tenantId));
     const contributionsByApp: ManifestContributionGroup[] = [];
 
     for (const appId of entitlement.getEnabledApps()) {
       const manifest = this.appRegistry.get(appId);
+      if (
+        input.launchId &&
+        (manifest?.launch?.launchId !== input.launchId ||
+          manifest.dependencies.some((dependency) => !entitlement.isAppEnabled(dependency)))
+      ) {
+        continue;
+      }
       if (!manifest) {
         continue;
       }

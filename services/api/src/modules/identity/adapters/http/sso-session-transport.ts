@@ -1,4 +1,9 @@
-import { HttpException, type INestApplication, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  HttpException,
+  type INestApplication,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { json, urlencoded, type Request, type Response, type NextFunction } from "express";
 import { SsoSessionService } from "../../application/services/sso-session.service";
 import { SsoHttpSecurity, SSO_COOKIES } from "./sso-http-security";
@@ -164,7 +169,19 @@ export function configureSsoSessionTransport(app: INestApplication): void {
         }
       }
       // Keep the same request/response streams, cancellation, idempotency and trace headers.
-      req.url = target + req.url.slice(path.length);
+      const destination = new URL(target + req.url.slice(path.length), origin);
+      if (
+        appKey !== "app-center" &&
+        // Match Nest/Express's case-insensitive, optional-trailing-slash routes.
+        (/^\/menu\/?$/i.test(target) || /^\/workspaces\/[^/]+\/config\/?$/i.test(target))
+      ) {
+        const declared = destination.searchParams.getAll("launchId");
+        if (declared.some((value) => value !== appKey)) {
+          throw new BadRequestException("Focused navigation context does not match this app");
+        }
+        destination.searchParams.set("launchId", appKey);
+      }
+      req.url = destination.pathname + destination.search;
       if (
         hasBody &&
         req.headers["content-type"] &&

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AppLaunchIdSchema } from "./app-launch.schema";
 
 /**
  * Menu Scope
@@ -113,6 +114,7 @@ export type UpdateMenuOverridesInput = z.infer<typeof UpdateMenuOverridesInputSc
  */
 export const GetMenuQuerySchema = z.object({
   scope: MenuScopeSchema.default("web"),
+  launchId: AppLaunchIdSchema.optional(),
 });
 
 export type GetMenuQuery = z.infer<typeof GetMenuQuerySchema>;
