@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AppLaunchDescriptorSchema, AppCatalogLaunchSchema } from "./app-launch.schema";
 import { AllowedSurfacesSchema } from "./surface.schema";
 import { AllowedVerticalsSchema } from "./experience-targeting.schema";
 import { OperationalExperienceContributionSchema } from "./operational-package.schema";
@@ -52,6 +53,7 @@ export const AppManifestSchema = z.object({
     .describe("Fine-grained capability strings provided by this app"),
   permissions: z.array(z.string()).describe("RBAC permission keys used by this app"),
   menu: z.array(MenuContributionSchema).describe("Menu contributions from this app"),
+  launch: AppLaunchDescriptorSchema.optional(),
   operationalExperiences: z.array(OperationalExperienceContributionSchema).optional(),
   settingsSchema: z.any().optional().describe("JSON Schema for tenant-specific app settings"),
 
@@ -97,6 +99,7 @@ export const AppCatalogItemSchema = z.object({
   version: z.string(),
   description: z.string().optional(),
   dependencies: z.array(z.string()),
+  launch: AppCatalogLaunchSchema.optional(),
   enabled: z.boolean().optional().describe("Enabled status (only in tenant context)"),
 });
 

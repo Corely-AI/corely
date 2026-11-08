@@ -66,6 +66,7 @@ Backend specific documentation.
 - [People staff directory](./backend/people.md) — workspace profiles, identity links and private-field access
 - [Staff availability and Booking](./backend/people-availability.md) — effective working patterns, dated exceptions and Booking constraints
 - [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files
+- [Focused app launch catalog](./backend/app-launch-catalog.md) — additive descriptors, scoped product contexts and validated deployment origins
 - [Auth](./backend/AUTH.md)
 - [Background Module](./backend/background.md)
 - [Events](./backend/EVENTS.md)

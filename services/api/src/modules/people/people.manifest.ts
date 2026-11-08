@@ -1,6 +1,14 @@
 import type { AppManifest } from "@corely/contracts";
 export const peopleAppManifest: AppManifest = {
   appId: "people",
+  launch: {
+    launchId: "hr",
+    surfaceId: "platform",
+    displayName: { en: "HR", de: "Personal", vi: "Nhân sự" },
+    category: "people",
+    iconKey: "Users",
+    availability: "coming-soon",
+  },
   name: "People",
   tier: 1,
   version: "1.0.0",
