@@ -397,3 +397,5 @@ export * from "./common/customization/custom-attributes";
 export * from "./people/staff.schema";
 export * from "./people/staff-availability.schema";
 export * from "./tasks";
+
+export * from "./people/staff-absence.schema";

@@ -1,3 +1,8 @@
+import { DocumentsModule } from "../documents/documents.module";
+import { StaffAbsenceUseCase } from "./application/staff-absence.usecase";
+import { StaffAbsenceController } from "./adapters/http/staff-absence.controller";
+import { ExtStaffAbsenceAdapter } from "./infrastructure/ext-staff-absence.adapter";
+import { STAFF_ABSENCE_REPOSITORY } from "./application/ports/staff-absence.port";
 import { StaffOperationsLookup } from "./application/staff-operations-lookup";
 import { PlatformModule } from "../platform/platform.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -26,9 +31,19 @@ import { StaffDirectoryUseCase } from "./application/staff-directory.usecase";
 import { ExtStaffRepositoryAdapter } from "./infrastructure/ext-staff-repository.adapter";
 import { StaffController } from "./adapters/http/staff.controller";
 @Module({
-  imports: [DataModule, IdentityModule, WorkspacesModule, PlatformModule, KernelModule],
-  controllers: [StaffController],
+  imports: [
+    DocumentsModule,
+    DataModule,
+    IdentityModule,
+    WorkspacesModule,
+    PlatformModule,
+    KernelModule,
+  ],
+  controllers: [StaffController, StaffAbsenceController],
   providers: [
+    StaffAbsenceUseCase,
+    ExtStaffAbsenceAdapter,
+    { provide: STAFF_ABSENCE_REPOSITORY, useExisting: ExtStaffAbsenceAdapter },
     StaffOperationsLookup,
     StaffDirectoryUseCase,
     StaffAvailabilityUseCase,

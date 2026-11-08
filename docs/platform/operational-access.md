@@ -136,13 +136,19 @@ projection, and authorization must be revalidated before serving cached data. Ne
 cache a privileged DTO and return it to a directory reader. Current catalog/menu caches
 are discovery hints, not permission evidence.
 
-Generic Documents records currently have tenant ownership, not a personnel/workspace ACL.
-Consequently `documents.read` grants broad tenant document access. Do not store private
-People attachments through this generic API until an owner-scoped policy guards all
-retrieval/link/signing paths. Adding that ownership belongs with the People attachment
-feature, rather than fabricating a new document schema in this platform ticket. Previously
-issued signed URLs remain valid for their storage TTL; revocation blocks new API issuance,
-not already-issued bearer URLs. Private files need an appropriate TTL/proxy policy.
+[#307's absence owner](../backend/people-absences.md) now creates personnel attachments
+through a dedicated Documents port with a workspace/absence binding and a permanent
+reserved document namespace. Generic APIs and Issue/transcription bridges reject that
+namespace. Private record and personnel-document permissions are required for list/upload/
+proxy byte access, with current-authority revalidation; no signed personnel URL is issued.
+The [delivery record](../tasks/307-private-absences.md) records persisted access and byte tests.
+No personnel export, audit retrieval, search or AI retrieval route is added.
+
+Ordinary generic Documents records retain tenant ownership, not a personnel/workspace ACL.
+Consequently `documents.read` grants broad access to ordinary tenant documents. Private
+People files must use the dedicated attachment flow above. Previously issued generic
+signed URLs remain valid for their storage TTL; revocation blocks new generic API issuance,
+not already-issued bearer URLs. Personnel files use the authenticated proxy policy above.
 
 ## Conversation, file and cache boundaries
 

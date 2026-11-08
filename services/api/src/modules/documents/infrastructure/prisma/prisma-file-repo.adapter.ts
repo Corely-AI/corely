@@ -1,3 +1,4 @@
+import { isPersonnelDocumentId } from "../../domain/personnel-document";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { FileRepoPort } from "../../application/ports/file-repository.port";
@@ -61,17 +62,17 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
 
   async findById(tenantId: string, fileId: string): Promise<FileEntity | null> {
     const row = await this.prisma.file.findFirst({ where: { id: fileId, tenantId } });
-    return row ? mapFile(row) : null;
+    return row && !isPersonnelDocumentId(row.documentId) ? mapFile(row) : null;
   }
 
   async findByIdGlobal(fileId: string): Promise<FileEntity | null> {
     const row = await this.prisma.file.findUnique({ where: { id: fileId } });
-    return row ? mapFile(row) : null;
+    return row && !isPersonnelDocumentId(row.documentId) ? mapFile(row) : null;
   }
 
   async findByDocument(tenantId: string, documentId: string): Promise<FileEntity[]> {
     const rows = await this.prisma.file.findMany({ where: { tenantId, documentId } });
-    return rows.map(mapFile);
+    return rows.filter((row) => !isPersonnelDocumentId(row.documentId)).map(mapFile);
   }
 
   async findByDocumentAndKind(
@@ -80,6 +81,6 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
     kind: FileKind
   ): Promise<FileEntity | null> {
     const row = await this.prisma.file.findFirst({ where: { tenantId, documentId, kind } });
-    return row ? mapFile(row) : null;
+    return row && !isPersonnelDocumentId(row.documentId) ? mapFile(row) : null;
   }
 }

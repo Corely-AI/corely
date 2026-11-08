@@ -1,3 +1,4 @@
+import { ExtStaffAbsenceAdapter } from "../../people/infrastructure/ext-staff-absence.adapter";
 import { StaffAvailabilityConstraintService } from "../../people/public";
 import { ExtStaffRepositoryAdapter } from "../../people/infrastructure/ext-staff-repository.adapter";
 import { ExtStaffAvailabilityAdapter } from "../../people/infrastructure/ext-staff-availability.adapter";
@@ -48,7 +49,8 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
     await prisma.$connect();
     staff = new StaffAvailabilityConstraintService(
       new ExtStaffRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma)),
-      new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma))
+      new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma)),
+      new ExtStaffAbsenceAdapter(prisma, new PrismaExtKvAdapter(prisma))
     );
     repo = new PrismaOpenBukRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma));
     app = new OpenBukStudioUseCase(

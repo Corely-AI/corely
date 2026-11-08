@@ -292,7 +292,8 @@ describe.skipIf(!enabled)("People patterns constrain authoritative Booking", () 
           throw new Error("synthetic outbox failure");
         },
       },
-      clock
+      clock,
+      f.absences
     );
     const key = randomUUID();
     const audits = await prisma.auditLog.count({ where: { entityId: staffId } });
@@ -368,7 +369,8 @@ describe.skipIf(!enabled)("People patterns constrain authoritative Booking", () 
       f.outbox,
       { get: async () => null, store: async () => undefined },
       { newId: randomUUID },
-      clock
+      clock,
+      f.absences
     );
     await expect(create.execute({ holdId: hold.id }, f.ctx)).rejects.toThrow("StaffUnavailable");
     expect((await holds.findById(hold.id, f.tenantA))?.status).toBe("ACTIVE");

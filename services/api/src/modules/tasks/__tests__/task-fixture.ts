@@ -1,3 +1,4 @@
+import { ExtStaffAbsenceAdapter } from "../../people/infrastructure/ext-staff-absence.adapter";
 import { StaffBookingAdapter } from "../../booking/public";
 import { StaffAvailabilityUseCase } from "../../people/application/staff-availability.usecase";
 import { ExtStaffAvailabilityAdapter } from "../../people/infrastructure/ext-staff-availability.adapter";
@@ -191,7 +192,8 @@ export async function tasksFixture(prisma: PrismaService) {
     booking,
     audit,
     outbox,
-    { now: () => new Date("2026-11-08T00:00:00Z") }
+    { now: () => new Date("2026-11-08T00:00:00Z") },
+    new ExtStaffAbsenceAdapter(prisma, new PrismaExtKvAdapter(prisma))
   );
   const taskRepo = new ExtTaskRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma));
   const tasks = new EmployeeTasksUseCase(

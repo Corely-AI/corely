@@ -1,3 +1,5 @@
+import { isPersonnelDocumentId } from "../../../documents/public";
+import { NotFoundException } from "@nestjs/common";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type { IssueAttachment, IssueTranscriptionSegment } from "../../domain/issue.types";
@@ -45,6 +47,9 @@ export class PrismaIssueAttachmentRepositoryAdapter implements IssueAttachmentRe
       return;
     }
 
+    if (attachments.some((a) => isPersonnelDocumentId(a.documentId))) {
+      throw new NotFoundException("Document not found");
+    }
     await this.prisma.issueAttachment.createMany({
       data: attachments.map((attachment) => ({
         id: attachment.id,
@@ -91,10 +96,12 @@ export class PrismaIssueAttachmentRepositoryAdapter implements IssueAttachmentRe
 
     const fileMap = new Map(files.map((f) => [f.documentId, f.id]));
 
-    return rows.map((row) => ({
-      ...toIssueAttachment(row),
-      fileId: fileMap.get(row.documentId),
-    }));
+    return rows
+      .filter((row) => !isPersonnelDocumentId(row.documentId))
+      .map((row) => ({
+        ...toIssueAttachment(row),
+        fileId: fileMap.get(row.documentId),
+      }));
   }
 
   async listByComment(tenantId: string, commentId: string): Promise<IssueAttachment[]> {
@@ -122,10 +129,12 @@ export class PrismaIssueAttachmentRepositoryAdapter implements IssueAttachmentRe
 
     const fileMap = new Map(files.map((f) => [f.documentId, f.id]));
 
-    return rows.map((row) => ({
-      ...toIssueAttachment(row),
-      fileId: fileMap.get(row.documentId),
-    }));
+    return rows
+      .filter((row) => !isPersonnelDocumentId(row.documentId))
+      .map((row) => ({
+        ...toIssueAttachment(row),
+        fileId: fileMap.get(row.documentId),
+      }));
   }
 
   async update(
