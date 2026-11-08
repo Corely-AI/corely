@@ -1,5 +1,5 @@
 import { z } from "zod";
-import React from "react";
+import React, { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
@@ -251,13 +251,13 @@ describe("session revocation boundary", () => {
     );
     await screen.findByText(/Private colleague/);
     fireEvent(window, new Event("pageshow"));
-    expect(screen.queryByText(/Private colleague/)).toBeNull();
+    expect(screen.getByText(/Private colleague/)).not.toBeVisible();
     expect(await screen.findByRole("alert")).toHaveTextContent("Sign in to continue");
   });
 });
 
 describe("idle and history privacy", () => {
-  it("removes DOM before a history snapshot and verifies again on restore", async () => {
+  it("conceals private content before a history snapshot and verifies again on restore", async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(json(data))
@@ -269,7 +269,7 @@ describe("idle and history privacy", () => {
     );
     await screen.findByText(/Private colleague/);
     fireEvent(window, new Event("pagehide"));
-    expect(screen.queryByText(/Private colleague/)).toBeNull();
+    expect(screen.getByText(/Private colleague/)).not.toBeVisible();
     fireEvent(window, new Event("pageshow"));
     expect(await screen.findByRole("alert")).toHaveTextContent("Sign in to continue");
   });
@@ -324,5 +324,61 @@ describe("idle and history privacy", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+function UnsavedDraft() {
+  const [draft, setDraft] = useState("");
+  return (
+    <input
+      aria-label="Unsaved invoice"
+      value={draft}
+      onChange={(event) => setDraft(event.target.value)}
+    />
+  );
+}
+describe("same-account verification preserves drafts", () => {
+  it("preserves a form across focus, tab visibility and history restoration", async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => json(data));
+    render(
+      <SessionProviders config={{ appKey: "invoice" }} fetchFn={fetcher}>
+        <UnsavedDraft />
+      </SessionProviders>
+    );
+    fireEvent.change(await screen.findByLabelText("Unsaved invoice"), {
+      target: { value: "Draft to save" },
+    });
+    fireEvent.focus(window);
+    await waitFor(() => expect(screen.getByLabelText("Unsaved invoice")).toBeVisible());
+    expect(screen.getByLabelText("Unsaved invoice")).toHaveValue("Draft to save");
+    const visible = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    fireEvent(document, new Event("visibilitychange"));
+    expect(screen.getByLabelText("Unsaved invoice")).not.toBeVisible();
+    visible.mockReturnValue("visible");
+    fireEvent(document, new Event("visibilitychange"));
+    await waitFor(() => expect(screen.getByLabelText("Unsaved invoice")).toBeVisible());
+    expect(screen.getByLabelText("Unsaved invoice")).toHaveValue("Draft to save");
+    fireEvent(window, new Event("pagehide"));
+    expect(screen.getByLabelText("Unsaved invoice")).not.toBeVisible();
+    fireEvent(window, new Event("pageshow"));
+    await waitFor(() => expect(screen.getByLabelText("Unsaved invoice")).toBeVisible());
+    expect(screen.getByLabelText("Unsaved invoice")).toHaveValue("Draft to save");
+  });
+  it("discards the previous draft when verification identifies another account", async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(data))
+      .mockResolvedValueOnce(json({ ...data, user: { ...data.user, userId: "another-account" } }));
+    render(
+      <SessionProviders config={{ appKey: "invoice" }} fetchFn={fetcher}>
+        <UnsavedDraft />
+      </SessionProviders>
+    );
+    fireEvent.change(await screen.findByLabelText("Unsaved invoice"), {
+      target: { value: "Private previous draft" },
+    });
+    fireEvent.focus(window);
+    await waitFor(() => expect(screen.getByLabelText("Unsaved invoice")).toBeVisible());
+    expect(screen.getByLabelText("Unsaved invoice")).toHaveValue("");
   });
 });

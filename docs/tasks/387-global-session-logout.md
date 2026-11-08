@@ -12,7 +12,8 @@
 ## Reuse and decisions
 
 Extended Identity's existing SSO store/service/HTTP adapter and the shared opt-in
-session provider/client. No new storage, dependencies, secrets or migrations.
+session provider/client. No new storage, runtime dependencies, secrets or migrations. The existing
+`fake-indexeddb` test dependency is now declared by shared-web for migration regressions.
 Family-first locking serializes revocation with rotation and redemption. Audit
 and outbox are transactional; duplicate logout with the same handle is harmless.
 Expired/access-revoked sessions can sign out, but stale rotated handles fail
@@ -27,8 +28,9 @@ Shared providers hide private content immediately, cancel old reads and clear
 queries/mutations. An unconfirmed logout has an explicit retry boundary. Same-origin
 messages only invalidate UI. Other origins verify on focus/visibility/history
 restore and every 30 foreground seconds, with a 10-second verification deadline.
-Browser suspension is not a wall-clock latency guarantee. Pagehide removes
-readable DOM before history snapshots; changed account IDs remount children.
+Browser suspension is not a wall-clock latency guarantee. Pagehide conceals the
+rendered tree before history snapshots while preserving same-account local drafts;
+changed account IDs remount children. Metadata checks do not renew idle activity.
 
 Explicit `retireLegacyStorage` clears old-origin tokens/context/cache, preserving
 the entire outbox and blocking authenticated UI while any records remain. No
@@ -99,3 +101,51 @@ follow-on tickets. Existing legacy bearer sessions are not centrally revoked by
 this family logout; each origin must be deliberately retired at its cutover.
 Rollback stops opting into the session provider; require fresh legacy login,
 never restore retired tokens or revoked families.
+
+## PR #412 review corrections — 2026-11-08
+
+All three review findings were reproduced before correction; the unsaved-form
+control passed against the base provider and failed on the original PR.
+
+- **P1 — verification kept idle sessions alive:** session metadata reads now
+  authenticate without touching either idle deadline. Business requests and
+  explicit rotation retain their existing renewal behavior. A transactional
+  PostgreSQL regression executes verification heartbeats through the 30-minute
+  boundary and proves expiry; HTTP checks prove `current`/`user` do not renew,
+  while rotation still does. No client activity header can bypass server expiry.
+- **P2 — focus/visibility lost drafts:** routine verification now conceals the
+  private rendered tree without unmounting same-account form state or disposing
+  its commands. Hidden/history pages remain concealed until successful server
+  verification. Account changes and verification failures still remove private
+  children and clear queries. Background/focus verification is deduplicated and
+  deadline-bound; automatic query focus/reconnect refetch is disabled to avoid
+  racing verification. Tests prove drafts survive focus/visibility/history and
+  are discarded when a different account is verified.
+- **P2 — absent DB inspection broke rollback:** migration aborts the creation
+  transaction instead of persisting an empty version-1 database. Unit and real
+  IndexedDB browser tests prove subsequent legacy schema initialization creates
+  both stores; pending records remain intact and still block migration.
+
+Fresh verification for the corrections:
+
+| Command / check                                                                          | Actual result                                                                                                                                                                             |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test:unit` with disposable local DATABASE_URL and disabled outbox                  | **1,318 passed, seven skipped across 300 files.**                                                                                                                                         |
+| Shared-web session Vitest config                                                         | **36 passed**, including the four new provider/migration regressions.                                                                                                                     |
+| Scoped Identity session, transport and logout HTTP suites                                | **41 passed** against disposable PostgreSQL.                                                                                                                                              |
+| Neighbor SSO/email/security/transport suites                                             | **52 passed**.                                                                                                                                                                            |
+| `playwright.sso.config.ts global-logout.spec.ts` with installed Chrome and fresh fixture | **Five passed**; real TLS cookies/server sessions, fake email, no real messages. The seven older central-login browser cases above are earlier evidence, not rerun for these corrections. |
+| API/shared-web typechecks, API build and targeted ESLint                                 | Passed.                                                                                                                                                                                   |
+| Frozen offline lockfile check                                                            | Passed; only the shared-web test dependency importer changed.                                                                                                                             |
+| Full repository lint/typecheck/architecture and hosted CI                                | Earlier failures remain limits; not rerun or represented as passing for this correction. Hosted checks must be read at the updated PR head.                                               |
+
+Fresh visual inspection of the same synthetic flow, 1280×720 and 390×844:
+
+- [Concealed while verification is pending](387-assets/review-concealed-draft-desktop.png)
+- [Draft preserved after verification, desktop](387-assets/review-preserved-draft-desktop.png)
+- [Draft preserved on phone](387-assets/review-preserved-draft-mobile.png)
+
+No private draft appears in the concealed screenshot. UI evidence uses synthetic
+text and does not claim real back-forward-cache support across all browsers;
+pagehide/pageshow restoration is exercised deterministically. Keep Draft for
+human review and repository checks. No merge, deployment or activation.

@@ -12,8 +12,8 @@ After the existing callback sets `__Host-corely-session`, use same-origin calls:
 
 | Route                       | Behavior                                                                                                                                                                                                  |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/session/user`     | Verified account/membership choices, app binding and CSRF/expiry metadata; supplied context hints are authorized before bootstrap succeeds.                                                               |
-| `GET /api/session/current`  | Returns `SsoSession` metadata: a session-bound CSRF token and absolute expiry.                                                                                                                            |
+| `GET /api/session/user`     | Non-renewing verified account/membership choices, app binding and CSRF/expiry metadata; supplied context hints are authorized before bootstrap succeeds.                                                  |
+| `GET /api/session/current`  | Returns `SsoSession` metadata without renewing idle expiry: a session-bound CSRF token and absolute expiry.                                                                                               |
 | `POST /api/session/rotate`  | With exact Origin and `x-csrf-token`, atomically replaces the opaque cookie and CSRF token without extending absolute expiry. No request body.                                                            |
 | `POST /api/session/logout`  | Exact Origin/CSRF; atomically revokes the current central family and all linked sessions, with audit/outbox. Idempotent for the same handle. Returns 204 and expires the initiating host cookie. No body. |
 | `/api/bff/<existing-route>` | Dispatches an allowed route to its existing API controller and guards using a server-established principal.                                                                                               |
@@ -55,8 +55,9 @@ operation permissions. Allowlisting is routing, not an entitlement or permission
 The existing hashed session records are reused; no migration or second identity
 store is introduced. Each request checks environment/app binding, session and
 family revocation, 30-minute idle expiry, 12-hour absolute expiry, current account,
-password hash and active tenant membership. Successful use touches idle deadlines
-under family/session locks; deadlines cannot exceed absolute expiry. Rotation
+password hash and active tenant membership. Business requests and explicit rotation
+touch idle deadlines under family/session locks; metadata verification reads do
+not renew activity. Deadlines cannot exceed absolute expiry. Rotation
 compares the old handle under lock and writes its audit/outbox in the transaction.
 Only one concurrent rotation succeeds. Old handles fail closed; clients must
 coordinate rotation and obtain fresh CSRF metadata after it. Lost rotation

@@ -139,3 +139,64 @@ test("old-origin migration clears tokens/cache but preserves and blocks ownerles
   expect(counts).toEqual([1, 0]);
   await capture(page, "migration-blocked");
 });
+
+test("a verified account retains its draft after focus and history concealment", async ({
+  page,
+  context,
+}) => {
+  await session(page);
+  await credentials(page);
+  const note = page.getByRole("textbox", { name: "Unsaved invoice note" });
+  await note.fill("Synthetic unsaved draft");
+  const other = await context.newPage();
+  await other.goto("about:blank");
+  await other.bringToFront();
+  await page.bringToFront();
+  await expect(note).toBeVisible();
+  await expect(note).toHaveValue("Synthetic unsaved draft");
+  let release!: () => void;
+  const wait = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/session/user", async (route) => {
+    await wait;
+    await route.continue();
+  });
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("pagehide"));
+    window.dispatchEvent(new Event("pageshow"));
+  });
+  await expect(note).not.toBeVisible();
+  await expect(page.getByRole("status")).toContainText("Checking your session");
+  await capture(page, "review-concealed-draft-desktop");
+  release();
+  await expect(note).toBeVisible();
+  await expect(note).toHaveValue("Synthetic unsaved draft");
+  await capture(page, "review-preserved-draft-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await capture(page, "review-preserved-draft-mobile");
+});
+
+test("a fresh migration leaves legacy IndexedDB initialization available", async ({ page }) => {
+  await page.goto(`${fixture.origins.invoice}/session?app=invoice&migrate=true`);
+  await expect(page.getByRole("textbox", { name: "Unsaved invoice note" })).toBeVisible();
+  const result = await page.evaluate(async () => {
+    const existed = (await indexedDB.databases()).some((db) => db.name === "corely_offline");
+    const stores = await new Promise<string[]>((resolve, reject) => {
+      const request = indexedDB.open("corely_offline", 1);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("outbox", { keyPath: "commandId" });
+        request.result.createObjectStore("queryCache");
+      };
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const names = Array.from(db.objectStoreNames);
+        db.close();
+        resolve(names);
+      };
+    });
+    return { existed, stores };
+  });
+  expect(result).toEqual({ existed: false, stores: ["outbox", "queryCache"] });
+});

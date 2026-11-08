@@ -1,10 +1,10 @@
 import { z } from "zod";
-import React from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { SessionProviders } from "../../src/session/session-provider";
 import { useSession } from "../../src/session/session-context";
 import { SsoAppKeySchema } from "@corely/contracts";
-import { Button } from "@corely/ui";
+import { Button, Input } from "@corely/ui";
 import "./style.css";
 const query = new URLSearchParams(location.search);
 const appKey = SsoAppKeySchema.parse(query.get("app") ?? "invoice");
@@ -62,12 +62,17 @@ const fetchFn: typeof fetch = async (input) => {
   );
 };
 function Protected() {
+  const [note, setNote] = useState("");
   const { client, logout, state } = useSession();
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
       <section className="max-w-md space-y-4">
         <h1 className="text-2xl font-semibold">{appKey} workspace</h1>
         <p>Signed in as {state.status === "authenticated" ? state.session.user.name : "hidden"}.</p>
+        <label className="block space-y-2">
+          <span>Unsaved invoice note</span>
+          <Input value={note} onChange={(event) => setNote(event.target.value)} />
+        </label>
         <Button
           onClick={() => {
             void logout();

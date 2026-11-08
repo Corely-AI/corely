@@ -21,10 +21,20 @@ export async function retireLegacyStorage(): Promise<boolean> {
   }
   return new Promise<boolean>((resolve, reject) => {
     const request = indexedDB.open("corely_offline");
-    request.onerror = () => reject(request.error);
+    let creating = false;
+    request.onerror = () => {
+      if (creating && request.error?.name === "AbortError") {
+        resolve(true);
+      } else {
+        reject(request.error);
+      }
+    };
     request.onblocked = () => reject(new Error("Close other Corely tabs before migration"));
     request.onupgradeneeded = () => {
-      /* No stores are created for a new session origin. */
+      // Inspection must not create an empty version-1 database: the legacy
+      // opener uses that version to create its stores when an origin first opts in.
+      creating = true;
+      request.transaction?.abort();
     };
     request.onsuccess = () => {
       const db = request.result;

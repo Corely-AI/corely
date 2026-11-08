@@ -65,6 +65,39 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("global logout HTTP contract
       Cookie: `${SSO_COOKIES.app}=${handle}`,
     };
   }
+  it("keeps session metadata reads non-renewing while explicit rotation renews activity", async () => {
+    const row = await fixture.prisma.ssoAppSession.findUniqueOrThrow({
+      where: { handleHash: fixture.crypto.hash(handle) },
+    });
+    const idleExpiresAt = new Date(Date.now() + 60_000);
+    await fixture.prisma.ssoAppSession.update({ where: { id: row.id }, data: { idleExpiresAt } });
+    await fixture.prisma.ssoCentralSession.update({
+      where: { id: row.familyId },
+      data: { idleExpiresAt },
+    });
+    for (const path of ["current", "user"]) {
+      await request(app.getHttpServer()).get(`/api/session/${path}`).set(headers()).expect(200);
+      expect(
+        (await fixture.prisma.ssoAppSession.findUniqueOrThrow({ where: { id: row.id } }))
+          .idleExpiresAt
+      ).toEqual(idleExpiresAt);
+      expect(
+        (await fixture.prisma.ssoCentralSession.findUniqueOrThrow({ where: { id: row.familyId } }))
+          .idleExpiresAt
+      ).toEqual(idleExpiresAt);
+    }
+    await request(app.getHttpServer())
+      .post("/api/session/rotate")
+      .set(headers())
+      .set("Origin", origins.invoice)
+      .set("x-csrf-token", csrfToken)
+      .expect(200);
+    expect(
+      (
+        await fixture.prisma.ssoAppSession.findUniqueOrThrow({ where: { id: row.id } })
+      ).idleExpiresAt.getTime()
+    ).toBeGreaterThan(idleExpiresAt.getTime());
+  });
   it("requires same-origin POST/proof for global logout and expires only the app cookie", async () => {
     await request(app.getHttpServer()).get("/api/session/logout").set(headers()).expect(405);
     for (const origin of [undefined, origins.hr]) {

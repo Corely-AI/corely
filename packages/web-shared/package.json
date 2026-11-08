@@ -25,5 +25,8 @@
     "react-router-dom": "^6.30.1",
     "zod": "catalog:"
   },
-  "author": "Ha Doan <ha@oneway8x.com>"
+  "author": "Ha Doan <ha@oneway8x.com>",
+  "devDependencies": {
+    "fake-indexeddb": "^6.0.0"
+  }
 }

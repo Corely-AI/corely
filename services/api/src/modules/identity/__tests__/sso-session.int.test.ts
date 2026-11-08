@@ -274,6 +274,36 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host session persistence", 
     await session.logout(origins.invoice, handle, proof);
     await expect(session.authenticate(origins.invoice, handle)).rejects.toThrow();
   });
+  it("does not renew either idle deadline during verification heartbeats", async () => {
+    const row = await fixture.prisma.ssoAppSession.findUniqueOrThrow({
+      where: { handleHash: fixture.crypto.hash(handle) },
+    });
+    const family = await fixture.prisma.ssoCentralSession.findUniqueOrThrow({
+      where: { id: row.familyId },
+    });
+    const heartbeat = {
+      handleHash: row.handleHash,
+      appKey: "invoice",
+      environment: fixture.registrations.environment,
+    };
+    for (let minute = 1; minute < 30; minute++) {
+      await fixture.store.useSession({
+        ...heartbeat,
+        now: new Date(row.idleExpiresAt.getTime() - SSO_IDLE_MS + minute * 60_000),
+      });
+    }
+    expect(
+      (await fixture.prisma.ssoAppSession.findUniqueOrThrow({ where: { id: row.id } }))
+        .idleExpiresAt
+    ).toEqual(row.idleExpiresAt);
+    expect(
+      (await fixture.prisma.ssoCentralSession.findUniqueOrThrow({ where: { id: family.id } }))
+        .idleExpiresAt
+    ).toEqual(family.idleExpiresAt);
+    await expect(
+      fixture.store.useSession({ ...heartbeat, now: new Date(row.idleExpiresAt.getTime() + 1) })
+    ).rejects.toThrow();
+  });
   it("extends idle windows within the immutable absolute limit", async () => {
     const row = await fixture.prisma.ssoAppSession.findUniqueOrThrow({
       where: { handleHash: fixture.crypto.hash(handle) },

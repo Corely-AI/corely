@@ -126,7 +126,8 @@ export function configureSsoSessionTransport(app: INestApplication): void {
         origin,
         security.cookie(req, SSO_COOKIES.app),
         requiresProof ? (csrf as string) : undefined,
-        rotate
+        rotate,
+        !isSession || rotate
       );
       if (isSession) {
         if (result.handle) {

@@ -59,7 +59,8 @@ export interface SsoStorePort {
     environment: string;
     appKey: string;
     now: Date;
-    idleExpiresAt: Date;
+    /** Omit for non-renewing revocation/expiry inspection. */
+    idleExpiresAt?: Date;
     replacementHash?: string;
   }): Promise<SsoAppSession>;
   /** Revoke the presented host session's central family and all children atomically.

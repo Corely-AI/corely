@@ -141,21 +141,30 @@ commits reject immediately. Already-open server streams are not forcibly ended.
 
 Same-origin BroadcastChannel messages only invalidate UI; they carry no identity,
 credentials or authority. Different origins revalidate on focus, visibility
-restoration and history restoration. Hidden/history-bound pages remove protected
-content and dispose requests; restored pages gate content behind server bootstrap.
-Visible idle tabs verify every 30 seconds while their browser is scheduling them;
+restoration and history restoration. Hidden/history-bound pages conceal protected content from rendering, focus and
+history snapshots while retaining same-account local drafts in memory. Restored
+pages keep that content concealed until verification succeeds; a changed account
+or failed verification unmounts it and clears cached data. Routine focus checks
+do not dispose active commands or discard form state.
+Metadata verification is non-renewing: only business requests or explicit session
+rotation touch idle activity. The 30-minute idle limit therefore still expires an
+unattended tab even while it verifies revocation. Visible idle tabs verify every
+30 seconds while their browser is scheduling them;
 a hung background verification closes the boundary after a further 10 seconds.
 This is a foreground polling interval, not a hard wall-clock guarantee for
 suspended browsers or a network outage. A request failure closes the boundary;
 current tenant/workspace membership is checked on each business request.
-Changed accounts remount protected children with cleared caches. No data or
+Changed accounts remount protected children with cleared caches. Automatic query
+refetch on focus/reconnect is disabled so it cannot race account verification. No data or
 session is restored from legacy persisted queries on this stack.
 
 A **new** origin needs no legacy migration. When deliberately retiring an old
 origin, first close its legacy tabs and stop old offline writers. Then configure
 `retireLegacyStorage: true` on `SessionProviders`. Before bootstrap it removes
 known legacy token/context keys and Corely-readable local/session-storage caches,
-and clears only the `corely_offline.queryCache` store. Storage errors fail closed.
+and clears only the `corely_offline.queryCache` store. Storage errors fail closed. When the database is absent, inspection aborts its
+creation rather than leaving an empty version-1 schema that would break legacy
+initialization during rollback.
 If **any** outbox records exist, `migrationBlocked` prevents private content from
 mounting, even with an otherwise valid cookie. Every record stays intact.
 

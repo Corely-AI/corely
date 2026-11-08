@@ -23,6 +23,9 @@ function SessionProvider({ config, children, fetchFn, navigate, fallback }: Sess
     () => new SessionClient(config, fetchFn),
     [config.appKey, config.tenantId, config.workspaceId, fetchFn]
   );
+  const [concealed, setConcealed] = useState(false);
+  const suspended = useRef(false);
+  const verificationPending = useRef<Promise<void> | null>(null);
   const [state, setState] = useState<BrowserSessionState>({ status: "booting" });
   const sequence = useRef(0);
   const loggingOut = useRef(false);
@@ -36,6 +39,7 @@ function SessionProvider({ config, children, fetchFn, navigate, fallback }: Sess
   }, [queryClient]);
   const retry = useCallback(async () => {
     const attempt = ++sequence.current;
+    verificationPending.current = null;
     currentUser.current = null;
     client.dispose();
     setState({ status: "booting" });
@@ -57,6 +61,9 @@ function SessionProvider({ config, children, fetchFn, navigate, fallback }: Sess
       if (mounted.current && attempt === sequence.current) {
         currentUser.current = session.user.userId;
         setState({ status: "authenticated", session });
+        if (!suspended.current && document.visibilityState !== "hidden") {
+          setConcealed(false);
+        }
       }
     } catch (error) {
       if (mounted.current && attempt === sequence.current) {
@@ -74,6 +81,7 @@ function SessionProvider({ config, children, fetchFn, navigate, fallback }: Sess
     const unsubscribe = client.onFailure((status) => {
       if (mounted.current) {
         sequence.current++;
+        verificationPending.current = null;
         currentUser.current = null;
         setState({ status });
         void clearCache();
@@ -88,6 +96,63 @@ function SessionProvider({ config, children, fetchFn, navigate, fallback }: Sess
       void clearCache();
     };
   }, [client, retry, clearCache]);
+  const verify = useCallback(
+    (conceal = false): Promise<void> => {
+      if (logoutRequired.current) {
+        return Promise.resolve();
+      }
+      if (conceal) {
+        setConcealed(true);
+      }
+      if (!currentUser.current) {
+        return retry();
+      }
+      if (verificationPending.current) {
+        return verificationPending.current;
+      }
+      const attempt = sequence.current;
+      const pending = (async () => {
+        const deadline = window.setTimeout(() => {
+          if (mounted.current && attempt === sequence.current) {
+            sequence.current++;
+            verificationPending.current = null;
+            currentUser.current = null;
+            client.dispose();
+            setState({ status: "unavailable" });
+            void clearCache();
+          }
+        }, 10_000);
+        try {
+          const session = await client.bootstrap();
+          if (!mounted.current || attempt !== sequence.current) {
+            return;
+          }
+          if (currentUser.current !== session.user.userId) {
+            flushSync(() => setState({ status: "booting" }));
+            await clearCache();
+          }
+          if (mounted.current && attempt === sequence.current) {
+            currentUser.current = session.user.userId;
+            setState({ status: "authenticated", session });
+            if (!suspended.current && document.visibilityState !== "hidden") {
+              setConcealed(false);
+            }
+          }
+        } catch {
+          /* The client's failure event closes the boundary. */
+        } finally {
+          window.clearTimeout(deadline);
+        }
+      })().finally(() => {
+        if (verificationPending.current === pending) {
+          verificationPending.current = null;
+        }
+      });
+      verificationPending.current = pending;
+      return pending;
+    },
+    [client, clearCache, retry]
+  );
   useEffect(() => {
     // Same-origin hints only invalidate UI; server checks remain the authority across origins.
     const invalidate = () => {
@@ -102,81 +167,42 @@ function SessionProvider({ config, children, fetchFn, navigate, fallback }: Sess
       channel.current = connection;
       connection.onmessage = invalidate;
     }
-    const check = () => {
-      if (!logoutRequired.current) {
-        void retry();
-      }
+    const restore = () => {
+      suspended.current = false;
+      void verify(true);
+    };
+    const conceal = () => {
+      suspended.current = true;
+      // Keep local drafts mounted, but exclude private content from rendering,
+      // focus and history snapshots until the current account is reverified.
+      flushSync(() => setConcealed(true));
     };
     const visibility = () => {
-      if (logoutRequired.current) {
-        return;
-      }
       if (document.visibilityState === "hidden") {
-        sequence.current++;
-        client.dispose();
-        setState({ status: "booting" });
-        void clearCache();
+        conceal();
       } else {
-        check();
+        restore();
       }
     };
-    const suspend = () => {
-      sequence.current++;
-      client.dispose();
-      // Remove readable DOM before a history snapshot can freeze this document.
-      flushSync(() => setState({ status: logoutRequired.current ? "logoutFailed" : "booting" }));
-      void clearCache();
-    };
-    const restore = () => check();
-    window.addEventListener("pagehide", suspend);
+    window.addEventListener("pagehide", conceal);
     window.addEventListener("pageshow", restore);
     window.addEventListener("focus", restore);
     document.addEventListener("visibilitychange", visibility);
-    // Recheck active idle tabs without periodically unmounting forms. Any changed
-    // identity or failed verification clears state before protected content returns.
-    const timer = window.setInterval(async () => {
-      if (logoutRequired.current || document.visibilityState === "hidden" || !currentUser.current) {
-        return;
-      }
-      const attempt = sequence.current;
-      const deadline = window.setTimeout(() => {
-        if (mounted.current && attempt === sequence.current) {
-          sequence.current++;
-          currentUser.current = null;
-          client.dispose();
-          setState({ status: "unavailable" });
-          void clearCache();
-        }
-      }, 10_000);
-      try {
-        const session = await client.bootstrap();
-        if (!mounted.current || attempt !== sequence.current) {
-          return;
-        }
-        if (currentUser.current !== session.user.userId) {
-          setState({ status: "booting" });
-          await clearCache();
-        }
-        if (mounted.current && attempt === sequence.current) {
-          currentUser.current = session.user.userId;
-          setState({ status: "authenticated", session });
-        }
-      } catch {
-        /* The client's failure event closes the boundary. */
-      } finally {
-        window.clearTimeout(deadline);
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "hidden" && currentUser.current) {
+        void verify();
       }
     }, 30_000);
     return () => {
       window.clearInterval(timer);
-      window.removeEventListener("pagehide", suspend);
+      window.removeEventListener("pagehide", conceal);
       window.removeEventListener("pageshow", restore);
       window.removeEventListener("focus", restore);
       document.removeEventListener("visibilitychange", visibility);
       channel.current?.close();
       channel.current = null;
     };
-  }, [client, clearCache, retry]);
+  }, [client, clearCache, verify]);
   const logout = useCallback(async () => {
     if (loggingOut.current) {
       return;
@@ -242,7 +268,17 @@ function SessionProvider({ config, children, fetchFn, navigate, fallback }: Sess
   return (
     <SessionContext.Provider value={value}>
       {state.status === "authenticated" ? (
-        <React.Fragment key={state.session.user.userId}>{children}</React.Fragment>
+        <>
+          <div hidden={concealed} key={state.session.user.userId}>
+            {children}
+          </div>
+          {concealed ? (
+            <SessionStatus
+              value={{ ...value, state: { status: "booting" } }}
+              locale={config.locale}
+            />
+          ) : null}
+        </>
       ) : fallback ? (
         fallback(value)
       ) : (
@@ -259,7 +295,10 @@ export function SessionProviders(props: SessionProvidersProps) {
   const queryClient = useMemo(
     () =>
       new QueryClient({
-        defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+        defaultOptions: {
+          queries: { retry: false, refetchOnWindowFocus: false, refetchOnReconnect: false },
+          mutations: { retry: false },
+        },
       }),
     [scope]
   );
