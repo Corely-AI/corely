@@ -6,7 +6,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./*": "./src/*"
+    "./*": "./src/*",
+    "./modules/tasks": "./src/modules/tasks/index.ts",
+    "./modules/tasks/daily-work-page": "./src/modules/tasks/daily-work-page.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -20,7 +22,8 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^6.30.1",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@corely/auth-client": "workspace:*"
   },
   "author": "Ha Doan <ha@oneway8x.com>"
 }

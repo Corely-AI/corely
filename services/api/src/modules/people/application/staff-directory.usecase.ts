@@ -16,7 +16,6 @@ import {
   UpdateStaffSchema,
   UpdateStaffPrivateSchema,
   type StaffProfile,
-  type StaffLinkLookup,
   type StaffList,
 } from "@corely/contracts";
 import {
@@ -36,6 +35,7 @@ import {
   STAFF_PARTY_LOOKUP,
   STAFF_RESOURCE_LOOKUP,
   type StaffRepositoryPort,
+  type TransactionalStaffLinkLookup,
   type StaffScope,
 } from "./ports/staff-repository.port";
 
@@ -47,20 +47,24 @@ export class StaffDirectoryUseCase {
   constructor(
     @Inject(STAFF_REPOSITORY) private readonly repo: StaffRepositoryPort,
     private readonly permissions: GetEffectivePermissionsUseCase,
-    @Inject(STAFF_ACCOUNT_LOOKUP) private readonly accounts: StaffLinkLookup,
-    @Inject(STAFF_PARTY_LOOKUP) private readonly parties: StaffLinkLookup,
-    @Inject(STAFF_RESOURCE_LOOKUP) private readonly resources: StaffLinkLookup,
+    @Inject(STAFF_ACCOUNT_LOOKUP) private readonly accounts: TransactionalStaffLinkLookup,
+    @Inject(STAFF_PARTY_LOOKUP) private readonly parties: TransactionalStaffLinkLookup,
+    @Inject(STAFF_RESOURCE_LOOKUP) private readonly resources: TransactionalStaffLinkLookup,
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
     @Inject(TenantEntitlementService)
     private readonly entitlements: Pick<TenantEntitlementService, "isAppEnabled">,
     @Inject(STAFF_BOOKING) private readonly booking: StaffBookingPort
   ) {}
-  private async authorize(ctx: UseCaseContext, required: string[]): Promise<StaffScope> {
+  private async authorize(
+    ctx: UseCaseContext,
+    required: string[],
+    tx?: TransactionContext
+  ): Promise<StaffScope> {
     if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) {
       throw new ForbiddenException("Workspace membership required");
     }
-    const { permissions } = await this.permissions.execute(ctx);
+    const { permissions } = await this.permissions.execute(ctx, tx);
     if (
       required.some(
         (key) =>
@@ -70,7 +74,7 @@ export class StaffDirectoryUseCase {
     ) {
       throw new ForbiddenException("People access denied");
     }
-    if (!(await this.entitlements.isAppEnabled(ctx.tenantId, "people"))) {
+    if (!(await this.entitlements.isAppEnabled(ctx.tenantId, "people", tx))) {
       throw new ForbiddenException("People app is disabled");
     }
     return { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId };
@@ -109,9 +113,9 @@ export class StaffDirectoryUseCase {
     const scope = await this.authorize(ctx, ["people.directory.read"]);
     return directoryEntry(await this.profile(scope, id));
   }
-  async managementDetail(id: string, ctx: UseCaseContext) {
-    const scope = await this.authorize(ctx, ["people.directory.read", "people.profile.manage"]);
-    return this.profile(scope, id);
+  async managementDetail(id: string, ctx: UseCaseContext, tx?: TransactionContext) {
+    const scope = await this.authorize(ctx, ["people.directory.read", "people.profile.manage"], tx);
+    return this.profile(scope, id, tx);
   }
   async privateDetail(id: string, ctx: UseCaseContext) {
     const scope = await this.authorize(ctx, ["people.directory.read", "people.private.read"]);
@@ -150,7 +154,7 @@ export class StaffDirectoryUseCase {
       .digest("hex");
     return this.repo.transaction(scope, async (tx) => {
       // Recheck current authority after acquiring the write lock, including retries.
-      await this.authorize(ctx, required);
+      await this.authorize(ctx, required, tx);
       const replay = await this.repo.replay(scope, commandKey, tx);
       if (replay) {
         if (replay.fingerprint !== fingerprint) {
@@ -235,7 +239,7 @@ export class StaffDirectoryUseCase {
             [next.partyId, this.parties],
             [next.resourceId, this.resources],
           ] as const) {
-            if (target && !(await lookup.exists(scope, target))) {
+            if (target && !(await lookup.exists(scope, target, tx))) {
               throw new BadRequestException("Linked record is unavailable in this workspace");
             }
           }

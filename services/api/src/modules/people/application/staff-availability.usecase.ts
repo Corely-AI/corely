@@ -89,7 +89,7 @@ export class StaffAvailabilityUseCase {
     // Manager-only raw patterns and impact IDs. Operational consumers receive windows only.
     const scope = await this.scope(id, ctx);
     return this.staff.transaction(scope, async (tx) => {
-      await this.directory.managementDetail(id, ctx);
+      await this.directory.managementDetail(id, ctx, tx);
       const profile = await this.profile(scope, id, tx);
       if (profile.resourceId) {
         await this.booking.lock(scope, [profile.resourceId], tx);
@@ -110,7 +110,7 @@ export class StaffAvailabilityUseCase {
       .update(JSON.stringify([ctx.userId, key]))
       .digest("hex");
     return this.staff.transaction(scope, async (tx) => {
-      await this.directory.managementDetail(id, ctx);
+      await this.directory.managementDetail(id, ctx, tx);
       const profile = await this.profile(scope, id, tx);
       if (profile.resourceId) {
         await this.booking.lock(scope, [profile.resourceId], tx);

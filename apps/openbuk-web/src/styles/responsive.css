@@ -159,11 +159,17 @@
     display: none;
   }
   .sidebar nav {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-top: 19px;
     gap: 5px;
   }
   .sidebar nav a {
+    min-width: 0;
+    min-height: 44px;
+    flex-wrap: wrap;
+    overflow-wrap: anywhere;
+    align-content: center;
     padding: 10px;
     font-size: 12px;
     gap: 7px;
@@ -266,5 +272,10 @@
   * {
     scroll-behavior: auto !important;
     transition: none !important;
+  }
+}
+@media (max-width: 480px) {
+  .sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

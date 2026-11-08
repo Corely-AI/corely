@@ -41,11 +41,13 @@ describe.skipIf(!enabled)("People persisted HTTP, privacy and transaction bounda
       .set("X-Idempotency-Key", key())
       .send(body);
   it("creates and edits staff without creating accounts, parties or booking resources", async () => {
-    const counts = await Promise.all([
-      prisma.user.count(),
-      prisma.party.count(),
-      prisma.bookingResource.count(),
-    ]);
+    const ownedCounts = () =>
+      Promise.all([
+        prisma.user.count({ where: { memberships: { some: { tenantId: f.tenantA } } } }),
+        prisma.party.count({ where: { tenantId: f.tenantA } }),
+        prisma.bookingResource.count({ where: { tenantId: f.tenantA } }),
+      ]);
+    const counts = await ownedCounts();
     const response = await create({ displayName: "No account required", team: "Studio" });
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({ workspaceId: f.workspaceA, version: 1, team: "Studio" });
@@ -53,9 +55,7 @@ describe.skipIf(!enabled)("People persisted HTTP, privacy and transaction bounda
     expect(
       (await patch(response.body.id, { displayName: "Updated name", version: 1 })).status
     ).toBe(200);
-    expect(
-      await Promise.all([prisma.user.count(), prisma.party.count(), prisma.bookingResource.count()])
-    ).toEqual(counts);
+    expect(await ownedCounts()).toEqual(counts);
   });
   it("validates explicit owner links and returns only neutral allowlisted fields to Staff", async () => {
     const created = await create({

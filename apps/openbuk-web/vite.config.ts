@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: Object.fromEntries(
-      ["contracts", "auth-client", "api-client"].map((p) => [
+      ["contracts", "auth-client", "api-client", "web-features", "ui"].map((p) => [
         `@corely/${p}`,
         fileURLToPath(new URL(`../../packages/${p}/src`, import.meta.url)),
       ])

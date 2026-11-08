@@ -1,3 +1,4 @@
+import { StaffOperationsLookup } from "./application/staff-operations-lookup";
 import { PlatformModule } from "../platform/platform.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { Module } from "@nestjs/common";
@@ -28,6 +29,7 @@ import { StaffController } from "./adapters/http/staff.controller";
   imports: [DataModule, IdentityModule, WorkspacesModule, PlatformModule, KernelModule],
   controllers: [StaffController],
   providers: [
+    StaffOperationsLookup,
     StaffDirectoryUseCase,
     StaffAvailabilityUseCase,
     StaffAvailabilityConstraintService,
@@ -44,6 +46,6 @@ import { StaffController } from "./adapters/http/staff.controller";
     { provide: STAFF_PARTY_LOOKUP, useExisting: StaffPartyLookupAdapter },
     { provide: STAFF_RESOURCE_LOOKUP, useExisting: StaffResourceLookupAdapter },
   ],
-  exports: [StaffDirectoryUseCase, StaffAvailabilityConstraintService],
+  exports: [StaffDirectoryUseCase, StaffOperationsLookup, StaffAvailabilityConstraintService],
 })
 export class PeopleModule {}

@@ -227,7 +227,8 @@ describe("Operational package configuration integration (in-memory persistence)"
       {
         id: "daily-work",
         label: "Daily Work",
-        availability: { status: "unavailable", reason: "not-implemented" },
+        appId: "tasks",
+        availability: { status: "unavailable", reason: "app-disabled" },
       },
     ]);
     expect(result.home.widgets).toEqual([]);
@@ -239,6 +240,25 @@ describe("Operational package configuration integration (in-memory persistence)"
     expect(f.repo.upsert).not.toHaveBeenCalled();
   });
 
+  it("contributes Daily Work only when Tasks, People and task access are enabled, without finance", async () => {
+    const f = fixture();
+    f.install("tasks");
+    f.install("people");
+    const experience = (result: Awaited<ReturnType<typeof f.config>>) =>
+      result.operationalPackage!.experiences.find((e) => e.id === "daily-work");
+    expect(experience(await f.config({ permissions: ["tasks.read"] }))).toMatchObject({
+      appId: "tasks",
+      availability: { status: "available", route: "/app/tasks" },
+    });
+    expect(experience(await f.config())).toMatchObject({
+      availability: { status: "unavailable", reason: "permission-denied" },
+    });
+    f.install("people", false);
+    expect(experience(await f.config({ permissions: ["tasks.read"] }))?.availability.status).toBe(
+      "unavailable"
+    );
+    expect([...f.installs.keys()]).toEqual(["booking", "tasks", "people"]);
+  });
   it("keeps installation, effective app enablement and product access separate", async () => {
     const f = fixture();
     f.install("booking", false);

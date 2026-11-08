@@ -1,3 +1,4 @@
+import { createEmployeeTaskEventHandlers } from "../tasks/employee-task-recorded.handler";
 import { Module } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import {
@@ -142,6 +143,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
+          ...createEmployeeTaskEventHandlers(),
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,

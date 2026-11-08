@@ -1,3 +1,4 @@
+import type { TransactionContext } from "./unit-of-work.port";
 export const TENANT_ENTITLEMENTS_READ_PORT_TOKEN = Symbol("TenantEntitlementsReadPort");
 
 /**
@@ -10,10 +11,10 @@ export interface TenantEntitlementsReadPort {
    * Key is appId, value is boolean (true = enabled).
    * Result includes overrides and default values.
    */
-  getAppEnablementMap(tenantId: string): Promise<Record<string, boolean>>;
+  getAppEnablementMap(tenantId: string, tx?: TransactionContext): Promise<Record<string, boolean>>;
 
   /**
    * Check if a specific app is enabled for a tenant.
    */
-  isAppEnabled(tenantId: string, appId: string): Promise<boolean>;
+  isAppEnabled(tenantId: string, appId: string, tx?: TransactionContext): Promise<boolean>;
 }

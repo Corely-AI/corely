@@ -925,6 +925,9 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.57.0
+      '@prisma/adapter-pg':
+        specifier: 'catalog:'
+        version: 7.2.0
       '@prisma/client':
         specifier: 'catalog:'
         version: 7.2.0(prisma@7.2.0(@types/react@18.3.27)(magicast@0.3.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(typescript@5.9.3)
@@ -1320,6 +1323,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@corely/web-features':
+        specifier: workspace:*
+        version: link:../../packages/web-features
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -2590,6 +2596,9 @@ importers:
       '@corely/api-client':
         specifier: workspace:*
         version: link:../api-client
+      '@corely/auth-client':
+        specifier: workspace:*
+        version: link:../auth-client
       '@corely/contracts':
         specifier: workspace:*
         version: link:../contracts

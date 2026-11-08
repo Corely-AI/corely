@@ -1,5 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import type { RolePermissionGrantRepositoryPort } from "../../application/ports/role-permission-grant-repository.port";
 import type { RolePermissionEffect } from "@corely/contracts";
 
@@ -9,7 +10,8 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
 
   async listByRoleIdsAndTenant(
     tenantId: string,
-    roleIds: string[]
+    roleIds: string[],
+    tx?: TransactionContext
   ): Promise<Array<{ key: string; effect: RolePermissionEffect }>> {
     const uniqueRoles = Array.from(new Set(roleIds));
 
@@ -17,7 +19,7 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
       return [];
     }
 
-    const grants = await this.prisma.rolePermissionGrant.findMany({
+    const grants = await getPrismaClient(this.prisma, tx).rolePermissionGrant.findMany({
       where: { tenantId, roleId: { in: uniqueRoles } },
       select: { permissionKey: true, effect: true },
     });
@@ -26,7 +28,8 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
   }
 
   async listByRoleIds(
-    roleIds: string[]
+    roleIds: string[],
+    tx?: TransactionContext
   ): Promise<Array<{ key: string; effect: RolePermissionEffect }>> {
     const uniqueRoles = Array.from(new Set(roleIds));
 
@@ -34,7 +37,7 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
       return [];
     }
 
-    const grants = await this.prisma.rolePermissionGrant.findMany({
+    const grants = await getPrismaClient(this.prisma, tx).rolePermissionGrant.findMany({
       where: { roleId: { in: uniqueRoles } },
       select: { permissionKey: true, effect: true },
     });
