@@ -120,6 +120,7 @@ export const appShellRoutes = (
     <Route element={<AppShell />}>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route path="/tasks" element={<DailyWorkPage />} />
+      <Route path="/tasks/templates" element={<DailyWorkPage templates />} />
       <Route path="/people/staff" element={<PeopleDirectoryPage />} />
       <Route path="/people/staff/new" element={<StaffProfilePage />} />
       <Route path="/people/staff/:id" element={<StaffProfilePage />} />

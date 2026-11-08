@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { EmployeeTask, EmployeeTaskList } from "@corely/contracts";
+import { MemoryRouter } from "react-router-dom";
 import { DailyWork } from "./daily-work";
 import type { TasksClient } from "./tasks-client";
 
@@ -40,7 +41,11 @@ describe("Daily Work current access after a denied mutation", () => {
     "discards the previous task projection and editor after HTTP %s",
     async (status) => {
       const client = fixture(status);
-      render(<DailyWork client={client} />);
+      render(
+        <MemoryRouter>
+          <DailyWork client={client} />
+        </MemoryRouter>
+      );
       fireEvent.click(await screen.findByRole("button", { name: "Edit" }));
       fireEvent.change(screen.getByLabelText("Task title"), { target: { value: "Local edit" } });
       fireEvent.click(screen.getByRole("button", { name: "Save task" }));
@@ -64,7 +69,11 @@ describe("Daily Work current access after a denied mutation", () => {
   it.each([409, 500])(
     "keeps local edits available for conflict/network recovery after HTTP %s",
     async (status) => {
-      render(<DailyWork client={fixture(status)} />);
+      render(
+        <MemoryRouter>
+          <DailyWork client={fixture(status)} />
+        </MemoryRouter>
+      );
       fireEvent.click(await screen.findByRole("button", { name: "Edit" }));
       fireEvent.change(screen.getByLabelText("Task title"), {
         target: { value: "Keep this draft" },
@@ -75,4 +84,44 @@ describe("Daily Work current access after a denied mutation", () => {
       expect(screen.getByRole("article")).toBeInTheDocument();
     }
   );
+});
+
+describe("Checklist progress in Daily Work", () => {
+  it("requires every step before completion and updates progress without remounting the focused checkbox", async () => {
+    const client = fixture(500);
+    const checklist = [
+      { id: "55f708b5-cbda-4bc1-bcee-51506c9e6018", title: "Unlock reception", completed: false },
+    ];
+    vi.mocked(client.list).mockResolvedValue({
+      items: [{ ...task, checklist }],
+      total: 1,
+      page: 1,
+      pageSize: 20,
+      capabilities: { manage: false, completeOwn: true },
+    });
+    vi.mocked(client.command).mockResolvedValue({
+      ...task,
+      version: 2,
+      checklist: [{ ...checklist[0], completed: true }],
+    });
+    render(
+      <MemoryRouter>
+        <DailyWork client={client} />
+      </MemoryRouter>
+    );
+    const checkbox = await screen.findByRole("checkbox", { name: "Unlock reception" });
+    expect(screen.getByRole("button", { name: "Complete" })).toBeDisabled();
+    checkbox.focus();
+    fireEvent.click(checkbox);
+    await waitFor(() => expect(checkbox).toBeChecked());
+    expect(checkbox).toHaveFocus();
+    expect(client.command).toHaveBeenCalledWith(
+      `/${task.id}/checklist/${checklist[0].id}`,
+      "POST",
+      { version: 1, completed: true },
+      expect.any(String)
+    );
+    expect(screen.getByRole("button", { name: "Complete" })).toBeEnabled();
+    expect(client.list).toHaveBeenCalledTimes(1);
+  });
 });

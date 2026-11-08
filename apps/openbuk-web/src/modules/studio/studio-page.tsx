@@ -1,4 +1,9 @@
-import { DailyWork, createTasksClient } from "@corely/web-features/modules/tasks";
+import {
+  DailyWork,
+  createTasksClient,
+  RecurringChecklists,
+  createChecklistsClient,
+} from "@corely/web-features/modules/tasks";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import type {
@@ -20,9 +25,14 @@ export default function StudioPage() {
   const { t, locale } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
-  const tasksRoute = location.pathname.endsWith("/tasks");
+  const templatesRoute = location.pathname.endsWith("/tasks/templates");
+  const tasksRoute = location.pathname.endsWith("/tasks") || templatesRoute;
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [workspace, setWorkspace] = useState<WorkspaceDto | null>(null);
+  const checklistsClient = useMemo(
+    () => createChecklistsClient(api, workspace?.id ?? ""),
+    [workspace?.id]
+  );
   const tasksClient = useMemo(() => createTasksClient(api, workspace?.id ?? ""), [workspace?.id]);
   const [studio, setStudio] = useState<OpenBukStudio | null>(null);
   const [draft, setDraft] = useState<OpenBukSetupDraft | null>(null);
@@ -146,7 +156,13 @@ export default function StudioPage() {
               ["/app/settings", "settings", "⚙"],
             ] as const
           ).map(([href, key, icon]) => (
-            <Link className={location.pathname === href ? "active" : ""} key={href} to={href}>
+            <Link
+              className={
+                location.pathname === href || (href === "/app/tasks" && tasksRoute) ? "active" : ""
+              }
+              key={href}
+              to={href}
+            >
               <span aria-hidden="true">{icon}</span>
               {t(key)}
             </Link>
@@ -190,7 +206,22 @@ export default function StudioPage() {
             ))}
           </section>
         ) : workspace && tasksRoute ? (
-          <DailyWork key={workspace.id} client={tasksClient} locale={locale} />
+          templatesRoute ? (
+            <RecurringChecklists
+              key={workspace.id}
+              client={checklistsClient}
+              tasksClient={tasksClient}
+              locale={locale}
+              backHref="/app/tasks"
+            />
+          ) : (
+            <DailyWork
+              key={workspace.id}
+              client={tasksClient}
+              locale={locale}
+              templatesHref="/app/tasks/templates"
+            />
+          )
         ) : workspace && !canManage ? (
           <section>
             <h1>{t("staffJoined")}</h1>

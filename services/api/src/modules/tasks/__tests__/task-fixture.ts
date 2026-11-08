@@ -1,3 +1,9 @@
+import { ExtRecurringChecklistAdapter } from "../infrastructure/ext-recurring-checklist.adapter";
+import { RecurringChecklistsUseCase } from "../application/recurring-checklists.usecase";
+import { RecurringGenerationUseCase } from "../application/recurring-generation.usecase";
+import { ChecklistMaterializer } from "../application/checklist-materializer";
+import { RecurringChecklistsController } from "../adapters/http/recurring-checklists.controller";
+import { StaffWorkdayLookup } from "../../people/public";
 import { StaffBookingAdapter } from "../../booking/public";
 import { StaffAvailabilityUseCase } from "../../people/application/staff-availability.usecase";
 import { ExtStaffAvailabilityAdapter } from "../../people/infrastructure/ext-staff-availability.adapter";
@@ -202,6 +208,37 @@ export async function tasksFixture(prisma: PrismaService) {
     audit,
     outbox
   );
+  let instant = new Date("2026-11-08T00:00:00Z");
+  const clock = { now: () => new Date(instant) };
+  const recurringRepo = new ExtRecurringChecklistAdapter(prisma, new PrismaExtKvAdapter(prisma));
+  const staffOps = new StaffOperationsLookup(repo);
+  const materializer = new ChecklistMaterializer(
+    recurringRepo,
+    taskRepo,
+    tasks,
+    staffOps,
+    new StaffWorkdayLookup(new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma))),
+    clock,
+    audit,
+    outbox
+  );
+  const checklists = new RecurringChecklistsUseCase(
+    recurringRepo,
+    taskRepo,
+    tasks,
+    staffOps,
+    materializer,
+    clock,
+    audit,
+    outbox
+  );
+  const generation = new RecurringGenerationUseCase(
+    recurringRepo,
+    taskRepo,
+    staffOps,
+    materializer,
+    clock
+  );
   const tokens = {
     manager: { userId: manager, tenantId: tenantA },
     staff: { userId: staff, tenantId: tenantA },
@@ -226,9 +263,10 @@ export async function tasksFixture(prisma: PrismaService) {
     new AuthorizeRequestContextUseCase(memberships, authorizeWorkspace)
   );
   const module = await Test.createTestingModule({
-    controllers: [StaffController, EmployeeTasksController],
+    controllers: [StaffController, RecurringChecklistsController, EmployeeTasksController],
     providers: [
       { provide: EmployeeTasksUseCase, useValue: tasks },
+      { provide: RecurringChecklistsUseCase, useValue: checklists },
       { provide: StaffDirectoryUseCase, useValue: usecase },
       { provide: StaffAvailabilityUseCase, useValue: availability },
       { provide: AuthGuard, useValue: auth },
@@ -258,6 +296,13 @@ export async function tasksFixture(prisma: PrismaService) {
   return {
     app,
     tasks,
+    checklists,
+    generation,
+    recurringRepo,
+    materializer,
+    setNow: (date: string) => {
+      instant = new Date(date);
+    },
     availability,
     taskRepo,
     prisma,
