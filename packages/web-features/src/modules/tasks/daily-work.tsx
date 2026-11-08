@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
+import { checklistsCopy } from "./checklists-copy";
+import "./checklists.css";
 import { Button, Input } from "@corely/ui";
 import type { EmployeeTask, EmployeeTaskList, TaskAssignee } from "@corely/contracts";
 import type { TasksClient } from "./tasks-client";
@@ -17,7 +20,16 @@ function localValue(value: string | null) {
   const date = new Date(value);
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
-export function DailyWork({ client, locale = "en" }: { client: TasksClient; locale?: string }) {
+export function DailyWork({
+  client,
+  locale = "en",
+  templatesHref = "/tasks/templates",
+}: {
+  client: TasksClient;
+  locale?: string;
+  templatesHref?: string;
+}) {
+  const c = checklistsCopy[locale === "de" || locale === "vi" ? locale : "en"];
   const t = tasksCopy[locale === "de" || locale === "vi" ? locale : "en"];
   const [data, setData] = useState<EmployeeTaskList>();
   const [assignees, setAssignees] = useState<TaskAssignee[]>([]);
@@ -35,6 +47,7 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
   const [owner, setOwner] = useState("");
   const [due, setDue] = useState("");
   const mounted = useRef(false);
+  const commandRunning = useRef(false);
   const commandKeys = useRef(new Map<string, string>());
   const titleInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -86,7 +99,11 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
     setOwner(task === "new" ? "" : task.ownerStaffId);
     setDue(task === "new" ? "" : localValue(task.dueAt));
   }
-  async function command(path: string, method: string, body: unknown) {
+  async function command(path: string, method: string, body: unknown, inPlace = false) {
+    if (commandRunning.current) {
+      return;
+    }
+    commandRunning.current = true;
     const signature = JSON.stringify([path, method, body]);
     const key = commandKeys.current.get(signature) ?? crypto.randomUUID();
     commandKeys.current.set(signature, key);
@@ -94,11 +111,22 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
     setError("");
     setNotice(false);
     try {
-      await client.command(path, method, body, key);
+      const saved = await client.command(path, method, body, key);
       commandKeys.current.delete(signature);
       if (mounted.current) {
         setEditing(null);
-        setRevision((v) => v + 1);
+        if (inPlace) {
+          setData((current) =>
+            current
+              ? {
+                  ...current,
+                  items: current.items.map((task) => (task.id === saved.id ? saved : task)),
+                }
+              : current
+          );
+        } else {
+          setRevision((v) => v + 1);
+        }
         setNotice(true);
       }
     } catch (error: unknown) {
@@ -123,6 +151,7 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
         );
       }
     } finally {
+      commandRunning.current = false;
       if (mounted.current) {
         setBusy(false);
       }
@@ -159,13 +188,18 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
           <p>{t.intro}</p>
         </div>
         {data?.capabilities.manage && (
-          <Button
-            className="task-primary"
-            disabled={busy || !!editing}
-            onClick={() => begin("new")}
-          >
-            {t.add}
-          </Button>
+          <div className="task-actions">
+            <Link className="checklist-back" to={templatesHref}>
+              {c.title}
+            </Link>
+            <Button
+              className="task-primary"
+              disabled={busy || !!editing}
+              onClick={() => begin("new")}
+            >
+              {t.add}
+            </Button>
+          </div>
         )}
       </header>
       {notice && (
@@ -317,6 +351,42 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
                             t.noDue
                           )}
                         </p>
+                        {task.checklist && (
+                          <div className="task-checklist">
+                            <p className="task-muted">
+                              {task.checklist.filter((s) => s.completed).length}/
+                              {task.checklist.length} {c.progress}
+                              {task.recurrence
+                                ? ` · ${task.recurrence.localDate} · ${task.recurrence.timezone}`
+                                : ""}
+                            </p>
+                            {task.checklist.map((step) => (
+                              <label className="checklist-check" key={step.id}>
+                                <input
+                                  type="checkbox"
+                                  checked={step.completed}
+                                  disabled={
+                                    task.status !== "OPEN" ||
+                                    !!editing ||
+                                    !(data.capabilities.manage || data.capabilities.completeOwn)
+                                  }
+                                  aria-disabled={busy}
+                                  onChange={(event) => {
+                                    if (!busy) {
+                                      void command(
+                                        `/${task.id}/checklist/${step.id}`,
+                                        "POST",
+                                        { version: task.version, completed: event.target.checked },
+                                        true
+                                      );
+                                    }
+                                  }}
+                                />
+                                {step.title}
+                              </label>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="task-actions">
                         {data.capabilities.manage && (
@@ -331,7 +401,12 @@ export function DailyWork({ client, locale = "en" }: { client: TasksClient; loca
                         {(data.capabilities.manage || data.capabilities.completeOwn) && (
                           <Button
                             className="task-primary"
-                            disabled={busy || !!editing}
+                            disabled={
+                              busy ||
+                              !!editing ||
+                              (task.status === "OPEN" &&
+                                task.checklist?.some((step) => !step.completed))
+                            }
                             onClick={() =>
                               void command(
                                 `/${task.id}/${task.status === "OPEN" ? "complete" : "reopen"}`,
