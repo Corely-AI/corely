@@ -59,9 +59,19 @@ export interface SsoStorePort {
     environment: string;
     appKey: string;
     now: Date;
-    idleExpiresAt: Date;
+    /** Omit for non-renewing revocation/expiry inspection. */
+    idleExpiresAt?: Date;
     replacementHash?: string;
   }): Promise<SsoAppSession>;
+  /** Revoke the presented host session's central family and all children atomically.
+   * Expired/revoked sessions can still sign out; a rotated handle cannot revoke a newer session.
+   */
+  revokeFamily(input: {
+    handleHash: string;
+    environment: string;
+    appKey: string;
+    now: Date;
+  }): Promise<void>;
   prepareEmailChallenge(challenge: SsoEmailChallenge): Promise<void>;
   findEmailChallenge(id: string): Promise<SsoEmailChallenge | null>;
   markEmailDelivered(id: string): Promise<void>;

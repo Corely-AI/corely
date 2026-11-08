@@ -52,7 +52,7 @@ export function configureSsoSessionTransport(app: INestApplication): void {
     const hasBody =
       Boolean(req.headers["transfer-encoding"]) || Number(req.headers["content-length"] ?? 0) > 0;
     const isBff = /^\/api\/bff(?:\/|$)/i.test(path);
-    const isSession = /^\/api\/session\/(?:current|user|rotate)\/?$/i.test(path);
+    const isSession = /^\/api\/session\/(?:current|user|rotate|logout)\/?$/i.test(path);
     if (!isBff && !isSession) {
       return next();
     }
@@ -88,11 +88,12 @@ export function configureSsoSessionTransport(app: INestApplication): void {
         throw new UnauthorizedException("Session CSRF token required");
       }
       const rotate = path === "/api/session/rotate";
+      const logout = path === "/api/session/logout";
       if (
         isSession &&
         !(
           (["/api/session/current", "/api/session/user"].includes(path) && req.method === "GET") ||
-          (rotate && req.method === "POST")
+          ((rotate || logout) && req.method === "POST")
         )
       ) {
         return res.status(405).end();
@@ -116,11 +117,17 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       if (isSession && hasBody) {
         return res.status(413).json({ message: "This session endpoint accepts no request body" });
       }
+      if (logout) {
+        await sessions.logout(origin, security.cookie(req, SSO_COOKIES.app), csrf as string);
+        security.setCookie(res, SSO_COOKIES.app, "", 0);
+        return res.status(204).end();
+      }
       const result = await sessions.authenticate(
         origin,
         security.cookie(req, SSO_COOKIES.app),
         requiresProof ? (csrf as string) : undefined,
-        rotate
+        rotate,
+        !isSession || rotate
       );
       if (isSession) {
         if (result.handle) {

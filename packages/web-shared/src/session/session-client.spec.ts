@@ -288,3 +288,50 @@ describe("opt-in session transport", () => {
     });
   });
 });
+
+describe("global logout client", () => {
+  it("rejects old reads even if cancellation is ignored and deduplicates logout", async () => {
+    let finishRead!: (value: Response) => void;
+    let finishLogout!: (value: Response) => void;
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(bootstrapData))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRead = resolve;
+          })
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishLogout = resolve;
+          })
+      );
+    const client = new SessionClient({ appKey: "invoice" }, fetcher);
+    await client.bootstrap();
+    const reading = client.json("/invoices", z.unknown());
+    const rejected = expect(reading).rejects.toMatchObject({ name: "AbortError" });
+    const logout = client.logout();
+    expect(client.logout()).toBe(logout);
+    finishRead(json({ secret: "previous account" }));
+    await rejected;
+    expect(fetcher.mock.calls[2][0]).toBe("/api/session/logout");
+    expect(new Headers(fetcher.mock.calls[2][1]?.headers).get("x-csrf-token")).toBe(
+      bootstrapData.csrfToken
+    );
+    const noContent = new Response(null, { status: 204 });
+    // Chromium can expose an empty stream for a null-body status. Reconstructing
+    // Response(stream, { status: 204 }) throws even though the request succeeded.
+    Object.defineProperty(noContent, "body", {
+      value: new ReadableStream({
+        start(sink) {
+          sink.close();
+        },
+      }),
+    });
+    finishLogout(noContent);
+    await logout;
+    await expect(client.request("/invoices")).rejects.toMatchObject({ status: 401 });
+  });
+});

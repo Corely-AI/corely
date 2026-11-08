@@ -1,3 +1,11 @@
+import { SsoSessionService } from "../application/services/sso-session.service";
+import { configureSsoSessionTransport } from "../adapters/http/sso-session-transport";
+import { AuthorizeRequestContextUseCase } from "../application/use-cases/authorize-request-context.usecase";
+import { PrismaMembershipRepository } from "../infrastructure/adapters/prisma-membership-repository.adapter";
+import { PrismaTenantRepository } from "../infrastructure/adapters/prisma-tenant-repository.adapter";
+import { PrismaUserRepository } from "../infrastructure/adapters/prisma-user-repository.adapter";
+import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
+import { PrismaWorkspaceRepository } from "../../workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
 import { SsoEmailCodeService } from "../application/services/sso-email-code.service";
 // Disposable browser-test fixture only. Never imported by AppModule or production entrypoints.
 import "reflect-metadata";
@@ -27,9 +35,24 @@ const origins = {
 };
 const fixture = await createSsoTestContext(origins, true);
 const security = new SsoHttpSecurity(fixture.registrations, fixture.crypto);
+const members = new PrismaMembershipRepository(fixture.prisma);
+const sessions = new SsoSessionService(
+  fixture.registrations,
+  fixture.store,
+  fixture.crypto,
+  { now: () => new Date() },
+  members,
+  new PrismaTenantRepository(fixture.prisma),
+  new AuthorizeRequestContextUseCase(
+    members,
+    new AuthorizeWorkspaceUseCase(new PrismaWorkspaceRepository(fixture.prisma))
+  ),
+  new PrismaUserRepository(fixture.prisma)
+);
 const module = await Test.createTestingModule({
   controllers: [SsoController],
   providers: [
+    { provide: SsoSessionService, useValue: sessions },
     { provide: SsoEmailCodeService, useValue: fixture.emailCodes },
     { provide: SsoService, useValue: fixture.service },
     { provide: SsoHttpSecurity, useValue: security },
@@ -43,12 +66,19 @@ const app = module.createNestApplication({
     cert: readFileSync(`${directory}/cert.pem`),
   },
 });
+configureSsoSessionTransport(app);
 configureSsoHttpTransport(app);
 const root = fileURLToPath(new URL("../../../../../../", import.meta.url));
 const assets = resolve(root, "apps/login/dist");
+app.use("/session-assets", staticFiles(resolve(root, "packages/web-shared/testkit/browser/dist")));
 app.use("/assets", staticFiles(resolve(assets, "assets")));
 app.use(async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (req.path === "/session") {
+      security.origin(req);
+      security.headers(res);
+      return res.sendFile(resolve(root, "packages/web-shared/testkit/browser/dist/index.html"));
+    }
     if (req.path === "/login") {
       security.origin(req, true);
       security.headers(res);

@@ -37,7 +37,8 @@ export class SsoSessionService {
     origin: string,
     handle: string | undefined,
     csrfToken?: string,
-    rotate = false
+    rotate = false,
+    renewIdle = true
   ) {
     const app = this.registrations.app(origin);
     if (!handle || (rotate && csrfToken === undefined)) {
@@ -57,7 +58,7 @@ export class SsoSessionService {
       environment: this.registrations.environment,
       appKey: app.key,
       now,
-      idleExpiresAt: new Date(now.getTime() + SSO_IDLE_MS),
+      ...(renewIdle || rotate ? { idleExpiresAt: new Date(now.getTime() + SSO_IDLE_MS) } : {}),
       ...(replacement ? { replacementHash: this.crypto.hash(replacement) } : {}),
     });
     return {
@@ -67,6 +68,24 @@ export class SsoSessionService {
       expiresAt: session.expiresAt.toISOString(),
       maxAge: Math.max(0, session.expiresAt.getTime() - now.getTime()),
     };
+  }
+  async logout(origin: string, handle: string | undefined, csrfToken: string) {
+    const app = this.registrations.app(origin);
+    if (
+      !handle ||
+      !this.crypto.equal(
+        csrfToken,
+        this.crypto.csrf(handle, `${this.registrations.environment}:${origin}:session`)
+      )
+    ) {
+      throw new UnauthorizedException("Invalid session CSRF token");
+    }
+    await this.store.revokeFamily({
+      handleHash: this.crypto.hash(handle),
+      environment: this.registrations.environment,
+      appKey: app.key,
+      now: this.clock.now(),
+    });
   }
   async profile(userId: string) {
     const user = await this.users.findById(userId);

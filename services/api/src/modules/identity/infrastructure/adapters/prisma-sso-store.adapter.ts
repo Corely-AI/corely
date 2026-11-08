@@ -50,25 +50,70 @@ export class PrismaSsoStore implements SsoStorePort {
         throw new UnauthorizedException("Session expired; sign in again");
       }
       await this.requireAccess(tx, session.userId, family.credentialHash);
-      const idleExpiresAt = new Date(
-        Math.min(
-          input.idleExpiresAt.getTime(),
-          session.expiresAt.getTime(),
-          family.expiresAt.getTime()
-        )
-      );
-      await tx.ssoCentralSession.update({ where: { id: family.id }, data: { idleExpiresAt } });
-      const updated = await tx.ssoAppSession.update({
-        where: { id: session.id },
-        data: {
-          idleExpiresAt,
-          ...(input.replacementHash ? { handleHash: input.replacementHash } : {}),
-        },
-      });
+      const idleExpiresAt = input.idleExpiresAt
+        ? new Date(
+            Math.min(
+              input.idleExpiresAt.getTime(),
+              session.expiresAt.getTime(),
+              family.expiresAt.getTime()
+            )
+          )
+        : session.idleExpiresAt;
+      if (input.idleExpiresAt) {
+        await tx.ssoCentralSession.update({ where: { id: family.id }, data: { idleExpiresAt } });
+      }
+      const updated =
+        input.idleExpiresAt || input.replacementHash
+          ? await tx.ssoAppSession.update({
+              where: { id: session.id },
+              data: {
+                idleExpiresAt,
+                ...(input.replacementHash ? { handleHash: input.replacementHash } : {}),
+              },
+            })
+          : session;
       if (input.replacementHash) {
         await this.record(tx, "identity.sso.app_session_rotated", session.userId, session.id);
       }
       return { ...updated, appKey: SsoAppKeySchema.parse(updated.appKey) };
+    });
+  }
+  async revokeFamily(input: Parameters<SsoStorePort["revokeFamily"]>[0]) {
+    await this.prisma.$transaction(async (tx) => {
+      const candidate = await tx.ssoAppSession.findUnique({
+        where: { handleHash: input.handleHash },
+      });
+      if (!candidate) {
+        throw new UnauthorizedException("Session changed; verify your session before signing out");
+      }
+      // Same family-first ordering as rotation/redemption. A concurrent handoff either
+      // precedes revocation and is revoked here, or observes the revoked family.
+      await tx.$queryRaw`SELECT id FROM identity."SsoCentralSession" WHERE id = ${candidate.familyId} FOR UPDATE`;
+      const session = await tx.ssoAppSession.findUnique({ where: { id: candidate.id } });
+      const family = await tx.ssoCentralSession.findUnique({ where: { id: candidate.familyId } });
+      if (
+        !session ||
+        !family ||
+        session.handleHash !== input.handleHash ||
+        session.environment !== input.environment ||
+        session.appKey !== input.appKey ||
+        family.environment !== input.environment ||
+        family.userId !== session.userId
+      ) {
+        throw new UnauthorizedException("Session changed; verify your session before signing out");
+      }
+      if (family.revokedAt) {
+        return;
+      }
+      await tx.ssoCentralSession.update({
+        where: { id: family.id },
+        data: { revokedAt: input.now },
+      });
+      await tx.ssoAppSession.updateMany({
+        where: { familyId: family.id, revokedAt: null },
+        data: { revokedAt: input.now },
+      });
+      await this.record(tx, "identity.sso.signed_out", family.userId, family.id);
     });
   }
   async createTransaction(transaction: SsoTransaction) {

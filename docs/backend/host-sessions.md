@@ -10,12 +10,13 @@ does not provision hosts, change clients, deploy or enable SSO.
 
 After the existing callback sets `__Host-corely-session`, use same-origin calls:
 
-| Route                       | Behavior                                                                                                                                       |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/session/user`     | Verified account/membership choices, app binding and CSRF/expiry metadata; supplied context hints are authorized before bootstrap succeeds.    |
-| `GET /api/session/current`  | Returns `SsoSession` metadata: a session-bound CSRF token and absolute expiry.                                                                 |
-| `POST /api/session/rotate`  | With exact Origin and `x-csrf-token`, atomically replaces the opaque cookie and CSRF token without extending absolute expiry. No request body. |
-| `/api/bff/<existing-route>` | Dispatches an allowed route to its existing API controller and guards using a server-established principal.                                    |
+| Route                       | Behavior                                                                                                                                                                                                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/session/user`     | Non-renewing verified account/membership choices, app binding and CSRF/expiry metadata; supplied context hints are authorized before bootstrap succeeds.                                                  |
+| `GET /api/session/current`  | Returns `SsoSession` metadata without renewing idle expiry: a session-bound CSRF token and absolute expiry.                                                                                               |
+| `POST /api/session/rotate`  | With exact Origin and `x-csrf-token`, atomically replaces the opaque cookie and CSRF token without extending absolute expiry. No request body.                                                            |
+| `POST /api/session/logout`  | Exact Origin/CSRF; atomically revokes the current central family and all linked sessions, with audit/outbox. Idempotent for the same handle. Returns 204 and expires the initiating host cookie. No body. |
+| `/api/bff/<existing-route>` | Dispatches an allowed route to its existing API controller and guards using a server-established principal.                                                                                               |
 
 Mutations require the exact registered `Origin` and `x-csrf-token`. Reads reject
 foreign Origin and non-same-origin Fetch Metadata when supplied. The retained
@@ -34,7 +35,7 @@ the tenant's active status/current membership and Workspaces verifies workspace
 membership before dispatch; the existing AuthGuard revalidates resolved context
 and operation authorization remains with each owner. Without a tenant hint,
 exactly one active tenant membership is required. This slice does not persist
-or switch session context; the versioned context/logout workflow belongs to #387.
+or switch session context; persistent app-switch handoff is a separate slice.
 Menu visibility is not a backend grant.
 
 Allowed roots are deliberately explicit:
@@ -54,8 +55,9 @@ operation permissions. Allowlisting is routing, not an entitlement or permission
 The existing hashed session records are reused; no migration or second identity
 store is introduced. Each request checks environment/app binding, session and
 family revocation, 30-minute idle expiry, 12-hour absolute expiry, current account,
-password hash and active tenant membership. Successful use touches idle deadlines
-under family/session locks; deadlines cannot exceed absolute expiry. Rotation
+password hash and active tenant membership. Business requests and explicit rotation
+touch idle deadlines under family/session locks; metadata verification reads do
+not renew activity. Deadlines cannot exceed absolute expiry. Rotation
 compares the old handle under lock and writes its audit/outbox in the transaction.
 Only one concurrent rotation succeeds. Old handles fail closed; clients must
 coordinate rotation and obtain fresh CSRF metadata after it. Lost rotation
@@ -63,10 +65,15 @@ responses require sign-in rather than recovering an old bearer handle.
 
 The adapter does not mint, expose or refresh bearer tokens. An expired or revoked
 cookie returns 401, without redirects, automatic refresh, command replay or cookie
-overwrite. An infrastructure outage returns 503. Local/global logout, context
-versions, cleanup and terminating already-running streams after revocation remain
-#387; requests admitted before expiry may complete normally in this slice.
-Shared browser-client adoption and coordinated cache invalidation remain #386.
+overwrite. An infrastructure outage returns 503. Global logout is implemented by
+#387: a family lock serializes revocation with rotation and handoff redemption.
+Revocation is transactional with audit/outbox and cannot mint a new session from
+the old central cookie. Other device families are unchanged. Expired or
+access-revoked cookies can still revoke their family with the matching CSRF proof;
+a stale rotated handle fails rather than revoking an unknown replacement.
+Requests admitted before revocation may complete, including existing streams.
+See [browser sessions](../frontend/browser-sessions.md) for UI/cache cleanup,
+foreground revalidation and explicit old-origin migration limits.
 
 Requests stay inside the same Express/Nest pipeline: there is no upstream fetch
 or additional business server. Request/response streams, aborts, query strings,
