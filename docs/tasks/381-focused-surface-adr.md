@@ -10,8 +10,8 @@
 - Worktree: `/private/tmp/corely-381-worktree`, isolated after concurrent #382
   work switched the shared checkout. Only this ticket's changes were moved;
   the other branch's commits/content were preserved.
-- PR: [Draft #406](https://github.com/Corely-AI/corely/pull/406), targeting
-  `development`; architecture/host-matrix review remains pending.
+- Original PR: [Merged #406](https://github.com/Corely-AI/corely/pull/406), targeting
+  `development`. Approval follow-up: [Draft #407](https://github.com/Corely-AI/corely/pull/407).
 - Outcome: [ADR-0003](../decisions/ADR-0003-focused-app-surfaces.md) and
   [source/host/backlog inventory](../architecture/focused-app-surfaces-inventory.md).
 - Acceptance: architecture/reuse inventory merged in #406. The maintainer
