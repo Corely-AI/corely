@@ -1,3 +1,6 @@
+import { EnvModule } from "@corely/config";
+import { appLaunchOriginsProvider } from "./infrastructure/configuration/app-launch-origins.provider";
+import { ListAppCatalogUseCase } from "./application/use-cases/list-app-catalog.usecase";
 import { Module, OnModuleInit, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -57,6 +60,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
 @Module({
   imports: [
     DataModule,
+    EnvModule,
     KernelModule,
     forwardRef(() => IdentityModule),
     WorkspacesModule,
@@ -113,6 +117,8 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     WorkspaceExperienceResolverService,
     OperationalPackageService,
 
+    appLaunchOriginsProvider,
+    ListAppCatalogUseCase,
     // Use Cases
     EnableAppUseCase,
     DisableAppUseCase,

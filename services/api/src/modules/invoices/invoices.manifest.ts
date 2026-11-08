@@ -6,6 +6,14 @@ import type { AppManifest } from "@corely/contracts";
  */
 export const invoicesAppManifest: AppManifest = {
   appId: "invoices",
+  launch: {
+    launchId: "invoice",
+    surfaceId: "platform",
+    displayName: { en: "Invoice", de: "Rechnungen", vi: "Hóa đơn" },
+    category: "finance",
+    iconKey: "FileText",
+    availability: "coming-soon",
+  },
   name: "Invoices",
   tier: 1,
   version: "1.0.0",
