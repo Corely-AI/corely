@@ -30,6 +30,8 @@ export interface SessionSurfaceConfig {
   appKey: SsoAppKey;
   tenantId?: string;
   workspaceId?: string;
+  /** Only enable when explicitly retiring a former legacy browser origin. */
+  retireLegacyStorage?: boolean;
   locale?: "en" | "de" | "vi";
 }
 export type SessionRequestOptions = Omit<RequestInit, "credentials" | "redirect" | "mode"> & {
@@ -44,6 +46,8 @@ export class SessionClient {
   private readonly controllers = new Set<AbortController>();
   private readonly listeners = new Set<(kind: SessionFailure) => void>();
   private generation = 0;
+  private logoutProof: string | null = null;
+  private logoutPending: Promise<void> | null = null;
   private rotationPending: Promise<void> | null = null;
   constructor(
     readonly config: SessionSurfaceConfig,
@@ -114,7 +118,7 @@ export class SessionClient {
           )
         );
       }
-      if (!response.body) {
+      if (!response.body || [204, 205, 304].includes(response.status)) {
         return response;
       }
       // Keep cancellation attached after headers, until the body/stream is consumed.
@@ -297,6 +301,33 @@ export class SessionClient {
     if (generation === this.generation && this.session) {
       this.session = { ...this.session, ...metadata };
     }
+  }
+  logout(): Promise<void> {
+    if (this.logoutPending) {
+      return this.logoutPending;
+    }
+    const proof = this.logoutProof ?? this.session?.csrfToken;
+    if (!proof) {
+      return Promise.reject(new SessionRequestError(401, "unauthenticated"));
+    }
+    // Retain only the proof for an explicit logout retry, never readable account data.
+    this.logoutProof = proof;
+    this.dispose();
+    const pending = this.send("/api/session/logout", {
+      method: "POST",
+      headers: { "x-csrf-token": proof },
+    })
+      .then(async (response) => {
+        await response.arrayBuffer();
+        this.logoutProof = null;
+      })
+      .finally(() => {
+        if (this.logoutPending === pending) {
+          this.logoutPending = null;
+        }
+      });
+    this.logoutPending = pending;
+    return pending;
   }
   async startLogin(returnPath: string): Promise<string> {
     if (!isSafeSsoReturnPath(returnPath)) {

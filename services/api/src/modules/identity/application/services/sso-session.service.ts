@@ -68,6 +68,24 @@ export class SsoSessionService {
       maxAge: Math.max(0, session.expiresAt.getTime() - now.getTime()),
     };
   }
+  async logout(origin: string, handle: string | undefined, csrfToken: string) {
+    const app = this.registrations.app(origin);
+    if (
+      !handle ||
+      !this.crypto.equal(
+        csrfToken,
+        this.crypto.csrf(handle, `${this.registrations.environment}:${origin}:session`)
+      )
+    ) {
+      throw new UnauthorizedException("Invalid session CSRF token");
+    }
+    await this.store.revokeFamily({
+      handleHash: this.crypto.hash(handle),
+      environment: this.registrations.environment,
+      appKey: app.key,
+      now: this.clock.now(),
+    });
+  }
   async profile(userId: string) {
     const user = await this.users.findById(userId);
     if (!user?.isActive()) {

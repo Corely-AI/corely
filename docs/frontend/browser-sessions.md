@@ -23,10 +23,10 @@ function App() {
 }
 
 function ProtectedWorkspace() {
-  const { client, state } = useSession();
+  const { client, state, logout } = useSession();
   // client.request("/invoices") returns a Response, including streams/downloads.
   // client.json(path, sharedZodSchema) validates a JSON response.
-  return <div>{state.status === "authenticated" ? state.session.user.name : null}</div>;
+  return <button onClick={() => void logout()}>Sign out of Corely</button>;
 }
 ```
 
@@ -38,13 +38,12 @@ calls to this client; existing legacy singleton API imports are not silently
 redirected to the session transport.
 
 The provider owns a fresh in-memory QueryClient per app/tenant/workspace scope.
-It does not mount the legacy offline/persisted-cache stack or touch legacy token
-storage. Tenant/workspace hints are optional configuration, validated by the
+It does not mount the legacy offline/persisted-cache stack. New origins do not
+touch legacy token storage; explicit old-origin retirement is described below. Tenant/workspace hints are optional configuration, validated by the
 server at bootstrap and again on business requests. They confer no authority.
 Changing the configuration remounts behind the bootstrap boundary, cancels the
-old scope and starts with an empty query cache. Persistent context switching,
-logout, old-origin token retirement and queued offline-write policy remain #387;
-no local “logout” operation is offered that could leave central SSO intact.
+old scope and starts with an empty query cache. Persistent context switching is a separate surface slice. The logout and
+old-origin retirement policy is described below.
 
 ## State and navigation contract
 
@@ -120,3 +119,76 @@ or `app=hr` and `locale=de`/`vi` exercise reuse and translation. The expiry butt
 returns a simulated 401 through the actual shared client. This fixture never
 calls real Identity/business services, sends email or stores tokens. See the
 [task record](../tasks/386-shared-session-transport.md) for actual evidence and limits.
+
+## Sign out, stale tabs and legacy-origin migration (#387)
+
+Use `useSession().logout()` for **Sign out of Corely**. This revokes the current
+central session family and all its linked app sessions, including other origins,
+with audit/outbox in the same transaction. It does not sign out unrelated device
+families. No local-only sign-out is offered. The initiating app cookie is expired;
+the central host cookie can remain physically present but its revoked family
+cannot issue another handoff. Returning to sign-in requires credentials again.
+
+The provider immediately removes protected children, aborts old reads and clears
+queries/mutations. `signingOut` has no action; `logoutFailed` hides private data
+and offers **Retry sign out** without automatically logging back in. A lost
+response is not reported as confirmed logout. An explicit retry can fail if
+another tab has rotated the cookie or the browser has already removed it; close
+other tabs and reopen the app to verify the current server session. Do not infer
+global logout from merely deleting local storage. Requests admitted before
+revocation can finish; requests authenticated after the revocation transaction
+commits reject immediately. Already-open server streams are not forcibly ended.
+
+Same-origin BroadcastChannel messages only invalidate UI; they carry no identity,
+credentials or authority. Different origins revalidate on focus, visibility
+restoration and history restoration. Hidden/history-bound pages remove protected
+content and dispose requests; restored pages gate content behind server bootstrap.
+Visible idle tabs verify every 30 seconds while their browser is scheduling them;
+a hung background verification closes the boundary after a further 10 seconds.
+This is a foreground polling interval, not a hard wall-clock guarantee for
+suspended browsers or a network outage. A request failure closes the boundary;
+current tenant/workspace membership is checked on each business request.
+Changed accounts remount protected children with cleared caches. No data or
+session is restored from legacy persisted queries on this stack.
+
+A **new** origin needs no legacy migration. When deliberately retiring an old
+origin, first close its legacy tabs and stop old offline writers. Then configure
+`retireLegacyStorage: true` on `SessionProviders`. Before bootstrap it removes
+known legacy token/context keys and Corely-readable local/session-storage caches,
+and clears only the `corely_offline.queryCache` store. Storage errors fail closed.
+If **any** outbox records exist, `migrationBlocked` prevents private content from
+mounting, even with an otherwise valid cookie. Every record stays intact.
+
+Legacy commands lack reliable account ownership. Never automatically rebind them
+to a new account/workspace, replay them through the session client, or call the
+old `clearClientLocalData()` helper (which deletes the outbox). An administrator
+must recover/reconcile work under the original identity in the old environment,
+or obtain an explicit decision to discard it before removing those records.
+Do not export private payloads into logs, screenshots or a different account.
+Retry migration only after that reconciliation. Rollback requires fresh legacy
+login; retired local tokens and private caches must not be restored.
+
+This is an opt-in migration path, not a global legacy logout: unmigrated browser
+origins, old bearer sessions and POS retain their existing token lifecycle. Every
+old origin needs its own retirement/cutover verification; a new app cannot erase
+another origin's storage. The new session stack never mounts the offline replay
+engine. Persistent workspace handoff remains a separate surface/context slice.
+
+To reproduce the real-cookie logout browser coverage, build the test-only shared
+fixture before starting the disposable TLS server documented in
+[SSO testing](../backend/sso.md#reproduce-isolated-checks):
+
+```sh
+pnpm --dir packages/web-shared exec vite build --config testkit/browser/vite.config.ts --base /session-assets/
+SSO_BROWSER_CHANNEL=chrome SSO_TEST_OUTPUT_DIR=/private/tmp/corely-387-browser \
+  pnpm --dir apps/e2e exec playwright test --config playwright.sso.config.ts global-logout.spec.ts
+```
+
+Use a freshly started fixture account for that file, and restart the fixture
+before separately running `central-login.spec.ts`. Repeated credential tests
+against the same account can exhaust the real five-minute attempt budget. Do not
+increase or disable that production limit for tests. The server additionally
+serves the shared fixture at `/session?real=true&app=invoice` (or `app=hr`);
+this route exists only in the unregistered testkit server. Production entry
+points never load it. The default browser support matrix remains a separate
+release gate; these checks do not establish WebKit readiness.

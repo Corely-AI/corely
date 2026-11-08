@@ -4,6 +4,12 @@ import type { BrowserSessionContext } from "./session-context";
 
 const copy = {
   en: {
+    signingOut: "Signing out of Corely…",
+    logoutFailed:
+      "Sign-out could not be confirmed. Your private data is hidden. Try signing out again.",
+    migrationBlocked:
+      "Old offline work needs recovery in the previous account before this origin can migrate. Close other Corely tabs and contact your administrator.",
+    logout: "Retry sign out",
     booting: "Checking your session…",
     unauthenticated: "Sign in to continue",
     forbidden: "You do not have access to this app.",
@@ -12,6 +18,12 @@ const copy = {
     retry: "Try again",
   },
   de: {
+    signingOut: "Abmeldung von Corely…",
+    logoutFailed:
+      "Die Abmeldung konnte nicht bestätigt werden. Private Daten sind ausgeblendet. Bitte erneut abmelden.",
+    migrationBlocked:
+      "Alte Offline-Aufträge müssen im bisherigen Konto wiederhergestellt werden. Schließe andere Corely-Tabs und kontaktiere deine Administration.",
+    logout: "Abmeldung wiederholen",
     booting: "Sitzung wird geprüft…",
     unauthenticated: "Zum Fortfahren anmelden",
     forbidden: "Du hast keinen Zugriff auf diese App.",
@@ -20,6 +32,12 @@ const copy = {
     retry: "Erneut versuchen",
   },
   vi: {
+    signingOut: "Đang đăng xuất khỏi Corely…",
+    logoutFailed:
+      "Chưa thể xác nhận đăng xuất. Dữ liệu riêng tư đã được ẩn. Hãy thử đăng xuất lại.",
+    migrationBlocked:
+      "Cần khôi phục công việc ngoại tuyến trong tài khoản cũ trước khi chuyển đổi. Đóng các thẻ Corely khác và liên hệ quản trị viên.",
+    logout: "Thử đăng xuất lại",
     booting: "Đang kiểm tra phiên đăng nhập…",
     unauthenticated: "Đăng nhập để tiếp tục",
     forbidden: "Bạn không có quyền truy cập ứng dụng này.",
@@ -40,14 +58,11 @@ export function SessionStatus({
     return null;
   }
   const text = copy[locale];
+  const busy = state.status === "booting" || state.status === "signingOut";
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
-      <section
-        className="max-w-md space-y-4"
-        aria-live="polite"
-        aria-busy={state.status === "booting"}
-      >
-        <p role={state.status === "booting" ? "status" : "alert"}>{text[state.status]}</p>
+      <section className="max-w-md space-y-4" aria-live="polite" aria-busy={busy}>
+        <p role={busy ? "status" : "alert"}>{text[state.status]}</p>
         {state.status === "unauthenticated" ? (
           <Button
             className="min-h-11"
@@ -57,14 +72,14 @@ export function SessionStatus({
           >
             {text.login}
           </Button>
-        ) : state.status !== "booting" ? (
+        ) : !busy ? (
           <Button
             className="min-h-11"
             onClick={() => {
-              void value.retry();
+              void (state.status === "logoutFailed" ? value.logout() : value.retry());
             }}
           >
-            {text.retry}
+            {state.status === "logoutFailed" ? text.logout : text.retry}
           </Button>
         ) : null}
       </section>
