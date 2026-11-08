@@ -3,10 +3,10 @@
 ## Tracking and outcome
 
 - [Issue #388](https://github.com/Corely-AI/corely/issues/388), parent [#380](https://github.com/Corely-AI/corely/issues/380).
-- Prerequisite #383 is complete and integrated; base `corely/development` verified at `366df0955c6a0e7436709b1ba5903dec1285b673`.
+- Prerequisite #383 is complete and integrated; initial base `366df0955c6a0e7436709b1ba5903dec1285b673`; rebased onto `corely/development` at `75d1f3888aaa480b0858fb8eac737988ccfc560a` after #412 merged.
 - Branch: `388-focused-app-menus`; intended PR base: `development`.
 - PR: pending Draft publication.
-- Independent of unmerged #412 / #387; its session/logout changes are not included.
+- #412 / #387 was merged independently during verification; its changes are inherited from the updated base, not part of this PR diff.
 - Outcome: optional focused Invoice/HR navigation through existing contracts and composers, plus evidenced HTTP authorization/enablement gaps closed with existing guards.
 
 ## Reuse and decisions
@@ -57,13 +57,13 @@ at 127.0.0.1:55485 / `corely_384_surf05`; outbox dispatch was disabled.
 
 | Check                                                                                          | Result and limits                                                                                                                                                                                                                                                |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root `pnpm test:unit` with explicit disposable DATABASE_URL                                    | **1,318 passed, seven skipped across 302 files.**                                                                                                                                                                                                                |
+| Root `pnpm test:unit` with explicit disposable DATABASE_URL                                    | **1,329 passed, seven skipped across 303 files after rebase.**                                                                                                                                                                                                   |
 | Menu builder, focused context, workspace configuration and existing operational package checks | **32 passed**, plus **two** HTTP input/controller regressions.                                                                                                                                                                                                   |
-| Focused API, host-bound navigation and neighboring cookie transport integration                | **30 passed**: six direct API boundary cases, two host-context cases and 22 existing transport cases.                                                                                                                                                            |
+| Focused API, host-bound navigation and neighboring cookie transport integration                | **49 passed** after rebase: six direct API boundary cases, two host-context cases and 41 neighboring session/transport cases.                                                                                                                                    |
 | API and contracts typechecks                                                                   | Passed before publication.                                                                                                                                                                                                                                       |
 | Contracts/API build                                                                            | Passed.                                                                                                                                                                                                                                                          |
 | Full `AppModule` dependency injection compile                                                  | Passed; no server listener or module initialization/delivery was started.                                                                                                                                                                                        |
-| Targeted ESLint                                                                                | Passed on changed TypeScript files; normal pre-commit checks also run at publication.                                                                                                                                                                            |
+| Targeted ESLint                                                                                | Passed with zero errors and eight pre-existing customer-controller warnings; normal pre-commit checks passed.                                                                                                                                                    |
 | Formatting, documentation links, whitespace and source size                                    | Passed: changed-file Prettier, local documentation links, whitespace and 500-line source limit.                                                                                                                                                                  |
 | Whole-repository lint/typecheck/architecture and hosted CI                                     | Not repeated here. Earlier failures on this base include root lint heap exhaustion, unrelated web-features/declaration errors and an architecture checker reference to absent worker source. Hosted checks are inspected after publication; no full green claim. |
 
@@ -101,7 +101,7 @@ previous backend behavior if necessary without changing stored data.
 Keep Draft for human review and repository checks. No merge, deployment, real
 message or production activation is authorized/performed. Subsequent surfaces
 must include focused context in their client cache keys and bind feature clients
-to the chosen session transport. #412 remains a separate delivery.
+to the chosen session transport. #412 was merged independently; its session/transport checks also pass on this rebased branch.
 
 The redundant whole-repository pre-push wrapper is bypassed with `HUSKY=0` after
 the explicit checks above; its unrelated global failures are recorded rather
