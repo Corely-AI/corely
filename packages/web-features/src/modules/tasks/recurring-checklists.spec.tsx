@@ -49,6 +49,44 @@ function setup(status: number, locale = "en") {
   return client;
 }
 describe("Checklist management", () => {
+  it("keeps a new checklist draft while clearing, validating and retyping its timezone", async () => {
+    const client = setup(500);
+    fireEvent.click(await screen.findByRole("button", { name: "New checklist", exact: true }));
+    fireEvent.change(screen.getByLabelText("Checklist title"), {
+      target: { value: "Opening draft" },
+    });
+    fireEvent.change(screen.getByLabelText("Starts on"), { target: { value: "2026-11-15" } });
+    fireEvent.change(screen.getByLabelText("Step 1"), { target: { value: "Unlock reception" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: "Anna", exact: true }));
+    const timezone = screen.getByLabelText("Timezone");
+    timezone.focus();
+    for (const value of ["", "Asia", "Asia/", "Asia/Ho_"]) {
+      fireEvent.change(timezone, { target: { value } });
+      expect(screen.getByLabelText("Timezone")).toHaveValue(value);
+      expect(timezone).toHaveFocus();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Publish checklist", exact: true }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Check the title, timezone");
+    expect(client.command).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Checklist title")).toHaveValue("Opening draft");
+    expect(screen.getByLabelText("Starts on")).toHaveValue("2026-11-15");
+    expect(screen.getByLabelText("Step 1")).toHaveValue("Unlock reception");
+    expect(screen.getByRole("checkbox", { name: "Anna", exact: true })).toBeChecked();
+    fireEvent.change(timezone, { target: { value: "Asia/Ho_Chi_Minh" } });
+    fireEvent.click(screen.getByRole("button", { name: "Publish checklist", exact: true }));
+    await waitFor(() => expect(client.command).toHaveBeenCalledTimes(1));
+    expect(client.command).toHaveBeenCalledWith(
+      "",
+      expect.objectContaining({
+        title: "Opening draft",
+        timezone: "Asia/Ho_Chi_Minh",
+        effectiveFrom: "2026-11-15",
+        assigneeIds: row.plans[0].assigneeIds,
+        steps: [expect.objectContaining({ title: "Unlock reception" })],
+      }),
+      expect.any(String)
+    );
+  });
   it("keeps a future edit and its retry key after an uncertain failure", async () => {
     const client = setup(500);
     fireEvent.click(await screen.findByRole("button", { name: "Edit future schedule" }));

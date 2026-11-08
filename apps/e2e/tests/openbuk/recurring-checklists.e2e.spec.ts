@@ -90,6 +90,22 @@ test("a manager publishes one recurring task, an assignee checks its steps and c
     path: testInfo.outputPath("checklists-publish-desktop.png"),
     fullPage: true,
   });
+  const timezone = page.getByLabel("Timezone", { exact: true });
+  await timezone.fill("");
+  await expect(page.getByLabel("Checklist title", { exact: true })).toHaveValue("Opening routine");
+  await timezone.pressSequentially("Europe/");
+  await expect(timezone).toBeFocused();
+  await page.getByRole("button", { name: "Publish checklist", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("Check the title, timezone");
+  await expect(page.getByLabel("Starts on", { exact: true })).toHaveValue(today);
+  await expect(page.getByLabel("Step 2", { exact: true })).toHaveValue("Check equipment");
+  await expect(page.getByRole("checkbox", { name: "Anna Weber", exact: true })).toBeChecked();
+  await page.screenshot({
+    path: testInfo.outputPath("checklist-timezone-validation-desktop.png"),
+    fullPage: true,
+  });
+  await timezone.fill("");
+  await timezone.pressSequentially("Europe/Berlin");
   await page.route("**/api/tasks/recurring", async (route) => {
     if (route.request().method() === "POST") {
       await route.fetch();

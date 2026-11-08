@@ -40,7 +40,9 @@ export function ChecklistForm({
     template?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
   );
   const [title, setTitle] = useState(previous?.title ?? "");
-  const [from, setFrom] = useState(template ? nextDate(template.localToday) : dateInZone(zone));
+  const [from, setFrom] = useState(() =>
+    template ? nextDate(template.localToday) : dateInZone(zone)
+  );
   const [until, setUntil] = useState(previous?.effectiveUntil ?? "");
   const [due, setDue] = useState(previous?.dueTime ?? "09:00");
   const [days, setDays] = useState(previous?.weekdays ?? [0, 1, 2, 3, 4, 5, 6]);

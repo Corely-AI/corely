@@ -119,6 +119,28 @@ UI/UX inspected with synthetic data:
 Captured images were inspected; only synthetic names/checklist content are present. Traces,
 credentials, invitation links and diagnostic logs are excluded from source.
 
+## PR review follow-up: timezone draft crash
+
+The review reproduced `RangeError` when clearing or partially typing a timezone in a new
+checklist. The start-date `useState` argument eagerly formatted the current zone on every
+render, so invalid draft text bypassed validation and unmounted the form. A lazy initializer
+now computes the initial date only on mount; draft text is validated on submission.
+
+The new regression failed before the fix and passed afterward. Fresh follow-up checks:
+
+- Shared Tasks UI suite: **13 passed**, including empty/partial timezone text, validation,
+  retained title/date/steps/assignee/focus, and submission after entering a valid timezone.
+- Real API-backed recurrence browser suite: **2 passed** on a fresh disposable
+  `openbuk_test_378_fix` database. The manager journey clears the timezone, types an incomplete
+  value character by character, verifies validation without draft loss, then completes publication
+  and the existing checklist workflow after correcting it.
+- OpenBuk typecheck/build and changed-file ESLint/Prettier: passed.
+- [Rendered timezone validation](314-assets/checklist-timezone-validation-desktop.png), EN desktop
+  1280×720, inspected with synthetic data. Existing layout evidence above remains applicable.
+
+Backend code and broader repository/CI limitations are unchanged. The isolated API/client and
+PostgreSQL cluster were stopped/removed after these checks.
+
 ## Impact and remaining work
 
 No migration, deployment, automatic installation or merge. Existing records/contracts remain readable.
