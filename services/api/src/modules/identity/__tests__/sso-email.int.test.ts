@@ -115,6 +115,28 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
       });
       expect(challenge.expiresAt.toISOString()).toBe(initial.context.expiresAt);
     });
+    it("can correct an email typo without silently keeping the previous address's challenge", async () => {
+      const initial = await fixture.start();
+      const input = {
+        requestId: initial.requestId,
+        csrfToken: initial.context.csrfToken,
+        email: fixture.email,
+      };
+      await fixture.emailCodes.request(
+        { ...input, email: `typo-${fixture.email}` },
+        initial.context.handle
+      );
+      await fixture.emailCodes.request(input, initial.context.handle);
+      await fixture.deliverCodes();
+      expect(fixture.sentCodes).toHaveLength(1);
+      expect(fixture.sentCodes[0].to).toBe(fixture.email);
+      await expect(
+        fixture.service.login(
+          { ...input, emailCode: fixture.sentCodes[0].code },
+          initial.context.handle
+        )
+      ).resolves.toHaveProperty("centralHandle");
+    });
     it("returns a generic response for unknown accounts and sends no email or grants", async () => {
       const initial = await fixture.start();
       const input = {

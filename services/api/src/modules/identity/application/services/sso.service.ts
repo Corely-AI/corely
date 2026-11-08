@@ -114,19 +114,11 @@ export class SsoService {
   }
   async authorize(requestId: string, centralHandle?: string): Promise<string | null> {
     const transaction = await this.pending(requestId);
-    const family = centralHandle
-      ? await this.store.findFamily(this.crypto.hash(centralHandle), this.registrations.environment)
-      : null;
     const now = this.clock.now();
-    if (!family || !this.live(family, now)) {
-      return null;
-    }
-    const user = await this.requireAccess(family.userId);
-    if (!this.crypto.equal(family.credentialHash, this.crypto.hash(user.getPasswordHash()))) {
-      return null;
-    }
-    return this.issue(transaction, family, false, now);
+    const family = await this.reusableFamily(centralHandle, now);
+    return family ? this.issue(transaction, family, false, now) : null;
   }
+
   async login(
     input: {
       requestId: string;
@@ -147,20 +139,8 @@ export class SsoService {
     const now = this.clock.now();
     await this.budget(`account:${input.email.trim().toLowerCase()}`, now, 5);
     await this.budget(`credentials:${centralBrowser}`, now, 15);
-    if (centralHandle) {
-      const existing = await this.store.findFamily(
-        this.crypto.hash(centralHandle),
-        this.registrations.environment
-      );
-      if (existing && this.live(existing, now)) {
-        const account = await this.users.findById(existing.userId);
-        if (
-          account?.isActive() &&
-          this.crypto.equal(existing.credentialHash, this.crypto.hash(account.getPasswordHash()))
-        ) {
-          throw new ConflictException("Continue with the existing sign-in or sign out first");
-        }
-      }
+    if (await this.reusableFamily(centralHandle, now)) {
+      throw new ConflictException("Continue with the existing sign-in or sign out first");
     }
     const user = await this.users.findByEmail(input.email.trim().toLowerCase());
     if (input.password !== undefined) {
@@ -310,6 +290,31 @@ export class SsoService {
       this.crypto.decrypt(transaction.stateCipher, transaction.id)
     );
     return callback.toString();
+  }
+  private async reusableFamily(handle: string | undefined, now: Date): Promise<SsoFamily | null> {
+    if (!handle) {
+      return null;
+    }
+    const family = await this.store.findFamily(
+      this.crypto.hash(handle),
+      this.registrations.environment
+    );
+    if (!family || !this.live(family, now)) {
+      return null;
+    }
+    try {
+      const user = await this.requireAccess(family.userId);
+      return this.crypto.equal(family.credentialHash, this.crypto.hash(user.getPasswordHash()))
+        ? family
+        : null;
+    } catch (error) {
+      // An unusable session must not trap the browser in a sign-in conflict.
+      // Infrastructure failures still fail closed and surface as unavailable.
+      if (error instanceof UnauthorizedException) {
+        return null;
+      }
+      throw error;
+    }
   }
   private live(family: SsoFamily, now: Date) {
     return !family.revokedAt && family.expiresAt > now && family.idleExpiresAt > now;

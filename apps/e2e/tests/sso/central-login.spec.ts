@@ -119,3 +119,23 @@ test("passwordless email code creates the same SSO session without a password", 
   await second.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(second.getByRole("heading", { name: "Signed in to hr" })).toBeVisible();
 });
+
+test("correcting an email typo can complete sign-in during the original resend cooldown", async ({
+  page,
+}) => {
+  await openLogin(page);
+  await page.getByLabel("Email address").fill(`typo-${fixture.email}`);
+  await page.getByRole("button", { name: "Email me a sign-in code" }).click();
+  await expect(page.getByLabel("Sign-in code", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Use a password instead" }).click();
+  await page.getByRole("button", { name: "Use an email code instead" }).click();
+  await page.getByLabel("Email address").fill(fixture.email);
+  await page.getByRole("button", { name: "Email me a sign-in code" }).click();
+  await expect(page.getByLabel("Sign-in code", { exact: true })).toBeVisible();
+  const result: { code: string } = await page.evaluate(async () =>
+    (await fetch("/__fixture/code")).json()
+  );
+  await page.getByLabel("Sign-in code", { exact: true }).fill(result.code);
+  await page.getByRole("button", { name: "Verify code and continue" }).click();
+  await expect(page.getByRole("heading", { name: "Signed in to app-center" })).toBeVisible();
+});

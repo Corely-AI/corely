@@ -156,6 +156,87 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("Corely SSO with isolated Po
     });
     await expect(fixture.login()).rejects.toThrow(/membership/);
   });
+  it("ignores a central cookie whose account no longer has team access", async () => {
+    const login = await fixture.login();
+    await fixture.prisma.membership.delete({ where: { id: fixture.membership.id } });
+    const next = await fixture.start(origins.invoice);
+    await expect(
+      fixture.service.authorize(next.requestId, login.centralHandle)
+    ).resolves.toBeNull();
+    await expect(
+      fixture.service.login(
+        {
+          requestId: next.requestId,
+          csrfToken: next.context.csrfToken,
+          email: fixture.email,
+          password: ssoTestPassword,
+        },
+        next.context.handle,
+        login.centralHandle
+      )
+    ).rejects.toMatchObject({ status: 401 });
+    expect((await fixture.store.getTransaction(next.requestId))?.codeHash).toBeNull();
+  });
+  it("does not let an unusable central cookie prevent another eligible account signing in", async () => {
+    const login = await fixture.login();
+    await fixture.prisma.membership.delete({ where: { id: fixture.membership.id } });
+    const otherId = `${fixture.userId}-other`;
+    const email = `other-${fixture.email}`;
+    const original = await fixture.prisma.user.findUniqueOrThrow({ where: { id: fixture.userId } });
+    await fixture.prisma.user.create({
+      data: { id: otherId, email, passwordHash: original.passwordHash },
+    });
+    try {
+      await fixture.prisma.membership.create({
+        data: { userId: otherId, tenantId: fixture.tenantId, roleId: fixture.membership.roleId },
+      });
+      const next = await fixture.start(origins.invoice);
+      await expect(
+        fixture.service.login(
+          {
+            requestId: next.requestId,
+            csrfToken: next.context.csrfToken,
+            email,
+            password: ssoTestPassword,
+          },
+          next.context.handle,
+          login.centralHandle
+        )
+      ).resolves.toHaveProperty("centralHandle");
+    } finally {
+      await fixture.prisma.auditLog.deleteMany({ where: { actorUserId: otherId } });
+      await fixture.prisma.outboxEvent.deleteMany({
+        where: { payloadJson: { contains: otherId } },
+      });
+      await fixture.prisma.user.delete({ where: { id: otherId } });
+    }
+  });
+  it("keeps usable central sessions protected against silent account replacement", async () => {
+    const login = await fixture.login();
+    const next = await fixture.start(origins.invoice);
+    await expect(
+      fixture.service.login(
+        {
+          requestId: next.requestId,
+          csrfToken: next.context.csrfToken,
+          email: fixture.email,
+          password: ssoTestPassword,
+        },
+        next.context.handle,
+        login.centralHandle
+      )
+    ).rejects.toMatchObject({ status: 409 });
+  });
+  it("propagates central-session access-check outages instead of treating them as signed out", async () => {
+    const login = await fixture.login();
+    const next = await fixture.start(origins.invoice);
+    vi.spyOn(fixture.service, "requireAccess").mockRejectedValueOnce(
+      new Error("synthetic access outage")
+    );
+    await expect(fixture.service.authorize(next.requestId, login.centralHandle)).rejects.toThrow(
+      "synthetic access outage"
+    );
+  });
   it("rejects an expired or cancelled transaction with a recoverable error", async () => {
     const start = await fixture.start();
     fixture.advance(300_001);

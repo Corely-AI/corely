@@ -131,7 +131,10 @@ export class PrismaSsoStore implements SsoStorePort {
       const previous = await tx.ssoEmailChallenge.findUnique({
         where: { transactionId: challenge.transactionId },
       });
-      if (previous && challenge.createdAt.getTime() - previous.createdAt.getTime() < 60_000) {
+      if (
+        previous?.email === challenge.email &&
+        challenge.createdAt.getTime() - previous.createdAt.getTime() < 60_000
+      ) {
         return;
       }
       await tx.ssoEmailChallenge.deleteMany({ where: { transactionId: challenge.transactionId } });

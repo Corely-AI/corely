@@ -35,8 +35,8 @@ employee/account duplication, membership promotion or business API fork.
 
 | Check                                                           | Actual result / limits                                                                                                                                                                                                              |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Targeted SSO + neighboring auth tests                           | 95 passed across eight files (including legacy portal OTP regressions); PostgreSQL integration tests actually executed with a disposable `corely_384_sso` database on 127.0.0.1:55484.                                              |
-| Browser SSO tests                                               | 6 passed in installed Chrome over HTTPS and three isolated test app origins; fresh password and email-code login, second-app SSO, error focus, cancellation, expiry, network retry and mobile DE/VI.                                |
+| Targeted SSO + neighboring auth tests                           | 100 passed across eight files (including legacy portal OTP regressions); PostgreSQL integration tests actually executed with a disposable `corely_384_sso` database on 127.0.0.1:55484.                                             |
+| Browser SSO tests                                               | 7 passed in installed Chrome over HTTPS and three isolated test app origins; fresh password and email-code login, second-app SSO, error focus, cancellation, expiry, network retry and mobile DE/VI.                                |
 | API/login/config/contracts/kernel/data typechecks               | Passed after building the existing prompts/email-template dependencies; initial missing-dist diagnostics were resolved locally without source changes to those packages.                                                            |
 | API, login and contracts builds                                 | Passed; focused UI bundle approximately 236 KB / 72 KB gzip.                                                                                                                                                                        |
 | Targeted ESLint                                                 | Passed with only two pre-existing `any` warnings in main.ts body-parser callbacks.                                                                                                                                                  |
@@ -96,6 +96,26 @@ lint and recursive typechecks were not repeated. Pre-commit checks still run.
   client; browser CI invoked absent `e2e:smoke`. These repository workflow paths
   are unchanged by this PR. Vercel project checks remain rate limited. This
   correction does not claim the full CI suite is green.
+
+## Second review corrections
+
+- **P2 — unusable central session blocks recovery:** after the last active team
+  membership is removed, automatic sign-on returned an error and credential
+  login returned an existing-session conflict. Central session reuse and conflict
+  detection now share the same current account/membership/password checks. An
+  unusable cookie returns to login and permits an eligible account to authenticate;
+  the removed account still cannot receive a handoff. Valid sessions still block
+  silent account replacement; infrastructure errors still propagate.
+- **P2 — corrected email address ignored during cooldown:** toggling login methods
+  lets a colleague correct a typo, but the transaction-wide resend check silently
+  retained the previous email challenge. Cooldown now applies to the same address;
+  changing addresses atomically replaces the challenge. Account/browser send and
+  verification budgets and the original transaction deadline remain enforced.
+- Reproduction: three tests failed before these fixes. Fresh verification: **100
+  targeted tests across eight files**, **seven HTTPS browser tests**, API typecheck
+  and targeted production-code ESLint passed. The new browser case exercises typo
+  correction through the existing rendered form. No UI source/layout changed;
+  existing screenshots remain applicable. No live mail, migration or deployment.
 
 ## Impact and remaining work
 

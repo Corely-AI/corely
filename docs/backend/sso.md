@@ -63,7 +63,8 @@ reviewed session transport and current context checks.
 - Email codes use a cryptographic six-digit generator and a keyed hash bound to
   the email, environment and transaction. An encrypted copy exists only for
   delivery; it is cleared after delivery/consumption. The code lasts at most five
-  minutes and cannot extend its parent transaction. Resend cooldown is 60 seconds;
+  minutes and cannot extend its parent transaction. Resend cooldown is 60 seconds for the same address; correcting an address
+  replaces its challenge without extending the transaction deadline;
   account sends are limited to three per fixed five-minute window, and verification
   shares the five-attempt account budget with passwords. Wrong code attempts also
   commit a durable per-challenge limit. Resending replaces the old challenge.
@@ -77,6 +78,9 @@ reviewed session transport and current context checks.
   and redemption; password hash changes invalidate existing central families and
   pending email proofs. Renewal, global revocation, stream disconnect and expired
   record cleanup must be completed with #385/#387 before activation.
+- A central cookie whose account no longer has active team access is not reused
+  and does not block fresh credential login. Database/access-check outages remain
+  errors, and usable sessions still prevent silent account replacement.
 - EN/DE/VI forms handle invalid credentials/codes, network failure, expired
   requests, cancellation and resend wait. Errors receive focus; code entry supports
   one-time-code autocomplete. The credential page uses shared, font-free tokens
