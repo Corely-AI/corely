@@ -85,7 +85,7 @@ and `/forgot-password`; Portal has its separate login/workspace routes. These ar
 existing UI entries, **not evidence of OIDC callbacks**. Legacy API authentication
 continues through the Identity controller described above.
 
-The [ADR host/callback matrix](../decisions/ADR-0003-focused-app-surfaces.md#host-and-callback-matrix-for-approval)
+The [ADR host/callback matrix](../decisions/ADR-0003-focused-app-surfaces.md#approved-application-host-and-callback-matrix)
 defines proposed exact new production/staging entries and the treatment of
 `app.corely.one`. Actual issuer allowlists and local origin/port pairs still need
 SURF-02/04/18/19 evidence. No existing identity registration was overwritten.
@@ -121,10 +121,12 @@ No existing issue was reprioritized, reparented, reopened or closed by this
 reconciliation. #353–356 retain the #334 promotion decision or documented
 equivalent gate; approving a surface validation slice is not that promotion.
 
-The concurrent [#382 draft / PR #405](https://github.com/Corely-AI/corely/pull/405)
-uses different proposed App Center/Invoice/HR hostnames. It is not merged into
-the inspected base and is not approval evidence. ADR-0003 records this conflict
-for joint topology review while retaining the URLs requested by #380/#381.
+After the source inspection and merge of #406, the maintainer
+[approved the requested three-host plan](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+on 2026-11-08 and instructed alignment with
+[#382 / PR #405](https://github.com/Corely-AI/corely/pull/405).
+The former alternate-host proposal is withdrawn. This later decision does not
+change the source/host observation baseline or establish live registrations.
 
 ## Capability-to-delivery map
 
@@ -132,32 +134,32 @@ The native parent is [#380 / EP-APP-SURFACES](https://github.com/Corely-AI/corel
 Each requested capability below has existing owners and one explicit SURF delta;
 acceptance tests/UI evidence remain with the ticket delivering the behavior.
 
-| Requested capability / delta                         | Existing reuse                                                         | Surface ticket                                                                                            |
-| ---------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Architecture, host migration and overlap decision    | Connected-app rules, existing clients and issues above                 | [SURF-01 / #381](https://github.com/Corely-AI/corely/issues/381) — this ADR/inventory; review outstanding |
-| Central identity/session design                      | Identity accounts/membership, existing auth contracts                  | [SURF-02 / #382](https://github.com/Corely-AI/corely/issues/382)                                          |
-| Categorized launchable catalog                       | Existing manifests, registry, catalog wire schema                      | [SURF-03 / #383](https://github.com/Corely-AI/corely/issues/383)                                          |
-| Login entry and exact registered callbacks           | Chosen hosted/themed issuer; conditional custom frontend               | [SURF-04 / #384](https://github.com/Corely-AI/corely/issues/384)                                          |
-| Host-specific server sessions                        | Reusable transport adapter in front of the same API                    | [SURF-05 / #385](https://github.com/Corely-AI/corely/issues/385)                                          |
-| Shared provider/client session transport             | web-shared, auth-client, api-client                                    | [SURF-06 / #386](https://github.com/Corely-AI/corely/issues/386)                                          |
-| Logout, revocation and old-client migration          | Existing Identity/session lifecycle                                    | [SURF-07 / #387](https://github.com/Corely-AI/corely/issues/387)                                          |
-| Focused menus and independent backend checks         | Menu/config/entitlement services; #301/#302                            | [SURF-08 / #388](https://github.com/Corely-AI/corely/issues/388)                                          |
-| Configurable shell, All apps and global switcher     | Shared layout/UI; reuse with #303 without replacing its shell scope    | [SURF-09 / #389](https://github.com/Corely-AI/corely/issues/389)                                          |
-| Valid workspace handoff and isolated caches          | Workspaces access and shared cache foundation                          | [SURF-10 / #390](https://github.com/Corely-AI/corely/issues/390)                                          |
-| Thin App Center                                      | Shared Providers/UI and existing catalog APIs                          | [SURF-11 / #392](https://github.com/Corely-AI/corely/issues/392)                                          |
-| Authorized tile visibility and admin enablement      | Existing Platform installs/entitlements; #301/#302                     | [SURF-12 / #393](https://github.com/Corely-AI/corely/issues/393)                                          |
-| Thin Invoice list/create/detail/edit/audit routes    | Existing public Invoice exports and API owner                          | [SURF-13 / #394](https://github.com/Corely-AI/corely/issues/394)                                          |
-| Invoice supporting interactions and assistant limits | Party/Documents/settings/Copilot owners; #353/#355 stay separate       | [SURF-14 / #395](https://github.com/Corely-AI/corely/issues/395)                                          |
-| Invoice deep links and compatibility                 | Current `/invoices/*`, `/sales/invoices/*`, notifications/public links | [SURF-15 / #396](https://github.com/Corely-AI/corely/issues/396)                                          |
-| Thin HR client over existing People screens          | #305–308, public People/self-service exports                           | [SURF-16 / #397](https://github.com/Corely-AI/corely/issues/397)                                          |
-| HR direct-API/search/file/cross-app privacy          | People use cases, protected documents and #302 foundation              | [SURF-17 / #398](https://github.com/Corely-AI/corely/issues/398)                                          |
-| Reproducible local origins and callbacks             | Existing workspace/build tooling                                       | [SURF-18 / #391](https://github.com/Corely-AI/corely/issues/391)                                          |
-| Staging/production routing, TLS and trusted headers  | Existing hosting/proxy conventions; actual provider readback required  | [SURF-19 / #399](https://github.com/Corely-AI/corely/issues/399)                                          |
-| Focused/shared compatibility CI                      | Current workspace scripts and CI; branch/worker drift remains explicit | [SURF-20 / #400](https://github.com/Corely-AI/corely/issues/400)                                          |
-| Multi-origin E2E and negative authorization checks   | Existing suites and #302; release process reuse                        | [SURF-21 / #401](https://github.com/Corely-AI/corely/issues/401)                                          |
-| Responsive, accessible and EN/DE/VI focused UX       | Shared UI/i18n and existing screen evidence                            | [SURF-22 / #402](https://github.com/Corely-AI/corely/issues/402)                                          |
-| Surface telemetry and migration monitoring           | Existing observability infrastructure                                  | [SURF-23 / #403](https://github.com/Corely-AI/corely/issues/403)                                          |
-| Gated cohort release, rollback and docs              | Existing quality/pilot process; #334 promotion remains independent     | [SURF-24 / #404](https://github.com/Corely-AI/corely/issues/404)                                          |
+| Requested capability / delta                         | Existing reuse                                                         | Surface ticket                                                                                                      |
+| ---------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Architecture, host migration and overlap decision    | Connected-app rules, existing clients and issues above                 | [SURF-01 / #381](https://github.com/Corely-AI/corely/issues/381) — merged ADR/inventory plus recorded host approval |
+| Central identity/session design                      | Identity accounts/membership, existing auth contracts                  | [SURF-02 / #382](https://github.com/Corely-AI/corely/issues/382)                                                    |
+| Categorized launchable catalog                       | Existing manifests, registry, catalog wire schema                      | [SURF-03 / #383](https://github.com/Corely-AI/corely/issues/383)                                                    |
+| Login entry and exact registered callbacks           | Central identity entry/frontend selected under SURF-02                 | [SURF-04 / #384](https://github.com/Corely-AI/corely/issues/384)                                                    |
+| Host-specific server sessions                        | Reusable transport adapter in front of the same API                    | [SURF-05 / #385](https://github.com/Corely-AI/corely/issues/385)                                                    |
+| Shared provider/client session transport             | web-shared, auth-client, api-client                                    | [SURF-06 / #386](https://github.com/Corely-AI/corely/issues/386)                                                    |
+| Logout, revocation and old-client migration          | Existing Identity/session lifecycle                                    | [SURF-07 / #387](https://github.com/Corely-AI/corely/issues/387)                                                    |
+| Focused menus and independent backend checks         | Menu/config/entitlement services; #301/#302                            | [SURF-08 / #388](https://github.com/Corely-AI/corely/issues/388)                                                    |
+| Configurable shell, All apps and global switcher     | Shared layout/UI; reuse with #303 without replacing its shell scope    | [SURF-09 / #389](https://github.com/Corely-AI/corely/issues/389)                                                    |
+| Valid workspace handoff and isolated caches          | Workspaces access and shared cache foundation                          | [SURF-10 / #390](https://github.com/Corely-AI/corely/issues/390)                                                    |
+| Thin App Center                                      | Shared Providers/UI and existing catalog APIs                          | [SURF-11 / #392](https://github.com/Corely-AI/corely/issues/392)                                                    |
+| Authorized tile visibility and admin enablement      | Existing Platform installs/entitlements; #301/#302                     | [SURF-12 / #393](https://github.com/Corely-AI/corely/issues/393)                                                    |
+| Thin Invoice list/create/detail/edit/audit routes    | Existing public Invoice exports and API owner                          | [SURF-13 / #394](https://github.com/Corely-AI/corely/issues/394)                                                    |
+| Invoice supporting interactions and assistant limits | Party/Documents/settings/Copilot owners; #353/#355 stay separate       | [SURF-14 / #395](https://github.com/Corely-AI/corely/issues/395)                                                    |
+| Invoice deep links and compatibility                 | Current `/invoices/*`, `/sales/invoices/*`, notifications/public links | [SURF-15 / #396](https://github.com/Corely-AI/corely/issues/396)                                                    |
+| Thin HR client over existing People screens          | #305–308, public People/self-service exports                           | [SURF-16 / #397](https://github.com/Corely-AI/corely/issues/397)                                                    |
+| HR direct-API/search/file/cross-app privacy          | People use cases, protected documents and #302 foundation              | [SURF-17 / #398](https://github.com/Corely-AI/corely/issues/398)                                                    |
+| Reproducible local origins and callbacks             | Existing workspace/build tooling                                       | [SURF-18 / #391](https://github.com/Corely-AI/corely/issues/391)                                                    |
+| Staging/production routing, TLS and trusted headers  | Existing hosting/proxy conventions; actual provider readback required  | [SURF-19 / #399](https://github.com/Corely-AI/corely/issues/399)                                                    |
+| Focused/shared compatibility CI                      | Current workspace scripts and CI; branch/worker drift remains explicit | [SURF-20 / #400](https://github.com/Corely-AI/corely/issues/400)                                                    |
+| Multi-origin E2E and negative authorization checks   | Existing suites and #302; release process reuse                        | [SURF-21 / #401](https://github.com/Corely-AI/corely/issues/401)                                                    |
+| Responsive, accessible and EN/DE/VI focused UX       | Shared UI/i18n and existing screen evidence                            | [SURF-22 / #402](https://github.com/Corely-AI/corely/issues/402)                                                    |
+| Surface telemetry and migration monitoring           | Existing observability infrastructure                                  | [SURF-23 / #403](https://github.com/Corely-AI/corely/issues/403)                                                    |
+| Gated cohort release, rollback and docs              | Existing quality/pilot process; #334 promotion remains independent     | [SURF-24 / #404](https://github.com/Corely-AI/corely/issues/404)                                                    |
 
 Source tests for manifests/menu configuration, People directory/availability/
 absences/self-service and invoice HTTP/use cases/E2E were inspected where cited
