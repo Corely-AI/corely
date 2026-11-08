@@ -9,6 +9,7 @@ const types = [
   "tasks.task.update",
   "tasks.task.complete",
   "tasks.task.reopen",
+  "tasks.task.checklist",
 ];
 function fixture() {
   const events = types.map((eventType, index) => ({
@@ -58,8 +59,8 @@ describe("Employee task lifecycle events in the API-hosted outbox", () => {
       budgets: { perRunnerMaxMs: 3000, perRunnerMaxItems: 10, overallMaxMs: 3000 },
       logger: new Logger("TaskEventTest"),
     });
-    expect(result).toMatchObject({ processedCount: 4, errorCount: 0 });
-    expect(repo.markSent).toHaveBeenCalledTimes(4);
+    expect(result).toMatchObject({ processedCount: 5, errorCount: 0 });
+    expect(repo.markSent).toHaveBeenCalledTimes(5);
     expect(repo.markFailed).not.toHaveBeenCalled();
   });
   it("keeps unknown events as failures and rejects malformed task facts", async () => {

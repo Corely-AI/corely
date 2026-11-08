@@ -173,3 +173,37 @@ invokes absent `e2e:smoke`. Those paths are unchanged. PR #377 remains Draft;
 no merge or release is performed. Normal signed-commit hooks are retained, and
 publication continues to use the documented pre-push escape for the broader
 verification blockers. Task-owned PostgreSQL and Vite are stopped after checks.
+
+## Development conflict resolution — 8 November 2026
+
+Integrated current `corely/development` at `0ef158482` (recurring checklists #378)
+into `307-private-absences`, preserving the existing ticket commits. The only
+textual conflicts were adjacent imports in `people.module.ts` and the Tasks
+fixture. Resolved them by retaining the absence repository/controller/Documents
+wiring and the incoming StaffWorkdayLookup/recurring-checklist wiring. No owning
+rules, routes, copy or layouts were changed during resolution.
+
+Fresh on the combined tree:
+
+- Original People/Booking/Documents API command plus `src/modules/tasks/__tests__`
+  and the personnel-document adapter suite: **120 tests / 16 files passed**.
+  Task-owned `people_test_307`, `openbuk_test_307` and `tasks_test_307` databases
+  were used on the existing isolated PostgreSQL cluster; no shared reset or seed.
+- `pnpm --dir packages/web-features exec vitest run src/modules/people src/modules/tasks`:
+  **36 tests / 8 files passed**.
+- Full AppModule DI command above: **10 tests passed**, proving both People and
+  recurring-checklist providers/controllers instantiate. All 166 checks ran
+  without skips.
+- Kernel/Contracts builds, API typecheck/build and web build: passed. Web retains
+  existing large-chunk/Browserslist warnings.
+- Conflict markers/unmerged entries, scoped formatting and diff whitespace were
+  checked; normal signed-merge commit hooks are retained. The PR diff against the
+  new base contains only #307 work; incoming #314 changes are part of the base.
+
+The resolved imports and fixture do not change rendered behavior; existing #307
+UI evidence remains applicable, and #314's evidence is maintained with its own
+base delivery. Broader web/architecture and CI limitations above remain; they
+were not repaired as part of conflict resolution. PR #377 had already been
+marked ready at the start; its review state is preserved. No PR merge or release
+is performed. Publication uses the documented pre-push escape after scoped
+verification, and the task-owned PostgreSQL cluster is stopped after testing.

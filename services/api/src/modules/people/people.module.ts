@@ -3,6 +3,7 @@ import { StaffAbsenceUseCase } from "./application/staff-absence.usecase";
 import { StaffAbsenceController } from "./adapters/http/staff-absence.controller";
 import { ExtStaffAbsenceAdapter } from "./infrastructure/ext-staff-absence.adapter";
 import { STAFF_ABSENCE_REPOSITORY } from "./application/ports/staff-absence.port";
+import { StaffWorkdayLookup } from "./application/staff-workday-lookup";
 import { StaffOperationsLookup } from "./application/staff-operations-lookup";
 import { PlatformModule } from "../platform/platform.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -45,6 +46,7 @@ import { StaffController } from "./adapters/http/staff.controller";
     ExtStaffAbsenceAdapter,
     { provide: STAFF_ABSENCE_REPOSITORY, useExisting: ExtStaffAbsenceAdapter },
     StaffOperationsLookup,
+    StaffWorkdayLookup,
     StaffDirectoryUseCase,
     StaffAvailabilityUseCase,
     StaffAvailabilityConstraintService,
@@ -61,6 +63,11 @@ import { StaffController } from "./adapters/http/staff.controller";
     { provide: STAFF_PARTY_LOOKUP, useExisting: StaffPartyLookupAdapter },
     { provide: STAFF_RESOURCE_LOOKUP, useExisting: StaffResourceLookupAdapter },
   ],
-  exports: [StaffDirectoryUseCase, StaffOperationsLookup, StaffAvailabilityConstraintService],
+  exports: [
+    StaffDirectoryUseCase,
+    StaffOperationsLookup,
+    StaffWorkdayLookup,
+    StaffAvailabilityConstraintService,
+  ],
 })
 export class PeopleModule {}

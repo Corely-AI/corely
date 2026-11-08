@@ -56,6 +56,25 @@ export class EmployeeTasksController {
   reopen(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
     return this.command("reopen", id, body, req);
   }
+  @Post(":id/checklist/:stepId")
+  @Header("Cache-Control", "private, no-store")
+  checklist(
+    @Param("id") id: string,
+    @Param("stepId") stepId: string,
+    @Body() body: unknown,
+    @Req() req: ContextAwareRequest
+  ) {
+    return this.parse(() =>
+      this.tasks.command(
+        "checklist",
+        id,
+        body,
+        resolveIdempotencyKey(req),
+        toUseCaseContext(req),
+        stepId
+      )
+    );
+  }
   private command(
     kind: "create" | "update" | "complete" | "reopen",
     id: string | null,

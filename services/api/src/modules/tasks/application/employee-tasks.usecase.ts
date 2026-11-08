@@ -1,3 +1,4 @@
+import { persistTaskMutation } from "./task-mutation";
 import {
   BadRequestException,
   ConflictException,
@@ -11,6 +12,7 @@ import {
   CreateEmployeeTaskSchema,
   UpdateEmployeeTaskSchema,
   TransitionEmployeeTaskSchema,
+  ToggleChecklistStepSchema,
   ListEmployeeTasksSchema,
   type EmployeeTask,
   type EmployeeTaskList,
@@ -33,7 +35,7 @@ import {
 } from "./ports/task-repository.port";
 import { transitionTask, type TaskRecord } from "../domain/task-rules";
 
-type Command = "create" | "update" | "complete" | "reopen";
+type Command = "create" | "update" | "complete" | "reopen" | "checklist";
 @Injectable()
 export class EmployeeTasksUseCase {
   constructor(
@@ -44,7 +46,7 @@ export class EmployeeTasksUseCase {
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
   ) {}
-  private async authorize(ctx: UseCaseContext, tx?: TransactionContext) {
+  async authorize(ctx: UseCaseContext, tx?: TransactionContext) {
     if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) {
       throw new ForbiddenException("Workspace membership required");
     }
@@ -140,7 +142,8 @@ export class EmployeeTasksUseCase {
     id: string | null,
     body: unknown,
     key: string | undefined,
-    ctx: UseCaseContext
+    ctx: UseCaseContext,
+    stepId?: string
   ) {
     const initial = await this.authorize(ctx);
     if (!key || key.length > 160 || !/^[\w-]+$/.test(key)) {
@@ -151,9 +154,11 @@ export class EmployeeTasksUseCase {
         ? CreateEmployeeTaskSchema.parse(body)
         : kind === "update"
           ? UpdateEmployeeTaskSchema.parse(body)
-          : TransitionEmployeeTaskSchema.parse(body);
+          : kind === "checklist"
+            ? ToggleChecklistStepSchema.parse(body)
+            : TransitionEmployeeTaskSchema.parse(body);
     const fingerprint = createHash("sha256")
-      .update(JSON.stringify([kind, id, input]))
+      .update(JSON.stringify(kind === "checklist" ? [kind, id, stepId, input] : [kind, id, input]))
       .digest("hex");
     const commandKey = createHash("sha256")
       .update(JSON.stringify([ctx.userId, key]))
@@ -206,40 +211,50 @@ export class EmployeeTasksUseCase {
           createdAt: previous?.createdAt ?? now,
           updatedAt: now,
           completedAt: previous?.completedAt ?? null,
+          ...(previous?.recurrence ? { recurrence: previous.recurrence } : {}),
+          ...(previous?.checklist ? { checklist: previous.checklist } : {}),
         };
       } else {
         if (!previous) {
           throw new NotFoundException("Task not found");
         }
-        const completed = kind === "complete";
-        if ((previous.status === "COMPLETED") === completed) {
-          throw new ConflictException("Task already has this status; reload before saving");
+        if (kind === "checklist") {
+          if (previous.status !== "OPEN") {
+            throw new ConflictException("Reopen the task before changing its checklist");
+          }
+          const step = previous.checklist?.find((item) => item.id === stepId);
+          if (!step) {
+            throw new NotFoundException("Checklist item not found");
+          }
+          const toggle = ToggleChecklistStepSchema.parse(input);
+          if (step.completed === toggle.completed) {
+            throw new ConflictException("Checklist item already has this state");
+          }
+          next = {
+            ...previous,
+            checklist: (previous.checklist ?? []).map((item) =>
+              item.id === stepId ? { ...item, completed: toggle.completed } : item
+            ),
+            version: previous.version + 1,
+            updatedAt: now,
+          };
+        } else {
+          const completed = kind === "complete";
+          if (completed && previous.checklist?.some((item) => !item.completed)) {
+            throw new ConflictException("Complete every checklist item first");
+          }
+          if ((previous.status === "COMPLETED") === completed) {
+            throw new ConflictException("Task already has this status; reload before saving");
+          }
+          next = transitionTask(previous, completed, now);
         }
-        next = transitionTask(previous, completed, now);
       }
-      await this.repo.save(auth.scope, next, tx);
-      await this.audit.log(
-        {
-          tenantId: auth.scope.tenantId,
-          userId: auth.actorUserId,
-          action: `tasks.task.${kind}`,
-          entityType: "EmployeeTask",
-          entityId: next.id,
-          metadata: {
-            workspaceId: auth.scope.workspaceId,
-            version: next.version,
-            ownerStaffId: next.ownerStaffId,
-          },
-        },
-        tx
-      );
-      await this.outbox.enqueue(
-        {
-          tenantId: auth.scope.tenantId,
-          eventType: `tasks.task.${kind}`,
-          payload: { workspaceId: auth.scope.workspaceId, taskId: next.id, version: next.version },
-          correlationId: ctx.correlationId,
-        },
+      await persistTaskMutation(
+        { repo: this.repo, audit: this.audit, outbox: this.outbox },
+        auth.scope,
+        next,
+        kind,
+        ctx,
         tx
       );
       await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, taskId: next.id }, tx);

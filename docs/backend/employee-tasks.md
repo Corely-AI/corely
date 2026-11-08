@@ -4,7 +4,8 @@
 for daily employee work. It is separate from workflow execution tasks and CRM activities.
 The same records appear at `/app/tasks` in OpenBuk and `/tasks` in the administration
 client through the public `@corely/web-features/modules/tasks` feature. This slice does
-not add recurrence, comments, attachments, Projects, notifications delivery or AI tools.
+not add comments, attachments, Projects, notifications delivery or AI tools.
+[TASK-03 recurring checklists](recurring-checklists.md) extends these records with checkbox snapshots.
 
 ## Configuration and access
 
@@ -17,11 +18,11 @@ Installation, effective app enablement, current tenant/workspace membership and 
 are checked independently on the backend. Disabling either Tasks or People denies task access.
 Existing custom roles need explicit grants for the new permissions.
 
-| Permission                        | Behavior                                                                                              |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `tasks.read`                      | Read tasks owned by the caller's linked active staff profile                                          |
-| `tasks.read` + `tasks.manage`     | Read/create/assign/edit/complete/reopen tasks in the current workspace; list neutral active assignees |
-| `tasks.read` + `tasks.own.update` | Complete/reopen only tasks owned by the caller's linked active staff profile                          |
+| Permission                        | Behavior                                                                                                          |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `tasks.read`                      | Read tasks owned by the caller's linked active staff profile                                                      |
+| `tasks.read` + `tasks.manage`     | Read/create/assign/edit/check steps/complete/reopen tasks in the current workspace; list neutral active assignees |
+| `tasks.read` + `tasks.own.update` | Check steps/complete/reopen only tasks owned by the caller's linked active staff profile                          |
 
 New Owner/Admin default grants include all task permissions. Staff includes own completion;
 Read Only never receives a task mutation grant. Existing roles are not silently rewritten.
@@ -55,6 +56,7 @@ All routes require authenticated trusted workspace context and return `private, 
 - `POST /tasks`: title, ownerStaffId, optional dueAt.
 - `PATCH /tasks/:id`: the complete editable fields and expected version.
 - `POST /tasks/:id/complete` and `/reopen`: expected version.
+- `POST /tasks/:id/checklist/:stepId`: expected version and completed boolean. Checklist completion requires all steps checked.
 
 Every command requires `Idempotency-Key` (or the existing `X-Idempotency-Key` alias).
 Unknown/privileged fields are rejected by shared strict Zod contracts. Commands serialize
@@ -64,9 +66,9 @@ caches there. Stale versions or incompatible status transitions return 409. Repe
 commands return the current authorized record; changing a key's normalized payload returns 409.
 Replay records are scoped by actor/workspace and store only fingerprint and record ID.
 
-Task, audit (`tasks.task.create|update|complete|reopen`), outbox event and replay marker commit
+Task, audit (`tasks.task.create|update|complete|reopen|checklist`), outbox event and replay marker commit
 or roll back together. Events contain workspace/task IDs and version, not titles or personnel
-contacts. The existing API-hosted dispatcher explicitly acknowledges these four lifecycle facts after
+contacts. The existing API-hosted dispatcher explicitly acknowledges these five lifecycle facts after
 validating their neutral payloads, so ordinary task writes do not enter its dead-letter queue.
 Unknown event types and malformed facts remain failures. This acknowledgement has no outbound
 notification or workflow side effect; future delivery consumers must extend it explicitly.

@@ -25,6 +25,29 @@ export const EmployeeTaskSchema = z
     id: z.string().uuid(),
     workspaceId: z.string(),
     ...fields,
+    checklist: z
+      .array(
+        z
+          .object({
+            id: z.string().uuid(),
+            title: z.string().min(1).max(240),
+            completed: z.boolean(),
+          })
+          .strict()
+      )
+      .min(1)
+      .max(10)
+      .optional(),
+    recurrence: z
+      .object({
+        templateId: z.string().uuid(),
+        templateVersion: z.number().int().positive(),
+        localDate: z.string().date(),
+        checklistTitle: z.string(),
+        timezone: z.string(),
+      })
+      .strict()
+      .optional(),
     ownerName: z.string(),
     ownerArchived: z.boolean(),
     status: TaskStatusSchema,
@@ -65,6 +88,7 @@ export const EmployeeTaskEventTypeSchema = z.enum([
   "tasks.task.update",
   "tasks.task.complete",
   "tasks.task.reopen",
+  "tasks.task.checklist",
 ]);
 export const EmployeeTaskEventPayloadSchema = z
   .object({
@@ -73,3 +97,7 @@ export const EmployeeTaskEventPayloadSchema = z
     version: z.number().int().positive(),
   })
   .strict();
+
+export const ToggleChecklistStepSchema = TransitionEmployeeTaskSchema.extend({
+  completed: z.boolean(),
+}).strict();
