@@ -3,7 +3,7 @@
 ## Tracking and outcome
 
 - Issue: [#382 / SURF-02](https://github.com/Corely-AI/corely/issues/382); parent [#380](https://github.com/Corely-AI/corely/issues/380).
-- Hard prerequisite: [#381 / PR #406](https://github.com/Corely-AI/corely/pull/406), still open at reconciliation.
+- Hard prerequisite: architecture/reuse evidence merged in [#406](https://github.com/Corely-AI/corely/pull/406); [#381 host approval](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565) explicitly recorded on 2026-11-08 with closure instructed. ADR-0003 approval follow-up is [#407](https://github.com/Corely-AI/corely/pull/407).
 - Branch: `382-central-identity-sessions`; PR base: verified `development` on `corely` (`Corely-AI/corely`).
 - PR: [Draft #405](https://github.com/Corely-AI/corely/pull/405).
 - Outcome: [ADR-0004](../decisions/ADR-0004-central-identity-app-sessions.md) specifies Corely-native central SSO, per-app sessions, the existing auth trace, five sequences, abuse cases and compatible migration/rollback.
@@ -64,11 +64,21 @@ future flows and do not substitute for the implementation tickets' UI evidence.
 
 The selected architecture needs no external identity server or account migration;
 it does require new Corely authentication/session code and operational validation.
-#382 records that decision, while #384–387 own implementation. #381's final
-host/legacy-traffic approval and integration remain a hard prerequisite.
+#382 records that decision, while #384–387 own implementation. The architecture
+inventory is integrated in #406; the maintainer's
+[recorded host-plan approval](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+selects the three requested hosts and authorizes closing #381. Both ADRs use the
+same callback/logout paths; #407 records the ADR-0003 status follow-up. No repeat
+host approval is pending.
 
-Keep PR #405 Draft and #382 open while prerequisites and required checks remain
-unresolved. User selection is recorded without inventing specialist review,
+Keep PR #405 Draft and #382 open while its own required checks and delivery remain
+unresolved; do not retain the resolved host choice as a blocker. User selection is recorded without inventing specialist review,
 GitHub approval, completed registration, merge or deployment. Reverting this
 PR's documentation is its entire rollback. Do not bypass failing CI or broaden
 this auth design ticket into unrelated workflow repair.
+
+Host-approval follow-up: isolated branch `382-record-host-approval` starts at
+`6baeb96ee14514c192a444a6a928351d73c5f462` and advances the existing #405
+head only with approval/index/task wording. Corely-native SSO protocol content
+is preserved. Formatting, local references, exact host/callback agreement and
+whitespace were checked; no runtime tests or deployments were performed.

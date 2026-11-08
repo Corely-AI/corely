@@ -1,6 +1,6 @@
 # ADR-0004: Corely-native SSO and per-app browser sessions
 
-Date: 2026-11-08. Status: **Corely-native SSO selected by the requesting maintainer; implementation and SURF-01 integration pending**.
+Date: 2026-11-08. Status: **Corely-native SSO selected; SURF-01 host plan approved by the requesting maintainer; runtime implementation pending**.
 Related: [SURF-02 #382](https://github.com/Corely-AI/corely/issues/382),
 [SURF-01 #381 / PR #406](https://github.com/Corely-AI/corely/pull/406),
 [surface epic #380](https://github.com/Corely-AI/corely/issues/380).
@@ -21,6 +21,15 @@ The requesting maintainer initially said “approve and continue” for PR #405 
 supersedes the self-hosted Keycloak choice. It retains central SSO rather than
 settling for a separate password login in each app. It authorizes the required
 Corely extensions; it does not record a GitHub review or authorize a deployment.
+
+The maintainer separately [approved SURF-01's host plan](https://github.com/Corely-AI/corely/issues/381#issuecomment-6724086565)
+on 2026-11-08 and instructed alignment of both ADRs and closure of #381.
+Use `app.corely.one`, `invoice.app.corely.one` and `hr.app.corely.one` with
+this ADR's exact callback/logout paths. #406 already integrated the architecture
+and reuse inventory; [follow-up #407](https://github.com/Corely-AI/corely/pull/407)
+records approval in ADR-0003. The earlier alternate names are withdrawn. This
+supplies the host decision; provisioning, registrations, protocol tests and
+activation remain follow-on work.
 
 This is a deliberate departure from #382's preference for an established OIDC
 provider. Corely owns the handoff/session correctness, credential protection,
@@ -43,7 +52,7 @@ wording is interpreted against the selected Corely-native design before coding.
 | Existing Identity as SSO owner; no external provider                    | Explicit maintainer instruction, 2026-11-08                                                                      |
 | Existing users, membership links, shared API and host-only app sessions | Retained from the approved architecture                                                                          |
 | Concrete native handoff and revocation protocol below                   | Revised design implementing that instruction; runtime/security tests not executed                                |
-| Host topology                                                           | Aligned with #380 and #381 PR #406; prerequisite still open, bindings not provisioned                            |
+| Host topology                                                           | Explicit maintainer approval recorded under #381 on 2026-11-08; bindings not provisioned                         |
 | Runtime code and operations                                             | Follow-on tickets; no deployed session store, capacity test, registration readback or recovery drill established |
 
 ## Inspected implementation and reuse
@@ -97,8 +106,8 @@ allowlisted `/api/bff/*` business transport before SPA/legacy catch-alls. Do not
 replace all `/auth/*` or `/api/*`: retain legacy login, reset, token APIs and
 business routes. Until #381's gated root cutover, `app.corely.one` still serves
 the legacy root and deep links. Its App Center is proven on isolated staging
-first. The proposed `admin.corely.one` compatibility alias remains #381's
-hosting decision; it is not an additional SSO client here. Coexisting legacy
+first. The conditional `admin.corely.one` compatibility alias retains ADR-0003's
+verification gate; it is not an approved additional SSO client here. Coexisting legacy
 code on the App Center origin shares that origin's trust; cookies do not isolate
 same-origin scripts. Keep legacy routing explicit and include it in XSS review.
 
@@ -376,7 +385,7 @@ implicitly. Resource hints never grant access or reveal unauthorized existence.
   after successful new login; never carry them to a different origin. Quarantine
   offline writes by original user/context; offer authorized recovery/export rather
   than replaying them under another account or silently discarding them.
-- App Center + Invoice pilot only after #381's host/legacy-routing decision;
+- App Center + Invoice pilot uses #381's approved host/legacy-routing plan;
   HR follows as the reuse proof. Record actual TLS/ingress, exact registered origins,
   credential limits, session cleanup, metrics, operator, backup/restore and rollout
   thresholds before production. Do not claim a live registration from this matrix.
@@ -433,7 +442,7 @@ headers. Display retry/restart guidance with no redirect loop.
 
 ## References and delivery evidence
 
-- [Parent epic #380](https://github.com/Corely-AI/corely/issues/380) and [SURF-01 PR #406](https://github.com/Corely-AI/corely/pull/406): requested hosts and legacy compatibility direction; prerequisite approval/integration not inferred.
+- [Parent epic #380](https://github.com/Corely-AI/corely/issues/380) and [SURF-01 PR #406](https://github.com/Corely-AI/corely/pull/406): requested hosts and legacy compatibility direction; subsequent maintainer approval is recorded above, with no live activation inferred.
 - [OAuth Security BCP, RFC 9700](https://www.rfc-editor.org/rfc/rfc9700.html) and [PKCE, RFC 7636](https://www.rfc-editor.org/rfc/rfc7636.html): security references for redirect/replay and challenge binding; this design is not an OAuth/OIDC implementation.
 - [Connected apps](../architecture/connected-apps.md), [operational access](../platform/operational-access.md): existing owners and independent authorization.
 
