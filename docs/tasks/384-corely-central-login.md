@@ -5,7 +5,7 @@
 - Issue: [#384](https://github.com/Corely-AI/corely/issues/384), parent [#380](https://github.com/Corely-AI/corely/issues/380).
 - Prerequisites #381/#382 and their design PRs were merged before implementation.
 - Branch: `384-corely-central-login`; base: `corely/development` at `05e42f0ff877293cef5c33688e2eac6a2168ce03`.
-- PR: pending publication.
+- PR: [Draft #409](https://github.com/Corely-AI/corely/pull/409), targeting `development`.
 - [Maintained behavior/configuration](../backend/sso.md), [ADR](../decisions/ADR-0004-central-identity-app-sessions.md).
 
 The user requested Corely-native SSO and then asked to retain passwordless login.
