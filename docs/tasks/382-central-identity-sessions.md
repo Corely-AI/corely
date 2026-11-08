@@ -6,7 +6,7 @@
 - Parent: [#380](https://github.com/Corely-AI/corely/issues/380).
 - Hard prerequisite: [#381](https://github.com/Corely-AI/corely/issues/381), open at inspection; no approved host matrix established.
 - Branch: `382-central-identity-sessions`; intended PR base: `development` on `corely` (`Corely-AI/corely`), verified through GitHub and fetch.
-- PR: linked from the issue through the published Draft PR; see branch comparison on GitHub.
+- PR: [Draft #405](https://github.com/Corely-AI/corely/pull/405).
 - Outcome: [proposed ADR-0004](../decisions/ADR-0004-central-identity-app-sessions.md) provides the current auth trace, provider/operation proposal, session/API contracts, five sequences, abuse cases and compatibility/migration/rollback plan.
 - Exclusions: runtime auth changes, provider provisioning, domain moves, migrations, POS/portal migration, deployment and roadmap promotion.
 
