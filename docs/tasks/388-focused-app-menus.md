@@ -107,3 +107,24 @@ The redundant whole-repository pre-push wrapper is bypassed with `HUSKY=0` after
 the explicit checks above; its unrelated global failures are recorded rather
 than reported as passing. Normal pre-commit checks remain enabled. The test-owned
 PostgreSQL instance is stopped after the final HTTP run.
+
+## PR review correction
+
+Reviewed the current #413 diff and relevant menu/config, guard and transport callers.
+Found one P2 regression: the focused-session context matcher used exact, case-sensitive
+paths while Nest/Express also routes trailing slashes and case variants. For example,
+`/api/bff/menu/` omitted the host's launch context, and a conflicting launch context
+could reach the composer through that route. This affects presentation isolation;
+backend operation authorization remains independent.
+
+Expanded the real cookie-session HTTP regression for both Invoice and HR across
+canonical menu/config routes, trailing slashes and uppercase `CONFIG`. The tests
+failed on the original code (both hosts returned no `launchId` for `menu/`). The
+matcher now uses the same optional trailing slash and case-insensitive semantics.
+The corrected variants must all receive their host context and reject conflicting
+contexts. No frontend behavior or API authority model was changed.
+
+Review-fix checks: **49 HTTP/session tests passed** across five files with the
+expanded path matrix; API typecheck and targeted ESLint passed. Prettier and
+whitespace checks passed. The earlier 1,329-pass root unit run was not repeated
+for this narrow transport correction. The test-owned database is stopped.

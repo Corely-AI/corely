@@ -172,7 +172,8 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       const destination = new URL(target + req.url.slice(path.length), origin);
       if (
         appKey !== "app-center" &&
-        (target === "/menu" || /^\/workspaces\/[^/]+\/config$/.test(target))
+        // Match Nest/Express's case-insensitive, optional-trailing-slash routes.
+        (/^\/menu\/?$/i.test(target) || /^\/workspaces\/[^/]+\/config\/?$/i.test(target))
       ) {
         const declared = destination.searchParams.getAll("launchId");
         if (declared.some((value) => value !== appKey)) {

@@ -70,7 +70,13 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host-bound navigation conte
         "x-corely-sso-proxy-key": ssoTestProxyKey,
         Cookie: `${SSO_COOKIES.app}=${session.handle}`,
       };
-      for (const target of ["menu", "workspaces/selected/config"]) {
+      for (const target of [
+        "menu",
+        "menu/",
+        "workspaces/selected/config",
+        "workspaces/selected/config/",
+        "workspaces/selected/CONFIG",
+      ]) {
         const response = await request(app.getHttpServer())
           .get(`/api/bff/${target}?scope=web`)
           .set(headers)
