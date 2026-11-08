@@ -1,4 +1,11 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { USER_REPOSITORY_TOKEN, type UserRepositoryPort } from "../ports/user-repository.port";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { SSO_STORE, type SsoStorePort } from "../ports/sso-store.port";
 import { SSO_CRYPTO, type SsoCryptoPort } from "../ports/sso-crypto.port";
 import { CLOCK_PORT_TOKEN, type ClockPort } from "../../../../shared/ports/clock.port";
@@ -23,7 +30,8 @@ export class SsoSessionService {
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly memberships: MembershipRepositoryPort,
     @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenants: TenantRepositoryPort,
-    private readonly authorize: AuthorizeRequestContextUseCase
+    private readonly authorize: AuthorizeRequestContextUseCase,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly users: UserRepositoryPort
   ) {}
   async authenticate(
     origin: string,
@@ -60,6 +68,27 @@ export class SsoSessionService {
       maxAge: Math.max(0, session.expiresAt.getTime() - now.getTime()),
     };
   }
+  async profile(userId: string) {
+    const user = await this.users.findById(userId);
+    if (!user?.isActive()) {
+      throw new UnauthorizedException("Account unavailable");
+    }
+    const memberships: Array<{ tenantId: string; tenantName: string; roleId: string }> = [];
+    for (const member of await this.memberships.findByUserId(userId)) {
+      const tenantId = member.getTenantId();
+      if (!tenantId) {
+        continue;
+      }
+      const tenant = await this.tenants.findById(tenantId);
+      if (tenant?.isActive()) {
+        memberships.push({ tenantId, tenantName: tenant.getName(), roleId: member.getRoleId() });
+      }
+    }
+    if (!memberships.length) {
+      throw new ForbiddenException("Team access unavailable");
+    }
+    return { userId, email: user.getEmail().getValue(), name: user.getName(), memberships };
+  }
   async principal(userId: string, tenantHint?: string, workspaceHint?: string) {
     let tenantId = tenantHint;
     if (!tenantId) {
@@ -76,7 +105,7 @@ export class SsoSessionService {
       tenantId = [...candidates][0];
     }
     if (!(await this.tenants.findById(tenantId))?.isActive()) {
-      throw new UnauthorizedException("Team access unavailable");
+      throw new ForbiddenException("Team access unavailable");
     }
     const { roleIds } = await this.authorize.execute({
       userId,

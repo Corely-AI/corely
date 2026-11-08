@@ -4,3 +4,5 @@ export * from "./settings/index";
 export * from "./shared/permissions";
 export * from "./shared/workspaces/ensure-default-workspace";
 export * from "./shared/components/index";
+
+export * from "./session/index";

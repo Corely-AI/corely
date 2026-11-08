@@ -12,6 +12,7 @@ After the existing callback sets `__Host-corely-session`, use same-origin calls:
 
 | Route                       | Behavior                                                                                                                                       |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/session/user`     | Verified account/membership choices, app binding and CSRF/expiry metadata; supplied context hints are authorized before bootstrap succeeds.    |
 | `GET /api/session/current`  | Returns `SsoSession` metadata: a session-bound CSRF token and absolute expiry.                                                                 |
 | `POST /api/session/rotate`  | With exact Origin and `x-csrf-token`, atomically replaces the opaque cookie and CSRF token without extending absolute expiry. No request body. |
 | `/api/bff/<existing-route>` | Dispatches an allowed route to its existing API controller and guards using a server-established principal.                                    |
@@ -113,3 +114,6 @@ and SSO, requiring legacy reauthentication; it does not restore rotated sessions
 Protocol references: [cookie prefixes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#cookie_prefixes)
 and [OWASP CSRF guidance](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
 These inform controls; they are not a security certification.
+
+[Shared browser session providers](../frontend/browser-sessions.md) implement the
+opt-in client path; existing clients are not automatically migrated.

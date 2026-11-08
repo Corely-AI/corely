@@ -1,3 +1,4 @@
+import { PrismaUserRepository } from "../infrastructure/adapters/prisma-user-repository.adapter";
 import { AuthorizeRequestContextUseCase } from "../application/use-cases/authorize-request-context.usecase";
 import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
 import { PrismaWorkspaceRepository } from "../../workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
@@ -27,7 +28,8 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host session persistence", 
       new AuthorizeRequestContextUseCase(
         new PrismaMembershipRepository(fixture.prisma),
         new AuthorizeWorkspaceUseCase(new PrismaWorkspaceRepository(fixture.prisma))
-      )
+      ),
+      new PrismaUserRepository(fixture.prisma)
     );
   });
   afterEach(async () => {
