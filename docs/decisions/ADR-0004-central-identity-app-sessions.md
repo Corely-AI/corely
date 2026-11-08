@@ -80,6 +80,16 @@ in packages/contracts. New SSO records belong to Identity and must follow the
 [persistence policy](../architecture/DATABASE_PERSISTENCE_STRATEGY.md).
 No tables, packages or runtime adapters are introduced by this ADR.
 
+## Credential entry implementation
+
+During #384 delivery the maintainer requested retaining passwordless login.
+The central page offers an emailed one-time code first, with password fallback;
+both use the same existing Identity user and active membership checks and the
+same app-bound handoff. Codes are not portal challenges or new account records.
+[The implementation note](../backend/sso.md) records expiry, attempts, queued
+email delivery, configuration and verification limits. Existing portal OTP,
+legacy staff tokens and POS login remain on their own existing paths.
+
 ## Exact host and endpoint contract
 
 Use the parent epic's requested origins, matching SURF-01 PR #406. The earlier

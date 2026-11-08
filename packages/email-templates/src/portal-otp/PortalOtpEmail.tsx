@@ -11,7 +11,12 @@ import {
 } from "@react-email/components";
 import type { PortalOtpEmailProps } from "./portal-otp-email.types";
 
-export function PortalOtpEmail({ code, expiryMinutes, appName = "Corely" }: PortalOtpEmailProps) {
+export function PortalOtpEmail({
+  code,
+  expiryMinutes,
+  appName = "Corely",
+  audience = "portal",
+}: PortalOtpEmailProps) {
   const previewText = `Your ${appName} login code is ${code}`;
 
   return (
@@ -22,7 +27,9 @@ export function PortalOtpEmail({ code, expiryMinutes, appName = "Corely" }: Port
         <Container style={container}>
           <Heading style={h1}>Your login code</Heading>
 
-          <Text style={text}>Enter the following code to sign in to your {appName} portal:</Text>
+          <Text style={text}>
+            Enter the following code to sign in to your {appName} {audience}:
+          </Text>
 
           <Section style={codeSection}>
             <Text style={codeStyle}>{code}</Text>

@@ -1,0 +1,70 @@
+// First-party browser SSO; legacy JWT/RefreshToken records remain unchanged.
+model SsoCentralSession {
+  id            String   @id
+  environment   String
+  userId        String
+  handleHash    String   @unique
+  credentialHash String
+  createdAt     DateTime @db.Timestamptz(6)
+  idleExpiresAt DateTime @db.Timestamptz(6)
+  expiresAt     DateTime @db.Timestamptz(6)
+  revokedAt     DateTime? @db.Timestamptz(6)
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions SsoLoginTransaction[]
+  appSessions   SsoAppSession[]
+
+  @@index([environment, userId])
+  @@index([expiresAt])
+  @@schema("identity")
+}
+
+model SsoLoginTransaction {
+  id             String @id
+  environment    String
+  appKey         String
+  origin         String
+  returnPath     String
+  browserHash    String
+  stateHash      String
+  stateCipher    String
+  verifierCipher String
+  challenge      String
+  expiresAt      DateTime @db.Timestamptz(6)
+  codeHash       String? @unique
+  codeExpiresAt  DateTime? @db.Timestamptz(6)
+  familyId       String?
+  consumedAt     DateTime? @db.Timestamptz(6)
+  family         SsoCentralSession? @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  emailChallenge SsoEmailChallenge?
+
+  @@index([expiresAt])
+  @@index([familyId])
+  @@schema("identity")
+}
+
+model SsoAppSession {
+  id            String @id
+  familyId      String
+  environment   String
+  appKey        String
+  userId        String
+  handleHash    String @unique
+  expiresAt     DateTime @db.Timestamptz(6)
+  idleExpiresAt DateTime @db.Timestamptz(6)
+  revokedAt     DateTime? @db.Timestamptz(6)
+  family        SsoCentralSession @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([environment, userId])
+  @@index([familyId])
+  @@index([expiresAt])
+  @@schema("identity")
+}
+
+model SsoAttemptBudget {
+  id        String @id
+  attempts  Int
+  expiresAt DateTime @db.Timestamptz(6)
+
+  @@index([expiresAt])
+  @@schema("identity")
+}

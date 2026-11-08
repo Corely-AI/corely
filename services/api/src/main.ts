@@ -6,6 +6,7 @@ import type { NestExpressApplication } from "@nestjs/platform-express";
 import * as path from "path";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { json, urlencoded } from "express";
+import { configureSsoHttpTransport } from "./modules/identity/adapters/http/sso-http-transport";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 import { ProblemDetailsExceptionFilter } from "./shared/exceptions/problem-details.filter";
@@ -25,6 +26,8 @@ async function bootstrap() {
     logger: ["log", "error", "warn", "debug", "verbose"],
     bodyParser: false,
   });
+
+  configureSsoHttpTransport(app);
 
   app.use(
     json({
@@ -51,8 +54,6 @@ async function bootstrap() {
 
   // Register global exception filter (converts all errors to ProblemDetails)
   app.useGlobalFilters(new ProblemDetailsExceptionFilter());
-
-  app.enableCors({ origin: true, credentials: true });
 
   if (process.env.NODE_ENV !== "production") {
     app.useStaticAssets(path.join(process.cwd(), "pdfs"), {

@@ -3,7 +3,7 @@ import { type TransactionContext } from "./unit-of-work.port";
 export type OutboxEventEnvelope = {
   eventType: string;
   payload: unknown;
-  tenantId: string;
+  tenantId: string | null;
   correlationId?: string;
   availableAt?: Date;
 };

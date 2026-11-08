@@ -67,6 +67,7 @@ Backend specific documentation.
 - [Staff availability and Booking](./backend/people-availability.md) — effective working patterns, dated exceptions and Booking constraints
 - [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files
 - [Auth](./backend/AUTH.md)
+- [Central SSO login and callbacks](./backend/sso.md) — passwordless email codes, password fallback, registered handoffs and isolated verification
 - [Background Module](./backend/background.md)
 - [Events](./backend/EVENTS.md)
 - [Dependency Injection](./di/)

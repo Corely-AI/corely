@@ -220,6 +220,16 @@ export const envSchema = z.object({
   // ============================================================================
   JWT_SECRET: z.string().optional(),
   WEB_BASE_URL: z.string().url().optional(),
+  CORELY_SSO_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
+  CORELY_SSO_REGISTRATIONS: z.string().optional(),
+  CORELY_SSO_SECRET: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/i)
+    .optional(),
+  CORELY_SSO_PROXY_KEY: z.string().min(32).optional(),
   PASSWORD_RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
   CORELY_PROXY_KEY_APP: z.string().min(1).optional(),
   CORELY_PROXY_KEY_POS: z.string().min(1).optional(),
@@ -254,6 +264,8 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "JWT_SECRET",
+  "CORELY_SSO_SECRET",
+  "CORELY_SSO_PROXY_KEY",
   "GOOGLE_APPLICATION_CREDENTIALS",
   "LANGFUSE_SECRET_KEY",
   "OTEL_EXPORTER_OTLP_HEADERS",

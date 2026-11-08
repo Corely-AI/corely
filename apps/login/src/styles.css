@@ -1,0 +1,275 @@
+@import "@corely/ui/theme-tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
+button,
+input,
+select {
+  font: inherit;
+}
+a {
+  color: hsl(var(--primary));
+  text-underline-offset: 4px;
+}
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+.login-shell {
+  min-height: 100dvh;
+  max-width: 1440px;
+  margin: auto;
+  padding: 32px 64px;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+header > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+header svg {
+  color: hsl(var(--accent));
+}
+.language {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: hsl(var(--foreground-muted));
+  font-size: 13px;
+}
+select {
+  background: hsl(var(--panel));
+  padding: 10px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  min-height: 44px;
+}
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+  align-items: center;
+  gap: 96px;
+  flex: 1;
+  padding: 72px 24px;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: hsl(var(--foreground-muted));
+}
+h1 {
+  max-width: 600px;
+  font-size: clamp(36px, 4.7vw, 64px);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  margin: 24px 0;
+  font-weight: 600;
+}
+.login-intro > p {
+  font-size: 18px;
+  line-height: 1.7;
+  max-width: 380px;
+  color: hsl(var(--foreground-muted));
+}
+.trust-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 56px;
+  max-width: 390px;
+}
+.trust-note > span {
+  font-size: 24px;
+  color: hsl(var(--accent));
+}
+.trust-note p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: hsl(var(--foreground-muted));
+}
+.login-card {
+  padding: 36px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 20px;
+  background: hsl(var(--panel));
+  box-shadow: 0 18px 60px hsl(var(--foreground) / 0.04);
+}
+.card-marker {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: hsl(var(--accent-muted));
+  color: hsl(var(--accent));
+  font-weight: 700;
+}
+h2 {
+  font-size: 23px;
+  line-height: 1.35;
+  margin: 22px 0 28px;
+  letter-spacing: -0.025em;
+}
+form {
+  display: flex;
+  flex-direction: column;
+}
+form label {
+  font-size: 13px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid hsl(var(--border-strong));
+  border-radius: 8px;
+  background: hsl(var(--panel));
+  color: hsl(var(--foreground));
+  margin-bottom: 22px;
+}
+button {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+}
+.primary-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.primary-button:hover {
+  background: hsl(var(--primary-hover));
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.cancel-button {
+  width: 100%;
+  background: transparent;
+  font-size: 13px;
+  color: hsl(var(--foreground-muted));
+  margin: 8px 0;
+}
+.cancel-button:hover {
+  background: hsl(var(--secondary));
+}
+.account-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 24px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.account-links p,
+.invitation-note {
+  font-size: 11px;
+  line-height: 1.65;
+  color: hsl(var(--foreground-muted));
+  margin: 4px 0 0;
+}
+.invitation-note {
+  margin-top: 18px;
+}
+.login-error {
+  background: hsl(var(--danger-muted));
+  color: hsl(var(--foreground));
+  border-left: 3px solid hsl(var(--danger));
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: -6px 0 24px;
+}
+footer {
+  font-size: 12px;
+  color: hsl(var(--foreground-muted));
+  padding-top: 16px;
+}
+@media (max-width: 760px) {
+  .login-shell {
+    padding: 20px;
+  }
+  main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: 48px 0 24px;
+  }
+  h1 {
+    margin: 14px 0;
+    font-size: 36px;
+    max-width: 380px;
+  }
+  .login-intro > p {
+    font-size: 15px;
+  }
+  .trust-note {
+    display: none;
+  }
+  .login-card {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  .language {
+    font-size: 0;
+    gap: 0;
+  }
+  select {
+    font-size: 13px;
+  }
+  footer {
+    padding-bottom: 16px;
+  }
+}
+
+.method-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+.method-buttons button {
+  background: transparent;
+  color: hsl(var(--foreground-muted));
+  font-size: 13px;
+}
+.code-sent {
+  color: hsl(var(--foreground-muted));
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
