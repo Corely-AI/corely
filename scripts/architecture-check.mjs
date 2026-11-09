@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(new URL(".", import.meta.url).pathname, "..");
+const repoRoot = path.resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
 
 const webSrc = path.join(repoRoot, "apps", "web", "src");
 const apiModules = path.join(repoRoot, "services", "api", "src", "modules");
@@ -120,8 +121,7 @@ function checkBackendModuleBoundaries() {
 
 function checkPrismaAccess() {
   const apiSrc = path.join(repoRoot, "services", "api", "src");
-  const workerSrc = path.join(repoRoot, "services", "worker", "src");
-  const files = [...listFiles(apiSrc, [".ts", ".tsx"]), ...listFiles(workerSrc, [".ts", ".tsx"])];
+  const files = listFiles(apiSrc, [".ts", ".tsx"]);
 
   for (const filePath of files) {
     const rel = path.relative(repoRoot, filePath);
@@ -205,8 +205,7 @@ function checkPackageCycles() {
  */
 function checkTypeOnlyInjectableImports() {
   const apiSrc = path.join(repoRoot, "services", "api", "src");
-  const workerSrc = path.join(repoRoot, "services", "worker", "src");
-  const files = [...listFiles(apiSrc, [".ts"]), ...listFiles(workerSrc, [".ts"])];
+  const files = listFiles(apiSrc, [".ts"]);
 
   // Classes that must be value-imported when used as constructor params in @Injectable()
   const diClasses = ["PrismaService"];

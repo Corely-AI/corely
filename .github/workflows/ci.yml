@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches:
+      - development
       - main
   pull_request:
 
@@ -27,6 +28,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
 
       - name: Build packages
         run: pnpm build:packages
@@ -58,6 +62,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
       - name: Build packages
         run: pnpm build:packages
 
@@ -85,6 +92,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
       - name: Build packages
         run: pnpm build:packages
 
@@ -93,7 +103,7 @@ jobs:
 
   e2e:
     name: Browser E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -112,13 +122,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
       - name: Build packages
         run: pnpm build:packages
 
-      - name: Run E2E Smoke Suite (PR)
-        if: github.event_name == 'pull_request'
-        run: pnpm run e2e:smoke # Assuming a smoke test script exists or we configure it
+      - name: Install supported browser
+        run: pnpm --dir apps/e2e exec playwright install --with-deps chromium
 
-      - name: Run Full E2E Suite (Main)
+      - name: Run isolated workspace-session browser regressions
+        run: pnpm --dir apps/e2e exec playwright test --config playwright.workspace-session.config.ts
+
+      - name: Preserve existing full browser gate on main
         if: github.ref == 'refs/heads/main'
         run: pnpm run e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspace-session-browser
+          path: apps/e2e/test-results/workspace-session/
+          if-no-files-found: warn

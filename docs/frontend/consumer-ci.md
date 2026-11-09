@@ -61,3 +61,34 @@ install failure must not be mistaken for a browser-test failure.
 Install Playwright Chromium first, or set `PLAYWRIGHT_CHANNEL=chrome` for an
 installed local Chrome. CI installs its own Chromium. The discovery test asserts
 both existing and focused clients are retained; there is no changed-path bypass.
+
+## CI follow-up (#400)
+
+The root CI workflow now generates Prisma before package builds/typechecks/unit tests and
+runs on the actual `development` default branch as well as the retained `main` trigger. Its former browser job called a missing
+`e2e:smoke` script and had no browser installation or configured full-suite API environment.
+It now runs the existing isolated workspace-session browser suite on supported Ubuntu 24.04,
+with failure screenshots retained. This is a named session regression gate, not a claim that
+the entire legacy E2E suite runs in CI. App Center and Invoice suites remain separate gates.
+
+Runner regression tests select Git Bash on Windows instead of the WSL launcher and handle
+temporary paths containing spaces. Set `CORELY_TEST_BASH` when Git Bash is installed outside
+`%ProgramFiles%\Git\bin\bash.exe`. They still inject a failed unit command and verify that
+later checks execute, logs survive and the job fails. lint-staged resolves absolute file paths
+before applying its existing E2E exclusion; application checks remain selected.
+
+The root architecture command resolves Windows file URLs correctly and scans the API-hosted
+background owner instead of an absent `services/worker`. Existing architecture violations
+still fail the command. The frontend AST import and Invoice bundle policies remain the gates
+for the focused client boundaries; this follow-up does not claim a full backend architecture
+audit or repair legacy module ownership.
+
+The SSO transport fixture uses a synthetic transfer controller under the already allowed
+Invoice route root. Documents remain excluded from the production Invoice BFF. The fixture
+continues to verify JSON/base64 bytes, streaming, cancellation, origin/CSRF, idempotency/trace
+headers and body limits with actual host sessions. It is not a business endpoint.
+
+The earlier merged PR #420 recorded consumer typecheck failures in Assistant/Cash shared
+screens and a tenant-management test; those remain visible failures. Do not remove existing
+consumers, suppress their checks or infer readiness from this workflow repair. Re-run the
+published branch's actual Actions checks before acceptance.

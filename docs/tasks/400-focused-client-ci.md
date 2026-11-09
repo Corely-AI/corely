@@ -1,15 +1,53 @@
 # #400 — Focused client CI
 
 - Issue: https://github.com/Corely-AI/corely/issues/400 (SURF-20; parent #380).
-- Draft PR: https://github.com/Corely-AI/corely/pull/420.
+- Earlier PR: https://github.com/Corely-AI/corely/pull/420 (merged; checks were not all green).
 - Prerequisites #381 and #391 verified closed Completed on November 9, 2026.
-- Branch `400-focused-client-ci`, base `corely/development` at `05fceeeb34`.
+- Follow-up branch `400-ci-followup`, base `origin/development` at `8768b5e94`.
 - Scope: conservative complete Vite-consumer fan-out, isolated validation/build
   artifacts, import boundaries, existing focused browser and shared unit suites.
 - Canonical behavior and reproducible commands: [consumer CI](../frontend/consumer-ci.md).
 - No UI change, deployment, merge, migration or API contract change.
 
-## Verification
+## Follow-up verification — November 10, 2026
+
+The merged workflow's actual Actions logs show missing generated Prisma types, a nonexistent
+`e2e:smoke` command, and four failing legacy consumer typechecks. This follow-up generates
+Prisma before root CI builds/tests, uses the actual default branch and replaces the unconfigured
+browser invocation with the existing isolated workspace-session suite plus Chromium setup and
+artifacts for PR/default-branch checks. The existing `main` trigger/full browser command is
+retained. It preserves all discovered consumer checks and independent failure reporting.
+
+Review findings fixed: Windows selected WSL's `bash` instead of Git Bash; runner fixture paths
+containing spaces were mishandled; lint-staged's E2E exclusion missed absolute paths; the
+architecture command used Windows URL pathname conversion and referenced a removed worker;
+the SSO transport probes called Documents through a deliberately restricted Invoice origin.
+The probe is now under its allowed synthetic Invoice route; production access is unchanged.
+
+Fresh checks:
+
+- `node --test scripts/ci/*.test.mjs`: 10 passed, no skips, including failed-unit continuation,
+  retained logs, paths with spaces and absolute-path hook selection.
+- `node scripts/ci/frontend-policy.mjs`: passed against actual frontend source.
+- Real host-session SSO transport integration: 26 passed, no skips, using the disposable local
+  SSO database. All six earlier fixture failures are corrected without changing production code.
+- Workspace-session Chromium suite: 6 passed, no skips, matching the new root browser job.
+- `pnpm prisma:generate` and `pnpm --filter @corely/data typecheck`: passed. Generation changes
+  local generated files only; no migration or application database operation was run.
+- Scoped ESLint and diff whitespace checks: passed. Changed-file formatting is checked before PR.
+- Fresh web, CRM, freelancer and cash-management typechecks still fail in unchanged shared
+  Assistant/Cash screens and Invoice CustomerSelection DTO typing; web also has the existing
+  tenant-apps test matcher error. These are retained failures, not waived success.
+- `pnpm arch:check` now executes on Windows and fails on existing Prisma-placement findings
+  across application/background/script files. It does not crash on the removed worker path.
+- Historical full Actions runs are linked above; the follow-up's hosted checks must be read
+  after publication. Full repository unit/typecheck/lint/format checks are not claimed green.
+
+UI/UX evidence is not applicable: this follow-up changes CI, local validation and isolated test
+fixtures, with no customer screen changes. No merge, deployment or rollout is performed. Keep
+Draft until remaining required checks have an accepted resolution.
+
+## Historical verification from PR #420
 
 - Import policy: four node tests passed; actual frontend source scan passed.
 - Invoice, App Center and login typechecks passed.
