@@ -32,7 +32,7 @@ entries with a supported launch descriptor become tiles. Search matches localize
 app names; category browsing uses the descriptor's Finance/People category. No
 planned app is manufactured from the long-term catalog. The server controls
 visibility; absence of accessible destinations produces an empty state without
-restricted metadata. App enablement remains an administrator workflow (#393).
+restricted metadata. Dependency topology is omitted from staff discovery. App enablement remains a host administrator workflow.
 
 Only enabled, available entries with a valid configured origin can open. Disabled,
 unconfigured and Coming soon entries have disabled controls and a neutral reason.
@@ -91,3 +91,106 @@ overflow; search/no-match and focus styling worked.
 | Root-wrapper desktop                                                              | Root-wrapper phone                                                                     |
 | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | ![Directory built from repository root](images/app-center-root-build-desktop.png) | ![Phone directory built from repository root](images/app-center-root-build-mobile.png) |
+
+## Host administration and refresh
+
+The launcher calls `GET /menu/app-management` alongside the directory. Only an
+actor with current host membership and the existing tenant-read/write, app-management
+and entitlement-write permissions receives **Manage team apps**. Tenant ownership
+and a forged browser role do not grant that link or mutation authority. Members
+receive an empty response, with no installation, subscription or grant details.
+The retained host administration endpoints still authorize every command independently.
+
+The link opens the existing `/settings/tenants/:tenantId` route. It relies on the
+retained same-origin legacy route map in ADR-0003; the standalone launcher does not
+render that page or transfer session credentials. Legacy authentication and actual
+host routing remain SURF-19/SURF-24 rollout gates.
+
+The host page reads active installation state for the selected tenant through the host-protected catalog query (`forTenantId`). It shows installation and team enablement separately and offers **Install** when an app is enabled by default but has no active installation. This query selects the administration target; it never changes authenticated tenant/workspace authority.
+
+The host page explains required apps before enablement and reports audited success,
+dependency conflicts and lost permission. A conflict does not automatically cascade. The existing combined-disable action requires explicit confirmation of the server-reported dependent apps.
+Successful refresh preserves feedback; a failed refresh blocks further edits until
+reload. Pending responses from a previous tenant cannot replace current data.
+
+The existing entitlement command reuses Platform's installer/dependency resolver.
+Installs, overrides and the audit record commit in one serializable transaction;
+a failed configuration write rolls back all three. Installation remains distinct
+from effective entitlement, workspace capabilities and operation permissions. No
+subscription, paid tier or legal guarantee is inferred from a tile or toggle.
+Disable preserves business records and install history.
+
+API entitlement reads no longer use the former five-minute process-local cache.
+Committed disablement is visible to another API instance on its next access check.
+The directory, switcher, focused navigation and workspace authority also refresh
+on focus/reconnect and every 30 seconds in an active tab. Launch actions continue
+to revalidate immediately. UI refresh is not backend authorization.
+
+### SURF-12 evidence
+
+Checked November 9, 2026 in installed Chrome: App Center at 1280×800 and 390×844,
+with synthetic staff and host-admin sessions/API responses. Host controls were
+rendered from the actual `TenantAppsTab` component in an isolated Vite preview
+with synthetic command responses. Checked dependency confirmation, keyboard focus,
+audited feedback, conflict handling and phone overflow. The captures show English;
+the new launcher copy also has German/Vietnamese variants. No complete central-session
+→ legacy-login → real host-page browser flow or production routing is claimed.
+
+| Administrator directory                                                            | Member directory                                                     |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| ![Administrator on phone](images/app-management/administrator-directory-phone.png) | ![Member on phone](images/app-management/member-directory-phone.png) |
+
+[Desktop launcher](images/app-management/administrator-directory-desktop.png),
+[host controls](images/app-management/host-controls-desktop.png),
+[dependency confirmation](images/app-management/dependency-confirmation-phone.png),
+[audited success](images/app-management/audited-success-phone.png), and
+[dependent-app conflict](images/app-management/dependency-conflict-phone.png).
+
+### SURF-12 review corrections
+
+A delayed save can complete after navigation to another tenant. Refresh callbacks
+now check the committed tenant before starting a read as well as before applying
+its result, so the old callback cannot supersede the active tenant's request.
+The legacy Playwright suite excludes the App Center specs; run them with
+`playwright.app-center.config.ts`, which starts the correct thin client.
+
+The installation correction was visually checked with a default-enabled,
+uninstalled synthetic app at 1280×800 and 390×844. Confirmed Install → dependency
+confirmation → audited success, initial Cancel focus and no phone overflow.
+These render the actual host component in an isolated preview; live legacy-host
+routing/authentication remains unverified as noted above.
+
+| Default-enabled app before installation                                        | After installation                                                                         |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| ![Install offered on phone](images/app-management/host-installation-phone.png) | ![Active installation on phone](images/app-management/host-installation-success-phone.png) |
+
+[Desktop status](images/app-management/host-installation-desktop.png) and
+[installation confirmation](images/app-management/host-installation-confirmation-phone.png).
+
+### Team disablement and changed dependencies
+
+A team-enabled app without an active installation offers both **Install** and
+**Disable for team**. Disabling the team flag does not create installation
+records or activate dependencies. Required-app policies still hide prohibited
+disable actions.
+
+Combined disablement sends the dependent IDs shown in the confirmation as
+`expectedDependents`. The API checks the current list inside the same serializable
+transaction as the writes. A newly enabled dependent causes HTTP 409 and an updated
+list with `approvalChanged: true`; nothing is disabled or audited until the user
+confirms again. Focus moves to Cancel when the list changes. If current dependents have only been removed, the approved action can still proceed. Existing callers that omit the
+optional snapshot retain their prior explicit cascade behavior; deploy the updated
+API guard before enabling the updated host controls.
+
+Checked the actual host component in an isolated synthetic Vite preview at
+1280×800 and 390×844: disable without installation, changed-dependency feedback,
+expanded confirmation, Cancel focus and no phone overflow. Persisted API tests
+separately verify the transactional behavior; these captures do not establish live
+legacy-host routing or authentication.
+
+| Enabled without installation                                                         | Disabled without installation                                                                     |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| ![Separate team disable action](images/app-management/team-disable-before-phone.png) | ![Disabled while retaining no active install](images/app-management/team-disable-after-phone.png) |
+
+[Desktop controls](images/app-management/team-disable-desktop.png) and
+[renewed dependency confirmation](images/app-management/dependency-reapproval-phone.png).

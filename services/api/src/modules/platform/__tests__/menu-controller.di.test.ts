@@ -1,3 +1,4 @@
+import { GetAppManagementLinkUseCase } from "../application/use-cases/get-app-management-link.usecase";
 import { describe, expect, it, vi } from "vitest";
 import { MenuController } from "../adapters/http/menu.controller";
 import { mockDeep } from "vitest-mock-extended";
@@ -15,7 +16,8 @@ describe("MenuController DI wiring", () => {
       updateMenuOverridesUseCase as any,
       resetMenuOverridesUseCase as any,
       grantRepo as any,
-      mockDeep<ListAppLaunchesUseCase>()
+      mockDeep<ListAppLaunchesUseCase>(),
+      mockDeep<GetAppManagementLinkUseCase>()
     );
 
     expect(controller).toBeDefined();

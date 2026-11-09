@@ -6,6 +6,7 @@ import { AppCenter } from "./app-center";
 
 const mocks = vi.hoisted(() => ({
   json: vi.fn(),
+  directory: vi.fn(),
   leave: vi.fn(),
   logout: vi.fn(),
   select: vi.fn(),
@@ -46,7 +47,10 @@ afterEach(() => {
   cleanup();
   vi.resetAllMocks();
 });
-function setup() {
+function setup(management: { path?: string } = {}) {
+  mocks.json.mockImplementation((path, ...args) =>
+    path === "/menu/app-management" ? Promise.resolve(management) : mocks.directory(path, ...args)
+  );
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
     <QueryClientProvider client={queryClient}>
@@ -55,16 +59,28 @@ function setup() {
   );
 }
 describe("app launch revalidation", () => {
+  it("offers host administration only when the server supplies a link", async () => {
+    mocks.directory.mockResolvedValue([invoice]);
+    setup({ path: "/settings/tenants/tenant-a" });
+    fireEvent.click(await screen.findByRole("button", { name: "Manage team apps" }));
+    expect(mocks.leave).toHaveBeenCalledOnce();
+  });
+  it("keeps ordinary members in the staff directory", async () => {
+    mocks.directory.mockResolvedValue([invoice]);
+    setup();
+    await screen.findByRole("button", { name: "Open: Invoice" });
+    expect(screen.queryByRole("button", { name: "Manage team apps" })).toBeNull();
+  });
   it("refreshes the projection before opening an app", async () => {
-    mocks.json.mockResolvedValue([invoice]);
+    mocks.directory.mockResolvedValue([invoice]);
     setup();
     fireEvent.click(await screen.findByRole("button", { name: "Open: Invoice" }));
     await waitFor(() => expect(mocks.leave).toHaveBeenCalledOnce());
-    expect(mocks.json).toHaveBeenCalledTimes(2);
-    expect(mocks.json.mock.calls.every(([path]) => path === "/menu/launches")).toBe(true);
+    expect(mocks.json.mock.calls.filter(([path]) => path === "/menu/launches")).toHaveLength(2);
+    expect(mocks.json.mock.calls.some(([path]) => path === "/menu/app-management")).toBe(true);
   });
   it("stays in App Center if access is removed before launch", async () => {
-    mocks.json.mockResolvedValueOnce([invoice]).mockResolvedValueOnce([]);
+    mocks.directory.mockResolvedValueOnce([invoice]).mockResolvedValueOnce([]);
     setup();
     fireEvent.click(await screen.findByRole("button", { name: "Open: Invoice" }));
     await screen.findByRole("alert");
@@ -74,7 +90,7 @@ describe("app launch revalidation", () => {
     let finish: (value: unknown[]) => void = () => {
       throw new Error("Launch not started");
     };
-    mocks.json.mockResolvedValueOnce([invoice]).mockImplementationOnce(
+    mocks.directory.mockResolvedValueOnce([invoice]).mockImplementationOnce(
       () =>
         new Promise((resolve) => {
           finish = resolve;
@@ -82,7 +98,9 @@ describe("app launch revalidation", () => {
     );
     const view = setup();
     fireEvent.click(await screen.findByRole("button", { name: "Open: Invoice" }));
-    await waitFor(() => expect(mocks.json).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(mocks.json.mock.calls.filter(([path]) => path === "/menu/launches")).toHaveLength(2)
+    );
     view.unmount();
     finish([invoice]);
     await new Promise((resolve) => setTimeout(resolve, 0));

@@ -18,6 +18,7 @@
     "tax/**/*.ts",
     "tests/**/*.ts",
     "utils/**/*.ts",
-    "helpers/**/*.ts"
+    "helpers/**/*.ts",
+    "playwright.app-center.config.ts"
   ]
 }

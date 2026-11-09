@@ -22,7 +22,8 @@ export class ListAppLaunchesUseCase {
       // Existing menu composition applies membership, permissions, capabilities,
       // dependency enablement and entitlements. No browser-side grant inference.
       if (menu.items.length > 0) {
-        visible.push(app);
+        // Dependency topology belongs to host administration, not staff discovery.
+        visible.push({ ...app, dependencies: [] });
       }
     }
     return visible;

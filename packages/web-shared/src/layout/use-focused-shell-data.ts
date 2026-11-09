@@ -29,6 +29,9 @@ export function useFocusedShellData(app: AppLaunchId, workspaceId: string) {
       ),
     enabled: ready,
     retry: false,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always",
   });
   const launches = useQuery({
     queryKey: sessionScopeQueryKey(scope, "focused-shell-launches"),
@@ -36,6 +39,9 @@ export function useFocusedShellData(app: AppLaunchId, workspaceId: string) {
       client.json("/menu/launches", z.array(AppCatalogItemSchema), { signal }),
     enabled: ready,
     retry: false,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always",
   });
   return { ready, navigation, launches };
 }

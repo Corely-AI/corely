@@ -24,6 +24,7 @@ import {
 } from "../../../identity/adapters/http/current-user.decorator";
 import { ComposeMenuUseCase } from "../../application/use-cases/compose-menu.usecase";
 import { ListAppLaunchesUseCase } from "../../application/use-cases/list-app-launches.usecase";
+import { GetAppManagementLinkUseCase } from "../../application/use-cases/get-app-management-link.usecase";
 import { UpdateMenuOverridesUseCase } from "../../application/use-cases/update-menu-overrides.usecase";
 import { ResetMenuOverridesUseCase } from "../../application/use-cases/reset-menu-overrides.usecase";
 import {
@@ -45,8 +46,17 @@ export class MenuController {
     private readonly resetMenuOverridesUseCase: ResetMenuOverridesUseCase,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
     private readonly grantRepo: RolePermissionGrantRepositoryPort,
-    private readonly listAppLaunches: ListAppLaunchesUseCase
+    private readonly listAppLaunches: ListAppLaunchesUseCase,
+    private readonly managementLink: GetAppManagementLinkUseCase
   ) {}
+
+  @Get("app-management")
+  async getAppManagement(@CurrentTenantId() tenantId: string, @CurrentUserId() userId: string) {
+    if (!tenantId || !userId) {
+      throw new BadRequestException("Missing tenant or user context");
+    }
+    return this.managementLink.execute(tenantId, userId);
+  }
 
   @Get("launches")
   async getLaunches(
