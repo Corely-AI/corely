@@ -1,12 +1,14 @@
+import { useInvoicesApi, useInvoiceKeys } from "../invoice-runtime";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
-import { invoiceQueryKeys } from "../queries";
+
 import type { InvoiceDto } from "@corely/contracts";
 
 export function useSendInvoice() {
+  const invoicesApi = useInvoicesApi();
+  const invoiceQueryKeys = useInvoiceKeys();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);

@@ -1,3 +1,4 @@
+import { useInvoicesApi } from "../invoice-runtime";
 import React, { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { normalizeError } from "@corely/api-client";
@@ -28,7 +29,6 @@ import {
   Textarea,
 } from "@corely/ui";
 import { toast } from "sonner";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
 
 type DraftPayload = DraftInvoiceIssueEmailOutput | DraftInvoiceReminderEmailOutput;
 
@@ -49,6 +49,7 @@ export function InvoiceCopilotPanel({
   amountDueCents,
   defaultLanguage,
 }: Props) {
+  const invoicesApi = useInvoicesApi();
   const [language, setLanguage] = useState<InvoiceEmailDraftLanguage>(defaultLanguage);
   const [reminderTone, setReminderTone] = useState<InvoiceReminderEmailDraftTone>("normal");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

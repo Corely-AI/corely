@@ -1,4 +1,5 @@
 import { apiClient } from "./api-client";
+import type { FeatureHttpClient } from "../session/feature-http-client";
 import type {
   BankAccount,
   CreateBankAccountInput,
@@ -11,6 +12,8 @@ import type {
 } from "@corely/contracts";
 
 export class PaymentMethodsApi {
+  constructor(private readonly http: FeatureHttpClient = apiClient) {}
+
   // Bank Accounts
   async listBankAccounts(
     legalEntityId: string,
@@ -24,25 +27,25 @@ export class PaymentMethodsApi {
       params.set("includeSensitive", "true");
     }
 
-    return apiClient.get<ListBankAccountsOutput>(`/payment-methods/bank-accounts?${params}`);
+    return this.http.get<ListBankAccountsOutput>(`/payment-methods/bank-accounts?${params}`);
   }
 
   async createBankAccount(
     input: CreateBankAccountInput,
     legalEntityId: string
   ): Promise<BankAccount> {
-    const result = await apiClient.post<{ bankAccount: BankAccount }>(
+    const result = await this.http.post<{ bankAccount: BankAccount }>(
       `/payment-methods/bank-accounts?legalEntityId=${legalEntityId}`,
       input,
       {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
+        idempotencyKey: this.http.generateIdempotencyKey(),
       }
     );
     return result.bankAccount;
   }
 
   async updateBankAccount(id: string, input: UpdateBankAccountInput): Promise<BankAccount> {
-    const result = await apiClient.patch<{ bankAccount: BankAccount }>(
+    const result = await this.http.patch<{ bankAccount: BankAccount }>(
       `/payment-methods/bank-accounts/${id}`,
       input
     );
@@ -50,7 +53,7 @@ export class PaymentMethodsApi {
   }
 
   async setBankAccountDefault(id: string): Promise<BankAccount> {
-    const result = await apiClient.post<{ bankAccount: BankAccount }>(
+    const result = await this.http.post<{ bankAccount: BankAccount }>(
       `/payment-methods/bank-accounts/${id}/set-default`,
       {}
     );
@@ -58,7 +61,7 @@ export class PaymentMethodsApi {
   }
 
   async deactivateBankAccount(id: string): Promise<BankAccount> {
-    const result = await apiClient.post<{ bankAccount: BankAccount }>(
+    const result = await this.http.post<{ bankAccount: BankAccount }>(
       `/payment-methods/bank-accounts/${id}/deactivate`,
       {}
     );
@@ -67,7 +70,7 @@ export class PaymentMethodsApi {
 
   // Payment Methods
   async listPaymentMethods(legalEntityId: string): Promise<ListPaymentMethodsOutput> {
-    return apiClient.get<ListPaymentMethodsOutput>(
+    return this.http.get<ListPaymentMethodsOutput>(
       `/payment-methods?legalEntityId=${legalEntityId}`
     );
   }
@@ -76,18 +79,18 @@ export class PaymentMethodsApi {
     input: CreatePaymentMethodInput,
     legalEntityId: string
   ): Promise<PaymentMethod> {
-    const result = await apiClient.post<{ paymentMethod: PaymentMethod }>(
+    const result = await this.http.post<{ paymentMethod: PaymentMethod }>(
       `/payment-methods?legalEntityId=${legalEntityId}`,
       input,
       {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
+        idempotencyKey: this.http.generateIdempotencyKey(),
       }
     );
     return result.paymentMethod;
   }
 
   async updatePaymentMethod(id: string, input: UpdatePaymentMethodInput): Promise<PaymentMethod> {
-    const result = await apiClient.patch<{ paymentMethod: PaymentMethod }>(
+    const result = await this.http.patch<{ paymentMethod: PaymentMethod }>(
       `/payment-methods/${id}`,
       input
     );
@@ -95,7 +98,7 @@ export class PaymentMethodsApi {
   }
 
   async setPaymentMethodDefault(id: string): Promise<PaymentMethod> {
-    const result = await apiClient.post<{ paymentMethod: PaymentMethod }>(
+    const result = await this.http.post<{ paymentMethod: PaymentMethod }>(
       `/payment-methods/${id}/set-default`,
       {}
     );
@@ -103,7 +106,7 @@ export class PaymentMethodsApi {
   }
 
   async deactivatePaymentMethod(id: string): Promise<PaymentMethod> {
-    const result = await apiClient.post<{ paymentMethod: PaymentMethod }>(
+    const result = await this.http.post<{ paymentMethod: PaymentMethod }>(
       `/payment-methods/${id}/deactivate`,
       {}
     );

@@ -1,12 +1,17 @@
+import {
+  useInvoicesApi,
+  useInvoiceCustomersApi,
+  useInvoiceKeys,
+  useInvoiceNavigate,
+} from "../invoice-runtime";
+import { useInvoiceRuntime } from "../invoice-runtime";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+
 import { Copy, Download, Edit, FileText, Mail, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
-import { customersApi } from "@corely/web-shared/lib/customers-api";
 import { formatMoney, formatDate } from "@corely/web-shared/shared/lib/formatters";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import { Badge } from "@corely/ui";
@@ -25,8 +30,7 @@ import {
   FilterPanel,
   type FilterFieldDef,
 } from "@corely/web-shared/shared/list-kit";
-import { invoiceQueryKeys } from "../queries";
-import { workspaceQueryKeys } from "@corely/web-shared/shared/workspaces/workspace-query-keys";
+
 import type { InvoiceStatus } from "@corely/web-shared/shared/types";
 import {
   Pagination,
@@ -38,8 +42,13 @@ import {
 } from "@corely/ui";
 
 export default function InvoicesPage() {
+  const runtime = useInvoiceRuntime();
+  const invoicesApi = useInvoicesApi();
+  const customersApi = useInvoiceCustomersApi();
+  const invoiceQueryKeys = useInvoiceKeys();
+  const customerKeys = useInvoiceKeys("customers");
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useInvoiceNavigate();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
@@ -51,18 +60,23 @@ export default function InvoicesPage() {
       pageSize: 20,
       sort: "createdAt:desc", // Default sort
     },
-    { storageKey: "invoices-list-v1" }
+    runtime ? undefined : { storageKey: "invoices-list-v1" }
   );
 
   // Queries
-  const { data: listData, isLoading } = useQuery({
+  const {
+    data: listData,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: [...invoiceQueryKeys.list(), state],
     queryFn: () => invoicesApi.listInvoices(state),
     placeholderData: keepPreviousData,
   });
 
   const { data: customersData } = useQuery({
-    queryKey: workspaceQueryKeys.customers.list(),
+    queryKey: customerKeys.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
@@ -93,7 +107,7 @@ export default function InvoicesPage() {
     if (customers.length > 0) {
       fields.push({
         key: "customerPartyId",
-        label: t("invoices.client"),
+        label: t("invoices.customer"),
         type: "select",
         options: customers.map((c) => ({ label: c.displayName, value: c.id })),
       });
@@ -203,6 +217,20 @@ export default function InvoicesPage() {
 
   const allSelected = invoices.length > 0 && invoices.every((i) => selectedIds.has(i.id));
 
+  if (isError) {
+    return (
+      <section role="alert" className="space-y-4 p-6">
+        <p>{t("common.error")}</p>
+        <Button
+          onClick={() => {
+            void refetch();
+          }}
+        >
+          {t("common.retry", { defaultValue: "Try again" })}
+        </Button>
+      </section>
+    );
+  }
   // Renderers
   return (
     <CrudListPageLayout
@@ -301,7 +329,7 @@ export default function InvoicesPage() {
                     {t("invoices.invoiceNumber")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    {t("invoices.client")}
+                    {t("invoices.customer")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                     {t("invoices.date")}
@@ -360,13 +388,17 @@ export default function InvoicesPage() {
                           <CrudRowActions
                             primaryAction={{
                               label: "View",
-                              href: `/invoices/${invoice.id}`,
+                              href:
+                                runtime?.route(`/invoices/${invoice.id}`) ??
+                                `/invoices/${invoice.id}`,
                               "data-testid": `view-invoice-${invoice.id}`,
                             }}
                             secondaryActions={[
                               {
                                 label: "Edit",
-                                href: `/invoices/${invoice.id}/edit`, // Assuming edit route
+                                href:
+                                  runtime?.route(`/invoices/${invoice.id}/edit`) ??
+                                  `/invoices/${invoice.id}/edit`,
                                 icon: <Edit className="h-4 w-4" />,
                               },
                               {

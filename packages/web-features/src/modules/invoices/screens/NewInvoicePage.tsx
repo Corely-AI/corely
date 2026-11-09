@@ -1,5 +1,8 @@
+import { useInvoicesApi, useInvoiceKeys, useInvoiceNavigate } from "../invoice-runtime";
+import { useInvoiceRuntime, useInvoiceDraftGuard } from "../invoice-runtime";
+import { flushSync } from "react-dom";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { useTranslation } from "react-i18next";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +12,6 @@ import { toast } from "sonner";
 
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
 import { InvoiceFooter } from "../components/InvoiceFooter";
 import {
   invoiceFormSchema,
@@ -18,7 +20,6 @@ import {
   type InvoiceFormData,
 } from "../schemas/invoice-form.schema";
 import type { InvoiceStatus } from "@corely/contracts";
-import { invoiceQueryKeys } from "../queries";
 
 // Sub-components
 import { CustomerSelection } from "../components/invoice-form/CustomerSelection";
@@ -38,9 +39,12 @@ const FREELANCER_INFO = {
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 
 export default function NewInvoicePage() {
+  const runtime = useInvoiceRuntime();
+  const invoicesApi = useInvoicesApi();
+  const invoiceQueryKeys = useInvoiceKeys();
   const { t, i18n } = useTranslation();
   const locale = i18n.t("common.locale");
-  const navigate = useNavigate();
+  const navigate = useInvoiceNavigate();
   const queryClient = useQueryClient();
 
   const [targetStatus] = useState<InvoiceStatus>("ISSUED");
@@ -59,6 +63,7 @@ export default function NewInvoicePage() {
     setValue,
     watch,
   } = methods;
+  useInvoiceDraftGuard("invoice-new", methods.formState.isDirty);
 
   // Submit mutation
   const createInvoiceMutation = useMutation({
@@ -122,6 +127,10 @@ export default function NewInvoicePage() {
       toast.success(
         finalStatus === targetStatus ? t("invoices.created") : t("invoices.savedUnchanged")
       );
+      flushSync(() => {
+        methods.reset(data);
+        runtime?.registerDraft("invoice-new", false);
+      });
       navigate("/invoices");
     } catch {
       // handled in mutation callbacks
@@ -130,7 +139,7 @@ export default function NewInvoicePage() {
 
   return (
     <FormProvider {...methods}>
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className={runtime ? "min-w-0 space-y-6" : "p-6 lg:p-8 space-y-6 animate-fade-in"}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/invoices")}>
@@ -161,13 +170,19 @@ export default function NewInvoicePage() {
 
         <form data-testid="invoice-form" onSubmit={handleSubmit(onSubmit)}>
           <Card>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="p-4 sm:p-8 space-y-8">
               {/* Header with addresses */}
               <div className="space-y-6">
                 {/* Your address */}
                 <div className="text-sm text-muted-foreground border-b border-dashed border-border pb-4">
-                  {FREELANCER_INFO.name} | {FREELANCER_INFO.address} | {FREELANCER_INFO.postalCode}{" "}
-                  {FREELANCER_INFO.city}, {FREELANCER_INFO.country}
+                  {runtime ? (
+                    runtime.workspace.name
+                  ) : (
+                    <>
+                      {FREELANCER_INFO.name} | {FREELANCER_INFO.address} |{" "}
+                      {FREELANCER_INFO.postalCode} {FREELANCER_INFO.city}, {FREELANCER_INFO.country}
+                    </>
+                  )}
                 </div>
 
                 {/* Billed to & Invoice metadata */}

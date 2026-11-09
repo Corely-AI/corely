@@ -11,6 +11,7 @@
     "playwright.api.config.ts",
     "playwright.sso.config.ts",
     "playwright.workspace-session.config.ts",
+    "playwright.invoice.config.ts",
     "playwright.openbuk.config.ts",
     "playwright.cash.config.ts",
     "playwright.pos.config.ts",

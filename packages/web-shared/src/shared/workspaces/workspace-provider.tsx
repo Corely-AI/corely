@@ -129,6 +129,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 };
 
+export const useOptionalWorkspace = () => useContext(WorkspaceContext);
 export const useWorkspace = (): WorkspaceContextValue => {
   const ctx = useContext(WorkspaceContext);
   if (!ctx) {

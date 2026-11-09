@@ -22,6 +22,7 @@ import type {
   GetInvoiceShareLinkOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
+import type { FeatureHttpClient } from "../session/feature-http-client";
 import { buildListQuery } from "./api-query-utils";
 
 export type InvoicePdfResponse = RequestInvoicePdfOutput & {
@@ -29,13 +30,15 @@ export type InvoicePdfResponse = RequestInvoicePdfOutput & {
 };
 
 export class InvoicesApi {
+  constructor(private readonly http: FeatureHttpClient = apiClient) {}
+
   /**
    * Create a new invoice
    */
   async createInvoice(input: CreateInvoiceInput, idempotencyKey?: string): Promise<InvoiceDto> {
-    const result = await apiClient.post<CreateInvoiceOutput>("/invoices", input, {
-      idempotencyKey: idempotencyKey || apiClient.generateIdempotencyKey(),
-      correlationId: apiClient.generateCorrelationId(),
+    const result = await this.http.post<CreateInvoiceOutput>("/invoices", input, {
+      idempotencyKey: idempotencyKey || this.http.generateIdempotencyKey(),
+      correlationId: this.http.generateCorrelationId(),
     });
     return result.invoice;
   }
@@ -46,8 +49,8 @@ export class InvoicesApi {
   async listInvoices(params?: ListInvoicesInput): Promise<ListInvoicesOutput> {
     const searchParams = buildListQuery(params);
 
-    const result = await apiClient.get<unknown>(`/invoices?${searchParams.toString()}`, {
-      correlationId: apiClient.generateCorrelationId(),
+    const result = await this.http.get<unknown>(`/invoices?${searchParams.toString()}`, {
+      correlationId: this.http.generateCorrelationId(),
     });
 
     // Normalize response
@@ -83,10 +86,10 @@ export class InvoicesApi {
   async getInvoice(
     id: string
   ): Promise<{ invoice: InvoiceDto; capabilities?: InvoiceCapabilities }> {
-    const result = await apiClient.get<{ invoice: InvoiceDto; capabilities?: InvoiceCapabilities }>(
+    const result = await this.http.get<{ invoice: InvoiceDto; capabilities?: InvoiceCapabilities }>(
       `/invoices/${id}`,
       {
-        correlationId: apiClient.generateCorrelationId(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
     if (result && typeof result === "object" && "invoice" in result) {
@@ -103,8 +106,8 @@ export class InvoicesApi {
     id: string,
     input: Omit<UpdateInvoiceInput, "invoiceId">
   ): Promise<InvoiceDto> {
-    const result = await apiClient.patch<{ invoice: InvoiceDto }>(`/invoices/${id}`, input, {
-      correlationId: apiClient.generateCorrelationId(),
+    const result = await this.http.patch<{ invoice: InvoiceDto }>(`/invoices/${id}`, input, {
+      correlationId: this.http.generateCorrelationId(),
     });
     return result.invoice;
   }
@@ -113,12 +116,12 @@ export class InvoicesApi {
    * Finalize invoice (change from DRAFT to ISSUED)
    */
   async finalizeInvoice(id: string, paymentMethodId?: string): Promise<InvoiceDto> {
-    const result = await apiClient.post<{ invoice: InvoiceDto }>(
+    const result = await this.http.post<{ invoice: InvoiceDto }>(
       `/invoices/${id}/finalize`,
       paymentMethodId ? { paymentMethodId } : {},
       {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-        correlationId: apiClient.generateCorrelationId(),
+        idempotencyKey: this.http.generateIdempotencyKey(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
     return result.invoice;
@@ -139,17 +142,17 @@ export class InvoicesApi {
       idempotencyKey?: string;
     }
   ): Promise<InvoiceDto> {
-    const requestIdempotencyKey = payload?.idempotencyKey ?? apiClient.generateIdempotencyKey();
+    const requestIdempotencyKey = payload?.idempotencyKey ?? this.http.generateIdempotencyKey();
     const requestPayload = {
       ...(payload || {}),
       idempotencyKey: requestIdempotencyKey,
     };
-    const result = await apiClient.post<{ invoice: InvoiceDto }>(
+    const result = await this.http.post<{ invoice: InvoiceDto }>(
       `/invoices/${id}/send`,
       requestPayload,
       {
         idempotencyKey: requestIdempotencyKey,
-        correlationId: apiClient.generateCorrelationId(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
     return result.invoice;
@@ -162,11 +165,11 @@ export class InvoicesApi {
     id: string,
     input: Omit<DraftInvoiceIssueEmailInput, "invoiceId">
   ): Promise<DraftInvoiceIssueEmailOutput> {
-    return apiClient.post<DraftInvoiceIssueEmailOutput>(
+    return this.http.post<DraftInvoiceIssueEmailOutput>(
       `/invoices/${id}/copilot/draft-issue-email`,
       input,
       {
-        correlationId: apiClient.generateCorrelationId(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
   }
@@ -178,11 +181,11 @@ export class InvoicesApi {
     id: string,
     input: Omit<DraftInvoiceReminderEmailInput, "invoiceId">
   ): Promise<DraftInvoiceReminderEmailOutput> {
-    return apiClient.post<DraftInvoiceReminderEmailOutput>(
+    return this.http.post<DraftInvoiceReminderEmailOutput>(
       `/invoices/${id}/copilot/draft-reminder`,
       input,
       {
-        correlationId: apiClient.generateCorrelationId(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
   }
@@ -191,12 +194,12 @@ export class InvoicesApi {
    * Cancel invoice
    */
   async cancelInvoice(id: string, reason?: string): Promise<InvoiceDto> {
-    const result = await apiClient.post<{ invoice: InvoiceDto }>(
+    const result = await this.http.post<{ invoice: InvoiceDto }>(
       `/invoices/${id}/cancel`,
       { reason },
       {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-        correlationId: apiClient.generateCorrelationId(),
+        idempotencyKey: this.http.generateIdempotencyKey(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
     return result.invoice;
@@ -219,11 +222,11 @@ export class InvoicesApi {
     }
     const query = params.size > 0 ? `?${params.toString()}` : "";
 
-    return apiClient.request<InvoicePdfResponse>(
+    return this.http.request<InvoicePdfResponse>(
       `/invoices/${id}/pdf${query}`,
       { method: "GET", signal: options?.signal },
       {
-        correlationId: apiClient.generateCorrelationId(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
   }
@@ -232,12 +235,12 @@ export class InvoicesApi {
    * Record a payment for an invoice
    */
   async recordPayment(input: RecordPaymentInput): Promise<InvoiceDto> {
-    const result = await apiClient.post<{ invoice: InvoiceDto }>(
+    const result = await this.http.post<{ invoice: InvoiceDto }>(
       `/invoices/${input.invoiceId}/payments`,
       { amountCents: input.amountCents, paidAt: input.paidAt, note: input.note },
       {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-        correlationId: apiClient.generateCorrelationId(),
+        idempotencyKey: this.http.generateIdempotencyKey(),
+        correlationId: this.http.generateCorrelationId(),
       }
     );
     return result.invoice;
@@ -250,7 +253,7 @@ export class InvoicesApi {
     id: string,
     input?: GenerateInvoiceShareLinkInput
   ): Promise<GenerateInvoiceShareLinkOutput> {
-    return apiClient.post<GenerateInvoiceShareLinkOutput>(
+    return this.http.post<GenerateInvoiceShareLinkOutput>(
       `/invoices/${id}/share-link`,
       input ?? {
         regenerate: false,
@@ -262,7 +265,7 @@ export class InvoicesApi {
    * Get existing anonymous share link (if generated before)
    */
   async getShareLink(id: string): Promise<GetInvoiceShareLinkOutput> {
-    return apiClient.get<GetInvoiceShareLinkOutput>(`/invoices/${id}/share-link`);
+    return this.http.get<GetInvoiceShareLinkOutput>(`/invoices/${id}/share-link`);
   }
 }
 

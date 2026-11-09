@@ -4,6 +4,8 @@ export { default as InvoicesPage } from "./screens/InvoicesPage";
 export { default as NewInvoicePage } from "./screens/NewInvoicePage";
 export { default as InvoiceDetailPage } from "./screens/InvoiceDetailPage";
 export { default as InvoiceAuditPage } from "./screens/InvoiceAuditPage";
+export { InvoiceRuntimeProvider } from "./invoice-runtime";
+export type { InvoiceRuntime } from "./invoice-runtime";
 
 export const commandContributions = (): Command[] => [
   {

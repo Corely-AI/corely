@@ -58,7 +58,7 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
 
   const onSubmit = async (data: BankAccountFormData) => {
     createMutation.mutate(
-      { ...data, legalEntityId },
+      { ...data, legalEntityId, isDefault: false },
       {
         onSuccess: (bankAccount) => {
           form.reset();
