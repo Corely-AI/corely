@@ -1,0 +1,11 @@
+{
+  "extends": "../../packages/web-features/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "types": ["vite/client", "node"],
+    "baseUrl": "../../packages/web-features"
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": []
+}

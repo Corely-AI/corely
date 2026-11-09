@@ -1,5 +1,7 @@
+import { usePeopleDraftGuard } from "./people-runtime";
+import { PeopleLink as Link } from "./people-runtime";
 import { useCallback, useRef, useState, useEffect, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+
 import { Button, Input } from "@corely/ui";
 import type { StaffSelfView } from "@corely/contracts";
 import type { StaffJourneyClient } from "./staff-journey-client";
@@ -22,6 +24,11 @@ function SelfDetailsForm({
   const [name, setName] = useState(data.profile.displayName),
     [email, setEmail] = useState(data.contacts.personalEmail ?? ""),
     [phone, setPhone] = useState(data.contacts.personalPhone ?? "");
+  usePeopleDraftGuard(
+    name !== data.profile.displayName ||
+      email !== (data.contacts.personalEmail ?? "") ||
+      phone !== (data.contacts.personalPhone ?? "")
+  );
   const nameInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     nameInput.current?.focus();
@@ -92,7 +99,7 @@ export function StaffSelfService({
 }: {
   client: StaffJourneyClient;
   locale?: string;
-  tasksHref?: string;
+  tasksHref?: string | null;
 }) {
   const t = staffJourneyCopy[locale === "de" || locale === "vi" ? locale : "en"];
   const load = useCallback((signal: AbortSignal) => client.self(signal), [client]);
@@ -198,7 +205,7 @@ export function StaffSelfService({
                       </li>
                     ))}
                   </ol>
-                  <Link to={tasksHref}>{t.work} →</Link>
+                  {tasksHref && <Link to={tasksHref}>{t.work} →</Link>}
                 </>
               ) : (
                 <p>{t.noChecklist}</p>

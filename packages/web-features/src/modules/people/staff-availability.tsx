@@ -1,11 +1,13 @@
+import { PeopleLink as Link } from "./people-runtime";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+
 import { Button } from "@corely/ui";
 import { availabilityCopy } from "./availability-copy";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad } from "./use-people";
 import { StaffAvailabilityForm } from "./staff-availability-form";
 export function StaffAvailability({ id, archived }: { id: string; archived: boolean }) {
+  const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
   const t =
     availabilityCopy[access.locale === "de" || access.locale === "vi" ? access.locale : "en"];

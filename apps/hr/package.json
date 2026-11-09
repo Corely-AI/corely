@@ -1,0 +1,35 @@
+{
+  "name": "@corely/hr",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 8097",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*",
+    "@corely/web-features": "workspace:*",
+    "@corely/web-shared": "workspace:*",
+    "@corely/ui": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "^6.30.1",
+    "react-i18next": "^14.1.3",
+    "i18next": "^23.16.8",
+    "sonner": "^1.7.4"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "vite": "catalog:",
+    "typescript": "catalog:",
+    "tailwindcss": "catalog:"
+  }
+}

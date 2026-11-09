@@ -82,6 +82,13 @@ describe("BFF target allowlist", () => {
   ])("rejects %s", (path) => {
     expect(bffTarget(path, "invoice")).toBeUndefined();
   });
+  it("exposes only exact effective-permission discovery without role administration", () => {
+    expect(bffTarget("/api/bff/identity/permissions/effective", "hr")).toBe(
+      "/identity/permissions/effective"
+    );
+    expect(bffTarget("/api/bff/identity/roles", "hr")).toBeUndefined();
+    expect(bffTarget("/api/bff/identity/permissions/effective/nested", "hr")).toBeUndefined();
+  });
   it("keeps the Invoice and HR transport on explicit existing owners", () => {
     expect(bffTarget("/api/bff/invoices/id/pdf", "invoice")).toBe("/invoices/id/pdf");
     expect(bffTarget("/api/bff/people/staff", "hr")).toBe("/people/staff");

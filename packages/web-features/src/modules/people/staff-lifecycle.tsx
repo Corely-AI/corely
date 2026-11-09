@@ -1,5 +1,6 @@
+import { PeopleLink as Link } from "./people-runtime";
 import { useCallback, useState, useRef } from "react";
-import { Link } from "react-router-dom";
+
 import { Button } from "@corely/ui";
 import type { StaffJourneyClient } from "./staff-journey-client";
 import { staffJourneyCopy } from "./staff-journey-copy";
@@ -10,10 +11,12 @@ export function StaffLifecycle({
   client,
   staffId,
   locale = "en",
+  showTaskLinks = true,
 }: {
   client: StaffJourneyClient;
   staffId: string;
   locale?: string;
+  showTaskLinks?: boolean;
 }) {
   const t = staffJourneyCopy[locale === "de" || locale === "vi" ? locale : "en"];
   const load = useCallback(
@@ -86,7 +89,7 @@ export function StaffLifecycle({
                     {data.onboardingTask.checklist?.length ?? 0} {t.progress}
                   </p>
                   <p className="staff-muted">{t.alreadyApproved}</p>
-                  <Link to="/tasks">{t.work} →</Link>
+                  {showTaskLinks && <Link to="/tasks">{t.work} →</Link>}
                 </>
               ) : !data.tasks.available ? (
                 <p>{t.tasksUnavailable}</p>
@@ -126,7 +129,7 @@ export function StaffLifecycle({
                       {t.total}: {data.tasks.openTasks.length}/{data.tasks.openTaskCount}
                     </p>
                   )}
-                  <Link to="/tasks">{t.work} →</Link>
+                  {showTaskLinks && <Link to="/tasks">{t.work} →</Link>}
                   <h3>{t.routines}</h3>
                   {data.tasks.recurringTemplates.length ? (
                     <ul>
