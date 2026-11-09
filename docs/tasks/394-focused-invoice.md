@@ -5,7 +5,8 @@
   `e71783f190cf068471fdc3e7b12a6dcd63c02cc8`.
 - Prerequisites #386/#389/#390/#391 completed. #393 was skipped because #392 is
   still open; this ticket does not depend on App Center client delivery.
-- Draft PR: pending publication; status In progress.
+- Draft PR: [#418](https://github.com/Corely-AI/corely/pull/418), targeting
+  `development`; status In progress while CI/review remain outstanding.
 
 ## Outcome and reuse
 
