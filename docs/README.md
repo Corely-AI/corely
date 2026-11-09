@@ -86,6 +86,7 @@ Frontend guidelines and specific docs.
 - [Shared UI Package](./frontend/shared-ui.md)
 - [App Center](./frontend/app-center.md) — workspace-aware app directory, launch behavior and UI evidence
 - [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition
+- [Focused Invoice client](./frontend/focused-invoice-client.md) — reused invoice screens, scoped sessions and verification evidence
 - [Workspace Session Boundary](./frontend/workspace-session-boundary.md) — validated arrival, per-tab context and draft/write guards
 
 ### 🚀 DevOps & Infra

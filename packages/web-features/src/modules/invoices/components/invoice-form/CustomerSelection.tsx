@@ -1,3 +1,4 @@
+import { useInvoiceCustomersApi, useInvoiceKeys } from "../../invoice-runtime";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useFormContext, useForm } from "react-hook-form";
@@ -25,8 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@corely/ui";
-import { customersApi } from "@corely/web-shared/lib/customers-api";
-import { workspaceQueryKeys } from "@corely/web-shared/shared/workspaces/workspace-query-keys";
+
 import {
   customerFormSchema,
   getDefaultCustomerFormValues,
@@ -52,6 +52,8 @@ interface CustomerSelectionProps {
 }
 
 export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionProps) {
+  const customersApi = useInvoiceCustomersApi();
+  const customerKeys = useInvoiceKeys("customers");
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const {
@@ -64,7 +66,7 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
   const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
 
   const { data: customersData } = useQuery({
-    queryKey: workspaceQueryKeys.customers.list(),
+    queryKey: customerKeys.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
@@ -104,7 +106,7 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
     },
     onSuccess: (customer) => {
       if (customer?.id) {
-        void queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.customers.all() });
+        void queryClient.invalidateQueries({ queryKey: customerKeys.all() });
         setValue("customerPartyId", customer.id, { shouldValidate: true, shouldDirty: true });
         toast.success(t("common.success"));
         setNewCustomerDialogOpen(false);

@@ -1,12 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useInvoiceNavigate } from "../invoice-runtime";
 import { DetailScreenHeader } from "@corely/web-shared/shared/components/DetailScreenHeader";
 import { Button } from "@corely/ui";
+import type { InvoiceDto, InvoiceCapabilities } from "@corely/contracts";
 
 interface InvoiceDetailHeaderProps {
-  invoice: any;
-  capabilities: any;
+  invoice: InvoiceDto;
+  capabilities?: InvoiceCapabilities;
   isProcessing: boolean;
   onTransition: (to: string, input?: Record<string, string>) => Promise<void>;
   onAction: (key: string) => Promise<void>;
@@ -20,7 +21,7 @@ export function InvoiceDetailHeader({
   onAction,
 }: InvoiceDetailHeaderProps) {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useInvoiceNavigate();
 
   const translatedCapabilities = capabilities
     ? {
@@ -31,22 +32,22 @@ export function InvoiceDetailHeader({
             defaultValue: capabilities.status.label,
           }),
         },
-        badges: capabilities.badges?.map((badge: any) => ({
+        badges: capabilities.badges?.map((badge) => ({
           ...badge,
           label: t(`invoices.badges.${badge.key}`, { defaultValue: badge.label }),
         })),
-        transitions: capabilities.transitions?.map((tr: any) => ({
+        transitions: capabilities.transitions?.map((tr) => ({
           ...tr,
           label: t(`invoices.transitions.${tr.to}`, { defaultValue: tr.label }),
         })),
-        actions: capabilities.actions?.map((ac: any) => ({
+        actions: capabilities.actions?.map((ac) => ({
           ...ac,
           label: t(`invoices.actions.${ac.key}`, { defaultValue: ac.label }),
         })),
       }
     : null;
 
-  if (!capabilities) {
+  if (!translatedCapabilities) {
     return (
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/invoices")}>

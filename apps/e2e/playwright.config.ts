@@ -14,7 +14,7 @@ const baseURL =
 export default defineConfig({
   testDir: "./tests",
   // This suite requires its own disposable HTTPS/database fixture.
-  testIgnore: ["**/sso/**"],
+  testIgnore: ["**/sso/**", "**/workspace-session/**", "**/focused-invoice/**"],
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,

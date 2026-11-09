@@ -8,9 +8,9 @@ is required. Read [central login](../backend/sso.md) and
 
 ## Current delivery boundary
 
-`apps/login` exists. App Center, Invoice and HR client composition belongs to
-#392, #394 and #397; these directories are not scaffolded by the development
-tooling. The default command refuses missing clients instead of serving a different
+`apps/login` and [Invoice](../frontend/focused-invoice-client.md) exist. App Center
+and HR composition remains in #392 and #397; the development tooling does not
+scaffold them. The default command refuses missing clients instead of serving a different
 product. `--probe` deliberately substitutes a labeled transport probe for those
 three hosts while retaining the real login frontend and API ingress. It verifies
 the developer topology, not the future feature screens or their readiness.
@@ -110,8 +110,8 @@ pnpm dev:focused --surface=login
 pnpm build:focused --surface=login
 ```
 
-The selection runs login plus the requested app, not every frontend. After a
-focused client lands, `--surface=invoice` starts only login and Invoice against the
+The selection runs login plus the requested app, not every frontend.
+`--surface=invoice` starts only login and Invoice against the
 same API; omit `--probe` to require its actual app directory. `pnpm dev:focused`
 and `pnpm build:focused` select all four and fail explicitly until all exist.
 Existing `dev:web`, `dev:api`, `dev:openbuk` and focused legacy scripts are unchanged.

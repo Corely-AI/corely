@@ -1,9 +1,10 @@
+import { useInvoicesApi, useInvoiceNavigate } from "../invoice-runtime";
+import { useInvoiceKeys } from "../invoice-runtime";
 import React, { useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, Button } from "@corely/ui";
 import { Loader2 } from "lucide-react";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
 
 type AuditEntry = {
   title: string;
@@ -16,7 +17,9 @@ function formatDateTime(value: string): string {
 }
 
 export default function InvoiceAuditPage() {
-  const navigate = useNavigate();
+  const keys = useInvoiceKeys("invoice-audit");
+  const invoicesApi = useInvoicesApi();
+  const navigate = useInvoiceNavigate();
   const [params] = useSearchParams();
 
   const entity = params.get("entity");
@@ -30,7 +33,7 @@ export default function InvoiceAuditPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["invoice-audit", id],
+    queryKey: keys.detail(id ?? ""),
     queryFn: () => invoicesApi.getInvoice(id as string),
     enabled: canLoadInvoice,
   });

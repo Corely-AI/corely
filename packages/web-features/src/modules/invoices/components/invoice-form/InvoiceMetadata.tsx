@@ -26,7 +26,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
   } = useFormContext<InvoiceFormData>();
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
       {/* Invoice date */}
       <div className="space-y-2">
         <Label className="text-xs text-muted-foreground uppercase">
@@ -109,7 +109,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
           <Input
             {...register("invoiceNumber")}
             data-testid="invoice-number-input"
-            className="font-medium"
+            className="min-w-0 font-medium"
           />
           <Button
             type="button"

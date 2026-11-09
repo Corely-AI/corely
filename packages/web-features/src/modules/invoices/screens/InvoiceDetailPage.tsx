@@ -1,5 +1,10 @@
+import { invoiceCustomerOptions } from "../utils/invoice-customer-options";
+import { invoiceFormValues } from "../utils/invoice-form-values";
+import { useInvoicesApi, useInvoiceKeys, useInvoiceNavigate } from "../invoice-runtime";
+import { useInvoiceWorkspace, useInvoiceRuntime, useInvoiceDraftGuard } from "../invoice-runtime";
+import { flushSync } from "react-dom";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,8 +12,6 @@ import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
-import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
 import { toast } from "sonner";
 import {
   invoiceFormSchema,
@@ -22,29 +25,28 @@ import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
 import { InvoicePaymentDialog } from "../components/InvoicePaymentDialog";
 import { InvoiceDetailHeader } from "../components/InvoiceDetailHeader";
 import { InvoiceCopilotPanel } from "../components/InvoiceCopilotPanel";
-import { invoiceQueryKeys } from "../queries";
+
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 import { useSendInvoice } from "../hooks/use-send-invoice";
 import { useInvoicePdfDownload } from "../hooks/use-invoice-pdf-download";
 import { downloadInvoiceExportCsv } from "../utils/invoice-export";
 
 // Sub-components
-import {
-  CustomerSelection,
-  type CustomerOption,
-} from "../components/invoice-form/CustomerSelection";
+import { CustomerSelection } from "../components/invoice-form/CustomerSelection";
 import { InvoiceMetadata } from "../components/invoice-form/InvoiceMetadata";
 import { InvoiceLineItems } from "../components/invoice-form/InvoiceLineItems";
 import { InvoiceTotals } from "../components/invoice-form/InvoiceTotals";
 import { InvoiceNotes } from "../components/invoice-form/InvoiceNotes";
-import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 
 export default function InvoiceDetailPage() {
+  const invoicesApi = useInvoicesApi();
+  const invoiceQueryKeys = useInvoiceKeys();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const navigate = useInvoiceNavigate();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
-  const { activeWorkspace } = useWorkspace();
+  const { activeWorkspace } = useInvoiceWorkspace();
+  const runtime = useInvoiceRuntime();
   const locale = i18n.t("common.locale");
 
   const {
@@ -99,83 +101,24 @@ export default function InvoiceDetailPage() {
   });
 
   const { handleSubmit, reset, watch, setValue, getValues } = methods;
-  const defaultCopilotLanguage = useMemo<InvoiceEmailDraftLanguage>(() => {
-    const language = i18n.resolvedLanguage ?? i18n.language;
-    if (language?.startsWith("de")) {
-      return "de";
-    }
-    if (language?.startsWith("vi")) {
-      return "vi";
-    }
-    return "en";
-  }, [i18n.language, i18n.resolvedLanguage]);
+  useInvoiceDraftGuard("invoice-edit", methods.formState.isDirty);
+  const language = i18n.resolvedLanguage ?? i18n.language;
+  const defaultCopilotLanguage: InvoiceEmailDraftLanguage = language?.startsWith("de")
+    ? "de"
+    : language?.startsWith("vi")
+      ? "vi"
+      : "en";
 
-  // Prepare additional customer options from invoice data
-  const additionalCustomerOptions = useMemo<CustomerOption[]>(() => {
-    const list: CustomerOption[] = [];
-    if (!invoice) {
-      return list;
-    }
-
-    if (invoice.customer) {
-      list.push({
-        id: invoice.customer.id,
-        displayName: invoice.customer.displayName,
-        billingAddress: invoice.customer.billingAddress,
-        email: invoice.customer.email,
-        vatId: invoice.customer.vatId,
-      });
-    }
-
-    if (
-      invoice.customerPartyId &&
-      (!invoice.customer || invoice.customer.id !== invoice.customerPartyId)
-    ) {
-      // Fallback for when we have an ID but no embedded customer object matching it perfectly,
-      // or simply to ensure the current invoice's BillTo details are available as an option
-      const addressLine1 = invoice.billToAddressLine1 ?? undefined;
-      const city = invoice.billToCity ?? undefined;
-      const country = invoice.billToCountry ?? undefined;
-
-      list.push({
-        id: invoice.customerPartyId,
-        displayName: invoice.billToName ?? t("customers.unknown"),
-        billingAddress:
-          addressLine1 || city || country ? { line1: addressLine1, city, country } : undefined,
-      });
-    }
-    return list;
-  }, [invoice]);
+  const additionalCustomerOptions = useMemo(
+    () => invoiceCustomerOptions(invoice, t("customers.unknown")),
+    [invoice, t]
+  );
 
   useEffect(() => {
     if (!invoice) {
       return;
     }
-    const invoiceDate = invoice.invoiceDate ? new Date(invoice.invoiceDate) : new Date();
-    const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : undefined;
-    const seededLines =
-      invoice.lineItems.length > 0
-        ? invoice.lineItems.map((line) => ({
-            description: line.description,
-            qty: line.qty,
-            unitPriceCents: line.unitPriceCents,
-            unit: "h",
-          }))
-        : getDefaultInvoiceFormValues().lineItems || [];
-
-    reset({
-      ...getDefaultInvoiceFormValues(),
-      invoiceNumber: invoice.number ?? "",
-      customerPartyId: invoice.customerPartyId,
-      currency: invoice.currency,
-      notes: invoice.notes ?? undefined,
-      terms: invoice.terms ?? undefined,
-      invoiceDate,
-      dueDate,
-      vatRate: 19, // Default, TODO: derive from invoice totals if possible or store in backend
-      lineItems: seededLines,
-      paymentMethodId: invoice.paymentMethodId ?? undefined,
-    });
+    reset(invoiceFormValues(invoice));
     setPaymentAmount(
       outstandingGrossDueCents > 0 ? (outstandingGrossDueCents / 100).toFixed(2) : ""
     );
@@ -195,7 +138,7 @@ export default function InvoiceDetailPage() {
 
   const updateInvoice = useMutation({
     mutationFn: async (payload: Omit<UpdateInvoiceInput, "invoiceId">) => {
-      if (!id) {
+      if (!id || !invoice) {
         throw new Error("Missing invoice id");
       }
       return invoicesApi.updateInvoice(id, payload);
@@ -240,7 +183,7 @@ export default function InvoiceDetailPage() {
 
   const handleAction = useCallback(
     async (actionKey: string) => {
-      if (!id) {
+      if (!id || !invoice) {
         return;
       }
 
@@ -375,6 +318,10 @@ export default function InvoiceDetailPage() {
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success(t("invoices.updated"));
+      flushSync(() => {
+        reset(data);
+        runtime?.registerDraft("invoice-edit", false);
+      });
       navigate("/invoices");
     } catch {
       // errors handled by mutation
@@ -446,7 +393,7 @@ export default function InvoiceDetailPage() {
 
   return (
     <FormProvider {...methods}>
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className={runtime ? "min-w-0 space-y-6" : "p-6 lg:p-8 space-y-6 animate-fade-in"}>
         <InvoiceDetailHeader
           invoice={invoice}
           capabilities={capabilities}
@@ -458,7 +405,7 @@ export default function InvoiceDetailPage() {
         <SendInvoiceDialog
           open={sendDialogOpen}
           onOpenChange={setSendDialogOpen}
-          invoice={currentInvoice || (invoice as any)}
+          invoice={currentInvoice || invoice}
           onSend={handleSendInvoice}
           isSending={isSending}
         />
@@ -479,12 +426,14 @@ export default function InvoiceDetailPage() {
           currency={invoice.currency}
         />
 
-        <InvoiceCopilotPanel
-          invoiceId={invoice.id}
-          invoiceStatus={invoice.status}
-          amountDueCents={invoice.totals?.dueCents ?? 0}
-          defaultLanguage={defaultCopilotLanguage}
-        />
+        {!runtime && (
+          <InvoiceCopilotPanel
+            invoiceId={invoice.id}
+            invoiceStatus={invoice.status}
+            amountDueCents={invoice.totals?.dueCents ?? 0}
+            defaultLanguage={defaultCopilotLanguage}
+          />
+        )}
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
           {isViewOnly && (
@@ -493,8 +442,8 @@ export default function InvoiceDetailPage() {
             </div>
           )}
           <Card>
-            <CardContent className="p-8 space-y-8">
-              <fieldset disabled={isViewOnly} className="space-y-8">
+            <CardContent className="p-4 sm:p-8 space-y-8">
+              <fieldset disabled={isViewOnly} className="min-w-0 space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Customer Selection */}
                   <CustomerSelection additionalOptions={additionalCustomerOptions} />

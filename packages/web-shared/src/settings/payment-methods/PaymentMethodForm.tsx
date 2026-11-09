@@ -97,7 +97,7 @@ export function PaymentMethodForm({
 
   const onSubmit = async (data: PaymentMethodFormData) => {
     createMutation.mutate(
-      { ...data, legalEntityId },
+      { ...data, legalEntityId, isDefaultForInvoicing: false },
       {
         onSuccess: (paymentMethod) => {
           form.reset();

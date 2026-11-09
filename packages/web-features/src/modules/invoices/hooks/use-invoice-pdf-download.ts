@@ -1,10 +1,8 @@
+import { useInvoicesApi, useInvoicePaymentMethodsApi, useInvoiceKeys } from "../invoice-runtime";
 import { useCallback, useEffect, useRef } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
-import { paymentMethodsApi } from "@corely/web-shared/lib/payment-methods-api";
 import { pollAsyncJob } from "@corely/web-shared/shared/lib/async-poll";
-import { invoiceQueryKeys } from "../queries";
 
 type InvoiceForPdf = {
   status?: string;
@@ -42,6 +40,9 @@ export const useInvoicePdfDownload = ({
   t,
   debugEnabled,
 }: UseInvoicePdfDownloadParams) => {
+  const invoicesApi = useInvoicesApi();
+  const paymentMethodsApi = useInvoicePaymentMethodsApi();
+  const invoiceQueryKeys = useInvoiceKeys();
   const downloadAbortRef = useRef<AbortController | null>(null);
   const downloadInFlightRef = useRef(false);
 
