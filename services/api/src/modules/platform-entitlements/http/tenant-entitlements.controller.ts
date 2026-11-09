@@ -41,14 +41,15 @@ export class TenantEntitlementsController {
   ) {
     const parsed = UpdateTenantAppEnablementSchema.safeParse(body);
     if (!parsed.success) {
-      throw new BadRequestException("Expected enabled and optional cascade boolean values");
+      throw new BadRequestException("Invalid app enablement command");
     }
     await this.service.updateAppEnablement(
       tenantId,
       appId,
       parsed.data.enabled,
       userId,
-      parsed.data.cascade
+      parsed.data.cascade,
+      parsed.data.expectedDependents
     );
     return { success: true };
   }

@@ -120,9 +120,14 @@ export const AppCatalogQuerySchema = z.object({ forTenantId: z.string().min(1).o
 export const UpdateTenantAppEnablementSchema = z.object({
   enabled: z.boolean(),
   cascade: z.boolean().optional().default(false),
+  expectedDependents: z.array(z.string().min(1)).optional(),
 });
+export type UpdateTenantAppEnablement = z.infer<typeof UpdateTenantAppEnablementSchema>;
 
-export const AppDependencyConflictSchema = z.object({ dependents: z.array(z.string()) });
+export const AppDependencyConflictSchema = z.object({
+  dependents: z.array(z.string()),
+  approvalChanged: z.boolean().optional(),
+});
 
 /**
  * Tenant App Install - Tenant-specific app installation record

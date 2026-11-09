@@ -60,3 +60,20 @@ Fresh review checks:
 - [Hosted run 42643086864](https://github.com/Corely-AI/corely/actions/runs/42643086864) fails unit/quality checks on an ungenerated Prisma client and browser checks on the unchanged missing `e2e:smoke` script. Cash integration passed. These infrastructure failures are separate from the reproduced test-collection finding. No CI workflow was weakened or unrelated missing script added.
 
 No merge, deployment or external review comment was requested or performed. PR remains Draft.
+
+## Second review and corrections — November 9
+
+Reviewed `ecb7948a69de86a568d73d4f71c638bbf9ee3897`. No external inline review
+comments existed. Reproduced two further P2 findings:
+
+1. **New dependent apps were not bound to the displayed confirmation.** Opening a Customers disable dialog, enabling another dependent and then confirming disabled the newly added app too. The updated client sends its reviewed `expectedDependents`; the application rechecks that allowlist inside the existing serializable transaction. Additional dependents return 409/current IDs with no disable writes or audit. The refreshed dialog requires another confirmation and resets focus to Cancel. Optional wire fields preserve existing callers that explicitly cascade without a snapshot. The backend guard must be delivered before the updated UI is enabled.
+2. **Inactive installation hid the team-disable action.** The preceding Install correction replaced the only action for a default-enabled app without an active install. Operators had to install it before they could disable its team flag. A separate policy-filtered **Disable for team** action now calls the existing disable command directly. Persisted coverage verifies no installation records are created.
+
+Verification for this pass:
+
+- Two new host UI regressions failed before correction; the persisted stale-confirmation case returned 200 instead of expected 409 before correction.
+- Host controls and refresh suites: **10 passed**. Includes reviewed ID payloads, expanded confirmation, safe focus, disable without installation and the preceding tenant-response regressions.
+- `SSO_TEST_DATABASE_URL=<disposable localhost DB> pnpm --dir services/api exec vitest run --config vitest.config.ts --fileParallelism=false src/modules/platform/__tests__/app-management.int.test.ts src/modules/platform/__tests__/focused-api-access.int.test.ts src/modules/platform/__tests__/tenant-entitlement-gating.spec.ts`: **15 passed**. A prior parallel run timed out at five seconds in the existing unsupported-PDF-denial case (14 others passed); the serial rerun passed without changing assertions, timeouts or skips.
+- API `tsc --noEmit`, Contracts and web-shared typechecks passed. Full web typecheck retains the previously documented assistant/cash baseline errors; no changed host-file errors reported.
+- [UI evidence](../frontend/app-center.md#team-disablement-and-changed-dependencies) uses synthetic data and the actual host component. Desktop 1280×800 and phone 390×844; before/after independent team disablement and reconfirmation with another dependent; no horizontal overflow.
+- No unrelated CI, billing, storage, role, rollout or dependency definitions changed. Existing CI/preview limitations remain; keep the PR Draft.

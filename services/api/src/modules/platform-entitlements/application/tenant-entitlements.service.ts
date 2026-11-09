@@ -102,7 +102,8 @@ export class TenantEntitlementsService {
     appId: string,
     enabled: boolean,
     userId: string,
-    cascade: boolean = false
+    cascade: boolean = false,
+    expectedDependents?: readonly string[]
   ): Promise<void> {
     const appEntitlement = this.featureCatalog.getAppEntitlementDefinition(appId);
     if (!appEntitlement) {
@@ -118,6 +119,16 @@ export class TenantEntitlementsService {
             message: `Cannot disable ${appId} while dependent apps are enabled: ${dependents.join(", ")}`,
             dependents,
           });
+        }
+        if (!enabled && cascade && expectedDependents !== undefined) {
+          const approved = new Set(expectedDependents);
+          if (dependents.some((id) => !approved.has(id))) {
+            throw new ConflictException({
+              message: "Dependent apps changed. Review the updated list before disabling.",
+              dependents,
+              approvalChanged: true,
+            });
+          }
         }
         const affected = enabled ? this.resolveDependencies(appId) : [appId, ...dependents];
         if (enabled) {

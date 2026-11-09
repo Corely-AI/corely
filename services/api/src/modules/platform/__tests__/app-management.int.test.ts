@@ -50,9 +50,11 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host app configuration", ()
   let hostToken: string;
   let memberToken: string;
   let enable: EnableAppUseCase;
+  let registry: AppRegistry;
+  let catalog: FeatureCatalogService;
   beforeEach(async () => {
     f = await createSsoTestContext();
-    const registry = new AppRegistry();
+    registry = new AppRegistry();
     const all = new AppRegistry();
     all.loadManifests();
     for (const id of ["invoices", "parties"]) {
@@ -65,7 +67,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host app configuration", ()
     enable = new EnableAppUseCase(registry, installs, new DependencyResolverService(), audit, {
       newId: randomUUID,
     });
-    const catalog = new FeatureCatalogService(registry);
+    catalog = new FeatureCatalogService(registry);
     catalog.compileCatalog();
     service = new TenantEntitlementsService(f.prisma, catalog, enable, audit);
     // A second process-equivalent instance must see changes without invalidation calls.
@@ -212,6 +214,58 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host app configuration", ()
       .set("Authorization", `Bearer ${hostToken}`)
       .expect(400);
   });
+  it("requires renewed approval before disabling a newly added dependent app", async () => {
+    await patch(hostToken, f.tenantId, "invoices", { enabled: true }).expect(200);
+    const initial = await patch(hostToken, f.tenantId, "parties", { enabled: false }).expect(409);
+    expect(initial.body.dependents).toEqual(["invoices"]);
+    const invoice = registry.get("invoices");
+    if (!invoice) throw new Error("Missing fixture app");
+    registry.register({
+      ...invoice,
+      appId: "synthetic-dependent",
+      name: "Synthetic dependent",
+      launch: undefined,
+      menu: [],
+      entitlement: { enabledFeatureKey: "app.synthetic-dependent.enabled", defaultEnabled: false },
+    });
+    catalog.compileCatalog();
+    await patch(hostToken, f.tenantId, "synthetic-dependent", { enabled: true }).expect(200);
+    const stale = await patch(hostToken, f.tenantId, "parties", {
+      enabled: false,
+      cascade: true,
+      expectedDependents: ["invoices"],
+    }).expect(409);
+    expect(stale.body.approvalChanged).toBe(true);
+    expect(stale.body.dependents).toEqual(
+      expect.arrayContaining(["invoices", "synthetic-dependent"])
+    );
+    expect(await observer.isAppEnabled(f.tenantId, "invoices")).toBe(true);
+    expect(await observer.isAppEnabled(f.tenantId, "synthetic-dependent")).toBe(true);
+    expect(
+      await f.prisma.auditLog.count({
+        where: { tenantId: f.tenantId, action: "platform.app.disabled" },
+      })
+    ).toBe(0);
+    await patch(hostToken, f.tenantId, "parties", {
+      enabled: false,
+      cascade: true,
+      expectedDependents: stale.body.dependents,
+    }).expect(200);
+    expect(await observer.isAppEnabled(f.tenantId, "invoices")).toBe(false);
+    expect(await observer.isAppEnabled(f.tenantId, "synthetic-dependent")).toBe(false);
+    // Existing callers may still explicitly cascade without a preview snapshot.
+    await patch(hostToken, f.tenantId, "invoices", { enabled: true }).expect(200);
+    await patch(hostToken, f.tenantId, "parties", { enabled: false, cascade: true }).expect(200);
+    expect(await observer.isAppEnabled(f.tenantId, "invoices")).toBe(false);
+  });
+  it("can disable a default-entitled app without creating installation records", async () => {
+    await patch(hostToken, f.tenantId, "invoices", { enabled: false }).expect(200);
+    expect(
+      (await service.getEntitlements(f.tenantId)).apps.find((entry) => entry.appId === "invoices")
+        ?.enabled
+    ).toBe(false);
+    expect(await f.prisma.tenantAppInstall.count({ where: { tenantId: f.tenantId } })).toBe(0);
+  });
   it("rejects tenant users, forged role IDs, revoked host grants and malformed commands", async () => {
     await grants.replaceAll(f.tenantId, f.membership.roleId, [{ key: "*", effect: "ALLOW" }]);
     await patch(memberToken, f.tenantId, "invoices", { enabled: true }).expect(403);
@@ -220,6 +274,11 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host app configuration", ()
       .set("Authorization", `Bearer ${memberToken}`)
       .expect(403);
     await patch(hostToken, f.tenantId, "invoices", { enabled: "false" }).expect(400);
+    await patch(hostToken, f.tenantId, "invoices", {
+      enabled: false,
+      cascade: true,
+      expectedDependents: "invoices",
+    }).expect(400);
     await grants.replaceAll(null, roleId, []);
     await patch(hostToken, f.tenantId, "invoices", { enabled: true }).expect(403);
     expect(await f.prisma.tenantAppInstall.count({ where: { tenantId: f.tenantId } })).toBe(0);

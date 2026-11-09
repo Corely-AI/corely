@@ -63,7 +63,7 @@ describe("existing host app controls", () => {
     expect(update).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: "Disable app and dependents" }));
     await waitFor(() =>
-      expect(update).toHaveBeenLastCalledWith("tenant-a", "parties", false, true)
+      expect(update).toHaveBeenLastCalledWith("tenant-a", "parties", false, true, ["invoices"])
     );
     expect((await screen.findByRole("status")).textContent).toContain("audit log");
   });
@@ -74,6 +74,41 @@ describe("existing host app controls", () => {
     fireEvent.click(screen.getByRole("button", { name: "Install: Invoice" }));
     fireEvent.click(screen.getByRole("button", { name: "Install with dependencies" }));
     await waitFor(() => expect(update).toHaveBeenCalledWith("tenant-a", "invoices", true));
+  });
+  it("can disable team enablement without first creating an installation", async () => {
+    update.mockResolvedValue({ success: true });
+    setup(true, false);
+    fireEvent.click(screen.getByRole("button", { name: "Disable for team: Invoice" }));
+    await waitFor(() => expect(update).toHaveBeenCalledWith("tenant-a", "invoices", false));
+    expect(update).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+  });
+  it("requires a new confirmation if additional dependent apps appear", async () => {
+    update
+      .mockRejectedValueOnce({ status: 409, body: { dependents: ["invoices"] } })
+      .mockRejectedValueOnce({
+        status: 409,
+        body: { dependents: ["invoices", "forms"], approvalChanged: true },
+      })
+      .mockResolvedValueOnce({ success: true });
+    setup(true);
+    fireEvent.click(screen.getByRole("button", { name: "Disable: Customers" }));
+    const confirm = await screen.findByRole("button", { name: "Disable app and dependents" });
+    confirm.focus();
+    fireEvent.click(confirm);
+    await waitFor(() => expect(screen.getByRole("alertdialog").textContent).toContain("forms"));
+    expect(update).toHaveBeenLastCalledWith("tenant-a", "parties", false, true, ["invoices"]);
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", { name: "Cancel", exact: true })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Disable app and dependents" }));
+    await waitFor(() =>
+      expect(update).toHaveBeenLastCalledWith("tenant-a", "parties", false, true, [
+        "invoices",
+        "forms",
+      ])
+    );
+    await screen.findByRole("status");
   });
   it("shows revoked permission and refreshes instead of reporting success", async () => {
     update.mockRejectedValue({ status: 403 });

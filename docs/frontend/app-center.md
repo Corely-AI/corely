@@ -166,3 +166,31 @@ routing/authentication remains unverified as noted above.
 
 [Desktop status](images/app-management/host-installation-desktop.png) and
 [installation confirmation](images/app-management/host-installation-confirmation-phone.png).
+
+### Team disablement and changed dependencies
+
+A team-enabled app without an active installation offers both **Install** and
+**Disable for team**. Disabling the team flag does not create installation
+records or activate dependencies. Required-app policies still hide prohibited
+disable actions.
+
+Combined disablement sends the dependent IDs shown in the confirmation as
+`expectedDependents`. The API checks the current list inside the same serializable
+transaction as the writes. A newly enabled dependent causes HTTP 409 and an updated
+list with `approvalChanged: true`; nothing is disabled or audited until the user
+confirms again. Focus moves to Cancel when the list changes. If current dependents have only been removed, the approved action can still proceed. Existing callers that omit the
+optional snapshot retain their prior explicit cascade behavior; deploy the updated
+API guard before enabling the updated host controls.
+
+Checked the actual host component in an isolated synthetic Vite preview at
+1280×800 and 390×844: disable without installation, changed-dependency feedback,
+expanded confirmation, Cancel focus and no phone overflow. Persisted API tests
+separately verify the transactional behavior; these captures do not establish live
+legacy-host routing or authentication.
+
+| Enabled without installation                                                         | Disabled without installation                                                                     |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| ![Separate team disable action](images/app-management/team-disable-before-phone.png) | ![Disabled while retaining no active install](images/app-management/team-disable-after-phone.png) |
+
+[Desktop controls](images/app-management/team-disable-desktop.png) and
+[renewed dependency confirmation](images/app-management/dependency-reapproval-phone.png).

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AppDependencyConflictSchema, type AppCatalogItem } from "@corely/contracts";
 import {
   type ResolvedAppEntitlement,
@@ -40,11 +40,24 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
     app: AppCatalogItem;
     dependents: string[];
   } | null>(null);
+  const disableCancelRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (disableConfirmation) {
+      // A changed dependency list can reopen the same dialog during its exit animation.
+      // Move focus away from the preceding destructive action before asking again.
+      disableCancelRef.current?.focus();
+    }
+  }, [disableConfirmation]);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const name = (id: string) => catalog.find((app) => app.appId === id)?.name ?? id;
 
-  const toggle = async (app: AppCatalogItem, enabled: boolean, cascade = false) => {
+  const toggle = async (
+    app: AppCatalogItem,
+    enabled: boolean,
+    cascade = false,
+    expectedDependents?: string[]
+  ) => {
     if (pending) {
       return;
     }
@@ -55,7 +68,13 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
       // The existing host API resolves dependencies, validates constraints and audits.
       // A conflict never silently becomes a cascading disable.
       if (cascade) {
-        await platformEntitlementsApi.updateAppEnablement(tenantId, app.appId, enabled, true);
+        await platformEntitlementsApi.updateAppEnablement(
+          tenantId,
+          app.appId,
+          enabled,
+          true,
+          expectedDependents
+        );
       } else {
         await platformEntitlementsApi.updateAppEnablement(tenantId, app.appId, enabled);
       }
@@ -72,11 +91,13 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
         setDisableConfirmation({ app, dependents: conflict.data.dependents });
       }
       setError(
-        status === 409
-          ? `Cannot disable ${app.name} while dependent apps are enabled. Disable those apps first, then try again.`
-          : status === 403
-            ? "You no longer have permission to manage team apps. No change was applied."
-            : `Could not update ${app.name}. Refresh the configuration before trying again.`
+        conflict.success && conflict.data.approvalChanged
+          ? "Dependent apps changed. Review the updated list before confirming again."
+          : status === 409
+            ? `Cannot disable ${app.name} while dependent apps are enabled. Disable those apps first, then try again.`
+            : status === 403
+              ? "You no longer have permission to manage team apps. No change was applied."
+              : `Could not update ${app.name}. Refresh the configuration before trying again.`
       );
       await onRefresh();
     } finally {
@@ -153,6 +174,19 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                     {pending === app.appId ? "Saving…" : `${action} app`}
                   </Button>
                 )}
+                {enabled && !activeInstall && !policy.hideDisableAction && (
+                  <Button
+                    className="min-h-11 w-full"
+                    variant="outline"
+                    disabled={pending !== null}
+                    aria-label={`Disable for team: ${app.name}`}
+                    onClick={() => {
+                      void toggle(app, false);
+                    }}
+                  >
+                    Disable for team
+                  </Button>
+                )}
               </CardContent>
             </Card>
           );
@@ -207,19 +241,19 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
               Disable {disableConfirmation?.app.name} and dependent apps?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Also disables: {disableConfirmation?.dependents.map(name).join(", ")}. All current
-              dependencies are checked again when you confirm. Business records are retained.
+              Also disables: {disableConfirmation?.dependents.map(name).join(", ")}. Additional
+              dependent apps require another confirmation. Business records are retained.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel ref={disableCancelRef}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={pending !== null}
               onClick={() => {
                 const change = disableConfirmation;
                 setDisableConfirmation(null);
                 if (change) {
-                  void toggle(change.app, false, true);
+                  void toggle(change.app, false, true, change.dependents);
                 }
               }}
             >
