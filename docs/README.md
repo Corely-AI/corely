@@ -88,6 +88,7 @@ Frontend guidelines and specific docs.
 - [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition
 - [Focused Invoice client](./frontend/focused-invoice-client.md) — reused invoice screens, scoped sessions and verification evidence
 - [Focused HR client](./frontend/focused-hr-client.md) — existing People views through host sessions, scoped navigation and evidence
+- [HR privacy verification](./backend/hr-privacy-verification.md) — scoped authorization, private files, revocation and actual test evidence
 - [Workspace Session Boundary](./frontend/workspace-session-boundary.md) — validated arrival, per-tab context and draft/write guards
 
 ### 🚀 DevOps & Infra

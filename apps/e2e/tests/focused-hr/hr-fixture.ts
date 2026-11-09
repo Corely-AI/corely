@@ -44,6 +44,7 @@ export async function hrTransport(
                     "people.self.read",
                     "people.self.update",
                     ...(options.manager ? ["people.profile.manage"] : []),
+                    ...(options.private ? ["people.private.read"] : []),
                   ],
               denied: [],
             },
@@ -80,35 +81,43 @@ export async function hrTransport(
         onboardingTask: null,
         tasksAvailable: false,
       });
-      const json =
-        path === "/api/bff/people/me"
-          ? self
-          : path.endsWith("/availability")
-            ? {
-                version: 0,
-                plans: [],
-                profileVersion: 1,
-                resourceId: null,
-                evaluatedAt: "2026-11-09T10:00:00Z",
-                affectedCommitments: [],
-              }
-            : path === "/api/bff/people/staff" && request.method() === "GET"
+      const json = path.endsWith("/private")
+        ? {
+            version: 1,
+            notes: "Synthetic398 confidential note",
+            personalEmail: null,
+            personalPhone: null,
+          }
+        : path.endsWith("/absences")
+          ? { items: [] }
+          : path === "/api/bff/people/me"
+            ? self
+            : path.endsWith("/availability")
               ? {
-                  items: options.empty ? [] : [neutral],
-                  total: options.empty ? 0 : 1,
-                  page: 1,
-                  pageSize: 25,
+                  version: 0,
+                  plans: [],
+                  profileVersion: 1,
+                  resourceId: null,
+                  evaluatedAt: "2026-11-09T10:00:00Z",
+                  affectedCommitments: [],
                 }
-              : path.endsWith("/management")
-                ? profile
-                : neutral;
+              : path === "/api/bff/people/staff" && request.method() === "GET"
+                ? {
+                    items: options.empty ? [] : [neutral],
+                    total: options.empty ? 0 : 1,
+                    page: 1,
+                    pageSize: 25,
+                  }
+                : path.endsWith("/management")
+                  ? profile
+                  : neutral;
       await route.fulfill({ json });
       return;
     }
     const response = workspaceFixtureResponse(
       path + url.search,
       new Headers(headers),
-      "user-a",
+      options.user ?? "user-a",
       "hr",
       fixtureOrigins("5189")
     );
