@@ -140,6 +140,7 @@ General developer guides and references.
 - [Module Template](./guides/MODULE-TEMPLATE.md)
 - [Debug Stream](./guides/DEBUG_STREAM.md)
 - [Environment Setup](./guides/ENV_SETUP.md)
+- [Local focused surfaces](./guides/LOCAL_FOCUSED_SURFACES.md) — trusted multi-origin HTTPS, shared API configuration and standalone clients
 - [POS Vertical Packs](./guides/POS_VERTICAL_PACKS.md)
 - [Vercel Surface Proxy](./guides/VERCEL_SURFACE_PROXY.md)
 - [Security Guide](./guides/SECURITY.md)

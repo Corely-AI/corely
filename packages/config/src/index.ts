@@ -1,4 +1,12 @@
 // Main exports for the config package
+export {
+  focusedBrowserEnvSchema,
+  focusedDevEnvSchema,
+  parseFocusedDevEnv,
+  focusedSurfaceKeys,
+  focusedSurfacePorts,
+} from "./focused-surfaces";
+export type { FocusedSurfaceKey, FocusedDevConfig } from "./focused-surfaces";
 export { EnvModule } from "./env/env.module";
 export { EnvService } from "./env/env.service";
 export { loadEnv } from "./env/load-env";
