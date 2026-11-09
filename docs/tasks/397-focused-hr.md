@@ -4,7 +4,7 @@
 - Branch: `397-focused-hr`; base `origin/development` at `05489029`.
 - Prerequisites #386/#389/#390/#391 verified Done. Existing #305/#306/#307/#308
   screens and owning People application behavior reused; no domain expansion.
-- PR: pending publication.
+- Draft PR: [#423](https://github.com/Corely-AI/corely/pull/423).
 
 ## Implementation and review
 
@@ -42,3 +42,7 @@ administration. No remaining material source findings from this scoped review.
 inspected with synthetic EN desktop and phone data. Browser-only transport tests
 and database/API checks are separate. HR privacy/release acceptance remains
 #398/#401/#404; no rollout, merge, or tile enablement performed.
+
+Publication retained normal pre-commit checks. The documented `HUSKY=0` pre-push
+bypass was used for existing unrelated root/legacy CI failures; scoped checks and
+limits above remain explicit. No merge or release performed.
