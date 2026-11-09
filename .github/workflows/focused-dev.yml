@@ -1,0 +1,48 @@
+name: Focused local development
+on:
+  pull_request:
+    paths:
+      - "scripts/focused-dev/**"
+      - "packages/config/**"
+      - "apps/login/**"
+      - ".env.focused.example"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/focused-dev.yml"
+jobs:
+  clean-start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm focused:init
+      - name: Generate disposable CI certificate (not installed as trusted)
+        run: |
+          mkdir -p local/focused
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=login.corely.test -keyout local/focused/key.pem -out local/focused/cert.pem -addext 'subjectAltName=DNS:login.corely.test,DNS:app.corely.test,DNS:invoice.app.corely.test,DNS:hr.app.corely.test'
+      - run: pnpm focused:check
+      - run: pnpm test:focused-dev
+      - run: pnpm test:focused-dev:int
+      - run: pnpm exec tsc -p scripts/focused-dev/tsconfig.json
+      - run: pnpm build:focused --surface=login
+      - name: Start the actual local topology and check all origins
+        run: |
+          pnpm dev:focused --probe > /tmp/focused-start.log 2>&1 &
+          runner=$!
+          trap 'kill "$runner"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -ksf --resolve app.corely.test:8443:127.0.0.1 https://app.corely.test:8443/ > /dev/null; then break; fi
+            sleep 1
+          done
+          for host in app.corely.test invoice.app.corely.test hr.app.corely.test; do
+            curl -ksf --resolve "$host:8443:127.0.0.1" "https://$host:8443/" | grep -q 'Development transport probe'
+          done
+          curl -ksf --resolve login.corely.test:8443:127.0.0.1 https://login.corely.test:8443/login | grep -q '/src/main.tsx'
