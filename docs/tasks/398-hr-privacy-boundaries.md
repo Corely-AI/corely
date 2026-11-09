@@ -5,7 +5,7 @@
   `ee6825f0` (Draft #423, prerequisite #397). Retarget/recheck against development
   after #423 integrates. This PR's diff excludes the prerequisite client work.
 - Other dependencies #387/#388 are Done. No changes to related #302/#305–308 state.
-- PR: pending publication.
+- Draft PR: [#424](https://github.com/Corely-AI/corely/pull/424).
 
 [Coverage, policy and reproducible evidence](../backend/hr-privacy-verification.md).
 
@@ -26,3 +26,6 @@ checks are meaningful, and private repository reads are asserted absent on denie
 requests. Request sessions are synthetic fixtures, not real sign-in acceptance.
 Test-only/API/documentation delta: UI/UX evidence N/A; HR screenshots remain #423.
 HR tile stays coming-soon and no merge/deploy is performed.
+
+Normal pre-commit checks passed. Publication uses the documented pre-push bypass
+for unrelated root/legacy failures recorded in #397; required CI remains pending.
