@@ -8,6 +8,7 @@ import { json, urlencoded, type Request, type Response, type NextFunction } from
 import { SsoSessionService } from "../../application/services/sso-session.service";
 import { SsoHttpSecurity, SSO_COOKIES } from "./sso-http-security";
 import { setSsoSessionPrincipal } from "./sso-session-principal";
+import { configureFocusedObservation } from "./focused-observation.middleware";
 import type { SsoAppKey } from "@corely/contracts";
 
 const shared = ["documents", "workspaces", "menu", "platform/apps", "copilot", "ai-copilot"];
@@ -48,6 +49,7 @@ function bodyErrorStatus(error: unknown): number {
 
 /** Install before SSO CORS, legacy parsers, public URL rewriting and Nest routing. */
 export function configureSsoSessionTransport(app: INestApplication): void {
+  configureFocusedObservation(app);
   const sessions = app.get(SsoSessionService);
   const security = app.get(SsoHttpSecurity);
   const parseJson = json({ limit: "16mb" });

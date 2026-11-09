@@ -1,0 +1,57 @@
+# #403 — focused surface observability
+
+- Issue: https://github.com/Corely-AI/corely/issues/403
+- Branch: `403-focused-observability`
+- Base: `development` at `8768b5e94`; this branch does not copy #396/#397/#402 changes.
+- Delivery: Draft PR with implementation and local verification. Live monitoring and pilot
+  acceptance require the approved destination, owner and thresholds.
+
+## Scope and review
+
+Reused existing SSO registration/security checks, browser session transport, Nest logger and
+OTLP setup. Added strict shared event schemas, bounded browser reporting, server spans,
+request UUID correlation, app-launch/route/legacy-entry observations and an offline release
+report. No new vendor, telemetry ingestion endpoint, database or access policy.
+
+Reviewed the event field inventory, trusted origin resolution, request/body/URL handling,
+response streaming/cancellation, existing correlation headers, collector failure behavior,
+client imports and report aggregation/rendering. Fixed findings: distinguish 429 rate limits
+from outages; classify case/trailing-slash protocol routes consistently; report interrupted
+streams once; reject arbitrary metadata; preserve public Invoice/booking routes outside the
+legacy usage classification. Existing UI and authorization behavior remain intact.
+
+## Verification
+
+- New event validation and client/HTTP diagnostics plus existing transport/layout/legacy-route
+  tests: 57 passed across 6 files, no skips.
+- Real PostgreSQL SSO callback success and replay rejection diagnostics: 1 passed, no skips.
+  Raw handoff codes, state, transaction proof, cookie and proxy key are absent from events.
+- App Center browser regressions: 3 passed; focused Invoice browser regressions: 13 passed.
+- Central Login diagnostics browser checks: 2 passed (401/503 and sanitized UUID correlation).
+  Development StrictMode aborts are classified separately from completed requests.
+- Report aggregation test: 1 passed; synthetic HTML report rendered and visually inspected.
+- API, shared browser package and three focused app typechecks: passed, including final API/shared
+  rechecks. Contracts and three focused app production builds passed. Scoped ESLint has no
+  errors, with two console-info warnings for the intentional bounded browser telemetry sink.
+- The broader current SSO session transport file ran 20 passes and 6 failures, independently
+  of the new callback diagnostic test. Its transfer probes use `/api/bff/documents/*` through
+  Invoice, but the current base deliberately excludes Documents from the Invoice BFF route
+  roots. Expected 200/401/413 become 404/connection reset. Do not widen production access to
+  make these fixture assertions pass. Reconcile the fixture with the existing boundary in #400.
+- Initial owning-package Vitest invocation from the root selected no tests; corrected the
+  working directory. Initial diagnostic import alias and callback replay expectation were
+  corrected and rerun. No staging/production test or deployment occurred.
+
+## Evidence and pending gates
+
+[Runbook, signal semantics and dashboard reproduction](../observability/focused-surfaces.md)
+include [synthetic screenshot](../observability/images/focused-release-report.png). App UI
+screens are unchanged; instrumentation is verified by browser behavior and transport tests.
+The report is local and offline, not a claim that a production dashboard is provisioned.
+
+Before rollout, bind the approved collector, confirm OTLP scope filtering and dashboard
+access/retention, name operations ownership, record the pilot window/collection coverage and
+approve actual alert/rollback thresholds. Inject failures on approved staging and validate
+cross-origin transitions. Cross-navigation transaction proofs are intentionally not logged;
+individual requests correlate by UUID, while full transition reproduction uses synthetic
+traffic. Missing answers to these environment/owner questions keep this PR Draft.

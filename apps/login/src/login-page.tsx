@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button, Input, Logo } from "@corely/ui/auth-primitives";
 import {
+  FocusedObservationSchema,
+  focusedRequestEvent,
+  focusedOutcome,
   SsoContextSchema,
   SsoHandleSchema,
   SsoRedirectSchema,
@@ -16,10 +19,32 @@ class LoginFailure extends Error {
 }
 async function request(path: string, body?: object, signal?: AbortSignal): Promise<unknown> {
   const controller = new AbortController();
+  const diagnosticId = crypto.randomUUID();
+  let observed = false;
+  const observe = (outcome: ReturnType<typeof focusedOutcome>) => {
+    if (observed) {
+      return;
+    }
+    observed = true;
+    const event = FocusedObservationSchema.parse({
+      surface: "login",
+      layer: "browser",
+      event: focusedRequestEvent(path),
+      outcome,
+      requestId: diagnosticId,
+    });
+    try {
+      console.info("corely.focused", event);
+    } catch {
+      /* Diagnostics cannot interrupt sign-in. */
+    }
+  };
   const abort = () => controller.abort();
   const timeout = window.setTimeout(abort, 15_000);
   signal?.addEventListener("abort", abort, { once: true });
-  if (signal?.aborted) {controller.abort();}
+  if (signal?.aborted) {
+    controller.abort();
+  }
   try {
     const response = await fetch(path, {
       credentials: "same-origin",
@@ -27,11 +52,13 @@ async function request(path: string, body?: object, signal?: AbortSignal): Promi
       redirect: "error",
       headers: {
         Accept: "application/json",
+        "X-Request-Id": diagnosticId,
         ...(body ? { "Content-Type": "application/json" } : {}),
       },
       ...(body ? { method: "POST", body: JSON.stringify(body) } : {}),
       signal: controller.signal,
     });
+    observe(focusedOutcome(response.status));
     if (!response.ok) {
       throw new LoginFailure(
         response.status === 401
@@ -47,6 +74,9 @@ async function request(path: string, body?: object, signal?: AbortSignal): Promi
     }
     const result: unknown = await response.json();
     return result;
+  } catch (error) {
+    observe(signal?.aborted ? "aborted" : "unavailable");
+    throw error;
   } finally {
     window.clearTimeout(timeout);
     signal?.removeEventListener("abort", abort);

@@ -1,3 +1,4 @@
+import { observeFocused } from "../session/focused-observation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useBeforeUnload, useLocation, useNavigate } from "react-router-dom";
 import { Grid2X2, Menu, Search, UserRound } from "lucide-react";
@@ -207,8 +208,24 @@ export function FocusedAppShell({
     setLaunching(false);
     if (url) {
       // The user can edit while the request is pending. Ask using the latest dirty state.
-      currentGuard.current(() => leavePage(url));
+      currentGuard.current(() => {
+        observeFocused({
+          surface: app,
+          layer: "browser",
+          event: "app-launch",
+          outcome: "ok",
+          destination: id,
+        });
+        leavePage(url);
+      });
     } else {
+      observeFocused({
+        surface: app,
+        layer: "browser",
+        event: "app-launch",
+        outcome: "rejected",
+        destination: id,
+      });
       setLaunchError(true);
     }
   };
