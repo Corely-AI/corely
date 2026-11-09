@@ -5,8 +5,8 @@
   `e71783f190cf068471fdc3e7b12a6dcd63c02cc8`.
 - Prerequisites #386/#389/#390/#391 completed. #393 was skipped because #392 is
   still open; this ticket does not depend on App Center client delivery.
-- Draft PR: [#418](https://github.com/Corely-AI/corely/pull/418), targeting
-  `development`; status In progress while CI/review remain outstanding.
+- Initial PR: [#418](https://github.com/Corely-AI/corely/pull/418), merged into
+  `development`. Issue #394 is closed; the review follow-up below does not reopen it.
 
 ## Outcome and reuse
 
@@ -62,6 +62,40 @@ route restoration. No separate full legacy-client visual run or complete live
 browser-to-database flow was executed; source components/contracts are shared and
 API tests were separate. No locale/a11y completeness or production claim.
 
-Keep Draft pending review/required CI. Publication uses the documented `HUSKY=0`
+Publication uses the documented `HUSKY=0`
 pre-push bypass due to the previously observed unrelated global cash integration
 failure; staged-file checks still run. No merge, deployment or shared-data changes.
+
+## Review follow-up
+
+Branch `394-invoice-review-fixes` starts at `origin/development`
+`05fceeeb341bd8945765b447325b8c06120369ad`, after #418 merged.
+Follow-up Draft PR: [#421](https://github.com/Corely-AI/corely/pull/421), targeting
+`development`.
+
+- P1 focused-client regression: downloading a draft PDF could invoke legacy
+  payment-settings discovery, receive the expected BFF 403 and close the focused
+  feature boundary before finalize/PDF. Focused downloads now delegate defaults
+  to the existing owning Invoice use cases. No BFF permissions were expanded.
+- P2 adjacent existing defect: the reused helper treated a null `window.open`
+  return as popup failure even when `noopener,noreferrer` opened the destination
+  successfully. Removed that false error while preserving the security flags.
+- The browser fixture previously omitted action capabilities, hiding the PDF
+  button from coverage. It now exercises this action with validated capabilities
+  and explicit settings denial. Both defects reproduced with failing assertions
+  before their corrections. The storage isolation test now seeds the actual
+  legacy active-workspace key.
+
+Fresh follow-up checks: seven route-mocked browser tests and four invoice
+component/projection tests passed; strict Invoice typecheck and production build
+passed. Scoped lint passed with the two existing debug-console warnings;
+format/whitespace checks passed. The build retains its bundle-size warning.
+The original 94 shared tests and 28 isolated API/database tests above were not
+rerun for this follow-up. Full-repository and live browser-to-database checks are
+not claimed.
+
+The new desktop PDF screenshot in the composition guide was visually inspected
+at 1280×720 in English. Browser assertions verify the destination opens with no
+opener and no false error; the destination is synthetic, not a rendered real PDF.
+Existing mobile evidence remains from the initial delivery. Follow-up stays Draft
+for review/required CI; no merge or deployment is authorized by this review.

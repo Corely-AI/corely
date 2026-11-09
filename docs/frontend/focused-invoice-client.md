@@ -58,6 +58,12 @@ runtime; a fresh scoped QueryClient also prevents hydration of former contexts.
 The backend retains every operation permission, app-enable/capability and record
 ownership check. Showing a route or action grants no API authority.
 
+Focused PDF downloads leave payment defaults to the owning Invoice finalize/PDF
+use cases. They do not call the legacy payment-settings API, which the Invoice
+BFF intentionally excludes. Legacy clients retain their existing setup flow.
+PDF navigation preserves `noopener,noreferrer`; a null `window.open` result with
+those flags does not establish that the browser blocked the new window.
+
 Invoice activity reads only the authorized invoice record and its existing
 timestamps/payments. Invalid entity targets make no record request, and there is
 no global audit endpoint/query mounted here. This is not a complete event ledger.
@@ -92,6 +98,10 @@ activity, loading/error recovery, empty/missing/denied states, unrelated routes,
 stale token/storage isolation and dirty navigation. General/API configurations
 exclude this fixture-specific suite; run it explicitly.
 
+The PDF regression supplies contract-validated action capabilities and a draft
+without a payment method. It verifies finalize/PDF requests without forbidden
+settings calls, secure popup navigation and absence of a false popup error.
+
 Separately, the existing `focused-api-access.int.test.ts` and
 `sso-session-transport.int.test.ts` suites were run against a newly created,
 loopback-only disposable PostgreSQL database. They execute real HTTP adapters,
@@ -118,6 +128,8 @@ the broader focused-client localization/accessibility verification.
 ![Existing invoice list in the focused shell](images/focused-invoice/invoice-list-desktop.png)
 
 ![Reused invoice detail/editor](images/focused-invoice/invoice-detail-desktop.png)
+
+![PDF action after owner-side finalization, without a false popup error](images/focused-invoice/invoice-pdf-owner-desktop.png)
 
 | Phone editor                                                        | Invoice-record activity                                                       |
 | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
