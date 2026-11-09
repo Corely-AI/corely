@@ -74,3 +74,20 @@ Additional states: [loading](images/app-center-loading.png),
 [directory error](images/app-center-directory-error.png),
 [session outage](images/app-center-service-error.png),
 [access removed at launch](images/app-center-stale-access.png).
+
+## Root-build review correction
+
+The focused wrapper runs from the repository root. PostCSS explicitly selects
+this app's Tailwind config, whose content paths are relative to the config file.
+This keeps `pnpm dev:app-center` / `pnpm build:app-center` independent of the caller's
+working directory. A production-build regression verifies shared/theme,
+app-specific and responsive CSS when Vite is invoked from the repository root.
+
+The corrected `pnpm build:app-center` output was inspected on November 9, 2026,
+with synthetic session/catalog responses at 1440×900 and 390×844. Heading sizes
+were 36/30 px and content padding 32/20 px respectively, with no phone horizontal
+overflow; search/no-match and focus styling worked.
+
+| Root-wrapper desktop                                                              | Root-wrapper phone                                                                     |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| ![Directory built from repository root](images/app-center-root-build-desktop.png) | ![Phone directory built from repository root](images/app-center-root-build-mobile.png) |

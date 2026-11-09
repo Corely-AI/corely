@@ -69,3 +69,33 @@ The pre-push hook rejected publication on the reproduced baseline unit failures.
 Publish this Draft using its documented `HUSKY=0` escape hatch; no test or hook is
 changed. Remaining hook-wide checks are unrun; targeted client checks passed.
 Keep the PR Draft; no merge or deployment was requested or performed.
+
+## Review correction — root-invoked Tailwind build
+
+Review of PR #417 found one P1 delivery defect: the documented focused build/dev
+wrapper retains the repository working directory, but Tailwind's automatic config
+lookup and content globs used that directory. A root-invoked build failed at
+`@apply border-border`; the earlier standalone build had hidden the problem.
+
+PostCSS now resolves the app's Tailwind config using its own module URL, and
+Tailwind resolves content files relative to that config. A child-process build
+regression invokes Vite from the repository root, uses a disposable output directory,
+and checks app, responsive and shared UI styles. It failed before the fix and
+passes afterward. No shared source or backend behavior changed.
+
+Fresh checks after correction:
+
+- App Center tests: 14 passed (including the build regression), standalone and
+  root test workspace.
+- Strict client typecheck, targeted ESLint and changed-file Prettier passed.
+- `CORELY_DEV_ENV_FILE=/tmp/corely-417-focused.env pnpm build:app-center` passed with
+  disposable synthetic build-only configuration. No API, certificate trust or
+  production routing was involved.
+- Chromium against that root-wrapper build: 1440×900 and 390×844, responsive heading
+  sizes/padding, no phone overflow, search/no-match and keyboard focus styling.
+  [Refreshed screenshots](../frontend/app-center.md#root-build-review-correction).
+
+The earlier full-suite result remains from the pre-correction head; the full suite
+was not rerun for this isolated build/config correction. Previously reproduced
+baseline failures and Draft status remain recorded above. No external review
+comments existed when this review began; no additional material findings remained.

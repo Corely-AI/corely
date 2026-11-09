@@ -6,7 +6,7 @@ export default mergeConfig(
     test: {
       name: "app-center",
       environment: "jsdom",
-      include: ["src/**/*.spec.tsx"],
+      include: ["src/**/*.spec.{ts,tsx}"],
     },
   })
 );
