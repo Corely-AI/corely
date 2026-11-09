@@ -14,12 +14,12 @@ const catalog = [
   { appId: "invoices", name: "Invoice", version: "1", tier: 1, dependencies: ["parties"] },
   { appId: "parties", name: "Customers", version: "1", tier: 1, dependencies: [] },
 ];
-function setup(enabled = false) {
+function setup(enabled = false, installed = true) {
   const refresh = vi.fn();
   render(
     <TenantAppsTab
       tenantId="tenant-a"
-      catalog={catalog}
+      catalog={catalog.map((app) => ({ ...app, enabled: installed }))}
       entitlements={catalog.map((app) => ({
         appId: app.appId,
         enabled,
@@ -66,6 +66,14 @@ describe("existing host app controls", () => {
       expect(update).toHaveBeenLastCalledWith("tenant-a", "parties", false, true)
     );
     expect((await screen.findByRole("status")).textContent).toContain("audit log");
+  });
+
+  it("offers installation for a default-entitled app that has no active install", async () => {
+    update.mockResolvedValue({ success: true });
+    setup(true, false);
+    fireEvent.click(screen.getByRole("button", { name: "Install: Invoice" }));
+    fireEvent.click(screen.getByRole("button", { name: "Install with dependencies" }));
+    await waitFor(() => expect(update).toHaveBeenCalledWith("tenant-a", "invoices", true));
   });
   it("shows revoked permission and refreshes instead of reporting success", async () => {
     update.mockRejectedValue({ status: 403 });

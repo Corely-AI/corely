@@ -174,6 +174,44 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("host app configuration", ()
       })
     ).toBe(1);
   });
+  it("returns install state for the selected tenant without changing host authority", async () => {
+    const path = `/platform/apps?forTenantId=${encodeURIComponent(f.tenantId)}`;
+    const initial = await request(app.getHttpServer())
+      .get(path)
+      .set("Authorization", `Bearer ${hostToken}`)
+      .expect(200);
+    expect(
+      initial.body.find((entry: { appId: string }) => entry.appId === "invoices").enabled
+    ).toBe(false);
+    const flags = await service.getEntitlements(f.tenantId);
+    expect(flags.apps.find((entry) => entry.appId === "invoices")?.enabled).toBe(true);
+    await patch(hostToken, f.tenantId, "invoices", { enabled: true }).expect(200);
+    const installed = await request(app.getHttpServer())
+      .get(path)
+      .set("Authorization", `Bearer ${hostToken}`)
+      .expect(200);
+    expect(
+      installed.body.find((entry: { appId: string }) => entry.appId === "invoices").enabled
+    ).toBe(true);
+    const legacy = await request(app.getHttpServer())
+      .get("/platform/apps")
+      .set("Authorization", `Bearer ${hostToken}`)
+      .expect(200);
+    expect(legacy.body.every((entry: { enabled: boolean }) => !entry.enabled)).toBe(true);
+    const other = await request(app.getHttpServer())
+      .get("/platform/apps?forTenantId=other-team")
+      .set("Authorization", `Bearer ${hostToken}`)
+      .expect(200);
+    expect(other.body.every((entry: { enabled: boolean }) => !entry.enabled)).toBe(true);
+    await request(app.getHttpServer())
+      .get(path)
+      .set("Authorization", `Bearer ${memberToken}`)
+      .expect(403);
+    await request(app.getHttpServer())
+      .get("/platform/apps?forTenantId=a&forTenantId=b")
+      .set("Authorization", `Bearer ${hostToken}`)
+      .expect(400);
+  });
   it("rejects tenant users, forged role IDs, revoked host grants and malformed commands", async () => {
     await grants.replaceAll(f.tenantId, f.membership.roleId, [{ key: "*", effect: "ALLOW" }]);
     await patch(memberToken, f.tenantId, "invoices", { enabled: true }).expect(403);

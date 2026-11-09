@@ -40,3 +40,23 @@ See [App Center evidence](../frontend/app-center.md#surf-12-evidence). Inspected
 ## Remaining work
 
 Required hosted CI and human review; no merge or deployment. Host compatibility routing remains the separately tracked rollout gate.
+
+## Review and corrections — November 9
+
+Reviewed PR #419 at `5c64fb8538628ca5236fea28e06198b3dcabb02c` against the verified
+`development` base. No external review threads existed. Three concrete findings:
+
+1. **P2 — Stale save callback can strand another tenant's page.** An A save finishing after B loads called A's retained refresh callback, took the newest request ID and replaced `loadedTenantId` with A. The page then stayed on its loading state. Added a committed-tenant guard before starting and completing reads. Regression reproduced the old failure and now passes.
+2. **P2 — Default enablement hides missing installation.** The host page read the tenant-less catalog and chose actions only from entitlement defaults. Invoice can be default-enabled with no install, so the page offered Disable rather than a path to install and launch it. The existing host-protected catalog now accepts a validated `forTenantId` target, preserving its previous response when omitted. The UI shows active installation separately and offers Install. Persisted tests prove per-tenant install state and that tenant tokens still receive 403; malformed targets receive 400.
+3. **P2 — Specialized tests collected against the wrong app.** The legacy Playwright config selected the three App Center cases for both browsers without starting App Center. Added the same exclusion used by the other focused suites. Before: six incorrectly collected cases; after: zero. The dedicated suite still executes all three.
+
+Fresh review checks:
+
+- Host control and refresh tests: **8 passed**; the two new UI regressions failed before the fixes.
+- `SSO_TEST_DATABASE_URL=<disposable local DB> pnpm --dir services/api exec vitest run --config vitest.config.ts src/modules/platform/__tests__/app-management.int.test.ts src/modules/platform/__tests__/list-app-catalog.usecase.spec.ts src/modules/platform/__tests__/app-management-link.spec.ts`: **10 passed** (five persisted HTTP/controller cases and five unit cases).
+- Dedicated App Center Playwright suite: **3 passed** in installed Chrome. Legacy `--list`: 588 tests, no App Center specs. Collection alone is not an execution pass for the legacy suite.
+- API `tsc --noEmit` and Contracts typecheck: passed. Full legacy web typecheck still fails in unchanged assistant/cash code; no reported errors in the modified host files.
+- Updated [visual evidence](../frontend/app-center.md#surf-12-review-corrections) shows the default-enabled installation flow with synthetic data.
+- [Hosted run 42643086864](https://github.com/Corely-AI/corely/actions/runs/42643086864) fails unit/quality checks on an ungenerated Prisma client and browser checks on the unchanged missing `e2e:smoke` script. Cash integration passed. These infrastructure failures are separate from the reproduced test-collection finding. No CI workflow was weakened or unrelated missing script added.
+
+No merge, deployment or external review comment was requested or performed. PR remains Draft.

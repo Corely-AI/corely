@@ -2,7 +2,12 @@ import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { TenantEntitlementsPage } from "./TenantEntitlementsPage";
-const api = vi.hoisted(() => ({ entitlements: vi.fn(), catalog: vi.fn(), tenant: "team-a" }));
+const api = vi.hoisted(() => ({
+  entitlements: vi.fn(),
+  catalog: vi.fn(),
+  tenant: "team-a",
+  refreshes: new Map<string, () => Promise<void>>(),
+}));
 vi.mock("react-router-dom", () => ({ useParams: () => ({ tenantId: api.tenant }) }));
 vi.mock("@/lib/platform-entitlements-api", () => ({
   platformEntitlementsApi: { getEntitlements: api.entitlements },
@@ -20,6 +25,7 @@ vi.mock("./TenantAppsTab", () => ({
     entitlements: { appId: string }[];
     onRefresh: () => Promise<void>;
   }) => {
+    api.refreshes.set(tenantId, onRefresh);
     const [feedback, setFeedback] = React.useState("");
     return (
       <div>
@@ -42,6 +48,7 @@ vi.mock("./TenantAppsTab", () => ({
 afterEach(() => {
   cleanup();
   vi.resetAllMocks();
+  api.refreshes.clear();
 });
 const data = (id: string) => ({
   apps: [{ appId: id }],
@@ -88,5 +95,26 @@ describe("host configuration refresh", () => {
     });
     expect(screen.getByText("Configuration: team-b/team-b-app")).toBeTruthy();
     expect(screen.queryByText(/team-a-app/)).toBeNull();
+  });
+  it("does not let a completed old-tenant save supersede the active tenant refresh", async () => {
+    api.entitlements.mockImplementation((tenant: string) => Promise.resolve(data(`${tenant}-app`)));
+    const view = setup();
+    await screen.findByText("Configuration: team-a/team-a-app");
+    const oldRefresh = api.refreshes.get("team-a");
+    if (!oldRefresh) {
+      throw new Error("Missing initial refresh callback");
+    }
+    api.tenant = "team-b";
+    view.rerender(<TenantEntitlementsPage />);
+    await screen.findByText("Configuration: team-b/team-b-app");
+    await act(async () => {
+      await oldRefresh();
+    });
+    expect(screen.getByText("Configuration: team-b/team-b-app")).toBeTruthy();
+    expect(api.entitlements).toHaveBeenCalledTimes(2);
+    expect(api.catalog.mock.calls.map(([url]) => url)).toEqual([
+      "/platform/apps?forTenantId=team-a",
+      "/platform/apps?forTenantId=team-b",
+    ]);
   });
 });

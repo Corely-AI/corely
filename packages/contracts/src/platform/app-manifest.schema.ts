@@ -114,6 +114,9 @@ export const AppManagementLinkSchema = z.object({
 });
 export type AppManagementLink = z.infer<typeof AppManagementLinkSchema>;
 
+/** Administrative target only; it never changes authenticated request authority. */
+export const AppCatalogQuerySchema = z.object({ forTenantId: z.string().min(1).optional() });
+
 export const UpdateTenantAppEnablementSchema = z.object({
   enabled: z.boolean(),
   cascade: z.boolean().optional().default(false),

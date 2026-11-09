@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
 import { TenantAppsTab } from "./TenantAppsTab";
@@ -20,9 +20,16 @@ export function TenantEntitlementsPage() {
   const [loadError, setLoadError] = useState(false);
   const [loadedTenantId, setLoadedTenantId] = useState<string>();
   const requestId = useRef(0);
+  const activeTenantId = useRef(tenantId);
+  useLayoutEffect(() => {
+    activeTenantId.current = tenantId;
+    return () => {
+      activeTenantId.current = undefined;
+    };
+  }, [tenantId]);
 
   const loadData = useCallback(async () => {
-    if (!tenantId) {
+    if (!tenantId || activeTenantId.current !== tenantId) {
       return;
     }
     setLoadError(false);
@@ -30,22 +37,24 @@ export function TenantEntitlementsPage() {
     try {
       const [entData, catData] = await Promise.all([
         platformEntitlementsApi.getEntitlements(tenantId),
-        apiClient.get<AppCatalogItem[]>("/platform/apps"),
+        apiClient.get<AppCatalogItem[]>(
+          `/platform/apps?forTenantId=${encodeURIComponent(tenantId)}`
+        ),
       ]);
-      if (requestId.current !== current) {
+      if (requestId.current !== current || activeTenantId.current !== tenantId) {
         return;
       }
       setEntitlements(entData);
       setCatalog(catData);
       setLoadedTenantId(tenantId);
     } catch (err) {
-      if (requestId.current !== current) {
+      if (requestId.current !== current || activeTenantId.current !== tenantId) {
         return;
       }
       setLoadError(true);
       console.error("Failed to load entitlements", err);
     } finally {
-      if (requestId.current === current) {
+      if (requestId.current === current && activeTenantId.current === tenantId) {
         setLoading(false);
       }
     }

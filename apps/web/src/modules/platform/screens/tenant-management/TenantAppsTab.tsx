@@ -32,7 +32,10 @@ interface TenantAppsTabProps {
 
 export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: TenantAppsTabProps) {
   const [pending, setPending] = useState<string | null>(null);
-  const [confirmation, setConfirmation] = useState<AppCatalogItem | null>(null);
+  const [confirmation, setConfirmation] = useState<{
+    app: AppCatalogItem;
+    action: "Enable" | "Install";
+  } | null>(null);
   const [disableConfirmation, setDisableConfirmation] = useState<{
     app: AppCatalogItem;
     dependents: string[];
@@ -56,9 +59,8 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
       } else {
         await platformEntitlementsApi.updateAppEnablement(tenantId, app.appId, enabled);
       }
-      setFeedback(
-        `${app.name} ${enabled ? "enabled" : "disabled"}. The change was recorded in the audit log.`
-      );
+      const outcome = enabled ? (app.enabled ? "enabled" : "installed and enabled") : "disabled";
+      setFeedback(`${app.name} ${outcome}. The change was recorded in the audit log.`);
       await onRefresh();
     } catch (cause: unknown) {
       const status =
@@ -102,15 +104,23 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
         {catalog.map((app) => {
           const entitlement = entitlements.find((entry) => entry.appId === app.appId);
           const enabled = entitlement?.enabled ?? false;
+          const activeInstall = app.enabled === true;
+          const configured = enabled && activeInstall;
+          const action = configured ? "Disable" : enabled ? "Install" : "Enable";
           const policy = getAppManagementPolicy(app.appId);
           return (
             <Card key={app.appId}>
               <CardHeader>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <CardTitle className="min-w-0 break-words text-lg">{app.name}</CardTitle>
-                  <Badge variant={enabled ? "default" : "outline"}>
-                    {enabled ? "Enabled" : "Disabled"}
-                  </Badge>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">
+                      {activeInstall ? "Active installation" : "No active installation"}
+                    </Badge>
+                    <Badge variant={enabled ? "default" : "outline"}>
+                      {enabled ? "Team enabled" : "Team disabled"}
+                    </Badge>
+                  </div>
                 </div>
                 <CardDescription>v{app.version}</CardDescription>
               </CardHeader>
@@ -121,23 +131,26 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                 {app.dependencies.length > 0 && (
                   <p className="text-sm">Requires: {app.dependencies.map(name).join(", ")}</p>
                 )}
-                {enabled && policy.hideDisableAction ? (
+                {configured && policy.hideDisableAction ? (
                   <p className="text-sm text-muted-foreground">{policy.reason}</p>
                 ) : (
                   <Button
                     className="min-h-11 w-full"
-                    variant={enabled ? "outline" : "default"}
+                    variant={configured ? "outline" : "default"}
                     disabled={pending !== null}
-                    aria-label={`${enabled ? "Disable" : "Enable"}: ${app.name}`}
+                    aria-label={`${action}: ${app.name}`}
                     onClick={() => {
-                      if (!enabled && app.dependencies.length) {
-                        setConfirmation(app);
+                      if (!configured && app.dependencies.length) {
+                        setConfirmation({
+                          app,
+                          action: action === "Install" ? "Install" : "Enable",
+                        });
                       } else {
-                        void toggle(app, !enabled);
+                        void toggle(app, !configured);
                       }
                     }}
                   >
-                    {pending === app.appId ? "Saving…" : enabled ? "Disable app" : "Enable app"}
+                    {pending === app.appId ? "Saving…" : `${action} app`}
                   </Button>
                 )}
               </CardContent>
@@ -155,10 +168,12 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Enable {confirmation?.name}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {confirmation?.action} {confirmation?.app.name}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This also enables required apps: {confirmation?.dependencies.map(name).join(", ")}.
-              Required apps and their dependencies will be enabled for this team. User permissions
+              This also enables required apps: {confirmation?.app.dependencies.map(name).join(", ")}
+              . Required apps and their dependencies will be enabled for this team. User permissions
               remain unchanged.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -166,14 +181,14 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                const app = confirmation;
+                const app = confirmation?.app;
                 setConfirmation(null);
                 if (app) {
                   void toggle(app, true);
                 }
               }}
             >
-              Enable with dependencies
+              {confirmation?.action} with dependencies
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

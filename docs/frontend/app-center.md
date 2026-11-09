@@ -106,6 +106,8 @@ retained same-origin legacy route map in ADR-0003; the standalone launcher does 
 render that page or transfer session credentials. Legacy authentication and actual
 host routing remain SURF-19/SURF-24 rollout gates.
 
+The host page reads active installation state for the selected tenant through the host-protected catalog query (`forTenantId`). It shows installation and team enablement separately and offers **Install** when an app is enabled by default but has no active installation. This query selects the administration target; it never changes authenticated tenant/workspace authority.
+
 The host page explains required apps before enablement and reports audited success,
 dependency conflicts and lost permission. A conflict does not automatically cascade. The existing combined-disable action requires explicit confirmation of the server-reported dependent apps.
 Successful refresh preserves feedback; a failed refresh blocks further edits until
@@ -143,3 +145,24 @@ the new launcher copy also has German/Vietnamese variants. No complete central-s
 [dependency confirmation](images/app-management/dependency-confirmation-phone.png),
 [audited success](images/app-management/audited-success-phone.png), and
 [dependent-app conflict](images/app-management/dependency-conflict-phone.png).
+
+### SURF-12 review corrections
+
+A delayed save can complete after navigation to another tenant. Refresh callbacks
+now check the committed tenant before starting a read as well as before applying
+its result, so the old callback cannot supersede the active tenant's request.
+The legacy Playwright suite excludes the App Center specs; run them with
+`playwright.app-center.config.ts`, which starts the correct thin client.
+
+The installation correction was visually checked with a default-enabled,
+uninstalled synthetic app at 1280×800 and 390×844. Confirmed Install → dependency
+confirmation → audited success, initial Cancel focus and no phone overflow.
+These render the actual host component in an isolated preview; live legacy-host
+routing/authentication remains unverified as noted above.
+
+| Default-enabled app before installation                                        | After installation                                                                         |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| ![Install offered on phone](images/app-management/host-installation-phone.png) | ![Active installation on phone](images/app-management/host-installation-success-phone.png) |
+
+[Desktop status](images/app-management/host-installation-desktop.png) and
+[installation confirmation](images/app-management/host-installation-confirmation-phone.png).
