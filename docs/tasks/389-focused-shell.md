@@ -55,3 +55,35 @@ The shell is opt-in. Owning clients compose feature routes, operation-authorized
 actions and validated workspace/session selection. Their actual multi-origin
 integration follows in the corresponding SURF tickets. Screenshots prove the
 shared shell only. Keep PR Draft; no merge, release or deployment performed.
+
+## Review corrections — 2026-11-09
+
+Reviewed PR #414 at `1d2a3a99` against development, including the launch/menu
+boundary, session transport, pending UI actions and actual CI logs. Fixed two
+P2 findings on the existing ticket branch:
+
+- An app launch checked `isDirty` before waiting for refreshed access, then
+  suppressed the unload warning. Edits made during that wait could be lost.
+  Launch now consults the current guard after the response, with stale/concurrent
+  responses rejected by request and navigation context.
+- A leave dialog retained its callback after a quick action, selected workspace
+  or launch destination was removed. Confirmation is now tied to the current
+  session, route and available navigation/launch choices; disappearance cancels
+  the pending callback, including disappearance followed by restoration.
+
+The initial late-edit and removed-action tests failed before correction. A
+follow-up revoked-launch test also reproduced stale confirmation and now has
+coverage alongside removed-workspace regression coverage. Validation uses
+`pnpm --filter @corely/web-shared exec vitest run --config vitest.config.ts`,
+`pnpm --filter @corely/web-shared typecheck`, targeted ESLint/Prettier and the Vite
+fixture build. All 63 shared-shell/session tests pass; typecheck, targeted lint/format, local documentation references and the Vite build pass. The build retains its existing dependency-directive/chunk-size warnings.
+
+Manually verified delayed launch → edit → response → confirmation → Stay at
+1440×900 and 390×844; the draft/route remain intact. Also checked dirty mobile
+drawer cancellation. Added [review screenshots and reproduction](../frontend/focused-app-shell.md#launch-race-regression).
+
+[CI run 42595630219](https://github.com/Corely-AI/corely/actions/runs/42595630219)
+fails quality/unit jobs because the generated Prisma client is absent, and the
+browser job invokes missing `e2e:smoke`. Cash integration passes. Those setup
+paths/workflows are outside this diff and remain documented limitations; no
+workflow rewrite, database setup or deployment is included in these fixes.

@@ -60,7 +60,9 @@ dependencies and capabilities. The administrative catalog's
 
 Only enabled, available destinations with valid exact origins can launch. Other
 returned destinations show unavailable reasons. The switcher refreshes the
-projection before navigation. App origins come from the server and App Center's
+projection before navigation, then checks the current form's dirty state. Pending
+leave confirmations are discarded when their route, session, granted navigation,
+workspace choices or launch availability changes. App origins come from the server and App Center's
 origin from deployment configuration; neither comes from query parameters.
 `buildWorkspaceLaunchUrl` adds only an encoded `workspaceId` hint, carrying no
 credential, tenant identity or arbitrary return path. The destination must
@@ -91,3 +93,16 @@ with the workspace hint. Screenshots contain synthetic data only.
 ![Unavailable destination](images/focused-shell/invoice-app-switcher.png)
 
 ![Unsaved-change confirmation](images/focused-shell/invoice-unsaved-warning.png)
+
+### Launch race regression
+
+Add `&launchReview=true` to the Invoice preview to expose a deterministic delayed
+access check. Select HR while the note is empty, type a note, then press
+**Complete app access check**. The confirmation must appear; **Stay** preserves
+both the note and route. This was checked at 1440×900 and 390×844 after the review
+correction. The completion button and launchable HR response exist only in this
+synthetic fixture; runtime catalog availability is unchanged.
+
+![Late edits require confirmation](images/focused-shell/invoice-launch-unsaved-desktop.png)
+
+![Stay preserves the phone draft](images/focused-shell/invoice-launch-draft-preserved-mobile.png)

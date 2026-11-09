@@ -5,7 +5,7 @@ import {
   type AppLaunchId,
   type WorkspaceConfig,
 } from "@corely/contracts";
-import { Input } from "@corely/ui";
+import { Button, Input } from "@corely/ui";
 import { SessionProviders } from "../../src/session/session-provider";
 import { FocusedAppShell } from "../../src/layout/focused-app-shell";
 import type { FocusedShellLocale } from "../../src/layout/focused-shell-copy";
@@ -57,7 +57,15 @@ export function shellConfig(app: AppLaunchId): WorkspaceConfig {
     computedAt: "2026-11-09T12:00:00Z",
   };
 }
-function Content({ app, locale }: { app: AppLaunchId; locale: FocusedShellLocale }) {
+function Content({
+  app,
+  locale,
+  completeLaunchCheck,
+}: {
+  app: AppLaunchId;
+  locale: FocusedShellLocale;
+  completeLaunchCheck?: () => void;
+}) {
   const [note, setNote] = useState("");
   const location = useLocation();
   const invoice = app === "invoice";
@@ -114,6 +122,11 @@ function Content({ app, locale }: { app: AppLaunchId; locale: FocusedShellLocale
             placeholder="Write a note to test the leave warning"
           />
         </label>
+        {completeLaunchCheck && (
+          <Button variant="outline" onClick={completeLaunchCheck}>
+            Complete app access check
+          </Button>
+        )}
         <p className="text-xs text-muted-foreground">Current route: {location.pathname}</p>
       </div>
     </FocusedAppShell>
@@ -123,6 +136,9 @@ export function FocusedShellFixture() {
   const query = new URLSearchParams(location.search);
   const app = query.get("app") === "hr" ? "hr" : "invoice";
   const locale = query.get("locale") === "de" ? "de" : query.get("locale") === "vi" ? "vi" : "en";
+  const launchReview = query.get("launchReview") === "true";
+  let launchReads = 0;
+  let completeLaunchCheck: (() => void) | undefined;
   const fetcher: typeof fetch = async (input: Parameters<typeof fetch>[0]) => {
     const url = String(input);
     if (url.includes("/config?")) {
@@ -139,6 +155,11 @@ export function FocusedShellFixture() {
       return Response.json(config);
     }
     if (url.endsWith("/menu/launches")) {
+      if (launchReview && ++launchReads > 1) {
+        await new Promise<void>((resolve) => {
+          completeLaunchCheck = resolve;
+        });
+      }
       return Response.json(
         ["invoice", "hr"].map((id) => ({
           appId: id === "invoice" ? "invoices" : "people",
@@ -153,7 +174,8 @@ export function FocusedShellFixture() {
             displayName: { en: id === "invoice" ? "Invoice" : "HR", de: id, vi: id },
             category: id === "invoice" ? "finance" : "people",
             iconKey: "Users",
-            availability: "coming-soon",
+            availability: launchReview ? "available" : "coming-soon",
+            ...(launchReview ? { url: `http://${id}.localhost:5186/` } : {}),
           },
         }))
       );
@@ -178,7 +200,11 @@ export function FocusedShellFixture() {
       fetchFn={fetcher}
     >
       <BrowserRouter>
-        <Content app={app} locale={locale} />
+        <Content
+          app={app}
+          locale={locale}
+          completeLaunchCheck={launchReview ? () => completeLaunchCheck?.() : undefined}
+        />
       </BrowserRouter>
     </SessionProviders>
   );

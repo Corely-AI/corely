@@ -1,6 +1,7 @@
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import type { AppCatalogItem } from "@corely/contracts";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 import { MemoryRouter, useLocation } from "react-router-dom";
@@ -13,6 +14,23 @@ import { shellConfig } from "../../testkit/browser/focused-shell-fixture";
 
 vi.mock("./use-focused-shell-data", () => ({ useFocusedShellData: vi.fn() }));
 let data: ReturnType<typeof useFocusedShellData>;
+const availableHr: AppCatalogItem = {
+  appId: "people",
+  name: "HR",
+  tier: 1,
+  version: "1",
+  dependencies: [],
+  enabled: true,
+  launch: {
+    launchId: "hr",
+    surfaceId: "platform",
+    category: "people",
+    iconKey: "Users",
+    availability: "available",
+    url: "https://hr.app.corely.one/",
+    displayName: { en: "HR", de: "Personal", vi: "Nhân sự" },
+  },
+};
 function Location() {
   return <span data-testid="route">{useLocation().pathname}</span>;
 }
@@ -32,7 +50,7 @@ function setup(props: Partial<FocusedAppShellProps> = {}) {
       user: { userId: "user", name: "Alex", email: "alex@example.invalid", memberships: [] },
     },
   };
-  render(
+  const content = (overrides: Partial<FocusedAppShellProps> = {}) => (
     <SessionContext.Provider value={session}>
       <MemoryRouter initialEntries={["/invoices"]}>
         <FocusedAppShell
@@ -47,6 +65,7 @@ function setup(props: Partial<FocusedAppShellProps> = {}) {
             { id: "accounting", label: "Accounting", menuItemId: "invoices", route: "/accounting" },
           ]}
           {...props}
+          {...overrides}
         >
           <p>Protected app content</p>
           <Location />
@@ -54,7 +73,12 @@ function setup(props: Partial<FocusedAppShellProps> = {}) {
       </MemoryRouter>
     </SessionContext.Provider>
   );
-  return { session, user: userEvent.setup() };
+  const view = render(content());
+  return {
+    session,
+    user: userEvent.setup(),
+    rerender: (overrides: Partial<FocusedAppShellProps>) => view.rerender(content(overrides)),
+  };
 }
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -79,6 +103,70 @@ afterEach(() => {
 });
 
 describe("focused shell", () => {
+  it("asks about edits made while an app launch is refreshing", async () => {
+    const hr = availableHr;
+    data.launches.data = [hr];
+    let finish!: (result: Awaited<ReturnType<typeof data.launches.refetch>>) => void;
+    vi.mocked(data.launches.refetch).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const { user, rerender } = setup();
+    await user.click(screen.getByRole("button", { name: "Switch apps" }));
+    await user.click(screen.getByRole("menuitem", { name: "HR" }));
+    expect(data.launches.refetch).toHaveBeenCalledOnce();
+    rerender({ isDirty: true });
+    const refreshed = mockDeep<Awaited<ReturnType<typeof data.launches.refetch>>>();
+    refreshed.data = [hr];
+    refreshed.isError = false;
+    await act(async () => {
+      finish(refreshed);
+    });
+    expect(await screen.findByRole("alertdialog")).toHaveTextContent("unsaved changes");
+    await user.click(screen.getByRole("button", { name: "Stay" }));
+    expect(screen.getByTestId("route")).toHaveTextContent(/^\/invoices$/);
+  });
+  it("cancels a pending app launch if its refreshed access disappears", async () => {
+    data.launches.data = [availableHr];
+    const refreshed = mockDeep<Awaited<ReturnType<typeof data.launches.refetch>>>();
+    refreshed.data = [availableHr];
+    refreshed.isError = false;
+    vi.mocked(data.launches.refetch).mockResolvedValue(refreshed);
+    const { user, rerender } = setup({ isDirty: true });
+    await user.click(screen.getByRole("button", { name: "Switch apps" }));
+    await user.click(screen.getByRole("menuitem", { name: "HR" }));
+    expect(await screen.findByRole("alertdialog")).toBeVisible();
+    data.launches.data = [];
+    rerender({});
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(screen.getByTestId("route")).toHaveTextContent(/^\/invoices$/);
+  });
+  it("cancels a pending create action when its contribution is removed", async () => {
+    const { user, rerender } = setup({ isDirty: true });
+    await user.click(screen.getByRole("button", { name: "New invoice" }));
+    expect(screen.getByRole("alertdialog")).toBeVisible();
+    rerender({ actions: [] });
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    rerender({});
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(screen.getByTestId("route")).toHaveTextContent(/^\/invoices$/);
+  });
+  it("cancels a pending workspace switch if the workspace is removed", async () => {
+    const onWorkspaceChange = vi.fn();
+    const workspace = { id: "synthetic-workspace", name: "Studio Linden" };
+    const { user, rerender } = setup({
+      isDirty: true,
+      onWorkspaceChange,
+      workspaces: [workspace, { id: "removed", name: "Removed studio" }],
+    });
+    await user.selectOptions(screen.getByRole("combobox", { name: "Workspace" }), "removed");
+    expect(screen.getByRole("alertdialog")).toBeVisible();
+    rerender({ workspaces: [workspace] });
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(onWorkspaceChange).not.toHaveBeenCalled();
+  });
   it("keeps sidebar, quick-create and keyboard commands inside the app", async () => {
     const { user } = setup();
     expect(screen.getByRole("button", { name: "New invoice" })).toBeVisible();

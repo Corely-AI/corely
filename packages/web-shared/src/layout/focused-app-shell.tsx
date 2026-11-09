@@ -86,7 +86,7 @@ export function FocusedAppShell({
   const location = useLocation();
   const copy = focusedShellCopy[locale];
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [pending, setPending] = useState<(() => void) | null>(null);
+  const [pending, setPending] = useState<{ action: () => void; context: object } | null>(null);
   const [launchError, setLaunchError] = useState(false);
   const [launching, setLaunching] = useState(false);
   const allowUnload = useRef(false);
@@ -99,14 +99,34 @@ export function FocusedAppShell({
   const availableActions = focusedActions(groups, actions, routeRoots);
   const items = groups.flatMap((group) => group.items);
   const namespace = `${state.status === "authenticated" ? state.session.user.userId : "anon"}:${client.config.tenantId}:${workspace.id}:${app}`;
-  const currentScope = useRef(namespace);
-  currentScope.current = namespace;
+  const allAppsUrl = buildWorkspaceLaunchUrl(appCenterOrigin, workspace.id);
+  const navigationKey = JSON.stringify([
+    namespace,
+    location.key,
+    routeRoots,
+    items.map((item) => [item.id, item.route]),
+    availableActions.map((action) => [action.id, action.route]),
+    workspaces?.map((entry) => entry.id),
+    Boolean(onWorkspaceChange),
+    allAppsUrl,
+    launches.isError,
+    launches.data?.map((entry) => [
+      entry.launch?.launchId,
+      entry.enabled,
+      entry.launch?.availability,
+      entry.launch?.url,
+    ]),
+  ]);
+  // Use an identity, so leaving and returning to the same scope cannot revive old work.
+  const actionContext = useMemo(() => ({}), [navigationKey, client]);
+  const currentContext = useRef(actionContext);
+  currentContext.current = actionContext;
+  const latestLaunchRequest = useRef(0);
   useEffect(() => {
     setPending(null);
     setLaunchError(false);
     setLaunching(false);
-  }, [namespace]);
-  const allAppsUrl = buildWorkspaceLaunchUrl(appCenterOrigin, workspace.id);
+  }, [actionContext]);
   const verified =
     ready &&
     navigation.data?.launchId === app &&
@@ -127,11 +147,13 @@ export function FocusedAppShell({
 
   const guard = (action: () => void) => {
     if (isDirty) {
-      setPending(() => action);
+      setPending({ action, context: actionContext });
     } else {
       action();
     }
   };
+  const currentGuard = useRef(guard);
+  currentGuard.current = guard;
   const go = (route: string) =>
     guard(() => {
       setMobileOpen(false);
@@ -142,18 +164,20 @@ export function FocusedAppShell({
     window.location.assign(url);
   };
   const launch = async (id: AppLaunchId) => {
-    const scope = namespace;
+    const context = actionContext;
+    const request = ++latestLaunchRequest.current;
     setLaunching(true);
     setLaunchError(false);
     const result = await launches.refetch();
-    if (currentScope.current !== scope) {
+    if (currentContext.current !== context || latestLaunchRequest.current !== request) {
       return;
     }
     const target = !result.isError && result.data?.find((entry) => entry.launch?.launchId === id);
     const url = target ? catalogLaunchUrl(target, workspace.id) : undefined;
     setLaunching(false);
     if (url) {
-      leavePage(url);
+      // The user can edit while the request is pending. Ask using the latest dirty state.
+      currentGuard.current(() => leavePage(url));
     } else {
       setLaunchError(true);
     }
@@ -263,11 +287,9 @@ export function FocusedAppShell({
                 void launches.refetch();
               }
             }}
-            onLaunch={(id) =>
-              guard(() => {
-                void launch(id);
-              })
-            }
+            onLaunch={(id) => {
+              void launch(id);
+            }}
           />
           <span className="text-lg font-semibold">{label}</span>
           <div className="ml-auto sm:ml-0 sm:order-last">
@@ -374,7 +396,7 @@ export function FocusedAppShell({
         </div>
       </div>
       <AlertDialog
-        open={pending !== null}
+        open={pending !== null && pending.context === actionContext}
         onOpenChange={(open) => {
           if (!open) {
             setPending(null);
@@ -390,9 +412,11 @@ export function FocusedAppShell({
             <AlertDialogCancel onClick={() => setPending(null)}>{copy.stay}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                const action = pending;
+                const decision = pending;
                 setPending(null);
-                action?.();
+                if (decision?.context === actionContext) {
+                  decision.action();
+                }
               }}
             >
               {copy.leave}
