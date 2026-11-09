@@ -8,6 +8,7 @@ export default defineConfig({
   outputDir: "test-results/focused-invoice",
   use: {
     ...devices["Desktop Chrome"],
+    channel: process.env.PLAYWRIGHT_CHANNEL,
     baseURL: "http://127.0.0.1:5188",
     trace: "off",
     screenshot: "only-on-failure",
