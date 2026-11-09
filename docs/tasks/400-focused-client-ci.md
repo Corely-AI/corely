@@ -1,6 +1,7 @@
 # #400 — Focused client CI
 
 - Issue: https://github.com/Corely-AI/corely/issues/400 (SURF-20; parent #380).
+- Draft PR: https://github.com/Corely-AI/corely/pull/420.
 - Prerequisites #381 and #391 verified closed Completed on November 9, 2026.
 - Branch `400-focused-client-ci`, base `corely/development` at `05fceeeb34`.
 - Scope: conservative complete Vite-consumer fan-out, isolated validation/build
