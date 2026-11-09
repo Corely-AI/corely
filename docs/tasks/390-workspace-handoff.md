@@ -5,7 +5,7 @@
 - Issue: [SURF-10 #390](https://github.com/Corely-AI/corely/issues/390), parent #380.
 - Prerequisites #383/#386/#389 are completed; #389 merged through PR #414.
 - Branch `390-workspace-handoff`, base `origin/development` at `cd65d39814930a3647476f2007a6f707a36608d5`.
-- PR: pending publication.
+- Draft PR: [#415](https://github.com/Corely-AI/corely/pull/415), targeting `development`.
 - Outcome: validated workspace arrival, explicit per-tab selection, safe deep
   links, scoped query identity and draft/write navigation guards.
 - Exclusions: no new client deployment, global legacy-provider rewrite, storage
@@ -62,5 +62,5 @@ repository-wide CI and previously observed Windows architecture-script / local
 cash database limits remain separate from the scoped checks. The global pre-push
 hook is bypassed with its documented `HUSKY=0` option because the prior ticket's
 full run failed unrelated cash-database integration setup; no full hook pass is
-claimed. Keep PR Draft; no
-merge or deployment is performed.
+claimed. The ticket remains In progress while repository-wide CI and human review
+are outstanding. Keep PR Draft; no merge or deployment is performed.
