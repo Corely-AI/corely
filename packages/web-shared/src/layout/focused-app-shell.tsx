@@ -23,6 +23,7 @@ import {
   SheetTrigger,
 } from "@corely/ui";
 import { useSession } from "../session/session-context";
+import { useOptionalWorkspaceSession } from "../session/workspace-session-context";
 import { CommandPaletteProvider } from "../shared/command-palette/command-palette-provider";
 import { useCommandPalette } from "../shared/command-palette/use-command-palette";
 import type { Command } from "../shared/command-palette/types";
@@ -81,6 +82,12 @@ export function FocusedAppShell({
   children,
 }: FocusedAppShellProps) {
   const { client, state, logout } = useSession();
+  const workspaceSession = useOptionalWorkspaceSession();
+  const pendingWrites = workspaceSession?.pendingWrites ?? 0;
+  const hasUnsavedChanges = isDirty || Boolean(workspaceSession?.hasUnsavedChanges);
+  const routerGuardActive = Boolean(
+    workspaceSession && (workspaceSession.hasUnsavedChanges || pendingWrites)
+  );
   const { ready, navigation, launches } = useFocusedShellData(app, workspace.id);
   const navigate = useNavigate();
   const location = useLocation();
@@ -136,17 +143,17 @@ export function FocusedAppShell({
   useBeforeUnload(
     React.useCallback(
       (event: BeforeUnloadEvent) => {
-        if (isDirty && !allowUnload.current) {
+        if ((hasUnsavedChanges || pendingWrites) && !allowUnload.current) {
           event.preventDefault();
           event.returnValue = "";
         }
       },
-      [isDirty]
+      [hasUnsavedChanges, pendingWrites]
     )
   );
 
   const guard = (action: () => void) => {
-    if (isDirty) {
+    if (hasUnsavedChanges || pendingWrites) {
       setPending({ action, context: actionContext });
     } else {
       action();
@@ -154,14 +161,37 @@ export function FocusedAppShell({
   };
   const currentGuard = useRef(guard);
   currentGuard.current = guard;
-  const go = (route: string) =>
-    guard(() => {
+  // Menu/action routes are app-owned and validated above. Carry tab intent in both
+  // router navigation and rendered hrefs (including Ctrl-click/open in new tab).
+  const scopedRoute = (route: string) => {
+    if (!workspaceSession) {
+      return route;
+    }
+    const url = new URL(route, "https://local.invalid");
+    url.searchParams.set("workspaceId", workspaceSession.scope.workspaceId);
+    return `${url.pathname}${url.search}${url.hash}`;
+  };
+  const go = (route: string) => {
+    const action = () => {
       setMobileOpen(false);
-      navigate(route);
-    });
+      navigate(scopedRoute(route));
+    };
+    if (routerGuardActive) {
+      action();
+    } else {
+      guard(action);
+    }
+  };
   const leavePage = (url: string) => {
-    allowUnload.current = true;
-    window.location.assign(url);
+    const action = () => {
+      allowUnload.current = true;
+      window.location.assign(url);
+    };
+    if (workspaceSession) {
+      workspaceSession.confirmExternalNavigation(action);
+    } else {
+      action();
+    }
   };
   const launch = async (id: AppLaunchId) => {
     const context = actionContext;
@@ -220,7 +250,7 @@ export function FocusedAppShell({
               asChild
             >
               <NavLink
-                to={item.route}
+                to={scopedRoute(item.route)}
                 end={item.exact}
                 onClick={(event) => {
                   if (
@@ -326,7 +356,12 @@ export function FocusedAppShell({
                 onChange={(event) => {
                   const id = event.target.value;
                   if (workspaces?.some((entry) => entry.id === id)) {
-                    guard(() => onWorkspaceChange?.(id));
+                    const action = () => onWorkspaceChange?.(id);
+                    if (routerGuardActive) {
+                      action();
+                    } else {
+                      guard(action);
+                    }
                   }
                 }}
               >
@@ -406,11 +441,14 @@ export function FocusedAppShell({
         <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>{copy.leaveTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{copy.leaveDescription}</AlertDialogDescription>
+            <AlertDialogDescription>
+              {pendingWrites ? copy.pendingRequest : copy.leaveDescription}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setPending(null)}>{copy.stay}</AlertDialogCancel>
             <AlertDialogAction
+              disabled={pendingWrites > 0}
               onClick={() => {
                 const decision = pending;
                 setPending(null);

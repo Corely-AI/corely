@@ -1,11 +1,11 @@
 import {
-  AppLaunchOriginSchema,
   isSafeSsoReturnPath,
   type AppCatalogItem,
   type AppLaunchId,
   type WorkspaceConfig,
   type WorkspaceNavigationItem,
 } from "@corely/contracts";
+import { workspaceLaunchUrl } from "../session/workspace-launch";
 
 export interface FocusedShellAction {
   id: string;
@@ -62,14 +62,12 @@ export function focusedActions(
 }
 
 /** Accept an exact configured origin only. Workspace is a hint, never authority. */
-export function buildWorkspaceLaunchUrl(origin: string, workspaceId: string): string | undefined {
-  const parsed = AppLaunchOriginSchema.safeParse(origin);
-  if (!parsed.success || !workspaceId) {
-    return undefined;
-  }
-  const url = new URL(parsed.data);
-  url.searchParams.set("workspaceId", workspaceId);
-  return url.href;
+export function buildWorkspaceLaunchUrl(
+  origin: string,
+  workspaceId: string,
+  relativeRoute = "/"
+): string | undefined {
+  return workspaceLaunchUrl(origin, workspaceId, relativeRoute);
 }
 
 export function catalogLaunchUrl(app: AppCatalogItem, workspaceId: string): string | undefined {

@@ -53,9 +53,9 @@ describe("focused navigation boundary", () => {
     ).toEqual(["create"]);
   });
   it("only constructs a workspace hint against an exact safe origin", () => {
-    expect(buildWorkspaceLaunchUrl("https://invoice.app.corely.one/", "a&tenantId=other")).toBe(
-      "https://invoice.app.corely.one/?workspaceId=a%26tenantId%3Dother"
-    );
+    expect(
+      buildWorkspaceLaunchUrl("https://invoice.app.corely.one/", "a&tenantId=other")
+    ).toBeUndefined();
     for (const origin of [
       "javascript:alert(1)",
       "https://user:pass@evil.invalid",

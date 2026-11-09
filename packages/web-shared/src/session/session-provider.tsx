@@ -296,8 +296,14 @@ export function SessionProviders(props: SessionProvidersProps) {
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: { retry: false, refetchOnWindowFocus: false, refetchOnReconnect: false },
-          mutations: { retry: false },
+          queries: {
+            retry: false,
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            networkMode: "always",
+          },
+          // Focused sessions reject offline commands instead of pausing/replaying them in another scope.
+          mutations: { retry: false, networkMode: "always" },
         },
       }),
     [scope]

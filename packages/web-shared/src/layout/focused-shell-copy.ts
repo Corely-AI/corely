@@ -1,5 +1,6 @@
 export const focusedShellCopy = {
   en: {
+    pendingRequest: "A request is still running. Stay here until its result is known.",
     allApps: "All apps",
     switchApps: "Switch apps",
     navigation: "Navigation",
@@ -22,6 +23,7 @@ export const focusedShellCopy = {
     leave: "Leave page",
   },
   de: {
+    pendingRequest: "Eine Anfrage läuft noch. Bitte bleibe hier, bis das Ergebnis bekannt ist.",
     allApps: "Alle Apps",
     switchApps: "App wechseln",
     navigation: "Navigation",
@@ -44,6 +46,7 @@ export const focusedShellCopy = {
     leave: "Seite verlassen",
   },
   vi: {
+    pendingRequest: "Yêu cầu vẫn đang chạy. Hãy ở lại cho đến khi có kết quả.",
     allApps: "Tất cả ứng dụng",
     switchApps: "Chuyển ứng dụng",
     navigation: "Điều hướng",
