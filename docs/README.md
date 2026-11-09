@@ -84,6 +84,7 @@ Frontend guidelines and specific docs.
 - [CRUD and operational entry-point standard](./frontend/crud-ui-standard.md)
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
+- [App Center](./frontend/app-center.md) — workspace-aware app directory, launch behavior and UI evidence
 - [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition
 - [Workspace Session Boundary](./frontend/workspace-session-boundary.md) — validated arrival, per-tab context and draft/write guards
 
