@@ -36,7 +36,7 @@ browser/Node tests can reuse data without importing UI modules.
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Web-shared unit/component suite                       | 91 passed using `pnpm --dir packages/web-shared exec vitest run --config vitest.config.ts`.                   |
 | Session workspace authorization use cases             | 7 passed; real use cases with repository-port doubles, no database.                                           |
-| Playwright workspace-session configuration            | 5 passed, two users/two tenants/two workspaces and three local origins; session/API route mocks.              |
+| Playwright workspace-session configuration            | 6 passed, two users/two tenants/two workspaces and three local origins; session/API route mocks.              |
 | Web-shared/API typechecks                             | Both passed, including web-shared testkit coverage.                                                           |
 | Targeted lint/format, local references and whitespace | Passed; ESLint uses repository ignores for spec.ts/browser config files.                                      |
 | Vite browser fixture production build                 | Passed; dependency directive and fixture chunk-size warnings only.                                            |
@@ -54,6 +54,16 @@ use synthetic identities and records. English was visually inspected; new bounda
 copy has English/German/Vietnamese variants. Existing public journeys are unchanged.
 
 ## Impact and remaining work
+
+Review found and fixed one P1 regression: unscoped shell-local hrefs/navigation
+removed the URL workspace hint, unmounting the validated scope and showing the
+picker. The new browser regression failed against the original href, then passed
+after sidebar hrefs and router destinations retained the verified workspace.
+Coverage includes opening the href in a second tab, desktop sidebar/create actions
+and mobile drawer navigation. The full 91-test shared suite and six browser
+scenarios passed after the correction. Updated rendered screenshots were inspected
+at 1280×720 and 390×844; browser transport remains mocked. No additional actionable
+findings were identified in the scoped source review.
 
 Future App Center/Invoice/HR clients opt into this boundary and register active
 drafts while preserving owning feature authorization and command idempotency.

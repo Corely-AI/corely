@@ -42,6 +42,10 @@ for the focused app produces an explicit unavailable state and recovery choices.
 `useWorkspaceSession()` supplies the verified `workspace`, authorized `workspaces`,
 full `scope` and `selectWorkspace`. Pass those values to `FocusedAppShell`.
 The shell cooperates with the router guard so a registered draft prompts once.
+Its local sidebar links, create actions and keyboard navigation retain the verified
+workspace hint, including hrefs opened in a new tab. Feature-owned links must also
+carry `workspaceId` in their URL; a route without a hint intentionally asks for a
+workspace instead of guessing from the previous page.
 
 ## URL and tab behavior
 
@@ -118,6 +122,16 @@ hint recovery. Screenshots contain synthetic data only.
 ![Dirty workspace confirmation](images/workspace-session/dirty-workspace-desktop.png)
 
 ![Write result required before leaving](images/workspace-session/pending-write-desktop.png)
+
+Review follow-up: the local navigation regression was reproduced before the fix.
+The browser suite now also opens a sidebar URL in a second tab, follows desktop
+sidebar/create actions and uses the phone drawer while asserting workspace-b
+records and the workspace hint on every destination. These automated rendered
+states were visually inspected at 1280×720 and 390×844 in English:
+
+![Local create navigation retains River workspace](images/workspace-session/local-navigation-desktop.png)
+
+![Phone navigation retains River workspace](images/workspace-session/local-navigation-mobile.png)
 
 | Verified River workspace                                                         | Unavailable hint recovery                                                                    |
 | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

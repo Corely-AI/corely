@@ -161,10 +161,20 @@ export function FocusedAppShell({
   };
   const currentGuard = useRef(guard);
   currentGuard.current = guard;
+  // Menu/action routes are app-owned and validated above. Carry tab intent in both
+  // router navigation and rendered hrefs (including Ctrl-click/open in new tab).
+  const scopedRoute = (route: string) => {
+    if (!workspaceSession) {
+      return route;
+    }
+    const url = new URL(route, "https://local.invalid");
+    url.searchParams.set("workspaceId", workspaceSession.scope.workspaceId);
+    return `${url.pathname}${url.search}${url.hash}`;
+  };
   const go = (route: string) => {
     const action = () => {
       setMobileOpen(false);
-      navigate(route);
+      navigate(scopedRoute(route));
     };
     if (routerGuardActive) {
       action();
@@ -240,7 +250,7 @@ export function FocusedAppShell({
               asChild
             >
               <NavLink
-                to={item.route}
+                to={scopedRoute(item.route)}
                 end={item.exact}
                 onClick={(event) => {
                   if (

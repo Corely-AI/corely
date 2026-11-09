@@ -122,6 +122,38 @@ test("App Center → Invoice → HR → App Center preserves an authorized works
   expect(new URL(page.url()).searchParams.get("workspaceId")).toBe("workspace-b");
 });
 
+test("local shell navigation and new-tab links retain the verified workspace", async ({
+  page,
+  context,
+}, testInfo) => {
+  await transport(context);
+  await page.goto(`${origins.invoice}/?workspaceId=workspace-b`);
+  const invoices = page.getByRole("link", { name: "Invoices", exact: true }).first();
+  await expect(invoices).toHaveAttribute("href", "/invoices?workspaceId=workspace-b");
+  const otherTab = await context.newPage();
+  await otherTab.goto(new URL((await invoices.getAttribute("href")) ?? "", origins.invoice).href);
+  await expect(otherTab.getByText("Records: user-a/tenant-b/workspace-b")).toBeVisible();
+  await otherTab.close();
+  await invoices.click();
+  await expect(page).toHaveURL(`${origins.invoice}/invoices?workspaceId=workspace-b`);
+  await expect(page.getByText("Records: user-a/tenant-b/workspace-b")).toBeVisible();
+  await page.getByRole("button", { name: "New invoice", exact: true }).click();
+  await expect(page).toHaveURL(`${origins.invoice}/invoices/new?workspaceId=workspace-b`);
+  await expect(page.getByText("Records: user-a/tenant-b/workspace-b")).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("local-navigation-desktop.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Navigation", exact: true }).click();
+  await expect(page.getByRole("link", { name: "Invoices", exact: true })).toHaveAttribute(
+    "href",
+    "/invoices?workspaceId=workspace-b"
+  );
+  await page.getByRole("link", { name: "Invoices", exact: true }).click();
+  await expect(page).toHaveURL(`${origins.invoice}/invoices?workspaceId=workspace-b`);
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(page.getByText("Records: user-a/tenant-b/workspace-b")).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("local-navigation-mobile.png") });
+});
+
 test("altered/deleted workspace hints and unavailable apps never mount feature data", async ({
   page,
   context,

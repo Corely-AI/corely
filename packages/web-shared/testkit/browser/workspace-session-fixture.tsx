@@ -141,6 +141,18 @@ function Content() {
       workspace={workspace.workspace}
       workspaces={workspace.workspaces}
       onWorkspaceChange={workspace.selectWorkspace}
+      actions={
+        appKey === "invoice"
+          ? [
+              {
+                id: "new-invoice",
+                label: "New invoice",
+                menuItemId: "invoices",
+                route: "/invoices/new",
+              },
+            ]
+          : []
+      }
       isDirty={Boolean(note)}
     >
       {content}
