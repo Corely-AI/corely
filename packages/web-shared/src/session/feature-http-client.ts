@@ -16,7 +16,10 @@ export type FeatureHttpClient = Pick<
 type RequestOptions = Parameters<FeatureHttpClient["request"]>[2];
 
 export class SessionFeatureHttpClient implements FeatureHttpClient {
-  constructor(private readonly client: SessionClient) {}
+  constructor(
+    private readonly client: SessionClient,
+    private readonly serviceFailureScope?: "request"
+  ) {}
   generateIdempotencyKey() {
     return crypto.randomUUID();
   }
@@ -30,6 +33,7 @@ export class SessionFeatureHttpClient implements FeatureHttpClient {
     const method = options.method ?? "GET";
     const response = await this.client.request(path, {
       ...options,
+      serviceFailureScope: this.serviceFailureScope,
       signal: opts?.signal ?? options.signal,
       idempotencyKey:
         opts?.idempotencyKey ??

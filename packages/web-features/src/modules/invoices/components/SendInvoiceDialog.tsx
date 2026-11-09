@@ -12,7 +12,6 @@ import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { Textarea } from "@corely/ui";
-import { Checkbox } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 
 interface SendInvoiceDialogProps {
@@ -39,7 +38,6 @@ export function SendInvoiceDialog({
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [sendCopy, setSendCopy] = useState(false);
 
   useEffect(() => {
     if (open && invoice) {
@@ -51,7 +49,6 @@ export function SendInvoiceDialog({
         })
       );
       setMessage("");
-      setSendCopy(false);
     }
   }, [open, invoice, t]);
 
@@ -59,7 +56,7 @@ export function SendInvoiceDialog({
     if (!to) {
       return;
     }
-    void onSend({ to, subject, message, sendCopy });
+    void onSend({ to, subject, message, sendCopy: false });
   };
 
   return (
@@ -82,18 +79,7 @@ export function SendInvoiceDialog({
                 placeholder={t("invoices.email.toPlaceholder")}
                 className="flex-1"
               />
-              <div className="flex items-center space-x-2">
-                <Checkbox id="copy" checked={sendCopy} onCheckedChange={(c) => setSendCopy(!!c)} />
-                <Label htmlFor="copy" className="font-normal cursor-pointer text-sm">
-                  {t("invoices.email.sendCopy")}
-                </Label>
-              </div>
             </div>
-            {invoice.billToName && (
-              <p className="text-xs text-muted-foreground">
-                {t("invoices.email.savedForFuture", { name: invoice.billToName })}
-              </p>
-            )}
           </div>
 
           {/* Subject */}
@@ -123,17 +109,8 @@ export function SendInvoiceDialog({
         </div>
 
         <DialogFooter className="flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-          <Button
-            variant="link"
-            className="px-0 text-muted-foreground h-auto"
-            onClick={() => {
-              /* Placeholder */
-            }}
-          >
-            {t("invoices.email.sendTest")}
-          </Button>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending}>
               {t("common.cancel")}
             </Button>
             <Button

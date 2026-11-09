@@ -32,7 +32,7 @@ function InvoiceLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
       ? "vi"
       : "en";
   const runtime = useMemo(() => {
-    const http = new SessionFeatureHttpClient(client);
+    const http = new SessionFeatureHttpClient(client, "request");
     return {
       invoices: new InvoicesApi(http),
       customers: createCustomersApi(http),

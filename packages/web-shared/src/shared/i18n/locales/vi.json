@@ -109,7 +109,9 @@
       "modalLater": "Để sau",
       "choosePlan": "Chọn gói"
     },
-    "searching": "Đang tìm kiếm..."
+    "searching": "Đang tìm kiếm...",
+    "retry": "Thử lại",
+    "loadMore": "Tải thêm"
   },
   "onboarding": {
     "title": "Thiết lập",
@@ -2077,7 +2079,7 @@
     },
     "email": {
       "title": "Gửi hóa đơn",
-      "subtitle": "Gửi hóa đơn này qua email kèm liên kết tới cổng học sinh.",
+      "subtitle": "Kiểm tra người nhận và nội dung trước khi gửi.",
       "to": "Người nhận",
       "toPlaceholder": "khachhang@email.com",
       "subject": "Hóa đơn {{number}} từ {{brand}}",
@@ -2085,7 +2087,7 @@
       "savedForFuture": "Email này sẽ được lưu vào hồ sơ của {{name}}.",
       "messagePlaceholder": "Thêm một ghi chú cá nhân...",
       "deliveryLabel": "Hình thức gửi",
-      "deliveryHint": "Email sẽ bao gồm liên kết cổng học sinh. Người nhận có thể tải PDF hóa đơn từ cổng.",
+      "deliveryHint": "Xác nhận người nhận trước khi gửi hóa đơn này qua email.",
       "attachmentsHint": "Hóa đơn PDF sẽ được tự động đính kèm.",
       "attachmentName": "Hóa đơn-{{number}}.pdf",
       "attachmentFallback": "Hoa-don.pdf",
@@ -2147,7 +2149,8 @@
       "title": "Hồ sơ mạng xã hội",
       "add": "Thêm hồ sơ",
       "empty": "Chưa có hồ sơ mạng xã hội nào."
-    }
+    },
+    "lookupFailed": "Không thể tìm khách hàng hoặc quyền truy cập bị từ chối. Hãy thử lại hoặc liên hệ quản trị viên."
   },
   "settings": {
     "title": "Cài đặt",
