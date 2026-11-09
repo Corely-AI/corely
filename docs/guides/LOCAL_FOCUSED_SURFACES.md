@@ -65,8 +65,9 @@ owned database with the reviewed Identity SSO schema and existing accounts, plus
 its normal required service configuration. The tool runs no migration, reset,
 seed or email send. SSO email-code delivery requires the existing sender/outbox
 configuration; use password fallback for existing local accounts when testing
-without sending mail. Enabling SSO still follows the API's sender startup checks.
-Use a local mail sandbox/configuration appropriate to your environment.
+without sending mail. Enabling SSO still requires the API's configured Resend
+sender at startup; a generic SMTP sandbox is not implemented by this tooling.
+Do not request codes against live recipients during local transport checks.
 
 The upstream is fixed to `http://127.0.0.1:3000` by the example. If using another
 local API port, change `CORELY_DEV_API_ORIGIN` and the API's normal `PORT` together.

@@ -4,7 +4,8 @@
 - Hard prerequisites #381 and #382 are completed.
 - Branch `391-local-multi-origin`, base `origin/development` at
   `cd65d39814930a3647476f2007a6f707a36608d5`. #390/PR #415 is not included.
-- Draft PR: pending publication. Project status: In progress.
+- Draft PR: [#416](https://github.com/Corely-AI/corely/pull/416), targeting
+  `development`. Project status: In progress.
 
 ## Reuse and delivery
 
@@ -38,9 +39,10 @@ a product implementation. Existing dev commands are unchanged.
   expired-request state rendered in English at 1280×720. No credentials submitted
   or messages sent. The initial English text assertion under a German default
   locale was corrected by setting the smoke browser's locale explicitly.
-- Scoped clean-install/start CI workflow added; its actual result is recorded at
-  publication. It uses a disposable certificate and test-owned upstream; no SSO
-  database acceptance is inferred.
+- [Clean-install/start CI run](https://github.com/Corely-AI/corely/actions/runs/42602953955)
+  passed install, initialization, 21 tests, typecheck, login build and four-origin
+  startup on implementation commit `ca9fd5b2`. It uses a disposable certificate
+  and test-owned upstream; no SSO database acceptance is inferred.
 
 ## Evidence and limits
 
