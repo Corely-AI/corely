@@ -5,7 +5,12 @@ export default defineConfig({
     name: "web-shared-session",
     environment: "jsdom",
     globals: true,
-    include: ["src/session/**/*.spec.ts", "src/session/**/*.spec.tsx"],
+    include: [
+      "src/session/**/*.spec.ts",
+      "src/session/**/*.spec.tsx",
+      "src/layout/**/*.spec.ts",
+      "src/layout/**/*.spec.tsx",
+    ],
   },
   resolve: {
     alias: {

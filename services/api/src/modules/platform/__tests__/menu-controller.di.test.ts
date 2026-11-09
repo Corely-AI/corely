@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { MenuController } from "../adapters/http/menu.controller";
+import { mockDeep } from "vitest-mock-extended";
+import { ListAppLaunchesUseCase } from "../application/use-cases/list-app-launches.usecase";
 
 describe("MenuController DI wiring", () => {
   it("constructs with required dependencies", () => {
@@ -12,7 +14,8 @@ describe("MenuController DI wiring", () => {
       composeMenuUseCase as any,
       updateMenuOverridesUseCase as any,
       resetMenuOverridesUseCase as any,
-      grantRepo as any
+      grantRepo as any,
+      mockDeep<ListAppLaunchesUseCase>()
     );
 
     expect(controller).toBeDefined();

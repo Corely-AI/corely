@@ -84,6 +84,7 @@ Frontend guidelines and specific docs.
 - [CRUD and operational entry-point standard](./frontend/crud-ui-standard.md)
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
+- [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition
 
 ### 🚀 DevOps & Infra
 

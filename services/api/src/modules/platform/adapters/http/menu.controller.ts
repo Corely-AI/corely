@@ -23,6 +23,7 @@ import {
   CurrentUserId,
 } from "../../../identity/adapters/http/current-user.decorator";
 import { ComposeMenuUseCase } from "../../application/use-cases/compose-menu.usecase";
+import { ListAppLaunchesUseCase } from "../../application/use-cases/list-app-launches.usecase";
 import { UpdateMenuOverridesUseCase } from "../../application/use-cases/update-menu-overrides.usecase";
 import { ResetMenuOverridesUseCase } from "../../application/use-cases/reset-menu-overrides.usecase";
 import {
@@ -43,8 +44,38 @@ export class MenuController {
     private readonly updateMenuOverridesUseCase: UpdateMenuOverridesUseCase,
     private readonly resetMenuOverridesUseCase: ResetMenuOverridesUseCase,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
-    private readonly grantRepo: RolePermissionGrantRepositoryPort
+    private readonly grantRepo: RolePermissionGrantRepositoryPort,
+    private readonly listAppLaunches: ListAppLaunchesUseCase
   ) {}
+
+  @Get("launches")
+  async getLaunches(
+    @CurrentTenantId() tenantId: string,
+    @CurrentUserId() userId: string,
+    @CurrentRoleIds() roleIds: string[],
+    @Req() req: Request
+  ) {
+    if (!tenantId || !userId) {
+      throw new BadRequestException("Missing tenant or user context");
+    }
+    const grants = roleIds?.length
+      ? await this.grantRepo.listByRoleIdsAndTenant(tenantId, roleIds)
+      : [];
+    const ctx = resolveRequestContext(req as ContextAwareRequest);
+    return this.listAppLaunches.execute({
+      tenantId,
+      userId,
+      permissions: toAllowedPermissionKeys(grants),
+      workspaceId: ctx.workspaceId ?? undefined,
+      scope: "web",
+      surfaceId: ctx.surfaceId,
+      trustedSurfaceId: ctx.trustedSurfaceId,
+      declaredSurfaceId: ctx.declaredSurfaceId,
+      surfaceResolutionSource: ctx.surfaceResolutionSource,
+      surfaceHeaderMismatch: ctx.surfaceHeaderMismatch,
+      route: req.route?.path ?? req.originalUrl ?? req.url,
+    });
+  }
 
   @Get()
   async getMenu(

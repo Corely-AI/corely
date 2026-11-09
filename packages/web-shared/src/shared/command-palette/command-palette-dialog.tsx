@@ -59,6 +59,7 @@ export const CommandPaletteDialog = ({
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">Command palette</DialogTitle>
         <Command loop shouldFilter={false}>

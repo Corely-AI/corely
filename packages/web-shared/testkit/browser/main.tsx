@@ -6,6 +6,7 @@ import { useSession } from "../../src/session/session-context";
 import { SsoAppKeySchema } from "@corely/contracts";
 import { Button, Input } from "@corely/ui";
 import "./style.css";
+import { FocusedShellFixture } from "./focused-shell-fixture";
 const query = new URLSearchParams(location.search);
 const appKey = SsoAppKeySchema.parse(query.get("app") ?? "invoice");
 const locale = query.get("locale") === "de" ? "de" : query.get("locale") === "vi" ? "vi" : "en";
@@ -99,11 +100,15 @@ if (!root) {
   throw new Error("Missing fixture root");
 }
 createRoot(root).render(
-  <SessionProviders
-    config={{ appKey, locale, retireLegacyStorage: query.get("migrate") === "true" }}
-    fetchFn={query.get("real") === "true" ? undefined : fetchFn}
-    navigate={query.get("real") === "true" ? undefined : () => {}}
-  >
-    <Protected />
-  </SessionProviders>
+  query.get("shell") === "true" ? (
+    <FocusedShellFixture />
+  ) : (
+    <SessionProviders
+      config={{ appKey, locale, retireLegacyStorage: query.get("migrate") === "true" }}
+      fetchFn={query.get("real") === "true" ? undefined : fetchFn}
+      navigate={query.get("real") === "true" ? undefined : () => {}}
+    >
+      <Protected />
+    </SessionProviders>
+  )
 );
