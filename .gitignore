@@ -41,3 +41,6 @@ TestResults/
 /tmp/
 /typecheck_errors*.txt
 /web_typecheck_errors*.txt
+
+# Local and hosted frontend CI logs / bundle inventories
+/ci-results/

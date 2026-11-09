@@ -18,7 +18,7 @@ jobs:
           node-version: "22"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node --test scripts/ci/frontend-policy.test.mjs
+      - run: node --test scripts/ci/*.test.mjs
       - run: node scripts/ci/frontend-policy.mjs
       - id: matrix
         run: echo "matrix=$(node scripts/ci/frontend-policy.mjs --matrix)" >> "$GITHUB_OUTPUT"
@@ -54,6 +54,13 @@ jobs:
             echo "$check: exit $status" >> "$GITHUB_STEP_SUMMARY"
             if [ "$status" -ne 0 ]; then result=1; fi
           done
+          if [ "$CONSUMER_DIR" = apps/invoice ]; then
+            status=0
+            node scripts/ci/check-invoice-bundle.mjs > ci-results/bundle-policy.log 2>&1 || status=$?
+            cat ci-results/bundle-policy.log
+            echo "bundle-policy: exit $status" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$status" -ne 0 ]; then result=1; fi
+          fi
           exit "$result"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -64,7 +71,8 @@ jobs:
             ${{ matrix.dir }}/dist/
           if-no-files-found: warn
   focused-browser:
-    runs-on: ubuntu-latest
+    # Playwright 1.57 does not support the Ubuntu 26.04 image now used by latest.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -79,19 +87,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma:generate && pnpm build:packages && pnpm build:web-packages
       - run: pnpm --dir apps/e2e exec playwright install --with-deps chromium
-      - name: Run shared session and shell regressions
-        if: matrix.suite == 'app-center'
-        run: pnpm --dir packages/web-shared exec vitest run --config vitest.config.ts
-      - name: Run App Center unit and build regressions
-        if: matrix.suite == 'app-center'
-        run: pnpm --dir apps/app-center test
-      - name: Run isolated focused browser suite
+      - name: Run independent focused regressions and record results
         env:
           SUITE: ${{ matrix.suite }}
-        run: pnpm --dir apps/e2e exec playwright test --config "playwright.$SUITE.config.ts"
+        run: bash scripts/ci/run-focused-checks.sh "$SUITE"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: focused-browser-${{ matrix.suite }}
-          path: apps/e2e/test-results/
+          path: |
+            ci-results/
+            apps/e2e/test-results/
           if-no-files-found: warn

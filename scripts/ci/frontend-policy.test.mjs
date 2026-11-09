@@ -36,3 +36,19 @@ test("focused Invoice rejects unrelated route entry points", () => {
     1
   );
 });
+
+test("Invoice rejects aggregate feature exports that expose unrelated routes", () => {
+  assert.equal(
+    forbiddenImports("import { cashManagementFeature } from '@corely/web-features';", file, root)
+      .length,
+    1
+  );
+});
+test("rejects backend dependencies in TypeScript import types and import-equals", () => {
+  for (const source of [
+    "type Api = import('@corely/api/internal').Api;",
+    "import Api = require('@corely/api/internal');",
+    "import(`@corely/api/internal`);",
+  ])
+    assert.equal(forbiddenImports(source, file, root).length, 1, source);
+});

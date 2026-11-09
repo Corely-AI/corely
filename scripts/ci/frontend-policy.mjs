@@ -28,7 +28,7 @@ export function forbiddenImports(source, file, root) {
     if (
       (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
       node.moduleSpecifier &&
-      ts.isStringLiteral(node.moduleSpecifier)
+      ts.isStringLiteralLike(node.moduleSpecifier)
     )
       spec = node.moduleSpecifier.text;
     if (
@@ -36,9 +36,22 @@ export function forbiddenImports(source, file, root) {
       (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
         node.expression.getText(ast) === "require") &&
       node.arguments[0] &&
-      ts.isStringLiteral(node.arguments[0])
+      ts.isStringLiteralLike(node.arguments[0])
     )
       spec = node.arguments[0].text;
+    if (
+      ts.isImportTypeNode(node) &&
+      ts.isLiteralTypeNode(node.argument) &&
+      ts.isStringLiteralLike(node.argument.literal)
+    )
+      spec = node.argument.literal.text;
+    if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      node.moduleReference.expression &&
+      ts.isStringLiteralLike(node.moduleReference.expression)
+    )
+      spec = node.moduleReference.expression.text;
     if (spec) {
       const target = spec.startsWith(".")
         ? path
@@ -50,8 +63,9 @@ export function forbiddenImports(source, file, root) {
       const otherApp = target.startsWith("apps/") && !target.startsWith(`${owner}/`);
       const unrelatedRoutes =
         owner === "apps/invoice" &&
-        /^@corely\/web-features\/features\//.test(spec) &&
-        spec !== "@corely/web-features/features/invoices";
+        (spec === "@corely/web-features" ||
+          (/^@corely\/web-features\/features\//.test(spec) &&
+            spec !== "@corely/web-features/features/invoices"));
       if (
         unrelatedRoutes ||
         otherApp ||
