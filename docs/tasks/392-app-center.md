@@ -5,7 +5,7 @@
 - Issue: [#392](https://github.com/Corely-AI/corely/issues/392), parent #380.
 - Dependencies #386, #389, #390 and #391 verified Done in Project #1 before starting.
 - Branch: `392-app-center`; base: `development` at `e71783f190`.
-- PR: pending publication.
+- PR: [Draft #417](https://github.com/Corely-AI/corely/pull/417).
 - Outcome: authenticated workspace directory, localized search/categories, account/
   workspace actions and safe supported app launches.
 - Excludes marketplace, enablement administration (#393), business screens,
