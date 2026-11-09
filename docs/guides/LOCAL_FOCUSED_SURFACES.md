@@ -130,6 +130,10 @@ automatic Vite environment exposure. Unexpected `VITE_*` variables fail validati
 `CORELY_DEV_ENV_FILE` selects another private file; process environment overrides
 its values. Relative certificate paths are resolved from the repository root when
 using the documented root commands.
+The selected private config, TLS key and certificate are explicitly denied by the
+Vite file server even when they use custom names or no extension. The usual Vite
+secret-file restrictions remain in place. Interrupted upstream responses close the
+browser connection, allowing callers to detect a truncated download or stream.
 
 ## Reproduce verification
 
@@ -147,6 +151,9 @@ It does not contact your API/database or send email. It verifies fixed ingress
 authority, spoofed-header stripping, callback query preservation, cookie forwarding,
 unknown-host rejection and probe separation. Only this test client disables trust
 verification for its generated certificate; the gateway never disables TLS checks.
+The suite also checks dropped upstream bodies and real Vite file requests, including
+raw/URL query variants and file paths containing glob characters. Synthetic private
+markers are used; no actual keys or private file contents enter test output.
 
 [Focused local development CI](../../.github/workflows/focused-dev.yml) performs a
 frozen-lockfile install, initialization, disposable certificate generation, checks,

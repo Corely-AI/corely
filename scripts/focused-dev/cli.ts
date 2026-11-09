@@ -9,6 +9,7 @@ import type { FocusedSurfaceKey } from "../../packages/config/src/focused-surfac
 import type * as FocusedConfig from "../../packages/config/src/focused-surfaces";
 import type * as Vite from "vite";
 import { createFocusedGateway } from "./gateway";
+import { focusedViteOptions } from "./vite-options";
 const { parseFocusedDevEnv, focusedSurfaceKeys, focusedSurfacePorts } = createRequire(
   import.meta.url
 )("../../packages/config/src/focused-surfaces.ts") as typeof FocusedConfig;
@@ -85,26 +86,24 @@ if (command === "init") {
             `apps/${apps[surface]} is not implemented yet. Use --probe to check origins, or --surface=login. Product clients belong to #392/#394/#397.`
           );
         }
-        const publicEnv = Object.fromEntries(
-          Object.entries(config.browser).map(([key, value]) => [
-            `import.meta.env.${key}`,
-            JSON.stringify(value),
-          ])
-        );
+        const options = focusedViteOptions(config, [
+          envFile,
+          resolve(root, config.server.CORELY_DEV_TLS_KEY),
+          resolve(root, config.server.CORELY_DEV_TLS_CERT),
+        ]);
         if (command === "build") {
           await vite.build({
             root: directory,
             configFile: resolve(directory, "vite.config.ts"),
-            define: publicEnv,
-            envPrefix: [],
+            ...options,
           });
         } else {
           const server = await vite.createServer({
             root: directory,
             configFile: resolve(directory, "vite.config.ts"),
-            define: publicEnv,
-            envPrefix: [],
+            ...options,
             server: {
+              ...options.server,
               host: "127.0.0.1",
               port: focusedSurfacePorts[surface],
               strictPort: true,

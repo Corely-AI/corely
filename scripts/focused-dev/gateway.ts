@@ -37,6 +37,10 @@ function proxy(
     new URL(req.url ?? "/", target),
     { method: req.method, headers },
     (response) => {
+      // Headers can arrive before an API restart truncates the body/stream.
+      // Close the downstream socket rather than leaving a successful response open.
+      response.once("aborted", () => res.destroy());
+      response.once("error", () => res.destroy());
       res.writeHead(response.statusCode ?? 502, response.headers);
       response.pipe(res);
     }

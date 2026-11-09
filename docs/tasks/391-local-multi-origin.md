@@ -27,9 +27,10 @@ a product implementation. Existing dev commands are unchanged.
   `focused:check` validated/printed only public topology and derived callbacks.
 - `pnpm test:focused-dev`: 14 passed (missing/malformed settings, exact/unique
   origins, loopback API and rejection of browser-exposed secrets).
-- `pnpm test:focused-dev:int`: 7 passed against real test-owned HTTP/HTTPS sockets;
-  fixed origin/proxy key, spoof stripping, callback query, cookie attributes,
-  unregistered host rejection and probe separation. No existing API/database used.
+- `pnpm test:focused-dev:int`: 18 passed against real test-owned HTTP/HTTPS and
+  Vite sockets; fixed origin/proxy key, spoof stripping, callback query, cookie
+  attributes, unregistered hosts, probe separation, interrupted bodies and private
+  filesystem denial. No existing API/database used.
 - Script and config-package typechecks and targeted ESLint passed.
 - `pnpm build:focused --surface=login` passed using the real login Vite build.
 - `pnpm dev:focused --probe` started all four origins; HTTPS requests to the four
@@ -45,6 +46,21 @@ a product implementation. Existing dev commands are unchanged.
   and test-owned upstream; no SSO database acceptance is inferred.
 
 ## Evidence and limits
+
+Review follow-up fixed two reproduced findings:
+
+- P1: supported custom private-config/TLS filenames were readable through Vite's
+  `/@fs/` endpoint. Explicit literal file denies now apply to the config/key/cert,
+  retaining default secret-file restrictions. Tests returned 200 before the fix
+  and 403 afterwards; direct/raw/URL variants and glob characters are covered.
+- P2: an upstream disconnect after headers left the downstream response open.
+  The gateway now destroys truncated downstream responses and stays available.
+  The regression timed out before the fix and now detects the connection reset.
+
+After correction, 14 unit and 18 transport/file-serving tests, script typecheck,
+scoped ESLint and the login build passed. The browser bundle output is unchanged;
+these corrections affect developer transport/file access, not product UI. No
+additional actionable findings were identified in the scoped review.
 
 [Setup and evidence](../guides/LOCAL_FOCUSED_SURFACES.md) documents host/certificate
 setup, one-client/full-origin commands, cookie/callback behavior, sender/API

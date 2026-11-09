@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { parseEnv } from "node:util";
 import { parseFocusedDevEnv } from "../../packages/config/src/focused-surfaces";
-const example = parseEnv(readFileSync(".env.focused.example", "utf8"));
-export const validEnv = {
-  ...example,
-  CORELY_SSO_SECRET: "a1".repeat(32),
-  CORELY_SSO_PROXY_KEY: "synthetic-test-proxy-key-not-used-in-deployments",
-};
+import { exampleEnv as example, validEnv } from "./test-fixture";
 describe("focused local configuration", () => {
   it("derives exact callbacks and server registrations without exposing server settings", () => {
     const config = parseFocusedDevEnv(validEnv);

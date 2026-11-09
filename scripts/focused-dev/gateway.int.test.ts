@@ -11,6 +11,12 @@ const config = parseFocusedDevEnv(
   parseEnv(readFileSync(process.env.CORELY_DEV_ENV_FILE ?? ".env.focused.local", "utf8"))
 );
 const backend = createServer((req, res) => {
+  if (req.url === "/api/bff/dropped-stream") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write('{"incomplete":');
+    setTimeout(() => res.destroy(), 20);
+    return;
+  }
   res.setHeader(
     "Set-Cookie",
     "__Host-corely-preauth=synthetic; Path=/; Secure; HttpOnly; SameSite=Lax"
@@ -68,6 +74,7 @@ function get(host: string, path: string) {
       (res) => {
         let body = "";
         res.setEncoding("utf8");
+        res.on("error", reject);
         res.on("data", (part: string) => {
           body += part;
         });
@@ -77,10 +84,17 @@ function get(host: string, path: string) {
       }
     );
     req.on("error", reject);
+    req.setTimeout(3000, () => req.destroy(new Error("Test request timed out")));
     req.end();
   });
 }
 describe("real loopback HTTPS ingress", () => {
+  it("disconnects an interrupted response and keeps the gateway available", async () => {
+    await expect(
+      get(new URL(config.origins.invoice).host, "/api/bff/dropped-stream")
+    ).rejects.toMatchObject({ code: "ECONNRESET" });
+    expect((await get(new URL(config.origins.hr).host, "/")).status).toBe(200);
+  });
   it.each(["login", "app-center", "invoice", "hr"] as const)(
     "routes %s with fixed server authority and strips spoofed headers",
     async (app) => {
