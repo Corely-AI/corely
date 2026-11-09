@@ -4,7 +4,7 @@
 - Branch `396-invoice-link-migration`; PR base `origin/development` at `8768b5e94`.
 - #383/#390/#394 Done; #395's supporting-flow PR #422 is now integrated. Its
   remaining settings setup gap is preserved and does not require a new URL/API.
-- PR: pending publication.
+- Draft PR: [#425](https://github.com/Corely-AI/corely/pull/425).
 
 [Producer inventory, configuration, map and evidence](../frontend/invoice-link-migration.md).
 Only the actual administration Invoice routes mount an explicit handoff; the
@@ -17,7 +17,7 @@ restoration, cohort rollback and legacy consumers. It found that the root exampl
 flags needed explicit web build consumption; Vite now injects just those public
 flags from its existing root environment loader. No production settings changed.
 
-Actual checks: 18 mapping tests; 3 persisted central login round trips; 2 actual
+Actual checks: 34 link/workspace unit tests (18 new mapping tests); 3 persisted central login round trips; 2 actual
 legacy web browser runs (cohort enabled and rollback disabled) passed. Shared
 package typecheck passed. Web production build and scoped lint passed (existing chunk warnings).
 Web typecheck retains existing errors in unchanged platform tests and shared
