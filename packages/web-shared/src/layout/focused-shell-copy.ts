@@ -1,5 +1,11 @@
 export const focusedShellCopy = {
   en: {
+    palette: {
+      title: "Command palette",
+      search: "Search commands...",
+      empty: "No results",
+      groups: { Navigate: "Navigate", Create: "Create", Recent: "Recent" },
+    },
     pendingRequest: "A request is still running. Stay here until its result is known.",
     allApps: "All apps",
     switchApps: "Switch apps",
@@ -23,6 +29,12 @@ export const focusedShellCopy = {
     leave: "Leave page",
   },
   de: {
+    palette: {
+      title: "Befehlspalette",
+      search: "Befehle suchen…",
+      empty: "Keine Ergebnisse",
+      groups: { Navigate: "Navigieren", Create: "Erstellen", Recent: "Zuletzt verwendet" },
+    },
     pendingRequest: "Eine Anfrage läuft noch. Bitte bleibe hier, bis das Ergebnis bekannt ist.",
     allApps: "Alle Apps",
     switchApps: "App wechseln",
@@ -46,6 +58,12 @@ export const focusedShellCopy = {
     leave: "Seite verlassen",
   },
   vi: {
+    palette: {
+      title: "Bảng lệnh",
+      search: "Tìm lệnh…",
+      empty: "Không có kết quả",
+      groups: { Navigate: "Điều hướng", Create: "Tạo", Recent: "Gần đây" },
+    },
     pendingRequest: "Yêu cầu vẫn đang chạy. Hãy ở lại cho đến khi có kết quả.",
     allApps: "Tất cả ứng dụng",
     switchApps: "Chuyển ứng dụng",

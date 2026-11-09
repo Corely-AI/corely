@@ -2100,7 +2100,44 @@
     "status": {
       "updateFailed": "Không thể cập nhật trạng thái"
     },
-    "loading": "Đang tải hóa đơn..."
+    "loading": "Đang tải hóa đơn...",
+    "focused": {
+      "notFound": "Không tìm thấy trang",
+      "notPart": "Trang này không thuộc ứng dụng Hóa đơn.",
+      "back": "Quay lại hóa đơn",
+      "setup": "Ứng dụng Hóa đơn chưa được thiết lập đầy đủ. Vui lòng liên hệ quản trị viên.",
+      "previous": "Trước",
+      "duplicate": "Nhân bản",
+      "downloadPdf": "Tải PDF",
+      "selectInvoice": "Chọn hóa đơn {{id}}",
+      "unit": "Đơn vị",
+      "removeLine": "Xóa dòng",
+      "copilot": {
+        "intro": "Tạo bản nháp email để xem xét. Copilot không tự động gửi email.",
+        "language": "Ngôn ngữ",
+        "tone": "Giọng điệu nhắc nhở",
+        "de": "Tiếng Đức (de)",
+        "vi": "Tiếng Việt (vi)",
+        "en": "Tiếng Anh (en)",
+        "polite": "Lịch sự",
+        "normal": "Bình thường",
+        "firm": "Kiên quyết",
+        "drafting": "Đang soạn...",
+        "issue": "Soạn email hóa đơn",
+        "reminder": "Soạn lời nhắc",
+        "issueDisabled": "Hóa đơn phải được phát hành hoặc gửi trước khi soạn email.",
+        "reminderDisabled": "Chỉ có thể soạn lời nhắc khi số tiền đến hạn lớn hơn không.",
+        "review": "Xem xét và chỉnh sửa bản nháp trước khi sao chép vào quy trình gửi.",
+        "subject": "Tiêu đề",
+        "body": "Nội dung",
+        "copySubject": "Sao chép tiêu đề",
+        "copyBody": "Sao chép nội dung",
+        "subjectCopied": "Đã sao chép tiêu đề",
+        "bodyCopied": "Đã sao chép nội dung",
+        "copyError": "Không thể sao chép vào bộ nhớ tạm",
+        "close": "Đóng"
+      }
+    }
   },
   "customers": {
     "title": "Khách hàng",

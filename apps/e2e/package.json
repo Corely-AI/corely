@@ -22,12 +22,13 @@
     "e2e:cash:seed": "node scripts/cash-e2e-seed.js"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@corely/contracts": "workspace:*",
-    "@prisma/client": "catalog:",
     "@playwright/test": "catalog:",
+    "@prisma/adapter-pg": "catalog:",
+    "@prisma/client": "catalog:",
     "@types/node": "catalog:",
-    "dotenv": "catalog:",
-    "@prisma/adapter-pg": "catalog:"
+    "dotenv": "catalog:"
   },
   "author": "Ha Doan <ha@oneway8x.com>"
 }
