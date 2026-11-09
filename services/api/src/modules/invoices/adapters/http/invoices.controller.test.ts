@@ -73,7 +73,7 @@ describe("InvoicesHttpController", () => {
       requestInvoicePdf: { execute: requestInvoicePdfExecute },
     } as unknown as DocumentsApplication;
 
-    controller = new InvoicesHttpController(app, null, docsApp);
+    controller = new InvoicesHttpController(app, docsApp);
   });
 
   it("returns invoice dto via get endpoint", async () => {

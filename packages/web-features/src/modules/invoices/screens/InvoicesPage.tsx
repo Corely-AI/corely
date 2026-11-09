@@ -78,14 +78,17 @@ export default function InvoicesPage() {
   const { data: customersData } = useQuery({
     queryKey: customerKeys.list(),
     queryFn: () => customersApi.listCustomers(),
+    enabled: !runtime,
   });
 
   const invoices = listData?.items ?? [];
   const pageInfo = listData?.pageInfo;
   const customers = customersData?.customers ?? [];
 
-  const getCustomerName = (customerPartyId: string) =>
-    customers.find((c) => c.id === customerPartyId)?.displayName || "Unknown";
+  const getCustomerName = (customerPartyId: string, billToName?: string | null) =>
+    billToName ||
+    customers.find((c) => c.id === customerPartyId)?.displayName ||
+    t("customers.unknown");
 
   // Filter Fields
   const filterFields = React.useMemo<FilterFieldDef[]>(() => {
@@ -368,7 +371,7 @@ export default function InvoicesPage() {
                           {invoice.number || "Draft"}
                         </td>
                         <td className="px-4 py-3 text-sm">
-                          {getCustomerName(invoice.customerPartyId)}
+                          {getCustomerName(invoice.customerPartyId, invoice.billToName)}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {formatDate(invoice.issuedAt || invoice.createdAt, locale)}

@@ -45,9 +45,17 @@ export async function invoiceTransport(
     fail?: boolean;
     loading?: boolean;
     pdf?: boolean;
+    issued?: boolean;
+    customerDenied?: boolean;
+    customerFail?: boolean;
+    copilotFail?: boolean;
+    sendDenied?: boolean;
   } = {}
 ) {
   let invoice = invoiceFixture();
+  if (options.issued) {
+    invoice = { ...invoice, status: "ISSUED" };
+  }
   if (options.pdf) {
     invoice = { ...invoice, legalEntityId: "legal-1", paymentMethodId: null };
   }
@@ -98,9 +106,27 @@ export async function invoiceTransport(
         });
         return;
       }
+      if (path.includes("/copilot/")) {
+        commands.push({ path, body: request.postDataJSON(), headers });
+        await route.fulfill(
+          options.copilotFail
+            ? { status: 503, json: { message: "Synthetic assistant unavailable" } }
+            : {
+                json: {
+                  subject: "Invoice proposal",
+                  body: "Review this synthetic draft before sending.",
+                },
+              }
+        );
+        return;
+      }
       if (request.method() !== "GET") {
         const body: unknown = request.postDataJSON();
         commands.push({ path, body, headers });
+        if (path.endsWith("/send") && options.sendDenied) {
+          await route.fulfill({ status: 403, json: {} });
+          return;
+        }
         if (path.endsWith("/finalize")) {
           invoice = { ...invoice, status: "ISSUED" };
         } else if (path === "/api/bff/invoices") {
@@ -118,7 +144,7 @@ export async function invoiceTransport(
               }
             : {
                 invoice,
-                ...(options.pdf
+                ...(options.pdf || options.issued
                   ? {
                       capabilities: InvoiceCapabilitiesSchema.parse({
                         status: { value: invoice.status, label: "Draft", tone: "muted" },
@@ -126,8 +152,8 @@ export async function invoiceTransport(
                         transitions: [],
                         actions: [
                           {
-                            key: "download_pdf",
-                            label: "Download PDF",
+                            key: options.issued ? "send" : "download_pdf",
+                            label: options.issued ? "Send invoice" : "Download PDF",
                             placement: "primary",
                             enabled: true,
                             dangerous: false,
@@ -146,14 +172,35 @@ export async function invoiceTransport(
       });
       return;
     }
-    if (path === "/api/bff/customers") {
+    if (path === "/api/bff/customers/search") {
+      if (options.customerDenied || options.customerFail) {
+        await route.fulfill({ status: options.customerDenied ? 403 : 400, json: {} });
+        return;
+      }
+      const remote = url.searchParams.get("q")?.includes("Remote");
+      const more = url.searchParams.has("cursor");
       await route.fulfill({
         json: {
-          customers: [
-            { id: "customer-1", displayName: "Linden Customer", email: "linden@example.invalid" },
+          items: [
+            {
+              id: remote ? "customer-remote" : more ? "customer-2" : "customer-1",
+              displayName: remote
+                ? "Remote Customer"
+                : more
+                  ? "Second Customer"
+                  : "Linden Customer",
+              email: "synthetic@example.invalid",
+            },
           ],
+          nextCursor: !remote && !more ? "page-2" : null,
         },
       });
+      return;
+    }
+    if (path === "/api/bff/customers" && request.method() === "POST") {
+      const body: unknown = request.postDataJSON();
+      commands.push({ path, body, headers });
+      await route.fulfill({ json: { id: "new-customer", displayName: "New Synthetic Customer" } });
       return;
     }
     const response = workspaceFixtureResponse(
@@ -171,6 +218,7 @@ export async function invoiceTransport(
     releaseList,
     recover: () => {
       options.fail = false;
+      options.customerFail = false;
     },
   };
 }

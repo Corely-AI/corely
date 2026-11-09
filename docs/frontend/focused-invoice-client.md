@@ -76,10 +76,57 @@ does not prevent saving it. No number preview is added to the command DTO.
 Date-only values parse as local calendar dates so saving west of UTC does not
 silently shift the invoice or due date backwards.
 
-The legacy settings footer and Copilot panel remain available in their existing
-clients. They are not mounted in this focused composition while #395 owns their
-supporting workflows and assistant boundary. Existing inline customer selection
-and creation are reused. This ticket makes no tax-format or compliance claim.
+## Supporting workflows and assistant boundary
+
+Invoice lists and details use the authorized invoice's billing snapshots. The
+invoice-read endpoint does not enrich that data with a live full customer record;
+customer access remains a separate permission. Opening the inline customer picker
+uses the existing customer search API with `role=CUSTOMER`, server search and cursor
+pagination. Loading, empty and failed lookups are distinct; an explicit retry does
+not invent an empty customer list. A new customer stays selected after inline
+creation. Queries remain scoped to the verified user/tenant/workspace/app.
+
+The existing Invoice Copilot panel is available on the detail screen. It calls
+only the two invoice-owned draft endpoints with the active session context. It
+can draft/edit/copy email text, with no generic tool runner or automatic send.
+Both endpoints now enforce the Invoice app entitlement as well as invoice-read.
+The owning use cases re-read the workspace's invoice and validate status/due
+amount before generation; the existing audit and rate limit remain in place.
+
+Invoice opts into request-local service failures (network errors, 429 and 5xx),
+so an optional assistant outage does not remove the manual editor/send flow.
+401/403 still invalidate the verified session and clear its scope. Other clients
+retain the transport's default session-wide failure behavior. Failed commands
+are never automatically retried. Outbound sending uses the separate review dialog
+and existing issue permission, business-state validation and idempotency path.
+Nonworking test-send and copy-to-self controls have been removed from that shared
+dialog. No actual email delivery is claimed by the browser fixtures.
+
+The Invoice BFF excludes generic document, search/tool and AI APIs. PDF access
+continues through the invoice-owned endpoint; unrelated attachments/personnel
+records are not exposed by a generic file browser. No Templates menu is added.
+
+### Supporting entry-point inventory
+
+| Entry point                         | Current focused behavior / limit                                                                                                                                           |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Customer selection/creation         | Existing Party owner, read/manage permissions, inline dialogs and session transport; no CRM navigation required.                                                           |
+| Currency/date/terms                 | Existing form and shared contracts; backend owns accepted values.                                                                                                          |
+| Tax/numbering                       | Existing finalize behavior; editor previews are not authoritative and are not sent as numbering/tax policy. No numbering-policy editor is added.                           |
+| Business identity/contact/tax setup | Existing workspace/legal-entity owner supplies invoice snapshots. The legacy settings footer remains outside this client.                                                  |
+| Payment setup                       | Existing owner-side defaults; no broad payment-settings API is opened. Its legacy controller lacks the operation/workspace guards required for a focused configuration UI. |
+| PDF/download                        | Existing invoice permission/capability and owner-side document generation.                                                                                                 |
+| Delivery                            | Reviewed send dialog, existing outbound use case; optional assistant drafting never sends.                                                                                 |
+| Activity                            | Invoice-only timestamps/payments; not a global audit browser.                                                                                                              |
+
+Configuring business identity/payment policy from within Invoice remains a known
+setup limitation, not a claim of an available focused settings screen. Those
+legacy settings cannot safely be enabled by adding a menu or widening the BFF
+allowlist. This delivery preserves the currently supported invoice flow and does
+not promote #353/#355, create a new settings owner, or claim tax compliance.
+
+Supporting-workflow execution and visual evidence are recorded in
+[the #395 task record](../tasks/395-invoice-supporting-workflows.md).
 
 ## Verification and UI evidence
 

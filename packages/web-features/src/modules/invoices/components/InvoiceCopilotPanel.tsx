@@ -2,6 +2,7 @@ import { useInvoicesApi } from "../invoice-runtime";
 import React, { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { normalizeError } from "@corely/api-client";
+import { SessionRequestError } from "@corely/web-shared/session/session-client";
 import type {
   DraftInvoiceIssueEmailOutput,
   DraftInvoiceReminderEmailOutput,
@@ -71,8 +72,9 @@ export function InvoiceCopilotPanel({
     },
     onError: (error) => {
       const apiError = normalizeError(error);
-      setErrorMessage(apiError.detail);
-      toast.error(apiError.detail);
+      const detail = error instanceof SessionRequestError ? error.message : apiError.detail;
+      setErrorMessage(detail);
+      toast.error(detail);
     },
   });
 
@@ -90,8 +92,9 @@ export function InvoiceCopilotPanel({
     },
     onError: (error) => {
       const apiError = normalizeError(error);
-      setErrorMessage(apiError.detail);
-      toast.error(apiError.detail);
+      const detail = error instanceof SessionRequestError ? error.message : apiError.detail;
+      setErrorMessage(detail);
+      toast.error(detail);
     },
   });
 

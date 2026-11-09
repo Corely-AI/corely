@@ -426,14 +426,12 @@ export default function InvoiceDetailPage() {
           currency={invoice.currency}
         />
 
-        {!runtime && (
-          <InvoiceCopilotPanel
-            invoiceId={invoice.id}
-            invoiceStatus={invoice.status}
-            amountDueCents={invoice.totals?.dueCents ?? 0}
-            defaultLanguage={defaultCopilotLanguage}
-          />
-        )}
+        <InvoiceCopilotPanel
+          invoiceId={invoice.id}
+          invoiceStatus={invoice.status}
+          amountDueCents={invoice.totals?.dueCents ?? 0}
+          defaultLanguage={defaultCopilotLanguage}
+        />
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
           {isViewOnly && (

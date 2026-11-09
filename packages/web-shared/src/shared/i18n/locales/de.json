@@ -109,7 +109,9 @@
       "modalLater": "Später",
       "choosePlan": "Plan wählen"
     },
-    "searching": "Suchen..."
+    "searching": "Suchen...",
+    "retry": "Erneut versuchen",
+    "loadMore": "Mehr laden"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -2079,7 +2081,7 @@
     },
     "email": {
       "title": "Rechnung senden",
-      "subtitle": "Senden Sie diese Rechnung per E-Mail mit einem Link zum Schülerportal.",
+      "subtitle": "Prüfen Sie Empfänger und Nachricht vor dem Senden.",
       "to": "Empfänger",
       "toPlaceholder": "kunde@beispiel.de",
       "subject": "Rechnung {{number}} von {{brand}}",
@@ -2087,7 +2089,7 @@
       "savedForFuture": "Diese E-Mail wird für das Profil von {{name}} gespeichert.",
       "messagePlaceholder": "Fügen Sie eine persönliche Notiz hinzu...",
       "deliveryLabel": "Zustellung",
-      "deliveryHint": "Ein Link zum Schülerportal wird eingefügt. Der Empfänger kann die Rechnungs-PDF dort herunterladen.",
+      "deliveryHint": "Bestätigen Sie den Empfänger, bevor Sie diese Rechnung per E-Mail senden.",
       "attachmentsHint": "Die PDF-Rechnung wird automatisch angehängt.",
       "attachmentName": "Rechnung-{{number}}.pdf",
       "attachmentFallback": "Rechnung.pdf",
@@ -2149,7 +2151,8 @@
       "title": "Soziale Profile",
       "add": "Profil hinzufügen",
       "empty": "Keine sozialen Profile hinzugefügt."
-    }
+    },
+    "lookupFailed": "Die Kundensuche ist nicht verfügbar oder der Zugriff wurde verweigert. Versuchen Sie es erneut oder wenden Sie sich an Ihre Administration."
   },
   "settings": {
     "title": "Einstellungen",

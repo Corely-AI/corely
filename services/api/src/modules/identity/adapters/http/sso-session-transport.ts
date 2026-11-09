@@ -13,7 +13,7 @@ import type { SsoAppKey } from "@corely/contracts";
 const shared = ["documents", "workspaces", "menu", "platform/apps", "copilot", "ai-copilot"];
 const routes: Record<SsoAppKey, readonly string[]> = {
   "app-center": [...shared, "invoices", "customers", "people", "tasks"],
-  invoice: [...shared, "invoices", "customers"],
+  invoice: ["workspaces", "menu", "platform/apps", "invoices", "customers"],
   hr: [...shared, "people", "tasks"],
 };
 export function bffTarget(path: string, app: SsoAppKey): string | undefined {
