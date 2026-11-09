@@ -59,8 +59,8 @@ describe("focused shell transport", () => {
         .getAll()
         .map((entry) => entry.queryKey)
     ).toEqual([
-      ["focused-shell-navigation", "user", "tenant", "synthetic-workspace", "invoice"],
-      ["focused-shell-launches", "user", "tenant", "synthetic-workspace", "invoice"],
+      ["session", "user", "tenant", "synthetic-workspace", "invoice", "focused-shell-navigation"],
+      ["session", "user", "tenant", "synthetic-workspace", "invoice", "focused-shell-launches"],
     ]);
   });
 });

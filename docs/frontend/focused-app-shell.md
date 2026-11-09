@@ -30,7 +30,8 @@ transport. Its app/workspace must match the session before loading data; unscope
 or mismatched projections expose no links or feature content. Query keys include
 user, tenant, workspace and app. The client must resolve incoming workspace hints
 and rebind its session through the workspace owner. The shell chooses no fallback.
-Broader cross-tab/cache/queued-write behavior belongs to SURF-10 (#390).
+For workspace arrival, history/draft guards and per-tab cache isolation, use the
+[workspace session boundary](workspace-session-boundary.md) delivered by SURF-10 (#390).
 
 Approved roots narrow the server-granted menu contributions. Sidebar, settings,
 commands and search use that same set. Optional `actions` supply a label, relative
@@ -42,7 +43,8 @@ remains mandatory.
 `workspaces` and `onWorkspaceChange` optionally expose choices resolved by the
 workspace owner. The handler must validate selection and rebind `SessionProviders`
 before rendering the next workspace. Without a handler, the selector is disabled.
-Set `isDirty` from the active form: shell navigation, workspace selection, launches
+With that boundary, register active forms using `useWorkspaceDraftGuard`; without
+it, set `isDirty` from the active form. Shell navigation, workspace selection, launches
 and sign-out then ask before leaving. Browser reload/close also warns. Forms own
 navigation initiated outside the shell and their draft recovery.
 

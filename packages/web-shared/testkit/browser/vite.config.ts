@@ -22,6 +22,7 @@ export default defineConfig({
             resolve("../../src/layout/**/*.tsx"),
             resolve("../../../ui/src/**/*.tsx"),
             resolve("./focused-shell-fixture.tsx"),
+            resolve("./workspace-session-fixture.tsx"),
             resolve("../../../ui/src/button.tsx"),
             resolve("./main.tsx"),
           ],

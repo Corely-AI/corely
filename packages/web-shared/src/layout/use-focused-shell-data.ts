@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { AppCatalogItemSchema, WorkspaceConfigSchema, type AppLaunchId } from "@corely/contracts";
 import { useSession } from "../session/session-context";
+import { sessionScopeQueryKey } from "../session/workspace-launch";
 
 export function useFocusedShellData(app: AppLaunchId, workspaceId: string) {
   const { client, state } = useSession();
@@ -12,9 +13,14 @@ export function useFocusedShellData(app: AppLaunchId, workspaceId: string) {
     client.config.workspaceId === workspaceId &&
     Boolean(client.config.tenantId);
   const userId = state.status === "authenticated" ? state.session.user.userId : null;
-  const scope = [userId, client.config.tenantId, workspaceId, app];
+  const scope = {
+    userId: userId ?? "",
+    tenantId: client.config.tenantId ?? "",
+    workspaceId,
+    appKey: app,
+  };
   const navigation = useQuery({
-    queryKey: ["focused-shell-navigation", ...scope],
+    queryKey: sessionScopeQueryKey(scope, "focused-shell-navigation"),
     queryFn: ({ signal }) =>
       client.json(
         `/workspaces/${encodeURIComponent(workspaceId)}/config?scope=web&launchId=${app}`,
@@ -25,7 +31,7 @@ export function useFocusedShellData(app: AppLaunchId, workspaceId: string) {
     retry: false,
   });
   const launches = useQuery({
-    queryKey: ["focused-shell-launches", ...scope],
+    queryKey: sessionScopeQueryKey(scope, "focused-shell-launches"),
     queryFn: ({ signal }) =>
       client.json("/menu/launches", z.array(AppCatalogItemSchema), { signal }),
     enabled: ready,

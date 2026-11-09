@@ -44,6 +44,15 @@ export class SessionClient {
   private session: SsoSessionUser | null = null;
   private bootstrapPending: Promise<SsoSessionUser> | null = null;
   private readonly controllers = new Set<AbortController>();
+  private readonly pendingCommands = new Set<AbortController>();
+  private readonly commandListeners = new Set<() => void>();
+  getPendingCommands = () => this.pendingCommands.size;
+  subscribePendingCommands = (listener: () => void) => {
+    this.commandListeners.add(listener);
+    return () => {
+      this.commandListeners.delete(listener);
+    };
+  };
   private readonly listeners = new Set<(kind: SessionFailure) => void>();
   private generation = 0;
   private logoutProof: string | null = null;
@@ -68,6 +77,10 @@ export class SessionClient {
       controller.abort();
     }
     this.controllers.clear();
+    this.pendingCommands.clear();
+    for (const listener of this.commandListeners) {
+      listener();
+    }
   }
   private fail(error: SessionRequestError) {
     if (error.kind !== "request") {
@@ -87,10 +100,24 @@ export class SessionClient {
     }
     options.signal?.addEventListener("abort", abort, { once: true });
     this.controllers.add(controller);
+    if (
+      url.startsWith("/api/bff/") &&
+      !["GET", "HEAD", "OPTIONS"].includes((options.method ?? "GET").toUpperCase())
+    ) {
+      this.pendingCommands.add(controller);
+      for (const listener of this.commandListeners) {
+        listener();
+      }
+    }
     let bodyOpen = false;
     const cleanup = () => {
       options.signal?.removeEventListener("abort", abort);
       this.controllers.delete(controller);
+      if (this.pendingCommands.delete(controller)) {
+        for (const listener of this.commandListeners) {
+          listener();
+        }
+      }
     };
     try {
       const response = await this.fetchFn(url, {
