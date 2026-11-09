@@ -28,7 +28,7 @@ describe("staff launch projection", () => {
       name: "Invoices",
       tier: 1,
       version: "1",
-      dependencies: [],
+      dependencies: ["parties"],
       enabled: true,
       launch: {
         launchId: "invoice",
@@ -59,7 +59,9 @@ describe("staff launch projection", () => {
       computedAt: "now",
       surfaceId: "platform",
     }));
-    expect(await new ListAppLaunchesUseCase(catalog, menus).execute(input)).toEqual([invoice]);
+    expect(await new ListAppLaunchesUseCase(catalog, menus).execute(input)).toEqual([
+      { ...invoice, dependencies: [] },
+    ]);
     expect(catalog.execute).toHaveBeenCalledWith("tenant");
     expect(menus.execute).toHaveBeenCalledWith({ ...input, launchId: "invoice" });
     expect(menus.execute).toHaveBeenCalledWith({ ...input, launchId: "hr" });

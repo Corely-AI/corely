@@ -1,3 +1,4 @@
+import { GetAppManagementLinkUseCase } from "../application/use-cases/get-app-management-link.usecase";
 import { describe, expect, it } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
 import { MenuController } from "../adapters/http/menu.controller";
@@ -16,7 +17,8 @@ function setup() {
     mockDeep<UpdateMenuOverridesUseCase>(),
     mockDeep<ResetMenuOverridesUseCase>(),
     grants,
-    launches
+    launches,
+    mockDeep<GetAppManagementLinkUseCase>()
   );
   const req = mockDeep<ContextAwareRequest>();
   req.headers = { "x-workspace-id": "authorized-workspace" };

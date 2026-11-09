@@ -3,6 +3,8 @@ export const copy = {
     title: "All apps",
     intro: "Your workspace, connected.",
     subtitle: "Open the tools available to your team.",
+    manage: "Manage team apps",
+    accessNote: "Your administrator manages team apps. Access can vary by workspace.",
     search: "Search apps",
     category: "Category",
     all: "All categories",
@@ -28,6 +30,9 @@ export const copy = {
     title: "Alle Apps",
     intro: "Dein Arbeitsbereich, verbunden.",
     subtitle: "Öffne die verfügbaren Werkzeuge für dein Team.",
+    manage: "Team-Apps verwalten",
+    accessNote:
+      "Deine Administration verwaltet die Team-Apps. Der Zugriff kann je nach Arbeitsbereich variieren.",
     search: "Apps suchen",
     category: "Kategorie",
     all: "Alle Kategorien",
@@ -54,6 +59,9 @@ export const copy = {
     title: "Tất cả ứng dụng",
     intro: "Không gian làm việc được kết nối.",
     subtitle: "Mở công cụ có sẵn cho đội ngũ của bạn.",
+    manage: "Quản lý ứng dụng của nhóm",
+    accessNote:
+      "Quản trị viên quản lý ứng dụng của nhóm. Quyền truy cập có thể khác nhau theo không gian làm việc.",
     search: "Tìm ứng dụng",
     category: "Danh mục",
     all: "Tất cả danh mục",

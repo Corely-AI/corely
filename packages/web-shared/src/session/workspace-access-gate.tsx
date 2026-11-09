@@ -108,6 +108,9 @@ export function WorkspaceAccessGate({
       );
     },
     retry: false,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always",
     enabled: sameAccount,
   });
   const copy = workspaceSessionCopy[locale];

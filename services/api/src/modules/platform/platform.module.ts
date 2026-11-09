@@ -2,6 +2,7 @@ import { EnvModule } from "@corely/config";
 import { appLaunchOriginsProvider } from "./infrastructure/configuration/app-launch-origins.provider";
 import { ListAppCatalogUseCase } from "./application/use-cases/list-app-catalog.usecase";
 import { ListAppLaunchesUseCase } from "./application/use-cases/list-app-launches.usecase";
+import { GetAppManagementLinkUseCase } from "./application/use-cases/get-app-management-link.usecase";
 import { Module, OnModuleInit, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -121,6 +122,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     appLaunchOriginsProvider,
     ListAppCatalogUseCase,
     ListAppLaunchesUseCase,
+    GetAppManagementLinkUseCase,
     // Use Cases
     EnableAppUseCase,
     DisableAppUseCase,
@@ -136,6 +138,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     WorkspaceCapabilityGuard,
   ],
   exports: [
+    EnableAppUseCase,
     TenantEntitlementService,
     MenuBuilderService,
     MenuComposerService,

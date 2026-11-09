@@ -180,11 +180,11 @@ export async function tasksFixture(prisma: PrismaService) {
   };
   const catalog = new FeatureCatalogService(registry);
   catalog.compileCatalog();
-  const entitlementService = new TenantEntitlementsService(prisma, catalog);
-  const entitlements = new TenantEntitlementsReadAdapter(entitlementService);
   const appInstalls = new PrismaTenantAppInstallRepositoryAdapter(prisma);
   const resolver = new DependencyResolverService();
   const enableApp = new EnableAppUseCase(registry, appInstalls, resolver, audit, { newId: uid });
+  const entitlementService = new TenantEntitlementsService(prisma, catalog, enableApp, audit);
+  const entitlements = new TenantEntitlementsReadAdapter(entitlementService);
   const disableApp = new DisableAppUseCase(registry, appInstalls, resolver, audit);
   const platformEntitlements = new TenantEntitlementService(appInstalls, registry, entitlements);
   for (const [tenantId, actorUserId] of [

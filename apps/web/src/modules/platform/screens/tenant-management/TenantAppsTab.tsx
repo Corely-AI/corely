@@ -1,13 +1,9 @@
 import React, { useState } from "react";
-import { type AppCatalogItem } from "@corely/contracts"; // Assuming available
+import { AppDependencyConflictSchema, type AppCatalogItem } from "@corely/contracts";
 import {
   type ResolvedAppEntitlement,
   platformEntitlementsApi,
 } from "@/lib/platform-entitlements-api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
-import { Button } from "@corely/ui";
-import { Badge } from "@corely/ui";
-import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,235 +13,203 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@corely/ui";
 import { getAppManagementPolicy } from "../apps-management-policy";
-
-interface AppMutationError {
-  status?: number;
-  response?: {
-    status?: number;
-  };
-}
 
 interface TenantAppsTabProps {
   tenantId: string;
   catalog: AppCatalogItem[];
   entitlements: ResolvedAppEntitlement[];
-  onRefresh: () => void;
+  onRefresh: () => void | Promise<void>;
 }
 
 export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: TenantAppsTabProps) {
-  const [loadingAppId, setLoadingAppId] = useState<string | null>(null);
-  const [confirmDisable, setConfirmDisable] = useState<{
-    appId: string;
+  const [pending, setPending] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState<AppCatalogItem | null>(null);
+  const [disableConfirmation, setDisableConfirmation] = useState<{
+    app: AppCatalogItem;
     dependents: string[];
   } | null>(null);
-  const [autoEnabledApps, setAutoEnabledApps] = useState<Set<string>>(new Set());
+  const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const name = (id: string) => catalog.find((app) => app.appId === id)?.name ?? id;
 
-  // Merge catalog with entitlement status
-  const apps = catalog.map((cat) => {
-    const ent = entitlements.find((e) => e.appId === cat.appId);
-    return {
-      ...cat,
-      enabled: ent?.enabled ?? false,
-      source: ent?.source,
-      effectiveDependencies: ent?.dependencies || cat.dependencies,
-      policy: getAppManagementPolicy(cat.appId),
-    };
-  });
-
-  const requiredAppsToEnable = React.useMemo(
-    () =>
-      apps
-        .filter((app) => app.policy.forceEnabled && !app.enabled && !autoEnabledApps.has(app.appId))
-        .map((app) => app.appId),
-    [apps, autoEnabledApps]
-  );
-
-  React.useEffect(() => {
-    if (requiredAppsToEnable.length === 0) {
+  const toggle = async (app: AppCatalogItem, enabled: boolean, cascade = false) => {
+    if (pending) {
       return;
     }
-
-    let cancelled = false;
-
-    const run = async () => {
-      for (const appId of requiredAppsToEnable) {
-        if (cancelled) {
-          return;
-        }
-        setAutoEnabledApps((prev) => new Set(prev).add(appId));
-        try {
-          await platformEntitlementsApi.updateAppEnablement(tenantId, appId, true);
-          onRefresh();
-        } catch {
-          // keep the page usable; host can retry enable manually
-        }
-      }
-    };
-
-    void run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [requiredAppsToEnable, tenantId, onRefresh]);
-
-  const handleToggle = async (appId: string, currentEnabled: boolean) => {
-    const policy = getAppManagementPolicy(appId);
-    if (currentEnabled && policy.hideDisableAction) {
-      return;
-    }
-
-    if (currentEnabled) {
-      // API will throw 409 if dependents exist, then we prompt Force.
-      // Or we can pre-check in UI? Prompt says "If disabling app with dependents: show modal...".
-      // Let's try to disable, if error 409, show modal.
-      setLoadingAppId(appId);
-      try {
-        await platformEntitlementsApi.updateAppEnablement(tenantId, appId, false, false);
-        onRefresh();
-      } catch (err: unknown) {
-        // Assuming error response contains dependents?
-        // We'll simulate checking response or just ask user if it fails.
-        // Prompt B5 says "return 409 Conflict with list of dependent appIds".
-        // API Client throws. I need to catch.
-        // For now, if generic error, I just show alert. If 409, show cascading confirmation.
-        const error = err as AppMutationError;
-        if (error.status === 409 || error.response?.status === 409) {
-          // Parse dependents from error body if possible, otherwise generic message
-          setConfirmDisable({ appId, dependents: [] }); // We assume dependencies exist
-        } else {
-          alert("Failed to disable app");
-        }
-      } finally {
-        setLoadingAppId(null);
-      }
-    } else {
-      // Enable
-      setLoadingAppId(appId);
-      try {
-        // Prompt says "show modal: This app requires X, Y. Enable them too?".
-        // API D2 says "Confirm -> call PATCH enabled=true and let backend apply deps".
-        // I will just enable and assuming backend handles it safely or I can check deps locally.
-        await platformEntitlementsApi.updateAppEnablement(tenantId, appId, true);
-        onRefresh();
-      } catch {
-        alert("Failed to enable app");
-      } finally {
-        setLoadingAppId(null);
-      }
-    }
-  };
-
-  const handleConfirmDisable = async () => {
-    if (!confirmDisable) {
-      return;
-    }
-    setLoadingAppId(confirmDisable.appId);
+    setPending(app.appId);
+    setError("");
+    setFeedback("");
     try {
-      await platformEntitlementsApi.updateAppEnablement(
-        tenantId,
-        confirmDisable.appId,
-        false,
-        true
-      ); // Cascade=true
-      onRefresh();
-    } catch {
-      alert("Failed into force disable");
+      // The existing host API resolves dependencies, validates constraints and audits.
+      // A conflict never silently becomes a cascading disable.
+      if (cascade) {
+        await platformEntitlementsApi.updateAppEnablement(tenantId, app.appId, enabled, true);
+      } else {
+        await platformEntitlementsApi.updateAppEnablement(tenantId, app.appId, enabled);
+      }
+      setFeedback(
+        `${app.name} ${enabled ? "enabled" : "disabled"}. The change was recorded in the audit log.`
+      );
+      await onRefresh();
+    } catch (cause: unknown) {
+      const status =
+        typeof cause === "object" && cause !== null && "status" in cause ? cause.status : undefined;
+      const conflict = AppDependencyConflictSchema.safeParse(
+        typeof cause === "object" && cause !== null && "body" in cause ? cause.body : undefined
+      );
+      if (!enabled && status === 409 && conflict.success && conflict.data.dependents.length) {
+        setDisableConfirmation({ app, dependents: conflict.data.dependents });
+      }
+      setError(
+        status === 409
+          ? `Cannot disable ${app.name} while dependent apps are enabled. Disable those apps first, then try again.`
+          : status === 403
+            ? "You no longer have permission to manage team apps. No change was applied."
+            : `Could not update ${app.name}. Refresh the configuration before trying again.`
+      );
+      await onRefresh();
     } finally {
-      setLoadingAppId(null);
-      setConfirmDisable(null);
+      setPending(null);
     }
   };
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Enable the apps your team needs. Access also depends on each workspace and user’s
+        permissions.
+      </p>
+      {error && (
+        <p role="alert" className="rounded-md border border-destructive p-4">
+          {error}
+        </p>
+      )}
+      {feedback && (
+        <p role="status" className="rounded-md border p-4">
+          {feedback}
+        </p>
+      )}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {apps.map((app) => (
-          <Card key={app.appId} className={app.enabled ? "border-primary" : ""}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{app.name}</CardTitle>
-                  <CardDescription className="mt-1">v{app.version}</CardDescription>
+        {catalog.map((app) => {
+          const entitlement = entitlements.find((entry) => entry.appId === app.appId);
+          const enabled = entitlement?.enabled ?? false;
+          const policy = getAppManagementPolicy(app.appId);
+          return (
+            <Card key={app.appId}>
+              <CardHeader>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <CardTitle className="min-w-0 break-words text-lg">{app.name}</CardTitle>
+                  <Badge variant={enabled ? "default" : "outline"}>
+                    {enabled ? "Enabled" : "Disabled"}
+                  </Badge>
                 </div>
-                {app.enabled ? (
-                  <Badge variant="default" className="ml-2">
-                    {app.policy.forceEnabled ? "Always Enabled" : "Enabled"}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="ml-2">
-                    Disabled
-                  </Badge>
+                <CardDescription>v{app.version}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {app.description && (
+                  <p className="text-sm text-muted-foreground">{app.description}</p>
                 )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {app.description && (
-                <p className="text-sm text-muted-foreground">{app.description}</p>
-              )}
-
-              {app.source && app.enabled && (
-                <div className="text-xs text-muted-foreground">
-                  Source: <span className="font-medium">{app.source}</span>
-                </div>
-              )}
-
-              {app.enabled ? (
-                app.policy.hideDisableAction ? (
-                  <div className="text-xs text-muted-foreground text-center py-2 border rounded-md">
-                    {app.policy.reason ?? "This app is required and cannot be disabled."}
-                  </div>
+                {app.dependencies.length > 0 && (
+                  <p className="text-sm">Requires: {app.dependencies.map(name).join(", ")}</p>
+                )}
+                {enabled && policy.hideDisableAction ? (
+                  <p className="text-sm text-muted-foreground">{policy.reason}</p>
                 ) : (
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => handleToggle(app.appId, true)}
-                    disabled={loadingAppId !== null}
+                    className="min-h-11 w-full"
+                    variant={enabled ? "outline" : "default"}
+                    disabled={pending !== null}
+                    aria-label={`${enabled ? "Disable" : "Enable"}: ${app.name}`}
+                    onClick={() => {
+                      if (!enabled && app.dependencies.length) {
+                        setConfirmation(app);
+                      } else {
+                        void toggle(app, !enabled);
+                      }
+                    }}
                   >
-                    {loadingAppId === app.appId ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>Disable App</>
-                    )}
+                    {pending === app.appId ? "Saving…" : enabled ? "Disable app" : "Enable app"}
                   </Button>
-                )
-              ) : (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => handleToggle(app.appId, false)}
-                  disabled={loadingAppId !== null}
-                >
-                  {loadingAppId === app.appId ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>Enable App</>
-                  )}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-
       <AlertDialog
-        open={!!confirmDisable}
-        onOpenChange={(open) => !open && setConfirmDisable(null)}
+        open={confirmation !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmation(null);
+          }
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Disable App & Dependents?</AlertDialogTitle>
+            <AlertDialogTitle>Enable {confirmation?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This app has dependents. Disabling it will also disable them.
+              This also enables required apps: {confirmation?.dependencies.map(name).join(", ")}.
+              Required apps and their dependencies will be enabled for this team. User permissions
+              remain unchanged.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDisable}>Disable All</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                const app = confirmation;
+                setConfirmation(null);
+                if (app) {
+                  void toggle(app, true);
+                }
+              }}
+            >
+              Enable with dependencies
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={disableConfirmation !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDisableConfirmation(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Disable {disableConfirmation?.app.name} and dependent apps?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Also disables: {disableConfirmation?.dependents.map(name).join(", ")}. All current
+              dependencies are checked again when you confirm. Business records are retained.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={pending !== null}
+              onClick={() => {
+                const change = disableConfirmation;
+                setDisableConfirmation(null);
+                if (change) {
+                  void toggle(change.app, false, true);
+                }
+              }}
+            >
+              Disable app and dependents
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

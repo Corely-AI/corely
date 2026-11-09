@@ -1,3 +1,6 @@
+import { mockDeep } from "vitest-mock-extended";
+import type { AuditPort } from "@corely/kernel";
+import { EnableAppUseCase } from "../application/use-cases/enable-app.usecase";
 import { describe, expect, it, vi } from "vitest";
 import { ForbiddenException } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
@@ -108,7 +111,13 @@ function fixture() {
   } as unknown as BillingAccessPort;
   const catalog = new FeatureCatalogService(registry);
   catalog.compileCatalog();
-  const entitlements = new TenantEntitlementsService(prisma, catalog, billing);
+  const entitlements = new TenantEntitlementsService(
+    prisma,
+    catalog,
+    mockDeep<EnableAppUseCase>(),
+    mockDeep<AuditPort>(),
+    billing
+  );
   const entitlementService = new TenantEntitlementService(
     repo,
     registry,
@@ -265,14 +274,11 @@ describe("Operational package configuration integration (in-memory persistence)"
     expect(await f.schedule()).toEqual({ status: "unavailable", reason: "app-disabled" });
     f.install("booking");
     f.overrides.set("app.booking.enabled", false);
-    f.entitlements.invalidateCache("tenant-a");
     expect(await f.schedule()).toEqual({ status: "unavailable", reason: "app-disabled" });
     f.overrides.set("app.booking.enabled", true);
     f.overrides.set(OpenBukBookingEnabledKey, false);
-    f.entitlements.invalidateCache("tenant-a");
     expect(await f.schedule()).toEqual({ status: "unavailable", reason: "product-not-entitled" });
     f.overrides.set(OpenBukBookingEnabledKey, true);
-    f.entitlements.invalidateCache("tenant-a");
     expect((await f.schedule()).status).toBe("available");
   });
 
@@ -307,7 +313,6 @@ describe("Operational package configuration integration (in-memory persistence)"
     expect(await f.schedule()).toEqual({ status: "unavailable", reason: "dependency-unavailable" });
     f.install("forms");
     f.overrides.set("app.forms.enabled", true);
-    f.entitlements.invalidateCache("tenant-a");
     expect((await f.schedule()).status).toBe("available");
     expect(f.repo.upsert).not.toHaveBeenCalled();
   });

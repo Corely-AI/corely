@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { AppCatalogItemSchema, type AppLaunchId } from "@corely/contracts";
+import { AppCatalogItemSchema, AppManagementLinkSchema, type AppLaunchId } from "@corely/contracts";
 import {
   Button,
   DropdownMenu,
@@ -35,6 +35,16 @@ export function AppCenter({ locale }: { locale: Locale }) {
     queryFn: ({ signal }) =>
       client.json("/menu/launches", z.array(AppCatalogItemSchema), { signal }),
     retry: false,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always",
+  });
+  const management = useQuery({
+    queryKey: sessionScopeQueryKey(scope, "app-management-link"),
+    queryFn: ({ signal }) =>
+      client.json("/menu/app-management", AppManagementLinkSchema, { signal }),
+    retry: false,
+    refetchOnWindowFocus: "always",
   });
   const launch = async (id: AppLaunchId) => {
     if (launching) {
@@ -113,6 +123,20 @@ export function AppCenter({ locale }: { locale: Locale }) {
           <p className="text-sm font-medium text-muted-foreground">{workspace.name}</p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{text.intro}</h1>
           <p className="text-muted-foreground">{text.subtitle}</p>
+          {management.data?.path && !management.isError && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                const path = management.data?.path;
+                if (path) {
+                  confirmExternalNavigation(() => window.location.assign(path));
+                }
+              }}
+            >
+              {text.manage}
+            </Button>
+          )}
+          <p className="text-sm text-muted-foreground">{text.accessNote}</p>
         </div>
         <AppDirectory
           apps={launches.data ?? []}

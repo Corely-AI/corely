@@ -32,7 +32,7 @@ entries with a supported launch descriptor become tiles. Search matches localize
 app names; category browsing uses the descriptor's Finance/People category. No
 planned app is manufactured from the long-term catalog. The server controls
 visibility; absence of accessible destinations produces an empty state without
-restricted metadata. App enablement remains an administrator workflow (#393).
+restricted metadata. Dependency topology is omitted from staff discovery. App enablement remains a host administrator workflow.
 
 Only enabled, available entries with a valid configured origin can open. Disabled,
 unconfigured and Coming soon entries have disabled controls and a neutral reason.
@@ -91,3 +91,55 @@ overflow; search/no-match and focus styling worked.
 | Root-wrapper desktop                                                              | Root-wrapper phone                                                                     |
 | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | ![Directory built from repository root](images/app-center-root-build-desktop.png) | ![Phone directory built from repository root](images/app-center-root-build-mobile.png) |
+
+## Host administration and refresh
+
+The launcher calls `GET /menu/app-management` alongside the directory. Only an
+actor with current host membership and the existing tenant-read/write, app-management
+and entitlement-write permissions receives **Manage team apps**. Tenant ownership
+and a forged browser role do not grant that link or mutation authority. Members
+receive an empty response, with no installation, subscription or grant details.
+The retained host administration endpoints still authorize every command independently.
+
+The link opens the existing `/settings/tenants/:tenantId` route. It relies on the
+retained same-origin legacy route map in ADR-0003; the standalone launcher does not
+render that page or transfer session credentials. Legacy authentication and actual
+host routing remain SURF-19/SURF-24 rollout gates.
+
+The host page explains required apps before enablement and reports audited success,
+dependency conflicts and lost permission. A conflict does not automatically cascade. The existing combined-disable action requires explicit confirmation of the server-reported dependent apps.
+Successful refresh preserves feedback; a failed refresh blocks further edits until
+reload. Pending responses from a previous tenant cannot replace current data.
+
+The existing entitlement command reuses Platform's installer/dependency resolver.
+Installs, overrides and the audit record commit in one serializable transaction;
+a failed configuration write rolls back all three. Installation remains distinct
+from effective entitlement, workspace capabilities and operation permissions. No
+subscription, paid tier or legal guarantee is inferred from a tile or toggle.
+Disable preserves business records and install history.
+
+API entitlement reads no longer use the former five-minute process-local cache.
+Committed disablement is visible to another API instance on its next access check.
+The directory, switcher, focused navigation and workspace authority also refresh
+on focus/reconnect and every 30 seconds in an active tab. Launch actions continue
+to revalidate immediately. UI refresh is not backend authorization.
+
+### SURF-12 evidence
+
+Checked November 9, 2026 in installed Chrome: App Center at 1280×800 and 390×844,
+with synthetic staff and host-admin sessions/API responses. Host controls were
+rendered from the actual `TenantAppsTab` component in an isolated Vite preview
+with synthetic command responses. Checked dependency confirmation, keyboard focus,
+audited feedback, conflict handling and phone overflow. The captures show English;
+the new launcher copy also has German/Vietnamese variants. No complete central-session
+→ legacy-login → real host-page browser flow or production routing is claimed.
+
+| Administrator directory                                                            | Member directory                                                     |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| ![Administrator on phone](images/app-management/administrator-directory-phone.png) | ![Member on phone](images/app-management/member-directory-phone.png) |
+
+[Desktop launcher](images/app-management/administrator-directory-desktop.png),
+[host controls](images/app-management/host-controls-desktop.png),
+[dependency confirmation](images/app-management/dependency-confirmation-phone.png),
+[audited success](images/app-management/audited-success-phone.png), and
+[dependent-app conflict](images/app-management/dependency-conflict-phone.png).

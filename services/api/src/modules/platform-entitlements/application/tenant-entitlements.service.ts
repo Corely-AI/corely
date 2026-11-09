@@ -1,5 +1,6 @@
 import { Injectable, Inject, ConflictException, NotFoundException, Optional } from "@nestjs/common";
-import type { TransactionContext } from "@corely/kernel";
+import { AUDIT_PORT, type AuditPort, type TransactionContext } from "@corely/kernel";
+import { EnableAppUseCase } from "../../platform/public";
 import { PrismaService, getPrismaClient } from "@corely/data";
 import { FeatureCatalogService } from "./feature-catalog.service";
 import {
@@ -12,30 +13,20 @@ import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../billing";
 
 @Injectable()
 export class TenantEntitlementsService {
-  private cache = new Map<string, { data: TenantEntitlements; expiresAt: number }>();
-  private CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutes
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly featureCatalog: FeatureCatalogService,
+    private readonly enableApp: EnableAppUseCase,
+    @Inject(AUDIT_PORT) private readonly audit: AuditPort,
     @Optional()
     @Inject(BILLING_ACCESS_PORT)
     private readonly billingAccess?: BillingAccessPort
   ) {}
 
   async getEntitlements(tenantId: string, tx?: TransactionContext): Promise<TenantEntitlements> {
-    // Command authorization must see current overrides on the command connection.
-    if (tx) {
-      return this.computeEntitlements(tenantId, tx);
-    }
-    const cached = this.cache.get(tenantId);
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
-    }
-
-    const entitlements = await this.computeEntitlements(tenantId);
-    this.cache.set(tenantId, { data: entitlements, expiresAt: Date.now() + this.CACHE_TTL_MS });
-    return entitlements;
+    // Enablement is authorization state. A cache local to one API instance cannot
+    // observe a host's disable command handled by another instance.
+    return this.computeEntitlements(tenantId, tx);
   }
 
   private async computeEntitlements(
@@ -118,89 +109,53 @@ export class TenantEntitlementsService {
       throw new NotFoundException(`App ${appId} not found`);
     }
 
-    if (enabled) {
-      // Enable: handle dependencies
-      const toEnable = this.resolveDependencies(appId);
-
-      // Write overrides
-      await this.prisma.$transaction(async (tx) => {
-        for (const depId of toEnable) {
-          const depDef = this.featureCatalog.getAppEntitlementDefinition(depId);
-          if (!depDef) {
-            continue;
-          }
-
-          await tx.tenantFeatureOverride.upsert({
-            where: { tenantId_featureKey: { tenantId, featureKey: depDef.enabledFeatureKey } },
-            create: {
-              tenantId,
-              featureKey: depDef.enabledFeatureKey,
-              valueJson: JSON.stringify(true),
-              updatedBy: userId,
-            },
-            update: {
-              valueJson: JSON.stringify(true),
-              updatedBy: userId,
-            },
+    await this.prisma.$transaction(
+      async (tx) => {
+        const context = tx as unknown as TransactionContext;
+        const dependents = enabled ? [] : await this.findDependents(tenantId, appId, context);
+        if (dependents.length && !cascade) {
+          throw new ConflictException({
+            message: `Cannot disable ${appId} while dependent apps are enabled: ${dependents.join(", ")}`,
+            dependents,
           });
         }
-      });
-    } else {
-      // Disable: Check dependents
-      if (!cascade) {
-        const dependents = await this.findDependents(tenantId, appId);
-        if (dependents.length > 0) {
-          throw new ConflictException(
-            `Cannot disable ${appId} because the following enabled apps depend on it: ${dependents.join(", ")}`
+        const affected = enabled ? this.resolveDependencies(appId) : [appId, ...dependents];
+        if (enabled) {
+          // Platform owns install records, dependency validation and the enabled audit.
+          await this.enableApp.execute({ tenantId, appId, actorUserId: userId }, context);
+        }
+        for (const id of affected) {
+          const definition = this.featureCatalog.getAppEntitlementDefinition(id);
+          if (!definition) {
+            throw new NotFoundException(`App ${id} not found`);
+          }
+          await tx.tenantFeatureOverride.upsert({
+            where: { tenantId_featureKey: { tenantId, featureKey: definition.enabledFeatureKey } },
+            create: {
+              tenantId,
+              featureKey: definition.enabledFeatureKey,
+              valueJson: JSON.stringify(enabled),
+              updatedBy: userId,
+            },
+            update: { valueJson: JSON.stringify(enabled), updatedBy: userId },
+          });
+        }
+        if (!enabled) {
+          await this.audit.log(
+            {
+              tenantId,
+              userId,
+              action: "platform.app.disabled",
+              entityType: "App",
+              entityId: appId,
+              metadata: { disabledDependents: dependents },
+            },
+            context
           );
         }
-      } else {
-        // Recursive disable not fully implemented per prompt instructions for simplicity, but "findDependents" logic is needed
-        // If cascade is true, we should probably disable dependents.
-        // For now, let's just disable the target app as prompt says "support optional flag cascade=true to disable dependents too"
-        const dependents = await this.findDependents(tenantId, appId);
-        const toDisable = [appId, ...dependents];
-
-        await this.prisma.$transaction(async (tx) => {
-          for (const id of toDisable) {
-            const def = this.featureCatalog.getAppEntitlementDefinition(id);
-            if (!def) {
-              continue;
-            }
-
-            await tx.tenantFeatureOverride.upsert({
-              where: { tenantId_featureKey: { tenantId, featureKey: def.enabledFeatureKey } },
-              create: {
-                tenantId,
-                featureKey: def.enabledFeatureKey,
-                valueJson: JSON.stringify(false),
-                updatedBy: userId,
-              },
-              update: { valueJson: JSON.stringify(false), updatedBy: userId },
-            });
-          }
-        });
-      }
-
-      if (!cascade) {
-        // If cascade was false and no dependents found
-
-        await this.prisma.tenantFeatureOverride.upsert({
-          where: {
-            tenantId_featureKey: { tenantId, featureKey: appEntitlement.enabledFeatureKey },
-          },
-          create: {
-            tenantId,
-            featureKey: appEntitlement.enabledFeatureKey,
-            valueJson: JSON.stringify(false),
-            updatedBy: userId,
-          },
-          update: { valueJson: JSON.stringify(false), updatedBy: userId },
-        });
-      }
-    }
-
-    this.invalidateCache(tenantId);
+      },
+      { isolationLevel: "Serializable" }
+    );
   }
 
   async updateFeatures(
@@ -232,8 +187,6 @@ export class TenantEntitlementsService {
         });
       }
     });
-
-    this.invalidateCache(tenantId);
   }
 
   async resetFeature(tenantId: string, featureKey: string): Promise<void> {
@@ -242,8 +195,6 @@ export class TenantEntitlementsService {
         where: { tenantId_featureKey: { tenantId, featureKey } },
       })
       .catch(() => null); // Ignore if not found
-
-    this.invalidateCache(tenantId);
   }
 
   private resolveDependencies(appId: string, visited = new Set<string>()): string[] {
@@ -264,8 +215,12 @@ export class TenantEntitlementsService {
     return deps;
   }
 
-  private async findDependents(tenantId: string, appId: string): Promise<string[]> {
-    const entitlements = await this.getEntitlements(tenantId);
+  private async findDependents(
+    tenantId: string,
+    appId: string,
+    tx?: TransactionContext
+  ): Promise<string[]> {
+    const entitlements = await this.getEntitlements(tenantId, tx);
     const enabledApps = entitlements.apps.filter((a) => a.enabled);
 
     const dependents: string[] = [];
@@ -299,9 +254,5 @@ export class TenantEntitlementsService {
       }
     }
     return false;
-  }
-
-  invalidateCache(tenantId: string) {
-    this.cache.delete(tenantId);
   }
 }

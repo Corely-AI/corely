@@ -7,9 +7,11 @@ import {
   Delete,
   Body,
   UseGuards,
-  HttpCode,
-  HttpStatus,
+  BadRequestException,
+  Inject,
+  forwardRef,
 } from "@nestjs/common";
+import { UpdateTenantAppEnablementSchema } from "@corely/contracts";
 import { AuthGuard } from "../../identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "../../identity/adapters/http/rbac.guard";
 import { CurrentUserId } from "../../identity/adapters/http/current-user.decorator";
@@ -18,7 +20,10 @@ import { TenantEntitlementsService } from "../application/tenant-entitlements.se
 @Controller("platform/tenants/:tenantId")
 @UseGuards(AuthGuard, RbacGuard)
 export class TenantEntitlementsController {
-  constructor(private readonly service: TenantEntitlementsService) {}
+  constructor(
+    @Inject(forwardRef(() => TenantEntitlementsService))
+    private readonly service: TenantEntitlementsService
+  ) {}
 
   @Get("entitlements")
   @RequirePermission("platform.tenants.read")
@@ -31,10 +36,20 @@ export class TenantEntitlementsController {
   async updateAppEnablement(
     @Param("tenantId") tenantId: string,
     @Param("appId") appId: string,
-    @Body() body: { enabled: boolean; cascade?: boolean },
+    @Body() body: unknown,
     @CurrentUserId() userId: string
   ) {
-    await this.service.updateAppEnablement(tenantId, appId, body.enabled, userId, body.cascade);
+    const parsed = UpdateTenantAppEnablementSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException("Expected enabled and optional cascade boolean values");
+    }
+    await this.service.updateAppEnablement(
+      tenantId,
+      appId,
+      parsed.data.enabled,
+      userId,
+      parsed.data.cascade
+    );
     return { success: true };
   }
 

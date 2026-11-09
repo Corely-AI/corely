@@ -105,6 +105,22 @@ export const AppCatalogItemSchema = z.object({
 
 export type AppCatalogItem = z.infer<typeof AppCatalogItemSchema>;
 
+/** Optional entry to the retained host administration UI; never a grant to mutate. */
+export const AppManagementLinkSchema = z.object({
+  path: z
+    .string()
+    .regex(/^\/settings\/tenants\/[^/?#]+$/)
+    .optional(),
+});
+export type AppManagementLink = z.infer<typeof AppManagementLinkSchema>;
+
+export const UpdateTenantAppEnablementSchema = z.object({
+  enabled: z.boolean(),
+  cascade: z.boolean().optional().default(false),
+});
+
+export const AppDependencyConflictSchema = z.object({ dependents: z.array(z.string()) });
+
 /**
  * Tenant App Install - Tenant-specific app installation record
  */
