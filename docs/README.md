@@ -178,3 +178,5 @@ General developer guides and references.
 
 - [OpenBuk](products/openbuk/README.md) — focused booking product and implementation roadmap.
 - [OpenBuk screenshot walkthrough](products/openbuk/screenshots.md)
+
+- [Frontend consumer CI](frontend/consumer-ci.md) — focused and existing Vite consumer checks.

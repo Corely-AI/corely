@@ -1,0 +1,101 @@
+name: Frontend consumers
+on:
+  pull_request:
+  push:
+    branches: [development]
+permissions:
+  contents: read
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/ci/*.test.mjs
+      - run: node scripts/ci/frontend-policy.mjs
+      - id: matrix
+        run: echo "matrix=$(node scripts/ci/frontend-policy.mjs --matrix)" >> "$GITHUB_OUTPUT"
+  consumer:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - run: pnpm build:packages && pnpm build:web-packages
+      - name: Check consumer and record every result
+        env:
+          CONSUMER_DIR: ${{ matrix.dir }}
+        run: |
+          mkdir -p ci-results
+          result=0
+          for check in lint typecheck build; do
+            status=0
+            case "$check" in
+              lint) pnpm exec eslint "$CONSUMER_DIR/src" > "ci-results/$check.log" 2>&1 || status=$? ;;
+              *) pnpm --dir "$CONSUMER_DIR" run "$check" > "ci-results/$check.log" 2>&1 || status=$? ;;
+            esac
+            cat "ci-results/$check.log"
+            echo "$check: exit $status" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$status" -ne 0 ]; then result=1; fi
+          done
+          if [ "$CONSUMER_DIR" = apps/invoice ]; then
+            status=0
+            node scripts/ci/check-invoice-bundle.mjs > ci-results/bundle-policy.log 2>&1 || status=$?
+            cat ci-results/bundle-policy.log
+            echo "bundle-policy: exit $status" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$status" -ne 0 ]; then result=1; fi
+          fi
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-${{ matrix.app }}
+          path: |
+            ci-results/
+            ${{ matrix.dir }}/dist/
+          if-no-files-found: warn
+  focused-browser:
+    # Playwright 1.57 does not support the Ubuntu 26.04 image now used by latest.
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [app-center, invoice]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate && pnpm build:packages && pnpm build:web-packages
+      - run: pnpm --dir apps/e2e exec playwright install --with-deps chromium
+      - name: Run independent focused regressions and record results
+        env:
+          SUITE: ${{ matrix.suite }}
+        run: bash scripts/ci/run-focused-checks.sh "$SUITE"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: focused-browser-${{ matrix.suite }}
+          path: |
+            ci-results/
+            apps/e2e/test-results/
+          if-no-files-found: warn
