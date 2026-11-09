@@ -1,5 +1,10 @@
 import type { BrowserContext } from "@playwright/test";
-import { InvoiceDtoSchema, type InvoiceDto } from "@corely/contracts";
+import {
+  InvoiceDtoSchema,
+  InvoiceCapabilitiesSchema,
+  RequestInvoicePdfOutputSchema,
+  type InvoiceDto,
+} from "@corely/contracts";
 import {
   workspaceFixtureResponse,
   fixtureOrigins,
@@ -34,9 +39,18 @@ export function invoiceFixture(id = "invoice-1"): InvoiceDto {
 }
 export async function invoiceTransport(
   context: BrowserContext,
-  options: { empty?: boolean; denied?: boolean; fail?: boolean; loading?: boolean } = {}
+  options: {
+    empty?: boolean;
+    denied?: boolean;
+    fail?: boolean;
+    loading?: boolean;
+    pdf?: boolean;
+  } = {}
 ) {
   let invoice = invoiceFixture();
+  if (options.pdf) {
+    invoice = { ...invoice, legalEntityId: "legal-1", paymentMethodId: null };
+  }
   const commands: Array<{ path: string; body: unknown; headers: Record<string, string> }> = [];
   const requests: string[] = [];
   let releaseList = () => {};
@@ -49,6 +63,11 @@ export async function invoiceTransport(
     const path = url.pathname;
     const headers = await request.allHeaders();
     requests.push(path);
+    if (path.startsWith("/api/bff/payment-methods")) {
+      // The real Invoice BFF does not expose the legacy settings API.
+      await route.fulfill({ status: 403, json: {} });
+      return;
+    }
     if (options.denied && path === "/api/session/user" && headers["x-workspace-id"]) {
       await route.fulfill({ status: 403, json: {} });
       return;
@@ -69,6 +88,16 @@ export async function invoiceTransport(
         await route.fulfill({ status: 404, json: {} });
         return;
       }
+      if (options.pdf && path.endsWith("/pdf")) {
+        await route.fulfill({
+          json: RequestInvoicePdfOutputSchema.parse({
+            documentId: "document-1",
+            status: "READY",
+            downloadUrl: "http://127.0.0.1:5188/pdf-fixture",
+          }),
+        });
+        return;
+      }
       if (request.method() !== "GET") {
         const body: unknown = request.postDataJSON();
         commands.push({ path, body, headers });
@@ -87,7 +116,33 @@ export async function invoiceTransport(
                 items: options.empty ? [] : [invoice],
                 pageInfo: { page: 1, pageSize: 20, total: 1, hasNextPage: false },
               }
-            : { invoice },
+            : {
+                invoice,
+                ...(options.pdf
+                  ? {
+                      capabilities: InvoiceCapabilitiesSchema.parse({
+                        status: { value: invoice.status, label: "Draft", tone: "muted" },
+                        badges: [],
+                        transitions: [],
+                        actions: [
+                          {
+                            key: "download_pdf",
+                            label: "Download PDF",
+                            placement: "primary",
+                            enabled: true,
+                            dangerous: false,
+                          },
+                        ],
+                        editability: {
+                          canEditHeader: true,
+                          canEditDates: true,
+                          canEditLineItems: true,
+                        },
+                        audit: { trackChanges: true },
+                      }),
+                    }
+                  : {}),
+              },
       });
       return;
     }

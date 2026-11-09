@@ -1,6 +1,32 @@
 import { test, expect } from "@playwright/test";
 import { invoiceTransport } from "./invoice-fixture";
 
+test("downloads a draft PDF through its owner without calling forbidden settings", async ({
+  page,
+  context,
+}, testInfo) => {
+  const fixture = await invoiceTransport(context, { pdf: true });
+  await context.route("**/pdf-fixture", (route) =>
+    route.fulfill({ contentType: "text/plain", body: "Synthetic invoice PDF destination" })
+  );
+  await page.goto("/invoices/invoice-1?workspaceId=workspace-a");
+  const opened = page.waitForEvent("popup");
+  await page.getByRole("button", { name: "Download PDF", exact: true }).click();
+  await expect.poll(() => fixture.requests.includes("/api/bff/invoices/invoice-1/pdf")).toBe(true);
+  expect(fixture.requests.some((path) => path.startsWith("/api/bff/payment-methods"))).toBe(false);
+  expect(fixture.commands.map((command) => command.path)).toEqual([
+    "/api/bff/invoices/invoice-1/finalize",
+  ]);
+  await expect(page.getByRole("heading", { name: /Invoice INV-2026-101/ })).toBeVisible();
+  const pdf = await opened;
+  await expect(pdf).toHaveURL(/\/pdf-fixture$/);
+  expect(await pdf.evaluate(() => window.opener)).toBeNull();
+  await expect(
+    page.getByText("Please allow pop-ups for this site and try again.", { exact: true })
+  ).toBeHidden({ timeout: 500 });
+  await page.screenshot({ path: testInfo.outputPath("invoice-pdf-owner-desktop.png") });
+});
+
 test("lists existing invoice records and restores bookmarked detail/edit/activity routes", async ({
   page,
   context,
@@ -33,7 +59,7 @@ test("creates through existing contracts with deterministic cents and scoped coo
   const fixture = await invoiceTransport(context);
   await context.addInitScript(() => {
     localStorage.setItem("accessToken", "stale-legacy-token");
-    localStorage.setItem("activeWorkspaceId", "workspace-b");
+    localStorage.setItem("corely-active-workspace", "workspace-b");
   });
   await page.goto("/invoices/new?workspaceId=workspace-a");
   await page.getByTestId("invoice-customer-select").click();
