@@ -5,7 +5,7 @@
 - Issue: [SURF-12 #393](https://github.com/Corely-AI/corely/issues/393), parent [#380](https://github.com/Corely-AI/corely/issues/380).
 - Prerequisites #383, #388 and #392 are completed and integrated in the base.
 - Branch: `393-app-visibility-controls`; PR base: `development`, verified remote `corely`, base `48517fcbc063825450ac292799b71edb70d7d753`.
-- PR: pending publication.
+- PR: [Draft #419](https://github.com/Corely-AI/corely/pull/419).
 - Outcome: connect the launcher to existing authorized host controls; preserve separate install, entitlement, workspace and permission gates; refresh revoked access.
 - Exclusions: new billing/tiers, migrations, deployment and legacy hosting cutover.
 
