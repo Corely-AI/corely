@@ -1,6 +1,7 @@
 import { defineWorkspace } from "vitest/config";
 
 export default defineWorkspace([
+  { extends: "./apps/app-center/vitest.config.ts", root: "./apps/app-center" },
   { extends: "./packages/web-shared/vitest.config.ts", root: "./packages/web-shared" },
   {
     extends: "./services/api/vitest.config.ts",

@@ -1,0 +1,17 @@
+{
+  "extends": "@corely/tsconfig/react.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "exactOptionalPropertyTypes": false,
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@corely/contracts": ["../../packages/contracts/src/index.ts"],
+      "@corely/ui": ["../../packages/ui/src/index.ts"],
+      "@corely/web-shared/*": ["../../packages/web-shared/src/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts", "vitest.config.ts"]
+}
