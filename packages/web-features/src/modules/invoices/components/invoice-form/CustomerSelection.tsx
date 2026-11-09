@@ -300,7 +300,10 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
             <DialogDescription>{t("customers.createDescription")}</DialogDescription>
           </DialogHeader>
           <form
-            onSubmit={customerForm.handleSubmit((data) => createCustomerMutation.mutate(data))}
+            onSubmit={(event) => {
+              event.stopPropagation();
+              void customerForm.handleSubmit((data) => createCustomerMutation.mutate(data))(event);
+            }}
             className="space-y-6"
           >
             <div className="space-y-4">

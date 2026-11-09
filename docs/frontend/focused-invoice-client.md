@@ -99,6 +99,13 @@ so an optional assistant outage does not remove the manual editor/send flow.
 retain the transport's default session-wide failure behavior. Failed commands
 are never automatically retried. Outbound sending uses the separate review dialog
 and existing issue permission, business-state validation and idempotency path.
+Both the list's Email action and the detail action open that review dialog before
+any finalize/send command. Inline customer creation stops its submit event at the
+customer form so it cannot submit an already-valid invoice behind the dialog.
+A send attempt refreshes the invoice's current state first. Explicit retries of
+the same reviewed message reuse its delivery key while the view remains mounted;
+a confirmed success clears that intent for a later intentional resend. No retry
+is automatic, and no retry identity is persisted across a reload/navigation.
 Nonworking test-send and copy-to-self controls have been removed from that shared
 dialog. No actual email delivery is claimed by the browser fixtures.
 

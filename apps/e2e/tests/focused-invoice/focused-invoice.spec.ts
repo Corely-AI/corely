@@ -311,3 +311,53 @@ test("preserves manual reviewed sending when AI is unavailable", async ({
     },
   });
 });
+
+test("creating a customer never submits an already-valid invoice", async ({
+  page,
+  context,
+}, testInfo) => {
+  const fixture = await invoiceTransport(context);
+  await page.goto("/invoices/new?workspaceId=workspace-a");
+  await page.getByTestId("invoice-customer-select").click();
+  await page.getByTestId("invoice-customer-option-customer-1").click();
+  await page.getByTestId("invoice-line-description-0").fill("Valid unsaved invoice");
+  await page.getByTestId("invoice-line-rate-0").fill("100");
+  await page.getByRole("button", { name: "Add customer", exact: true }).click();
+  await page.getByTestId("customer-displayName-input").fill("New Synthetic Customer");
+  await page.getByRole("dialog").getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByTestId("invoice-customer-select")).toContainText("New Synthetic Customer");
+  await expect(page).toHaveURL(/\/invoices\/new\?workspaceId=workspace-a/);
+  expect(fixture.commands.map((command) => command.path)).toEqual(["/api/bff/customers"]);
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-customer-save-preserved-desktop.png"),
+  });
+});
+
+test("list Email action requires recipient review before finalizing or sending", async ({
+  page,
+  context,
+}, testInfo) => {
+  const fixture = await invoiceTransport(context);
+  await page.goto("/invoices?workspaceId=workspace-a");
+  await page
+    .getByTestId("invoice-row-invoice-1")
+    .getByRole("button", { name: "Open actions" })
+    .click();
+  await page.getByRole("menuitem", { name: "Email", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Send Invoice" });
+  await expect(dialog).toBeVisible();
+  expect(fixture.commands).toHaveLength(0);
+  await dialog.getByLabel("Recipient").fill("reviewed@example.invalid");
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-list-email-review-desktop.png"),
+  });
+  await dialog.getByRole("button", { name: "Send Email", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect(fixture.commands.map((command) => command.path)).toEqual([
+    "/api/bff/invoices/invoice-1/finalize",
+    "/api/bff/invoices/invoice-1/send",
+  ]);
+  expect(fixture.commands[1].body).toMatchObject({ to: "reviewed@example.invalid" });
+});

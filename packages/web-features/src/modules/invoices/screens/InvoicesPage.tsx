@@ -5,6 +5,8 @@ import {
   useInvoiceNavigate,
 } from "../invoice-runtime";
 import { useInvoiceRuntime } from "../invoice-runtime";
+import { useSendInvoice } from "../hooks/use-send-invoice";
+import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
@@ -147,14 +149,7 @@ export default function InvoicesPage() {
     },
   });
 
-  const emailInvoice = useMutation({
-    mutationFn: (invoiceId: string) => invoicesApi.sendInvoice(invoiceId),
-    onSuccess: () => toast.success("Invoice email sent"),
-    onError: (error) => {
-      console.error("Send invoice failed", error);
-      toast.error("Failed to send invoice");
-    },
-  });
+  const send = useSendInvoice();
 
   const cancelInvoice = useMutation({
     mutationFn: (invoiceId: string) => invoicesApi.cancelInvoice(invoiceId, "Soft delete"),
@@ -411,7 +406,8 @@ export default function InvoicesPage() {
                               },
                               {
                                 label: "Email",
-                                onClick: () => emailInvoice.mutate(invoice.id),
+                                onClick: () => void send.openSendDialog(invoice.id),
+                                disabled: send.isFetching || send.isSending,
                                 icon: <Mail className="h-4 w-4" />,
                               },
                               {
@@ -467,6 +463,15 @@ export default function InvoicesPage() {
             </Pagination>
           )}
         </div>
+      )}
+      {send.currentInvoice && (
+        <SendInvoiceDialog
+          open={send.isOpen}
+          onOpenChange={send.setIsOpen}
+          invoice={send.currentInvoice}
+          onSend={send.handleSend}
+          isSending={send.isSending}
+        />
       )}
       <FilterPanel
         open={isFilterOpen}

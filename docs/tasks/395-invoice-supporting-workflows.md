@@ -87,3 +87,44 @@ the former behavior without data rollback. The root unit command was stopped whe
 
 Focused settings editing, live outbound
 delivery and full multi-origin acceptance are not established by these fixtures.
+
+## PR #422 review corrections
+
+Reviewed the complete PR against its owning flows and current CI evidence.
+
+- **P1 — accidental invoice submission:** with a valid invoice already entered,
+  saving an inline customer bubbled the portal form's submit event into the
+  invoice form, creating/finalizing an invoice without its explicit submit action.
+  The browser regression failed by navigating to the list before the fix. The
+  customer form now stops propagation before invoking its own form handler.
+- **P1 — duplicate/blocked delivery retries:** an uncertain send response left the
+  original draft status in the dialog, so a retry finalized again and generated
+  another delivery key. Refresh invoice state before sending and retain a key per
+  reviewed invoice/message intent in the mounted view until success. An explicit
+  successful resend or changed message uses a new key. A synchronous guard also
+  prevents concurrent submissions. Hook regressions failed before the fix.
+- **P2 — incomplete list Email action:** the row action called send without the
+  required recipient and skipped review. Both list/detail now use the shared send
+  dialog and hook; opening the dialog issues no finalize/send command.
+- **P1 — strict consumer build regression:** passing an explicitly undefined
+  `shouldFilter` broke Portal's exact-optional-property check. The shared dialog
+  now defaults that prop to cmdk's existing `true` behavior. Portal typecheck
+  reproduced the error before the fix and passes after it.
+
+Fresh review checks: Invoice unit/component tests, the complete focused Invoice
+browser suite (including valid-parent customer save and list Email review), Portal
+and Invoice typechecks, Invoice production build, and changed-source lint. Results: **13 browser tests and 7 unit/component tests passed**. Portal and
+Invoice typechecks passed, and the Invoice production build passed with the
+existing chunk-size warning. Changed-source lint passed. No backend/session code
+changed in this review; its earlier checks are not presented as new runs.
+
+![Customer save preserves the unsaved invoice](../frontend/images/invoice-support/invoice-customer-save-preserved-desktop.png)
+
+![List Email opens recipient review](../frontend/images/invoice-support/invoice-list-email-review-desktop.png)
+The browser uses synthetic
+API/session responses; no live send or database mutation is involved.
+
+Current CI on the pre-fix head independently reported the shared prop type error.
+Other infrastructure failures include a missing generated Prisma client in unit
+jobs and the absent `e2e:smoke` script in the broad browser job. Vercel reports a
+build rate limit. These checks are not represented as passing or fixed here.

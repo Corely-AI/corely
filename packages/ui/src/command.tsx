@@ -29,7 +29,7 @@ type CommandDialogProps = DialogProps & {
 const CommandDialog = ({
   children,
   contentClassName,
-  shouldFilter,
+  shouldFilter = true,
   ...props
 }: CommandDialogProps) => {
   return (
