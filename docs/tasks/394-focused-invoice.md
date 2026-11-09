@@ -70,6 +70,8 @@ failure; staged-file checks still run. No merge, deployment or shared-data chang
 
 Branch `394-invoice-review-fixes` starts at `origin/development`
 `05fceeeb341bd8945765b447325b8c06120369ad`, after #418 merged.
+Follow-up Draft PR: [#421](https://github.com/Corely-AI/corely/pull/421), targeting
+`development`.
 
 - P1 focused-client regression: downloading a draft PDF could invoke legacy
   payment-settings discovery, receive the expected BFF 403 and close the focused
