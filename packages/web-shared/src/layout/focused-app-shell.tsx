@@ -113,6 +113,7 @@ export function FocusedAppShell({
     routeRoots
   ).map((group) => ({
     ...group,
+    defaultLabel: label,
     items: group.items.map((item) => ({
       ...item,
       label: (item.labelKey && navigationLabels[item.labelKey]) || item.label,

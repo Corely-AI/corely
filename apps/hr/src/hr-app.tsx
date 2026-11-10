@@ -32,7 +32,7 @@ function HrLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
   const { client } = useSession();
   const workspace = useWorkspaceSession();
   const { pathname } = useLocation();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const locale = i18n.language.startsWith("de")
     ? "de"
     : i18n.language.startsWith("vi")
@@ -80,6 +80,10 @@ function HrLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
       workspace={workspace.workspace}
       workspaces={workspace.workspaces}
       onWorkspaceChange={workspace.selectWorkspace}
+      navigationLabels={{
+        "nav.people": t("nav.people"),
+        "nav.peopleSelfService": t("nav.peopleSelfService"),
+      }}
       locale={locale}
     >
       {permissions.isPending ? (
