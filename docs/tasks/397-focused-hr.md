@@ -46,3 +46,11 @@ and database/API checks are separate. HR privacy/release acceptance remains
 Publication retained normal pre-commit checks. The documented `HUSKY=0` pre-push
 bypass was used for existing unrelated root/legacy CI failures; scoped checks and
 limits above remain explicit. No merge or release performed.
+
+## Review fix: retain drafts after recoverable saves (2026-11-10)
+
+- Addressed inline finding `discussion_r4522615278`: People feature requests use request-local recoverable failures. The optional transport behavior is reused verbatim from the already integrated `development` adapter/client; this older HR branch needs that prerequisite to test independently. Default clients and fatal 401/403 handling remain unchanged.
+- New browser cases failed before the fix for both 503 and lost responses because the form disappeared. After the fix, a simulated committed create with a lost result retains its draft and reuses the same idempotency key; 401/403 still withdraw the form. The existing load-error case now checks the owning list's retry control.
+- Fresh checks: HR browser **10 passed**, People unit **33 passed**, shared session/adapter/provider **37 passed**; HR typecheck/build passed (existing chunk-size warning retained). Scoped lint/format checked. No API/domain/storage behavior changed and no database tests were needed for this transport/UI correction.
+- Self-review traced HTTP, network and body-stream errors through the existing local failure option, confirmed permission discovery still fails closed, and checked that no automatic command retry was added.
+- Synthetic desktop recovery state was visually inspected: [retained HR save draft](../frontend/images/focused-hr/hr-recoverable-save.png). The original form stays editable with its local error; no personnel data or credentials were used.

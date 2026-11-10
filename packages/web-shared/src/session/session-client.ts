@@ -37,6 +37,8 @@ export interface SessionSurfaceConfig {
 export type SessionRequestOptions = Omit<RequestInit, "credentials" | "redirect" | "mode"> & {
   idempotencyKey?: string;
   correlationId?: string;
+  /** Keep optional feature outages local; authentication/authorization failures remain fatal. */
+  serviceFailureScope?: "request";
 };
 
 /** Opt-in browser transport. Never imports the legacy auth/storage adapters. */
@@ -91,7 +93,13 @@ export class SessionClient {
     }
     return error;
   }
-  private async send(url: string, options: RequestInit = {}): Promise<Response> {
+  private async send(
+    url: string,
+    options: RequestInit = {},
+    localServiceFailure = false
+  ): Promise<Response> {
+    const fail = (error: SessionRequestError) =>
+      localServiceFailure && error.kind === "unavailable" ? error : this.fail(error);
     const controller = new AbortController();
     const generation = this.generation;
     const abort = () => controller.abort();
@@ -132,7 +140,7 @@ export class SessionClient {
         throw new DOMException("Stale session request", "AbortError");
       }
       if (!response.ok) {
-        throw this.fail(
+        throw fail(
           new SessionRequestError(
             response.status,
             response.status === 401
@@ -172,7 +180,7 @@ export class SessionClient {
             sink.error(
               controller.signal.aborted || generation !== this.generation
                 ? error
-                : this.fail(new SessionRequestError(503, "unavailable"))
+                : fail(new SessionRequestError(503, "unavailable"))
             );
           }
         },
@@ -195,7 +203,7 @@ export class SessionClient {
       ) {
         throw error;
       }
-      throw this.fail(new SessionRequestError(503, "unavailable"));
+      throw fail(new SessionRequestError(503, "unavailable"));
     } finally {
       if (!bodyOpen) {
         cleanup();
@@ -257,7 +265,7 @@ export class SessionClient {
       throw this.fail(new SessionRequestError(401, "unauthenticated"));
     }
     const headers = new Headers(options.headers);
-    const { idempotencyKey, correlationId, ...init } = options;
+    const { idempotencyKey, correlationId, serviceFailureScope, ...init } = options;
     for (const name of headers.keys()) {
       if (
         [
@@ -288,7 +296,7 @@ export class SessionClient {
       headers.set("x-correlation-id", correlationId);
     }
     // One attempt, including mutations and streams. Query defaults also disable retries.
-    return this.send(`/api/bff${path}`, { ...init, headers });
+    return this.send(`/api/bff${path}`, { ...init, headers }, serviceFailureScope === "request");
   }
   async json<T>(
     path: string,

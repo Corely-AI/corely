@@ -48,7 +48,7 @@ function HrLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
     refetchOnWindowFocus: "always",
   });
   const runtime = useMemo(() => {
-    const http = new SessionFeatureHttpClient(client);
+    const http = new SessionFeatureHttpClient(client, "request");
     return {
       api: createPeopleApi(http, () => workspace.scope.workspaceId, true),
       journey: createStaffJourneyClient(http, workspace.scope.workspaceId, true),

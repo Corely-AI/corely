@@ -72,8 +72,10 @@ test("empty, error, unknown route and invalid workspace stay explicit", async ({
   await expect(page.getByText("No staff found", { exact: true })).toBeVisible();
   options.fail = true;
   await page.reload();
-  await expect(page.getByRole("alert")).toContainText("temporarily unavailable");
+  await expect(page.getByRole("alert")).toContainText("Unable to load staff");
   options.fail = false;
+  await page.getByRole("button", { name: "Try again", exact: true }).click();
+  await expect(page.getByText("No staff found", { exact: true })).toBeVisible();
   await page.goto("/invoices?workspaceId=workspace-a");
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
   await page.goto("/people/staff?workspaceId=missing");
@@ -90,3 +92,68 @@ test("keeps a dirty HR edit until the user confirms navigation", async ({ page, 
   await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Unsaved staff");
   expect(fixture.commands).toHaveLength(0);
 });
+
+for (const failure of ["503", "network"] as const) {
+  test(`retains a new profile and its retry key after a recoverable ${failure} failure`, async ({
+    page,
+    context,
+  }, info) => {
+    await hrTransport(context, { manager: true });
+    const keys: string[] = [];
+    const committed = new Set<string>();
+    await context.route("**/api/bff/people/staff", async (route) => {
+      if (route.request().method() !== "POST") {
+        await route.fallback();
+        return;
+      }
+      const key = (await route.request().allHeaders())["x-idempotency-key"] ?? "";
+      expect(key).toBeTruthy();
+      keys.push(key);
+      // The server committed the first command, but the client did not receive its result.
+      committed.add(key);
+      if (keys.length === 1) {
+        if (failure === "network") {
+          await route.abort("failed");
+        } else {
+          await route.fulfill({ status: 503, json: {} });
+        }
+        return;
+      }
+      await route.fallback();
+    });
+    await page.goto("/people/staff/new?workspaceId=workspace-a");
+    await page.getByLabel("Display name", { exact: true }).fill("Synthetic retry colleague");
+    await page.getByRole("button", { name: "Save profile", exact: true }).click();
+    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue(
+      "Synthetic retry colleague"
+    );
+    if (failure === "503") {
+      await page.screenshot({ path: info.outputPath("hr-recoverable-save.png") });
+    }
+    await page.getByRole("button", { name: "Save profile", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Synthetic retry colleague" })).toBeVisible();
+    expect(keys).toHaveLength(2);
+    expect(keys[1]).toBe(keys[0]);
+    expect(committed.size).toBe(1);
+  });
+}
+
+for (const status of [401, 403]) {
+  test(`withdraws the HR form after a ${status} save denial`, async ({ page, context }) => {
+    await hrTransport(context, { manager: true });
+    await context.route("**/api/bff/people/staff", async (route) => {
+      if (route.request().method() === "POST") {
+        await route.fulfill({ status, json: {} });
+      } else {
+        await route.fallback();
+      }
+    });
+    await page.goto("/people/staff/new?workspaceId=workspace-a");
+    await page.getByLabel("Display name", { exact: true }).fill("Synthetic denied colleague");
+    await page.getByRole("button", { name: "Save profile", exact: true }).click();
+    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Save profile", exact: true })).toHaveCount(0);
+  });
+}
