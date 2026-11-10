@@ -159,3 +159,20 @@ test("keeps a dirty HR edit until the user confirms navigation", async ({ page, 
   await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Unsaved staff");
   expect(fixture.commands).toHaveLength(0);
 });
+
+test("conceals personnel fields before accepting a different account", async ({
+  page,
+  context,
+}) => {
+  const options: Parameters<typeof hrTransport>[1] = { private: true, user: "user-a" };
+  await hrTransport(context, options);
+  await page.goto("/people/staff/anna?workspaceId=workspace-a");
+  await expect(page.locator('textarea[name="notes"]')).toHaveValue(
+    "Synthetic398 confidential note"
+  );
+  options.user = "user-b";
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(page.locator('textarea[name="notes"]')).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Anna Example" })).toHaveCount(0);
+  await expect(page.getByRole("alert")).toContainText("requested workspace");
+});
