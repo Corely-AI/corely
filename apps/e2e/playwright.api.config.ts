@@ -12,6 +12,7 @@ export default defineConfig({
     "**/focused-invoice/**",
     "**/focused-hr/**",
     "**/invoice-links/**",
+    "**/focused-ux/**",
   ],
   fullyParallel: false,
   forbidOnly: isCI,

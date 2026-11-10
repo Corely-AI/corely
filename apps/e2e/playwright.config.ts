@@ -21,6 +21,7 @@ export default defineConfig({
     "**/app-center/**",
     "**/focused-hr/**",
     "**/invoice-links/**",
+    "**/focused-ux/**",
   ],
   fullyParallel: true,
   forbidOnly: isCI,

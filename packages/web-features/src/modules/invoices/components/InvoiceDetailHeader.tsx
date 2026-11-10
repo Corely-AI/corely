@@ -50,8 +50,15 @@ export function InvoiceDetailHeader({
   if (!translatedCapabilities) {
     return (
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/invoices")}>
-          <span className="text-lg">←</span>
+        <Button
+          aria-label={t("common.back")}
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/invoices")}
+        >
+          <span aria-hidden="true" className="text-lg">
+            ←
+          </span>
         </Button>
         <div>
           <h1 className="text-h1 text-foreground">

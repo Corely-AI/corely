@@ -2123,7 +2123,44 @@
     "status": {
       "updateFailed": "Failed to update status"
     },
-    "loading": "Loading invoice..."
+    "loading": "Loading invoice...",
+    "focused": {
+      "notFound": "Page not found",
+      "notPart": "This page is not part of Invoice.",
+      "back": "Back to invoices",
+      "setup": "Invoice is unavailable because its setup is incomplete. Please contact your workspace administrator.",
+      "previous": "Previous",
+      "duplicate": "Duplicate",
+      "downloadPdf": "Download PDF",
+      "selectInvoice": "Select invoice {{id}}",
+      "unit": "Unit",
+      "removeLine": "Remove line",
+      "copilot": {
+        "intro": "Generate a draft email for review. Copilot does not send emails automatically.",
+        "language": "Language",
+        "tone": "Reminder tone",
+        "de": "German (de)",
+        "vi": "Vietnamese (vi)",
+        "en": "English (en)",
+        "polite": "Polite",
+        "normal": "Normal",
+        "firm": "Firm",
+        "drafting": "Drafting...",
+        "issue": "Draft invoice email",
+        "reminder": "Draft reminder",
+        "issueDisabled": "Invoice must be ISSUED or SENT before drafting email copy.",
+        "reminderDisabled": "Reminder draft is available only when amount due is greater than zero.",
+        "review": "Review and edit the draft before copy/pasting it into your send flow.",
+        "subject": "Subject",
+        "body": "Body",
+        "copySubject": "Copy subject",
+        "copyBody": "Copy body",
+        "subjectCopied": "Subject copied",
+        "bodyCopied": "Body copied",
+        "copyError": "Unable to copy to clipboard",
+        "close": "Close"
+      }
+    }
   },
   "customers": {
     "title": "Customers",

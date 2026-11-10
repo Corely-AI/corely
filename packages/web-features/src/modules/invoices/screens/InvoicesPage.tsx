@@ -34,14 +34,7 @@ import {
 } from "@corely/web-shared/shared/list-kit";
 
 import type { InvoiceStatus } from "@corely/web-shared/shared/types";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@corely/ui";
+import { Pagination, PaginationContent, PaginationItem } from "@corely/ui";
 
 export default function InvoicesPage() {
   const runtime = useInvoiceRuntime();
@@ -51,7 +44,7 @@ export default function InvoicesPage() {
   const customerKeys = useInvoiceKeys("customers");
   const { t, i18n } = useTranslation();
   const navigate = useInvoiceNavigate();
-  const locale = i18n.language === "de" ? "de-DE" : "en-DE";
+  const locale = i18n.language === "vi" ? "vi-VN" : i18n.language === "de" ? "de-DE" : "en-DE";
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -359,11 +352,11 @@ export default function InvoicesPage() {
                           <Checkbox
                             checked={selectedIds.has(invoice.id)}
                             onCheckedChange={() => toggleSelection(invoice.id)}
-                            aria-label={`Select invoice ${invoice.id}`}
+                            aria-label={t("invoices.focused.selectInvoice", { id: invoice.id })}
                           />
                         </td>
                         <td className="px-4 py-3 text-sm font-medium">
-                          {invoice.number || "Draft"}
+                          {invoice.number || t("invoices.statuses.draft")}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {getCustomerName(invoice.customerPartyId, invoice.billToName)}
@@ -385,7 +378,7 @@ export default function InvoicesPage() {
                         <td className="px-2 py-3">
                           <CrudRowActions
                             primaryAction={{
-                              label: "View",
+                              label: t("common.view"),
                               href:
                                 runtime?.route(`/invoices/${invoice.id}`) ??
                                 `/invoices/${invoice.id}`,
@@ -393,25 +386,25 @@ export default function InvoicesPage() {
                             }}
                             secondaryActions={[
                               {
-                                label: "Edit",
+                                label: t("common.edit"),
                                 href:
                                   runtime?.route(`/invoices/${invoice.id}/edit`) ??
                                   `/invoices/${invoice.id}/edit`,
                                 icon: <Edit className="h-4 w-4" />,
                               },
                               {
-                                label: "Duplicate",
+                                label: t("invoices.focused.duplicate"),
                                 onClick: () => duplicateInvoice.mutate(invoice.id),
                                 icon: <Copy className="h-4 w-4" />,
                               },
                               {
-                                label: "Email",
+                                label: t("common.email"),
                                 onClick: () => void send.openSendDialog(invoice.id),
                                 disabled: send.isFetching || send.isSending,
                                 icon: <Mail className="h-4 w-4" />,
                               },
                               {
-                                label: "Download PDF",
+                                label: t("invoices.focused.downloadPdf"),
                                 onClick: () =>
                                   downloadPdf.mutate({
                                     invoiceId: invoice.id,
@@ -421,7 +414,7 @@ export default function InvoicesPage() {
                                 disabled: downloadPdf.isPending,
                               },
                               {
-                                label: "Delete",
+                                label: t("common.delete"),
                                 onClick: () => cancelInvoice.mutate(invoice.id),
                                 icon: <Trash2 className="h-4 w-4" />,
                                 destructive: true,
@@ -440,24 +433,29 @@ export default function InvoicesPage() {
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => state.page > 1 && setUrlState({ page: state.page - 1 })}
-                    // disabled={state.page <= 1} // Check standard component prop
-                    className={
-                      state.page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
-                    }
-                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={state.page <= 1}
+                    onClick={() => setUrlState({ page: state.page - 1 })}
+                  >
+                    {t("invoices.focused.previous")}
+                  </Button>
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationLink isActive>{state.page}</PaginationLink>
+                  <span aria-current="page" className="px-4">
+                    {state.page}
+                  </span>
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationNext
-                    onClick={() => pageInfo.hasNextPage && setUrlState({ page: state.page + 1 })}
-                    className={
-                      !pageInfo.hasNextPage ? "pointer-events-none opacity-50" : "cursor-pointer"
-                    }
-                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={!pageInfo.hasNextPage}
+                    onClick={() => setUrlState({ page: state.page + 1 })}
+                  >
+                    {t("common.next")}
+                  </Button>
                 </PaginationItem>
               </PaginationContent>
             </Pagination>

@@ -45,6 +45,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
                     !field.value && "text-muted-foreground"
                   )}
                 >
+                  <span className="sr-only">{t("invoices.invoiceDate")}: </span>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value ? (
                     field.value.toLocaleDateString(i18n.language)
@@ -73,6 +74,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full justify-start text-left font-normal">
+              <span className="sr-only">{t("invoices.serviceDate")}: </span>
               <CalendarIcon className="mr-2 h-4 w-4" />
               {watch("serviceDateStart") && watch("serviceDateEnd") ? (
                 <>
@@ -108,6 +110,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
         <div className="flex gap-2">
           <Input
             {...register("invoiceNumber")}
+            aria-label={t("invoices.invoiceNumberLabel")}
             data-testid="invoice-number-input"
             className="min-w-0 font-medium"
           />
@@ -140,6 +143,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
                     field.value ? "" : "text-accent"
                   )}
                 >
+                  <span className="sr-only">{t("invoices.dueDate")}: </span>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value
                     ? field.value.toLocaleDateString(i18n.language)
