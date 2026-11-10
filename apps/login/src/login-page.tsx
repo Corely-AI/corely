@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button, Input, Logo } from "@corely/ui/auth-primitives";
 import {
+  FocusedObservationSchema,
+  focusedRequestEvent,
+  focusedOutcome,
   SsoContextSchema,
   SsoHandleSchema,
   SsoRedirectSchema,
@@ -14,12 +17,39 @@ class LoginFailure extends Error {
     super(kind);
   }
 }
-async function request(path: string, body?: object, signal?: AbortSignal): Promise<unknown> {
+async function request<T>(
+  path: string,
+  parse: (value: unknown) => T,
+  body?: object,
+  signal?: AbortSignal
+): Promise<T> {
   const controller = new AbortController();
+  const diagnosticId = crypto.randomUUID();
+  let observed = false;
+  const observe = (outcome: ReturnType<typeof focusedOutcome>) => {
+    if (observed) {
+      return;
+    }
+    observed = true;
+    const event = FocusedObservationSchema.parse({
+      surface: "login",
+      layer: "browser",
+      event: focusedRequestEvent(path),
+      outcome,
+      requestId: diagnosticId,
+    });
+    try {
+      console.info("corely.focused", event);
+    } catch {
+      /* Diagnostics cannot interrupt sign-in. */
+    }
+  };
   const abort = () => controller.abort();
   const timeout = window.setTimeout(abort, 15_000);
   signal?.addEventListener("abort", abort, { once: true });
-  if (signal?.aborted) {controller.abort();}
+  if (signal?.aborted) {
+    controller.abort();
+  }
   try {
     const response = await fetch(path, {
       credentials: "same-origin",
@@ -27,12 +57,14 @@ async function request(path: string, body?: object, signal?: AbortSignal): Promi
       redirect: "error",
       headers: {
         Accept: "application/json",
+        "X-Request-Id": diagnosticId,
         ...(body ? { "Content-Type": "application/json" } : {}),
       },
       ...(body ? { method: "POST", body: JSON.stringify(body) } : {}),
       signal: controller.signal,
     });
     if (!response.ok) {
+      observe(focusedOutcome(response.status));
       throw new LoginFailure(
         response.status === 401
           ? "invalid"
@@ -45,8 +77,18 @@ async function request(path: string, body?: object, signal?: AbortSignal): Promi
                 : "expired"
       );
     }
-    const result: unknown = await response.json();
+    const result = parse(await response.json());
+    observe("ok");
     return result;
+  } catch (error) {
+    observe(
+      signal?.aborted
+        ? "aborted"
+        : error instanceof LoginFailure && error.kind === "expired"
+          ? "rejected"
+          : "unavailable"
+    );
+    throw error;
   } finally {
     window.clearTimeout(timeout);
     signal?.removeEventListener("abort", abort);
@@ -82,10 +124,11 @@ export function LoginPage() {
     }
     void request(
       `/sso/context?request=${encodeURIComponent(requestId ?? "")}`,
+      (value) => SsoContextSchema.parse(value),
       undefined,
       controller.signal
     )
-      .then((result) => setContext(SsoContextSchema.parse(result)))
+      .then(setContext)
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
           setFailure(error instanceof LoginFailure ? error.kind : "unavailable");
@@ -114,15 +157,21 @@ export function LoginPage() {
     setBusy(true);
     setFailure(null);
     try {
-      const result = SsoRedirectSchema.parse(await request(path, body));
-      const redirect = new URL(result.redirectTo);
-      if (
-        redirect.origin !== context.appOrigin ||
-        !["/auth/callback", "/auth/logged-out"].includes(redirect.pathname)
-      ) {
-        throw new LoginFailure("expired");
-      }
-      window.location.assign(redirect.toString());
+      const destination = await request(
+        path,
+        (value) => {
+          const redirect = new URL(SsoRedirectSchema.parse(value).redirectTo);
+          if (
+            redirect.origin !== context.appOrigin ||
+            !["/auth/callback", "/auth/logged-out"].includes(redirect.pathname)
+          ) {
+            throw new LoginFailure("expired");
+          }
+          return redirect.toString();
+        },
+        body
+      );
+      window.location.assign(destination);
     } catch (error: unknown) {
       setFailure(error instanceof LoginFailure ? error.kind : "unavailable");
       setBusy(false);
@@ -135,7 +184,11 @@ export function LoginPage() {
     setBusy(true);
     setFailure(null);
     try {
-      await request("/sso/email-code/request", { requestId, csrfToken: context.csrfToken, email });
+      await request("/sso/email-code/request", (value) => value, {
+        requestId,
+        csrfToken: context.csrfToken,
+        email,
+      });
       setCodeSent(true);
       setResendAt(Date.now() + 60_000);
     } catch (error: unknown) {

@@ -13,6 +13,7 @@ export default defineConfig({
     "**/focused-hr/**",
     "**/invoice-links/**",
     "**/focused-ux/**",
+    "**/observability/**",
   ],
   fullyParallel: false,
   forbidOnly: isCI,

@@ -1,0 +1,8 @@
+{"surface": "app-center", "layer": "browser", "event": "app-launch", "outcome": "ok", "destination": "invoice"}
+{"surface": "invoice", "layer": "server", "event": "login-start", "outcome": "ok"}
+{"surface": "invoice", "layer": "server", "event": "callback", "outcome": "ok"}
+{"surface": "invoice", "layer": "server", "event": "callback", "outcome": "rejected"}
+{"surface": "invoice", "layer": "server", "event": "api", "outcome": "denied"}
+{"surface": "invoice", "layer": "server", "event": "api", "outcome": "unavailable"}
+{"surface": "invoice", "layer": "browser", "event": "route-not-found", "outcome": "rejected"}
+{"surface": "legacy", "layer": "browser", "event": "legacy-link", "outcome": "ok"}

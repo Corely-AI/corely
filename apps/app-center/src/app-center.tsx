@@ -1,3 +1,4 @@
+import { observeFocused } from "@corely/web-shared/session/focused-observation";
 import React, { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -61,8 +62,24 @@ export function AppCenter({ locale }: { locale: Locale }) {
     const url = target ? catalogLaunchUrl(target, workspace.id) : undefined;
     setLaunching(false);
     if (url) {
-      confirmExternalNavigation(() => window.location.assign(url));
+      confirmExternalNavigation(() => {
+        observeFocused({
+          surface: "app-center",
+          layer: "browser",
+          event: "app-launch",
+          outcome: "ok",
+          destination: id,
+        });
+        window.location.assign(url);
+      });
     } else {
+      observeFocused({
+        surface: "app-center",
+        layer: "browser",
+        event: "app-launch",
+        outcome: "rejected",
+        destination: id,
+      });
       setLaunchError(true);
     }
   };

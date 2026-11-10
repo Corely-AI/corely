@@ -1,3 +1,4 @@
+import { LegacyInvoiceObservation } from "./legacy-invoice-observation";
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PublicFormPage } from "../../modules/forms";
@@ -35,6 +36,7 @@ export const Router = () => (
       v7_relativeSplatPath: true,
     }}
   >
+    <LegacyInvoiceObservation />
     <Routes>
       {/* Root Route: Domain Mode Portfolio OR Dashboard Redirect */}
       <Route

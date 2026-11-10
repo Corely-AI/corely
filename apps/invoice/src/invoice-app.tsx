@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import { observeFocused } from "@corely/web-shared/session/focused-observation";
+import React, { useEffect, useMemo } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -85,6 +86,16 @@ function Landing() {
 }
 function NotFound() {
   const { t } = useTranslation();
+  useEffect(
+    () =>
+      observeFocused({
+        surface: "invoice",
+        layer: "browser",
+        event: "route-not-found",
+        outcome: "rejected",
+      }),
+    []
+  );
   const workspace = useWorkspaceSession();
   return (
     <section className="space-y-4" role="status">

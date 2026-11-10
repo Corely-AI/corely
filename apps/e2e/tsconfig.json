@@ -22,6 +22,7 @@
     "tests/**/*.ts",
     "utils/**/*.ts",
     "helpers/**/*.ts",
-    "playwright.app-center.config.ts"
+    "playwright.app-center.config.ts",
+    "playwright.observability.config.ts"
   ]
 }
