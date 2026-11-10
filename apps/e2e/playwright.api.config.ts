@@ -10,6 +10,7 @@ export default defineConfig({
     "**/sso/**",
     "**/workspace-session/**",
     "**/focused-invoice/**",
+    "**/focused-hr/**",
     "**/invoice-links/**",
   ],
   fullyParallel: false,

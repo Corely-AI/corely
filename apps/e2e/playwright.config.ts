@@ -19,6 +19,7 @@ export default defineConfig({
     "**/workspace-session/**",
     "**/focused-invoice/**",
     "**/app-center/**",
+    "**/focused-hr/**",
     "**/invoice-links/**",
   ],
   fullyParallel: true,

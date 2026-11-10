@@ -28,6 +28,18 @@ export const peopleAppManifest: AppManifest = {
   entitlement: { enabledFeatureKey: "app.people.enabled", defaultEnabled: true },
   menu: [
     {
+      id: "people-self-service",
+      scope: "web",
+      section: "team",
+      labelKey: "nav.peopleSelfService",
+      defaultLabel: "My profile",
+      route: "/people/me",
+      icon: "UserRound",
+      order: 2,
+      requiresPermissions: ["people.self.read"],
+      requiresCapabilities: ["people.directory"],
+    },
+    {
       id: "people-directory",
       scope: "web",
       section: "team",

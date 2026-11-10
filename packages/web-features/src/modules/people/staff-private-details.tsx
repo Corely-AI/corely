@@ -1,7 +1,8 @@
+import { usePeopleDraftGuard } from "./people-runtime";
 import { useState, type FormEvent } from "react";
 import { Button, Input, Label, Textarea } from "@corely/ui";
 import { type StaffPrivate } from "@corely/contracts";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 import { usePeopleLoad, usePeopleMounted } from "./use-people";
 import type { PeopleCopy } from "./people-copy";
 export function StaffPrivateDetails({
@@ -19,6 +20,7 @@ export function StaffPrivateDetails({
   manage: boolean;
   onSaved: () => void;
 }) {
+  const peopleApi = usePeopleApi();
   const result = usePeopleLoad(
     (signal) => peopleApi.private(id, signal),
     `${scope}:${id}:private:${read}`,
@@ -71,6 +73,9 @@ function PrivateForm({
   manage: boolean;
   reload: () => void;
 }) {
+  const [dirty, setDirty] = useState(false);
+  usePeopleDraftGuard(dirty);
+  const peopleApi = usePeopleApi();
   const mounted = usePeopleMounted();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -95,6 +100,7 @@ function PrivateForm({
       if (!mounted.current) {
         return;
       }
+      setDirty(false);
       setSaved(true);
       reload();
     } catch {
@@ -118,7 +124,11 @@ function PrivateForm({
     );
   }
   return (
-    <form className="space-y-4" onSubmit={(event) => void submit(event)}>
+    <form
+      onChange={() => setDirty(true)}
+      className="space-y-4"
+      onSubmit={(event) => void submit(event)}
+    >
       <fieldset disabled={!manage || busy} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
