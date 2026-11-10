@@ -41,7 +41,7 @@ describe("opt-in session transport", () => {
       expect(url).toBe("/api/bff/invoices");
       expect(options).toMatchObject({
         credentials: "same-origin",
-        mode: "same-origin",
+        mode: "cors",
         redirect: "error",
       });
       const headers = new Headers(options?.headers);

@@ -23,6 +23,7 @@
     "utils/**/*.ts",
     "helpers/**/*.ts",
     "playwright.app-center.config.ts",
-    "playwright.observability.config.ts"
+    "playwright.observability.config.ts",
+    "playwright.multi-origin.config.ts"
   ]
 }

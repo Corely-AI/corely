@@ -14,6 +14,7 @@ export default defineConfig({
     "**/invoice-links/**",
     "**/focused-ux/**",
     "**/observability/**",
+    "**/multi-origin/**",
   ],
   fullyParallel: false,
   forbidOnly: isCI,

@@ -34,7 +34,7 @@ import {
 const streamClosed = vi.fn();
 
 // Synthetic transfer handlers test HTTP byte/stream behavior, not business authorization.
-@Controller("documents")
+@Controller("invoices/transfer-probe")
 @UseGuards(AuthGuard)
 class TransferProbe {
   @Post("probe")
@@ -289,7 +289,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         .set("Content-Type", "application/json; charset=utf-8")
         .expect(200);
       await request(app.getHttpServer())
-        .post("/api/bff/documents/probe")
+        .post("/api/bff/invoices/transfer-probe/probe")
         .set(headers())
         .set("Origin", origins.invoice)
         .set("x-csrf-token", csrfToken)
@@ -332,7 +332,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
     it("rejects sibling origins, forged identity/proxy headers and ambiguous cookies", async () => {
       for (const origin of ["https://evil.example", origins.hr, "null"]) {
         await request(app.getHttpServer())
-          .post("/api/bff/documents/probe")
+          .post("/api/bff/invoices/transfer-probe/probe")
           .set(headers())
           .set("Origin", origin)
           .set("x-csrf-token", csrfToken)
@@ -371,14 +371,14 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
     });
     it("requires Origin and valid CSRF before any cookie mutation", async () => {
       await request(app.getHttpServer())
-        .post("/api/bff/documents/probe")
+        .post("/api/bff/invoices/transfer-probe/probe")
         .set(headers())
         .set("x-csrf-token", csrfToken)
         .send({})
         .expect(401);
       for (const csrf of [undefined, "invalid"]) {
         const req = request(app.getHttpServer())
-          .post("/api/bff/documents/probe")
+          .post("/api/bff/invoices/transfer-probe/probe")
           .set(headers())
           .set("Origin", origins.invoice);
         if (csrf) {
@@ -387,7 +387,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         await req.send({}).expect(401);
       }
       const response = await request(app.getHttpServer())
-        .options("/api/bff/documents/probe")
+        .options("/api/bff/invoices/transfer-probe/probe")
         .set(headers())
         .set("Origin", origins.invoice)
         .expect(405);
@@ -399,7 +399,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         base64: Buffer.from([0, 255, 1, 128]).toString("base64"),
       };
       const response = await request(app.getHttpServer())
-        .post("/api/bff/documents/probe?view=original")
+        .post("/api/bff/invoices/transfer-probe/probe?view=original")
         .set(headers())
         .set("Origin", origins.invoice)
         .set("x-csrf-token", csrfToken)
@@ -415,14 +415,14 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         query: { view: "original" },
       });
       const download = await request(app.getHttpServer())
-        .get("/api/bff/documents/probe")
+        .get("/api/bff/invoices/transfer-probe/probe")
         .set(headers())
         .expect(200);
       expect(download.body).toEqual(Buffer.from([0, 255, 1, 128]));
       expect(download.headers["content-disposition"]).toContain("synthetic.bin");
     });
     it("streams the first SSE event before completion and propagates cancellation", async () => {
-      const response = await fetch(`${await app.getUrl()}/api/bff/documents/stream`, {
+      const response = await fetch(`${await app.getUrl()}/api/bff/invoices/transfer-probe/stream`, {
         headers: headers(),
       });
       expect(response.status).toBe(200);
@@ -431,7 +431,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
       expect(new TextDecoder().decode((await reader.read()).value)).toBe("data: first\n\n");
       await reader.cancel();
       await expect.poll(() => streamClosed.mock.calls.length).toBe(1);
-      const complete = await fetch(`${await app.getUrl()}/api/bff/documents/stream`, {
+      const complete = await fetch(`${await app.getUrl()}/api/bff/invoices/transfer-probe/stream`, {
         headers: headers(),
       });
       expect(await complete.text()).toBe("data: first\n\ndata: second\n\n");
@@ -442,7 +442,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
         data: { idleExpiresAt: new Date(0) },
       });
       const response = await request(app.getHttpServer())
-        .post("/api/bff/documents/probe")
+        .post("/api/bff/invoices/transfer-probe/probe")
         .set(headers())
         .set("Origin", origins.invoice)
         .set("x-csrf-token", csrfToken)
@@ -453,14 +453,14 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
     });
     it("limits both declared and chunked JSON bodies and rejects unsupported upload formats", async () => {
       await request(app.getHttpServer())
-        .post("/api/bff/documents/probe")
+        .post("/api/bff/invoices/transfer-probe/probe")
         .set(headers())
         .set("Origin", origins.invoice)
         .set("x-csrf-token", csrfToken)
         .send({ content: "x".repeat(16 * 1024 * 1024) })
         .expect(413);
       const oversized = JSON.stringify({ content: "x".repeat(16 * 1024 * 1024) });
-      const chunkedUrl = `${await app.getUrl()}/api/bff/documents/probe`;
+      const chunkedUrl = `${await app.getUrl()}/api/bff/invoices/transfer-probe/probe`;
       const chunkedStatus = await new Promise<number | undefined>((resolve, reject) => {
         // Native HTTP avoids Superagent adding Content-Length alongside Transfer-Encoding.
         const req = httpRequest(
@@ -486,7 +486,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)(
       });
       expect(chunkedStatus).toBe(413);
       await request(app.getHttpServer())
-        .post("/api/bff/documents/probe")
+        .post("/api/bff/invoices/transfer-probe/probe")
         .set(headers())
         .set("Origin", origins.invoice)
         .set("x-csrf-token", csrfToken)

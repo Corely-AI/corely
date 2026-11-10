@@ -1,5 +1,9 @@
+const path = require("node:path");
 const withoutE2E = (files) =>
-  files.filter((file) => !file.replace(/\\/g, "/").startsWith("apps/e2e/"));
+  files.filter(
+    (file) =>
+      !path.relative(__dirname, path.resolve(file)).replace(/\\/g, "/").startsWith("apps/e2e/")
+  );
 
 const runIfAny = (files, command) => {
   if (files.length === 0) {

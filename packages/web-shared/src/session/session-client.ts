@@ -154,7 +154,10 @@ export class SessionClient {
         headers,
         signal: controller.signal,
         credentials: "same-origin",
-        mode: "same-origin",
+        // CORS mode preserves Origin on POST under no-referrer (including WebKit).
+        // All targets are validated relative paths; credentials remain same-origin
+        // and redirects are rejected. Server origin/CSRF checks remain authoritative.
+        mode: "cors",
         redirect: "error",
         cache: "no-store",
       });
