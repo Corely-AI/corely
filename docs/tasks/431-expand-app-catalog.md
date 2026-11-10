@@ -3,6 +3,7 @@
 ## Tracking and outcome
 
 - [Issue #431](https://github.com/Corely-AI/corely/issues/431).
+- [Draft PR #432](https://github.com/Corely-AI/corely/pull/432).
 - Branch: `431-expand-app-catalog`; base: `origin/development` at `5d9d039c`.
 - Outcome: replace the two unavailable focused-only tiles with authorized entry
   points to implemented modules; add shared EN/DE/VI selection, app-mark metadata
@@ -71,7 +72,7 @@ The repository pre-push unit run completed with 328 passing files, 1 failed suit
 overrides its connection to a passwordless `hadoan` local database and fails at
 SCRAM initialization. It is outside this change. The Draft branch is published
 using the hook's documented `HUSKY=0` override; this does not claim that the full
-suite or subsequent repository-wide push gates passed. Both signed commits ran
+suite or subsequent repository-wide push gates passed. Signed commits ran
 the normal formatting/lint/line-limit commit hooks.
 
 Set the legacy origin only to the retained web client. Production requires HTTPS;
