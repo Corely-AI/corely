@@ -335,3 +335,46 @@ describe("global logout client", () => {
     await expect(client.request("/invoices")).rejects.toMatchObject({ status: 401 });
   });
 });
+
+describe("request-local optional service failures", () => {
+  it.each([429, 503])("preserves a verified session after a %s feature outage", async (status) => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json(bootstrapData))
+      .mockResolvedValueOnce(json({}, status))
+      .mockResolvedValueOnce(json({ manual: true }));
+    const client = new SessionClient({ appKey: "invoice" }, fetcher);
+    const failed = vi.fn();
+    client.onFailure(failed);
+    await client.bootstrap();
+    await expect(
+      client.request("/invoices/id/copilot/draft-issue-email", {
+        method: "POST",
+        serviceFailureScope: "request",
+      })
+    ).rejects.toMatchObject({ status, kind: "unavailable" });
+    expect(failed).not.toHaveBeenCalled();
+    expect(await (await client.request("/invoices/id")).json()).toEqual({ manual: true });
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    client.dispose();
+  });
+  it.each([401, 403])(
+    "still invalidates the session after %s with local service failures enabled",
+    async (status) => {
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(json(bootstrapData))
+        .mockResolvedValueOnce(json({}, status));
+      const client = new SessionClient({ appKey: "invoice" }, fetcher);
+      const failed = vi.fn();
+      client.onFailure(failed);
+      await client.bootstrap();
+      await expect(
+        client.request("/invoices/id", { serviceFailureScope: "request" })
+      ).rejects.toMatchObject({ status });
+      expect(failed).toHaveBeenCalledTimes(1);
+      await expect(client.request("/invoices/id")).rejects.toMatchObject({ status: 401 });
+      client.dispose();
+    }
+  );
+});

@@ -20,6 +20,7 @@ export default defineConfig({
     "**/focused-invoice/**",
     "**/app-center/**",
     "**/focused-hr/**",
+    "**/invoice-links/**",
   ],
   fullyParallel: true,
   forbidOnly: isCI,

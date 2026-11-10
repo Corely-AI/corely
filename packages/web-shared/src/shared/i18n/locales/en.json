@@ -111,7 +111,9 @@
       "modalLater": "Later",
       "choosePlan": "Choose a plan"
     },
-    "searching": "Searching..."
+    "searching": "Searching...",
+    "retry": "Try again",
+    "loadMore": "Load more"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -2100,7 +2102,7 @@
     },
     "email": {
       "title": "Send Invoice",
-      "subtitle": "Send this invoice by email with a link to the student portal.",
+      "subtitle": "Review the recipient and message before sending.",
       "to": "Recipient",
       "toPlaceholder": "customer@example.com",
       "subject": "Invoice {{number}} from {{brand}}",
@@ -2108,7 +2110,7 @@
       "savedForFuture": "This email will be saved for {{name}}'s profile.",
       "messagePlaceholder": "Add a personal note...",
       "deliveryLabel": "Delivery",
-      "deliveryHint": "A student portal link will be included. The recipient can download the invoice PDF from the portal.",
+      "deliveryHint": "Confirm the recipient before sending this invoice by email.",
       "attachmentsHint": "The PDF invoice will be automatically attached.",
       "attachmentName": "Invoice-{{number}}.pdf",
       "attachmentFallback": "Invoice.pdf",
@@ -2170,7 +2172,8 @@
       "title": "Social Profiles",
       "add": "Add profile",
       "empty": "No social profiles added."
-    }
+    },
+    "lookupFailed": "Customer lookup is unavailable or access was denied. Try again or ask your administrator."
   },
   "settings": {
     "title": "Settings",

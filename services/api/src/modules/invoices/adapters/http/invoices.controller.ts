@@ -17,7 +17,6 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { InvoicesApplication } from "../../application/invoices.application";
-import { PartyApplication } from "../../../party/application/party.application";
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
@@ -57,7 +56,6 @@ export class InvoicesHttpController {
 
   constructor(
     @Inject(InvoicesApplication) @Optional() private readonly app: InvoicesApplication | null,
-    @Inject(PartyApplication) @Optional() private readonly partyApp: PartyApplication | null,
     @Inject(DocumentsApplication)
     @Optional()
     private readonly documentsApp: DocumentsApplication | null,
@@ -415,19 +413,9 @@ export class InvoicesHttpController {
     const mapped = mapResultToHttp(result);
     // Return invoice with capabilities for RecordCommandBar
 
-    let invoice = mapped.invoice;
-    if (this.partyApp && invoice.customerPartyId) {
-      try {
-        const customerResult = await this.partyApp.getCustomerById.execute(
-          { id: invoice.customerPartyId },
-          ctx
-        );
-        const { customer } = mapResultToHttp(customerResult);
-        invoice = { ...invoice, customer };
-      } catch (error) {
-        console.warn("Customer lookup failed", error);
-      }
-    }
+    // Billing snapshots are invoice data. Live customer records require the
+    // separate customer-read boundary and must not piggyback on invoice read.
+    const invoice = mapped.invoice;
 
     return { invoice, capabilities: mapped.capabilities };
   }

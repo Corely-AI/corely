@@ -62,3 +62,17 @@ Visual follow-up removed the misleading reload instruction for uncertain saves. 
 - Addressed `discussion_r4522615295`: both general Playwright configurations exclude `focused-hr` and retain the dedicated HR server configuration.
 - The new `playwright-suite-isolation.test.mjs` failed before the fix and passed afterward using the installed runner's matcher. It checks each of the four independently delivered isolated suites only when present; ordinary legacy specs must remain selectable. General browser/API collection changed from **20 / 10 HR cases to 0 / 0**; the dedicated HR suite's **10 passing cases** remain intact.
 - Self-review checked both entry points, the non-isolated control and the dependent #424 test append; recovery tests are placed before the existing last test to keep that append mergeable. No general test or retry policy was disabled. Scoped lint, HR build/typecheck and whitespace checks passed. Normal pre-commit checks are retained; the previously documented unrelated pre-push baseline bypass is retained for publication.
+
+## PR #423 conflict resolution (2026-11-10)
+
+Merged `origin/development` at `e398c61dd` into the current HR head `f0dce5c14`, preserving the already merged #424 privacy work. Resolved four conflicts by retaining both HR and Invoice migration exclusions in the two general Playwright runners, both dedicated configurations in the E2E TypeScript project, and both sets of documentation links. Reviewed the automatic SSO merge: Invoice's restricted route roots and HR's exact read-only permission discovery remain intact. No new UI behavior or deployment; existing visual evidence remains applicable.
+
+Fresh verification after resolution:
+
+- Dedicated HR browser suite **11/11 passed**, including account-switch concealment and retained retry keys; Invoice migration cohort/rollback **2/2 passed**, without retries.
+- People unit suite **33 passed**; shared session/adapter/provider and Invoice-link suites **68 passed**; BFF target allowlist **15 passed**. The other 12 database-backed BFF cases were not rerun; no database was configured for this conflict-only update.
+- Suite-isolation regression **2 passed**; both general runners collect **0 HR and 0 Invoice migration cases**, while their dedicated runners execute them.
+- HR strict typecheck/build, API/HR/Invoice-migration Playwright configuration typecheck, scoped ESLint, formatting, local documentation targets and staged whitespace checks passed. The build retains its existing chunk-size warning.
+- Including the general browser configuration in strict TypeScript reports its existing optional `workers` property error. Reproduced the same error using the unchanged file from `origin/development`; no test policy or unrelated typing was changed.
+
+Scoped review found no further issues. Normal DCO/pre-commit checks are retained; publication uses the previously documented broad pre-push baseline bypass after the checks above. The PR's current review state is preserved.

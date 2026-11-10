@@ -25,6 +25,8 @@ export function invoiceCustomerOptions(
     options.push({
       id: invoice.customerPartyId,
       displayName: invoice.billToName ?? unknownName,
+      email: invoice.billToEmail,
+      vatId: invoice.billToVatId,
       billingAddress: line1 || city || country ? { line1, city, country } : undefined,
     });
   }
