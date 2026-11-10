@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["playwright.multi-origin.config.ts", "tests/multi-origin/*.ts"]
+}

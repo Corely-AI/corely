@@ -165,6 +165,11 @@ export async function createSsoTestContext(origins = ssoTestOrigins, realClock =
       },
     };
   }
+  async function clearAttemptBudgets() {
+    for (const key of budgetKeys) {
+      await prisma.ssoAttemptBudget.deleteMany({ where: { id: { startsWith: `${key}:` } } });
+    }
+  }
   async function cleanup() {
     await prisma.ssoLoginTransaction.deleteMany({ where: { id: { in: [...transactionIds] } } });
     await prisma.auditLog.deleteMany({ where: { actorUserId: userId } });
@@ -178,9 +183,7 @@ export async function createSsoTestContext(origins = ssoTestOrigins, realClock =
     });
     await prisma.user.delete({ where: { id: userId } });
     await prisma.tenant.delete({ where: { id: tenantId } });
-    for (const key of budgetKeys) {
-      await prisma.ssoAttemptBudget.deleteMany({ where: { id: { startsWith: `${key}:` } } });
-    }
+    await clearAttemptBudgets();
     await prisma.onModuleDestroy();
   }
   return {
@@ -201,6 +204,7 @@ export async function createSsoTestContext(origins = ssoTestOrigins, realClock =
     start,
     login,
     cleanup,
+    clearAttemptBudgets,
     advance: (milliseconds: number) => {
       now = new Date(now.getTime() + milliseconds);
     },
