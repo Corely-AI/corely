@@ -6,6 +6,12 @@ import type { AppManifest } from "@corely/contracts";
  */
 export const crmAppManifest: AppManifest = {
   appId: "crm",
+  directory: {
+    menuId: "crm-deals",
+    logo: { iconKey: "FolderKanban", tone: "primary" },
+    displayName: { en: "CRM", de: "CRM", vi: "CRM" },
+    category: "sales",
+  },
   name: "CRM",
   tier: 2,
   version: "1.0.0",

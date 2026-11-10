@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const rentalsAppManifest: AppManifest = {
   appId: "rentals",
+  directory: {
+    menuId: "rental-properties",
+    logo: { iconKey: "Building", tone: "accent" },
+    displayName: { en: "Rentals", de: "Vermietungen", vi: "Cho thuê" },
+    category: "operations",
+  },
   name: "Vacation Rentals",
   tier: 2,
   version: "1.0.0",

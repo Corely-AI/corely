@@ -3,6 +3,12 @@ import { cashManagementFeatureKeys } from "../billing/domain/billing-feature-key
 
 export const cashManagementAppManifest: AppManifest = {
   appId: "cash-management",
+  directory: {
+    menuId: "cash-management",
+    logo: { iconKey: "Coins", tone: "primary" },
+    displayName: { en: "Cash management", de: "Kassenführung", vi: "Quản lý tiền mặt" },
+    category: "finance",
+  },
   name: "Cash Management",
   tier: 1,
   version: "1.0.0",

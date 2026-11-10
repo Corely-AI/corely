@@ -35,6 +35,7 @@ export class ListAppCatalogUseCase {
       description: app.description,
       dependencies: app.dependencies,
       enabled: enabled.has(app.appId),
+      ...(app.directory ? { directory: app.directory } : {}),
       ...(app.launch ? { launch: this.projectLaunch(app, enabled.has(app.appId)) } : {}),
     }));
   }

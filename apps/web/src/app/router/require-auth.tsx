@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { readWorkspaceHint } from "@corely/web-shared/session/workspace-launch";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
@@ -11,9 +12,40 @@ import {
 
 export const RequireAuth: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const { workspaces, isLoading: workspaceLoading, isHostScope } = useWorkspace();
+  const {
+    workspaces,
+    activeWorkspaceId,
+    setWorkspace,
+    isLoading: workspaceLoading,
+    isHostScope,
+  } = useWorkspace();
   const location = useLocation();
   const surfaceId = useSurfaceId();
+  const hint = readWorkspaceHint(location.search);
+  const requestedId = hint.kind === "requested" ? hint.workspaceId : undefined;
+  const authorizedHint =
+    requestedId && workspaces.some((workspace) => workspace.id === requestedId);
+  useEffect(() => {
+    if (
+      isAuthenticated &&
+      !isLoading &&
+      !workspaceLoading &&
+      !isHostScope &&
+      authorizedHint &&
+      requestedId !== activeWorkspaceId
+    ) {
+      setWorkspace(requestedId);
+    }
+  }, [
+    isAuthenticated,
+    isLoading,
+    workspaceLoading,
+    isHostScope,
+    authorizedHint,
+    requestedId,
+    activeWorkspaceId,
+    setWorkspace,
+  ]);
 
   if (isLoading || workspaceLoading) {
     return null;
@@ -21,6 +53,13 @@ export const RequireAuth: React.FC = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
+  // Block children until discovery validates and adopts the requested workspace.
+  if (hint.kind === "invalid" || (requestedId && (!authorizedHint || isHostScope))) {
+    return <NotFound />;
+  }
+  if (requestedId && requestedId !== activeWorkspaceId) {
+    return null;
   }
 
   const isOnboardingRoute = location.pathname.startsWith("/onboarding");

@@ -27,12 +27,28 @@ invalid or unauthorized hints never silently select another workspace. The chose
 workspace stays in the URL and is rebound on selection and refresh. Query caches
 are isolated by user, tenant, workspace and app.
 
-The directory calls `GET /menu/launches` through the session client. Only returned
-entries with a supported launch descriptor become tiles. Search matches localized
-app names; category browsing uses the descriptor's Finance/People category. No
+The directory calls `GET /menu/launches` through the session client. Returned focused
+launches and implemented-module `directory` descriptors become tiles. Search matches
+localized names; browsing groups Finance, People, Sales, Operations and Content. No
 planned app is manufactured from the long-term catalog. The server controls
 visibility; absence of accessible destinations produces an empty state without
 restricted metadata. Dependency topology is omitted from staff discovery. App enablement remains a host administrator workflow.
+
+Implemented-module entries reuse their owner's existing menu ID and route. The
+server resolves that exact entry from the app's permission/capability-filtered menu
+group and checks installed dependencies. Hidden or revoked entries do not grant a
+destination. `CORELY_LAUNCH_LEGACY_ORIGIN` configures the retained web client's exact
+origin; an absent or unsafe configuration cannot produce an openable destination.
+Host-only Directory administration, POS-only screens, infrastructure and speculative
+apps are excluded. The demo COMPANY workspace shows 21 module entries; other roles,
+installations and capabilities can produce fewer.
+
+A released focused destination takes precedence. Until a focused client is released,
+Invoice and HR can open their implemented legacy web routes. Their `coming-soon`
+focused manifests remain unchanged. Legacy clients retain their own authentication;
+no cookies or bearer tokens transfer between origins. A validated workspace hint
+survives sign-in, and children stay unmounted until discovery authorizes and adopts
+that workspace. Invalid or inaccessible hints show the existing not-found state.
 
 Only enabled, available entries with a valid configured origin can open. Disabled,
 unconfigured and Coming soon entries have disabled controls and a neutral reason.
@@ -46,8 +62,32 @@ The directory has its own lightweight header using shared UI controls and accoun
 workspace session actions. `FocusedAppShell` remains for Invoice/HR business
 navigation: its required `AppLaunchId` and business menu routes intentionally do
 not include App Center. The launcher reuses its launch URL validation helper.
-English, German and Vietnamese copy follows browser language; unknown locales use
-English. Manual search and opening apps require no AI.
+The shared language picker supports English, German and Vietnamese, updates the
+page immediately, and persists the choice using the existing language preference.
+Navigation carries an allowlisted `lang` hint, so the destination adopts the choice
+without transferring authentication. Unsupported hints fall back to the saved/browser
+preference. Module descriptors include `logo.iconKey` and a semantic `logo.tone`
+(`primary`, `accent`, `muted`). Catalog cards and the shared focused switcher/header
+use the same `AppLogo`, icon registry and design tokens. Existing full-workspace
+clients use the same language picker through `LanguageSelector`. Module workflows
+continue using their established shared feature screens. Manual search and opening
+apps require no AI.
+
+### Expanded catalog verification (10 November 2026)
+
+Verified against the local Docker database and actual API: 21 openable entries,
+category/search/no-results behavior, catalog → legacy sign-in → CRM with the selected
+workspace, and Invoice records after navigation. Desktop: 1440×1000. Phone: 390×844,
+EN/DE/VI, language changes/reload persistence and no horizontal overflow. Focused
+Invoice/HR retain their independent session checks and rollout configuration.
+
+![Expanded catalog with shared app marks](images/app-center-expanded/desktop-en.png)
+
+![German phone catalog](images/app-center-expanded/mobile-de.png)
+
+![Shared focused Invoice header](images/app-center-expanded/focused-invoice-de.png)
+
+![Shared focused HR header](images/app-center-expanded/focused-hr-de.png)
 
 ## UI/UX evidence
 

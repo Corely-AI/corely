@@ -84,7 +84,7 @@ Frontend guidelines and specific docs.
 - [CRUD and operational entry-point standard](./frontend/crud-ui-standard.md)
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
-- [App Center](./frontend/app-center.md) — workspace-aware app directory, authorized host controls, refresh behavior and UI evidence
+- [App Center](./frontend/app-center.md) — implemented-module catalog, shared language/app marks, authorized destinations and UI evidence
 - [Focused surface diagnostics](./observability/focused-surfaces.md) — sanitized request observations, release reports and pilot operations gates
 - [Focused app UX verification](./frontend/focused-ux-verification.md) — accessibility corrections, locale/keyboard checks and responsive evidence
 - [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition

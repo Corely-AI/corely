@@ -221,6 +221,7 @@ export const envSchema = z.object({
   JWT_SECRET: z.string().optional(),
   CORELY_LAUNCH_INVOICE_ORIGIN: z.string().url().optional(),
   CORELY_LAUNCH_HR_ORIGIN: z.string().url().optional(),
+  CORELY_LAUNCH_LEGACY_ORIGIN: z.string().url().optional(),
   WEB_BASE_URL: z.string().url().optional(),
   CORELY_SSO_ENABLED: z
     .enum(["true", "false"])

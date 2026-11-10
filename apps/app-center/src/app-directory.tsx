@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import type { AppCatalogItem, AppLaunchId } from "@corely/contracts";
+import type { AppCatalogItem } from "@corely/contracts";
 import { Button, Input } from "@corely/ui";
-import { catalogLaunchUrl } from "@corely/web-shared/layout/focused-shell-navigation";
+import { catalogEntryUrl, catalogMetadata } from "./catalog-entry";
+import { AppLogo } from "@corely/web-shared/layout/app-logo";
 import { copy, type Locale } from "./copy";
 
-type Category = "all" | "finance" | "people";
+type Category = "all" | "finance" | "people" | "sales" | "operations" | "content";
+const categories = ["finance", "people", "sales", "operations", "content"] as const;
 export interface AppDirectoryProps {
   apps: AppCatalogItem[];
   workspaceId: string;
@@ -14,7 +16,7 @@ export interface AppDirectoryProps {
   launching: boolean;
   launchError: boolean;
   onRetry: () => void;
-  onLaunch: (id: AppLaunchId) => void;
+  onLaunch: (id: string) => void;
 }
 
 export function AppDirectory({
@@ -31,15 +33,17 @@ export function AppDirectory({
   const text = copy[locale];
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>("all");
-  // Only the server's supported launch descriptors appear. No speculative catalog tiles.
-  const destinations = apps.filter((app) => app.launch);
+  // The server resolves authorized destinations; no planned catalog tiles are manufactured.
+  const destinations = apps.filter((app) => catalogMetadata(app));
   const term = search.trim().toLocaleLowerCase(locale);
-  const filtered = destinations.filter(
-    (app) =>
-      app.launch &&
-      (category === "all" || app.launch.category === category) &&
-      app.launch.displayName[locale].toLocaleLowerCase(locale).includes(term)
-  );
+  const filtered = destinations.filter((app) => {
+    const entry = catalogMetadata(app);
+    return (
+      entry &&
+      (category === "all" || entry.category === category) &&
+      entry.displayName[locale].toLocaleLowerCase(locale).includes(term)
+    );
+  });
 
   return (
     <section aria-label={text.title} className="space-y-8">
@@ -61,8 +65,11 @@ export function AppDirectory({
             onChange={(event) => setCategory(event.target.value as Category)}
           >
             <option value="all">{text.all}</option>
-            <option value="finance">{text.finance}</option>
-            <option value="people">{text.people}</option>
+            {categories.map((group) => (
+              <option key={group} value={group}>
+                {text[group]}
+              </option>
+            ))}
           </select>
         </label>
       </div>
@@ -91,22 +98,22 @@ export function AppDirectory({
         </p>
       ) : (
         <div className="space-y-8">
-          {(["finance", "people"] as const).map((group) => {
-            const entries = filtered.filter((app) => app.launch?.category === group);
+          {categories.map((group) => {
+            const entries = filtered.filter((app) => catalogMetadata(app)?.category === group);
             return entries.length ? (
               <section key={group} aria-label={text[group]} className="space-y-3">
                 <h2 className="text-lg font-semibold">{text[group]}</h2>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {entries.map((app) => {
-                    const launch = app.launch;
+                    const launch = catalogMetadata(app);
                     if (!launch) {
                       return null;
                     }
-                    const available = Boolean(catalogLaunchUrl(app, workspaceId));
+                    const available = Boolean(catalogEntryUrl(app, workspaceId));
                     const reason =
-                      !app.enabled || launch.availability === "app-disabled"
+                      !app.enabled || app.launch?.availability === "app-disabled"
                         ? text.disabled
-                        : launch.availability === "coming-soon"
+                        : !app.directory && app.launch?.availability === "coming-soon"
                           ? text.soon
                           : text.unavailable;
                     return (
@@ -114,12 +121,7 @@ export function AppDirectory({
                         key={app.appId}
                         className="flex min-w-0 flex-col items-start gap-5 rounded-xl border bg-card p-6 text-card-foreground shadow-sm"
                       >
-                        <div
-                          aria-hidden="true"
-                          className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-lg font-semibold text-primary"
-                        >
-                          {launch.displayName[locale].slice(0, 1)}
-                        </div>
+                        <AppLogo logo={app.directory?.logo} iconKey={app.launch?.iconKey} />
                         <h3 className="break-words text-xl font-semibold">
                           {launch.displayName[locale]}
                         </h3>
@@ -128,7 +130,7 @@ export function AppDirectory({
                           variant={available ? "default" : "outline"}
                           disabled={!available || launching}
                           aria-label={`${available ? text.open : reason}: ${launch.displayName[locale]}`}
-                          onClick={() => onLaunch(launch.launchId)}
+                          onClick={() => onLaunch(app.appId)}
                         >
                           {available ? text.open : reason}
                         </Button>

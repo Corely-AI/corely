@@ -6,6 +6,7 @@
 // App Manifest
 export * from "./app-manifest.schema";
 export * from "./app-launch.schema";
+export * from "./app-directory.schema";
 export * from "./experience-evaluator";
 export * from "./experience-targeting.schema";
 export * from "./surface.schema";

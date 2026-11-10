@@ -2,6 +2,12 @@ import { OpenBukBookingEnabledKey, type AppManifest } from "@corely/contracts";
 
 export const bookingAppManifest: AppManifest = {
   appId: "booking",
+  directory: {
+    menuId: "booking-appointments",
+    logo: { iconKey: "Calendar", tone: "accent" },
+    displayName: { en: "Booking", de: "Buchungen", vi: "Đặt lịch" },
+    category: "operations",
+  },
   name: "Booking",
   tier: 2,
   version: "1.0.0",

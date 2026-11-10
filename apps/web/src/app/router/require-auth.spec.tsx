@@ -1,12 +1,20 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+afterEach(cleanup);
 import { RequireAuth } from "./require-auth";
 
 let surfaceIdState = "platform";
 let authState = { isAuthenticated: true, isLoading: false };
-let workspaceState = { workspaces: [{ id: "ws_1" }], isLoading: false, isHostScope: false };
+const setWorkspace = vi.fn();
+let workspaceState = {
+  workspaces: [{ id: "ws_1" }],
+  activeWorkspaceId: "ws_1",
+  setWorkspace,
+  isLoading: false,
+  isHostScope: false,
+};
 
 vi.mock("@/lib/auth-provider", () => ({
   useAuth: () => authState,
@@ -38,7 +46,14 @@ describe("RequireAuth surface gating", () => {
   beforeEach(() => {
     surfaceIdState = "platform";
     authState = { isAuthenticated: true, isLoading: false };
-    workspaceState = { workspaces: [{ id: "ws_1" }], isLoading: false, isHostScope: false };
+    workspaceState = {
+      workspaces: [{ id: "ws_1" }],
+      activeWorkspaceId: "ws_1",
+      setWorkspace,
+      isLoading: false,
+      isHostScope: false,
+    };
+    setWorkspace.mockClear();
   });
 
   it("redirects dashboard traffic to the CRM landing route on CRM surface", () => {
@@ -59,7 +74,7 @@ describe("RequireAuth surface gating", () => {
   });
 
   it("redirects host dashboard traffic to tenant settings", () => {
-    workspaceState = { workspaces: [], isLoading: false, isHostScope: true };
+    workspaceState = { ...workspaceState, workspaces: [], isHostScope: true };
 
     render(
       <MemoryRouter initialEntries={["/dashboard"]}>
@@ -90,4 +105,37 @@ describe("RequireAuth surface gating", () => {
 
     expect(screen.getByText("404")).toBeInTheDocument();
   });
+
+  it("adopts an authorized workspace before mounting module content", () => {
+    workspaceState = { ...workspaceState, workspaces: [{ id: "ws_1" }, { id: "ws_2" }] };
+    render(
+      <MemoryRouter initialEntries={["/expenses?workspaceId=ws_2"]}>
+        <Routes>
+          <Route element={<RequireAuth />}>
+            <Route path="/expenses" element={<div>Private expenses</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    );
+    expect(setWorkspace).toHaveBeenCalledWith("ws_2");
+    expect(screen.queryByText("Private expenses")).toBeNull();
+  });
+
+  it.each(["workspaceId=unknown", "workspaceId=ws_1&workspaceId=ws_2", "workspaceId=bad%2Fid"])(
+    "rejects unauthorized or invalid workspace intent: %s",
+    (query) => {
+      render(
+        <MemoryRouter initialEntries={[`/expenses?${query}`]}>
+          <Routes>
+            <Route element={<RequireAuth />}>
+              <Route path="/expenses" element={<div>Private expenses</div>} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      );
+      expect(screen.getByText("404")).toBeInTheDocument();
+      expect(setWorkspace).not.toHaveBeenCalled();
+      expect(screen.queryByText("Private expenses")).toBeNull();
+    }
+  );
 });

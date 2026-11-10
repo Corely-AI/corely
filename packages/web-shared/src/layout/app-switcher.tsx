@@ -8,7 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@corely/ui";
-import { catalogLaunchUrl } from "./focused-shell-navigation";
+import { catalogEntryUrl, catalogMetadata } from "./app-directory-navigation";
+import { AppLogo } from "./app-logo";
 import { focusedShellCopy, type FocusedShellLocale } from "./focused-shell-copy";
 
 export interface AppSwitcherProps {
@@ -19,7 +20,7 @@ export interface AppSwitcherProps {
   loading?: boolean;
   error?: boolean;
   onRetry: () => void;
-  onLaunch: (app: AppLaunchId) => void;
+  onLaunch: (app: string) => void;
 }
 
 export function AppSwitcher({
@@ -33,7 +34,9 @@ export function AppSwitcher({
   onLaunch,
 }: AppSwitcherProps) {
   const copy = focusedShellCopy[locale];
-  const destinations = apps.filter((item) => item.launch && item.launch.launchId !== app);
+  const destinations = apps.filter(
+    (item) => catalogMetadata(item) && item.launch?.launchId !== app
+  );
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -57,28 +60,31 @@ export function AppSwitcher({
           <p className="p-3 text-sm text-muted-foreground">{copy.noApps}</p>
         ) : (
           destinations.map((item) => {
-            const launch = item.launch;
+            const launch = catalogMetadata(item);
             if (!launch) {
               return null;
             }
-            const enabled = Boolean(catalogLaunchUrl(item, workspaceId));
+            const enabled = Boolean(catalogEntryUrl(item, workspaceId));
             const reason =
-              launch.availability === "coming-soon"
+              !item.directory && item.launch?.availability === "coming-soon"
                 ? copy.comingSoon
-                : launch.availability === "unconfigured"
+                : item.launch?.availability === "unconfigured"
                   ? copy.unconfigured
-                  : launch.availability === "app-disabled"
+                  : !item.enabled || item.launch?.availability === "app-disabled"
                     ? copy.disabled
                     : copy.unavailable;
             return (
               <DropdownMenuItem
-                key={launch.launchId}
+                key={item.appId}
                 disabled={!enabled}
-                onSelect={() => onLaunch(launch.launchId)}
-                className="min-h-11 flex-col items-start gap-1"
+                onSelect={() => onLaunch(item.appId)}
+                className="min-h-11 gap-3"
               >
-                <span>{launch.displayName[locale]}</span>
-                {!enabled && <span className="text-xs">{reason}</span>}
+                <AppLogo logo={item.directory?.logo} iconKey={item.launch?.iconKey} compact />
+                <span className="flex flex-col items-start">
+                  <span>{launch.displayName[locale]}</span>
+                  {!enabled && <span className="text-xs">{reason}</span>}
+                </span>
               </DropdownMenuItem>
             );
           })

@@ -29,10 +29,12 @@ import { CommandPaletteProvider } from "../shared/command-palette/command-palett
 import { useCommandPalette } from "../shared/command-palette/use-command-palette";
 import type { Command } from "../shared/command-palette/types";
 import { AppSwitcher } from "./app-switcher";
+import { FocusedAppIdentity } from "./app-logo";
+import { LanguageSelector } from "../shared/components/LanguageSelector";
+import { catalogEntryUrl } from "./app-directory-navigation";
 import { focusedShellCopy, type FocusedShellLocale } from "./focused-shell-copy";
 import {
   buildWorkspaceLaunchUrl,
-  catalogLaunchUrl,
   focusedActions,
   focusedNavigation,
   type FocusedShellAction,
@@ -119,7 +121,7 @@ export function FocusedAppShell({
   const availableActions = focusedActions(groups, actions, routeRoots);
   const items = groups.flatMap((group) => group.items);
   const namespace = `${state.status === "authenticated" ? state.session.user.userId : "anon"}:${client.config.tenantId}:${workspace.id}:${app}`;
-  const allAppsUrl = buildWorkspaceLaunchUrl(appCenterOrigin, workspace.id);
+  const allAppsUrl = buildWorkspaceLaunchUrl(appCenterOrigin, workspace.id, `/?lang=${locale}`);
   const navigationKey = JSON.stringify([
     namespace,
     location.key,
@@ -131,10 +133,10 @@ export function FocusedAppShell({
     allAppsUrl,
     launches.isError,
     launches.data?.map((entry) => [
-      entry.launch?.launchId,
+      entry.appId,
       entry.enabled,
-      entry.launch?.availability,
-      entry.launch?.url,
+      entry.launch,
+      entry.directory?.destination,
     ]),
   ]);
   // Use an identity, so leaving and returning to the same scope cannot revive old work.
@@ -206,7 +208,7 @@ export function FocusedAppShell({
       action();
     }
   };
-  const launch = async (id: AppLaunchId) => {
+  const launch = async (id: string) => {
     const context = actionContext;
     const request = ++latestLaunchRequest.current;
     setLaunching(true);
@@ -215,8 +217,8 @@ export function FocusedAppShell({
     if (currentContext.current !== context || latestLaunchRequest.current !== request) {
       return;
     }
-    const target = !result.isError && result.data?.find((entry) => entry.launch?.launchId === id);
-    const url = target ? catalogLaunchUrl(target, workspace.id) : undefined;
+    const target = result.isError ? undefined : result.data?.find((entry) => entry.appId === id);
+    const url = target ? catalogEntryUrl(target, workspace.id, locale) : undefined;
     setLaunching(false);
     if (url) {
       // The user can edit while the request is pending. Ask using the latest dirty state.
@@ -226,7 +228,7 @@ export function FocusedAppShell({
           layer: "browser",
           event: "app-launch",
           outcome: "ok",
-          destination: id,
+          ...(target?.launch ? { destination: target.launch.launchId } : {}),
         });
         leavePage(url);
       });
@@ -236,7 +238,6 @@ export function FocusedAppShell({
         layer: "browser",
         event: "app-launch",
         outcome: "rejected",
-        destination: id,
       });
       setLaunchError(true);
     }
@@ -316,7 +317,7 @@ export function FocusedAppShell({
         <a href="#focused-content" className="sr-only focus:not-sr-only">
           {label}
         </a>
-        <header className="flex min-h-16 shrink-0 flex-wrap items-center gap-3 border-b px-4 py-3 sm:px-6">
+        <header className="flex min-h-16 shrink-0 flex-wrap items-center gap-3 border-b bg-card text-card-foreground px-4 py-3 sm:px-6">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button
@@ -351,7 +352,7 @@ export function FocusedAppShell({
               void launch(id);
             }}
           />
-          <span className="text-lg font-semibold">{label}</span>
+          <FocusedAppIdentity app={app} apps={launches.data ?? []} label={label} />
           <div className="ml-auto sm:ml-0 sm:order-last">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -417,6 +418,7 @@ export function FocusedAppShell({
               {copy.allApps}
             </Button>
             <PaletteControls commands={commands} label={copy.search} />
+            <LanguageSelector />
           </div>
         </header>
         <div className="flex min-h-0 flex-1">

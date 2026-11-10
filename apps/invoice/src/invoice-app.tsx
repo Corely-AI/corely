@@ -62,14 +62,18 @@ function InvoiceLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
         workspace={workspace.workspace}
         workspaces={workspace.workspaces}
         onWorkspaceChange={workspace.selectWorkspace}
-        actions={[
-          {
-            id: "new-invoice",
-            label: t("invoices.createInvoice"),
-            route: "/invoices/new",
-            menuItemId: "invoices",
-          },
-        ]}
+        actions={
+          location.pathname === "/invoices" || location.pathname === "/invoices/new"
+            ? []
+            : [
+                {
+                  id: "new-invoice",
+                  label: t("invoices.createInvoice"),
+                  route: "/invoices/new",
+                  menuItemId: "invoices",
+                },
+              ]
+        }
         locale={locale}
       >
         <div key={location.pathname}>
