@@ -2,7 +2,7 @@ import { observeFocused } from "@corely/web-shared/session/focused-observation";
 import React, { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { AppCatalogItemSchema, AppManagementLinkSchema, type AppLaunchId } from "@corely/contracts";
+import { AppCatalogItemSchema, AppManagementLinkSchema } from "@corely/contracts";
 import {
   Button,
   DropdownMenu,
@@ -13,11 +13,18 @@ import {
 import { useSession } from "@corely/web-shared/session/session-context";
 import { useWorkspaceSession } from "@corely/web-shared/session/workspace-session-context";
 import { sessionScopeQueryKey } from "@corely/web-shared/session/workspace-launch";
-import { catalogLaunchUrl } from "@corely/web-shared/layout/focused-shell-navigation";
+import { catalogEntryUrl } from "./catalog-entry";
 import { AppDirectory } from "./app-directory";
+import { LanguagePicker } from "@corely/web-shared/shared/components/language-picker";
 import { copy, type Locale } from "./copy";
 
-export function AppCenter({ locale }: { locale: Locale }) {
+export function AppCenter({
+  locale,
+  onLocaleChange,
+}: {
+  locale: Locale;
+  onLocaleChange?: (locale: Locale) => void;
+}) {
   const { client, state, logout } = useSession();
   const { scope, workspace, workspaces, selectWorkspace, confirmExternalNavigation } =
     useWorkspaceSession();
@@ -47,7 +54,7 @@ export function AppCenter({ locale }: { locale: Locale }) {
     retry: false,
     refetchOnWindowFocus: "always",
   });
-  const launch = async (id: AppLaunchId) => {
+  const launch = async (id: string) => {
     if (launching) {
       return;
     }
@@ -58,8 +65,8 @@ export function AppCenter({ locale }: { locale: Locale }) {
     if (!mounted.current) {
       return;
     }
-    const target = !result.isError && result.data?.find((app) => app.launch?.launchId === id);
-    const url = target ? catalogLaunchUrl(target, workspace.id) : undefined;
+    const target = result.isError ? undefined : result.data?.find((app) => app.appId === id);
+    const url = target ? catalogEntryUrl(target, workspace.id, locale) : undefined;
     setLaunching(false);
     if (url) {
       confirmExternalNavigation(() => {
@@ -68,7 +75,7 @@ export function AppCenter({ locale }: { locale: Locale }) {
           layer: "browser",
           event: "app-launch",
           outcome: "ok",
-          destination: id,
+          ...(target?.launch ? { destination: target.launch.launchId } : {}),
         });
         window.location.assign(url);
       });
@@ -78,7 +85,6 @@ export function AppCenter({ locale }: { locale: Locale }) {
         layer: "browser",
         event: "app-launch",
         outcome: "rejected",
-        destination: id,
       });
       setLaunchError(true);
     }
@@ -108,6 +114,7 @@ export function AppCenter({ locale }: { locale: Locale }) {
                 ))}
               </select>
             </label>
+            {onLocaleChange && <LanguagePicker locale={locale} onChange={onLocaleChange} />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="min-h-11">

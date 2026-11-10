@@ -1,5 +1,8 @@
 import {
   type LucideIcon,
+  Calendar,
+  GraduationCap,
+  Globe,
   LayoutDashboard,
   MessageSquare,
   Receipt,
@@ -46,6 +49,9 @@ import {
  * Maps icon name strings to Lucide React icon components
  */
 export const iconMap: Record<string, LucideIcon> = {
+  Calendar,
+  GraduationCap,
+  Globe,
   LayoutDashboard,
   MessageSquare,
   Receipt,

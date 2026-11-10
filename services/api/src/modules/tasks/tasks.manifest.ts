@@ -1,6 +1,12 @@
 import type { AppManifest } from "@corely/contracts";
 export const tasksAppManifest: AppManifest = {
   appId: "tasks",
+  directory: {
+    menuId: "tasks-daily-work",
+    logo: { iconKey: "ClipboardList", tone: "accent" },
+    displayName: { en: "Tasks", de: "Aufgaben", vi: "Công việc" },
+    category: "operations",
+  },
   name: "Tasks",
   tier: 1,
   version: "1.0.0",

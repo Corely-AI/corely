@@ -18,6 +18,17 @@ const compile = (origins: Record<string, string> = {}) =>
   }).compile();
 
 describe("deployment launch configuration initialization", () => {
+  it("uses only a validated deployment origin for existing module destinations", async () => {
+    const module = await compile({ CORELY_LAUNCH_LEGACY_ORIGIN: "http://localhost:5173/" });
+    expect(module.get(APP_LAUNCH_ORIGINS_TOKEN)).toMatchObject({ legacy: "http://localhost:5173" });
+    await module.close();
+    await expect(
+      compile({ NODE_ENV: "production", CORELY_LAUNCH_LEGACY_ORIGIN: "http://localhost:5173" })
+    ).rejects.toThrow("HTTPS");
+    await expect(
+      compile({ CORELY_LAUNCH_LEGACY_ORIGIN: "https://admin.corely.one/path?returnUrl=x" })
+    ).rejects.toThrow();
+  });
   it("allows absent origins without inventing deployed destinations", async () => {
     const module = await compile();
     expect(module.get(APP_LAUNCH_ORIGINS_TOKEN)).toEqual({});

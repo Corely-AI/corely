@@ -25,6 +25,40 @@ const hr: AppCatalogItem = {
   },
 };
 describe("app switcher", () => {
+  it("uses the same implemented module entry and app mark as the catalog", async () => {
+    const user = userEvent.setup();
+    const onLaunch = vi.fn();
+    render(
+      <AppSwitcher
+        app="invoice"
+        workspaceId="studio"
+        apps={[
+          {
+            appId: "crm",
+            name: "CRM",
+            tier: 2,
+            version: "1",
+            dependencies: [],
+            enabled: true,
+            directory: {
+              menuId: "crm-deals",
+              category: "sales",
+              displayName: { en: "CRM", de: "CRM", vi: "CRM" },
+              logo: { iconKey: "FolderKanban", tone: "primary" },
+              destination: { origin: "http://localhost:5173", path: "/crm/deals" },
+            },
+          },
+        ]}
+        onLaunch={onLaunch}
+        onRetry={() => {}}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: "Switch apps" }));
+    const entry = screen.getByRole("menuitem", { name: "CRM" });
+    expect(entry.querySelector("svg")).toBeTruthy();
+    await user.click(entry);
+    expect(onLaunch).toHaveBeenCalledWith("crm");
+  });
   it("launches an available destination using the keyboard and restores focus on Escape", async () => {
     const onLaunch = vi.fn();
     const user = userEvent.setup();
@@ -39,7 +73,7 @@ describe("app switcher", () => {
     );
     await user.tab();
     await user.keyboard("{Enter}{ArrowDown}{Enter}");
-    expect(onLaunch).toHaveBeenCalledWith("hr");
+    expect(onLaunch).toHaveBeenCalledWith("people");
   });
   it("explains unavailable entries without making them launch actions", async () => {
     const launch = hr.launch;

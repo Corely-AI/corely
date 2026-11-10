@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const expensesAppManifest: AppManifest = {
   appId: "expenses",
+  directory: {
+    menuId: "expenses",
+    logo: { iconKey: "Receipt", tone: "primary" },
+    displayName: { en: "Expenses", de: "Ausgaben", vi: "Chi phí" },
+    category: "finance",
+  },
   name: "Expenses",
   tier: 1,
   version: "1.0.0",

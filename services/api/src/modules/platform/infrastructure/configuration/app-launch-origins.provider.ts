@@ -8,6 +8,7 @@ export const appLaunchOriginsProvider = {
     const origins = AppLaunchOriginsSchema.parse({
       invoice: env.getValue("CORELY_LAUNCH_INVOICE_ORIGIN"),
       hr: env.getValue("CORELY_LAUNCH_HR_ORIGIN"),
+      legacy: env.getValue("CORELY_LAUNCH_LEGACY_ORIGIN"),
     });
     if (
       env.NODE_ENV === "production" &&

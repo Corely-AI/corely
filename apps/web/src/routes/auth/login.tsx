@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { useNavigate, Link, useSearchParams, useLocation } from "react-router-dom";
+import { authReturnPath } from "../../app/router/auth-return-path";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth-provider";
 import { Button } from "@corely/ui";
@@ -14,6 +15,7 @@ import { normalizeError } from "@corely/api-client";
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { signin } = useAuth();
   const [searchParams] = useSearchParams();
 
@@ -89,7 +91,7 @@ export const LoginPage: React.FC = () => {
         localStorage.removeItem("corely-remember-login");
       }
 
-      navigate("/");
+      navigate(authReturnPath(location.state), { replace: true });
     } catch (err) {
       const apiError = normalizeError(err);
       const message = apiError.isNetworkError

@@ -37,6 +37,7 @@ export const AppLaunchOriginsSchema = z
   .object({
     invoice: AppLaunchOriginSchema.optional(),
     hr: AppLaunchOriginSchema.optional(),
+    legacy: AppLaunchOriginSchema.optional(),
   })
   .strict()
   .superRefine((origins, ctx) => {

@@ -1,11 +1,27 @@
 # Focused app launch catalog
 
+## Existing module directory
+
+App manifests may also declare a `directory` entry with an existing menu ID,
+localized names, category and icon/semantic-tone logo metadata. This is separate
+from the focused `invoice`/`hr` launch IDs and never broadens their BFF allowlists.
+`GET /menu/launches` resolves each directory entry from its own authorized composed
+menu group, checks enabled installations/dependencies, and uses the exact validated
+`CORELY_LAUNCH_LEGACY_ORIGIN` plus the implemented static entry route. The origin is
+deployment configuration, never tenant-supplied. Missing origin leaves the entry
+unavailable. Query, fragment, encoded, auth and API paths cannot be destinations.
+
+The directory remains read-only. Existing focused availability gates and public
+routes are unchanged; destinations enforce their own authentication and permissions.
+See [App Center](../frontend/app-center.md) for browser behavior and evidence.
+
 The existing authenticated `GET /platform/apps` administration catalog keeps its
 `platform.apps.manage` permission and array response (including legacy manifest
 extras when there is no tenant context). Each item may now include
 `launch`; older manifests and clients can omit/ignore it. Backend dependency
 modules remain in the administration catalog, but only an explicit manifest
-`launch` descriptor makes an item a candidate for a launch tile. Menu presence,
+`launch` or implemented-module `directory` descriptor makes an item a candidate
+for a directory tile. Menu presence,
 installation, dependency inclusion and the long-term catalog do not do that.
 
 ## Identity and availability

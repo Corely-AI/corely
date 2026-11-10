@@ -243,6 +243,7 @@
   },
   "nav": {
     "people": "Personalverzeichnis",
+    "peopleSelfService": "Mein Profil",
     "dashboard": "Übersicht",
     "portfolio": "Portfolio",
     "rentals": {

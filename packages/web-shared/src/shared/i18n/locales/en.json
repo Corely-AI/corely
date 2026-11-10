@@ -247,6 +247,7 @@
   },
   "nav": {
     "people": "Staff directory",
+    "peopleSelfService": "My profile",
     "dashboard": "Dashboard",
     "portfolio": "Portfolio",
     "rentals": {

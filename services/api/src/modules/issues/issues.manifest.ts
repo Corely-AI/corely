@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const issuesAppManifest: AppManifest = {
   appId: "issues",
+  directory: {
+    menuId: "issues",
+    logo: { iconKey: "ShieldAlert", tone: "accent" },
+    displayName: { en: "Issues", de: "Problemmeldungen", vi: "Sự cố" },
+    category: "operations",
+  },
   name: "Issues",
   tier: 1,
   version: "1.0.0",

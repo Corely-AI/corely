@@ -4,19 +4,21 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { WorkspaceSessionProviders } from "@corely/web-shared/session/workspace-session-provider";
 import { AppCenter } from "./app-center";
-import { appCenterLocale } from "./copy";
+import { useFocusedLocale } from "@corely/web-shared/session/use-focused-locale";
 import "./index.css";
 
-const locale = appCenterLocale(navigator.language);
-document.documentElement.lang = locale;
+function AppCenterApplication() {
+  const [locale, setLocale] = useFocusedLocale();
+  return (
+    <WorkspaceSessionProviders appKey="app-center" locale={locale}>
+      <AppCenter locale={locale} onLocaleChange={setLocale} />
+    </WorkspaceSessionProviders>
+  );
+}
 const router = createBrowserRouter([
   {
     path: "*",
-    element: (
-      <WorkspaceSessionProviders appKey="app-center" locale={locale}>
-        <AppCenter locale={locale} />
-      </WorkspaceSessionProviders>
-    ),
+    element: <AppCenterApplication />,
   },
 ]);
 document.documentElement.classList.add("corely-focused");

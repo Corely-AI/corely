@@ -5,6 +5,20 @@ import type { AppCatalogItem, AppCatalogLaunch } from "@corely/contracts";
 import { AppDirectory, type AppDirectoryProps } from "./app-directory";
 
 afterEach(cleanup);
+const crm: AppCatalogItem = {
+  appId: "crm",
+  name: "CRM",
+  tier: 2,
+  version: "1",
+  dependencies: [],
+  enabled: true,
+  directory: {
+    menuId: "crm-deals",
+    category: "sales",
+    displayName: { en: "CRM", de: "CRM", vi: "CRM" },
+    destination: { origin: "http://localhost:5173", path: "/crm/deals" },
+  },
+};
 const invoice: AppCatalogItem & { launch: AppCatalogLaunch } = {
   appId: "invoices",
   name: "Invoices",
@@ -66,7 +80,7 @@ describe("workspace app directory", () => {
   it("launches accessible Invoice and keeps unreleased HR disabled", () => {
     const props = setup();
     fireEvent.click(screen.getByRole("button", { name: "Open: Invoice" }));
-    expect(props.onLaunch).toHaveBeenCalledWith("invoice");
+    expect(props.onLaunch).toHaveBeenCalledWith("invoices");
     expect(
       (screen.getByRole("button", { name: "Coming soon: HR" }) as HTMLButtonElement).disabled
     ).toBe(true);
@@ -134,5 +148,24 @@ describe("workspace app directory", () => {
       (screen.getByRole("button", { name: "Open: Invoice" }) as HTMLButtonElement).disabled
     ).toBe(true);
     expect(screen.getByRole("status").textContent).toBe("Checking access…");
+  });
+  it.each(["en", "de", "vi"] as const)(
+    "renders and launches implemented modules in %s",
+    (locale) => {
+      const props = setup({ apps: [crm], locale });
+      const button = screen.getByRole("button");
+      expect((button as HTMLButtonElement).disabled).toBe(false);
+      fireEvent.click(button);
+      expect(props.onLaunch).toHaveBeenCalledWith("crm");
+      expect(screen.getByRole("heading", { name: "CRM" })).toBeTruthy();
+    }
+  );
+  it("filters implemented modules by category and localized name", () => {
+    setup({ apps: [invoice, crm] });
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "sales" } });
+    expect(screen.queryByRole("button", { name: "Open: Invoice" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Open: CRM" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "missing" } });
+    expect(screen.getByRole("status").textContent).toBe("No apps match your search.");
   });
 });

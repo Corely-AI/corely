@@ -7,7 +7,8 @@ import { InvoiceApp } from "./invoice-app";
 import "./style.css";
 const locale = resolveFocusedLocale(
   localStorage.getItem("Corely One ERP-language"),
-  navigator.language
+  navigator.language,
+  new URLSearchParams(location.search).get("lang")
 );
 void i18n.changeLanguage(locale);
 document.documentElement.lang = locale;

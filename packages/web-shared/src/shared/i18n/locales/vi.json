@@ -243,6 +243,7 @@
   },
   "nav": {
     "people": "Danh bạ nhân viên",
+    "peopleSelfService": "Hồ sơ của tôi",
     "dashboard": "Tổng quan",
     "portfolio": "Hồ sơ năng lực",
     "rentals": {

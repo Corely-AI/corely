@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const formsAppManifest: AppManifest = {
   appId: "forms",
+  directory: {
+    menuId: "forms",
+    logo: { iconKey: "FileSignature", tone: "muted" },
+    displayName: { en: "Forms", de: "Formulare", vi: "Biểu mẫu" },
+    category: "content",
+  },
   name: "Forms",
   tier: 2,
   version: "1.0.0",

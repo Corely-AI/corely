@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const classesAppManifest: AppManifest = {
   appId: "classes",
+  directory: {
+    menuId: "classes-groups",
+    logo: { iconKey: "GraduationCap", tone: "accent" },
+    displayName: { en: "Classes", de: "Kurse", vi: "Lớp học" },
+    category: "operations",
+  },
   name: "Classes",
   tier: 2,
   version: "1.0.0",

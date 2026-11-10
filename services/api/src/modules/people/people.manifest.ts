@@ -1,6 +1,12 @@
 import type { AppManifest } from "@corely/contracts";
 export const peopleAppManifest: AppManifest = {
   appId: "people",
+  directory: {
+    menuId: "people-directory",
+    logo: { iconKey: "Users", tone: "accent" },
+    displayName: { en: "HR", de: "Personal", vi: "Nhân sự" },
+    category: "people",
+  },
   launch: {
     launchId: "hr",
     surfaceId: "platform",

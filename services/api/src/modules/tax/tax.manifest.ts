@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const taxAppManifest: AppManifest = {
   appId: "tax",
+  directory: {
+    menuId: "tax-center",
+    logo: { iconKey: "Calculator", tone: "primary" },
+    displayName: { en: "Tax", de: "Steuern", vi: "Thuế" },
+    category: "finance",
+  },
   name: "Tax",
   tier: 2,
   version: "2.0.0",
