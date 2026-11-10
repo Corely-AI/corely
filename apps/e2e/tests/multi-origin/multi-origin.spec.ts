@@ -344,6 +344,8 @@ test("Invoice logout revokes the open App Center session and central reuse", asy
   await page.getByRole("button", { name: "Account", exact: true }).click();
   await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
   await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
+  const status = await center.evaluate(async () => (await fetch("/api/session/user")).status);
+  expect(status).toBe(401);
   await center.bringToFront();
   await center.reload();
   await expect(center.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();

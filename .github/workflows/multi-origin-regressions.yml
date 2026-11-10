@@ -20,6 +20,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       SSO_TEST_DATABASE_URL: postgresql://postgres:synthetic401@127.0.0.1:5432/corely_384_browser_ci
+      DATABASE_URL: postgresql://postgres:synthetic401@127.0.0.1:5432/corely_384_browser_ci
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -34,6 +35,7 @@ jobs:
       - name: Initialize disposable schema
         env:
           POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+          NODE_ENV: test
         run: |
           pnpm --filter @corely/data exec prisma migrate diff --from-empty --to-schema prisma/schema --script > "$RUNNER_TEMP/multi-origin.sql"
           docker exec -i "$POSTGRES_CONTAINER" psql -U postgres -d corely_384_browser_ci -v ON_ERROR_STOP=1 < "$RUNNER_TEMP/multi-origin.sql"
