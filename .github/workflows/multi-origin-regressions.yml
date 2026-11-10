@@ -1,0 +1,56 @@
+name: Multi-origin regressions
+on:
+  pull_request:
+  push:
+    branches: [development]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: synthetic401
+          POSTGRES_DB: corely_384_browser_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      SSO_TEST_DATABASE_URL: postgresql://postgres:synthetic401@127.0.0.1:5432/corely_384_browser_ci
+      DATABASE_URL: postgresql://postgres:synthetic401@127.0.0.1:5432/corely_384_browser_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate && pnpm build:packages && pnpm build:web-packages
+      # Current-schema DDL is applied only to this job's disposable service.
+      # This tests session behavior, not historical migration deployability.
+      - name: Initialize disposable schema
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+          NODE_ENV: test
+        run: |
+          pnpm --filter @corely/data exec prisma migrate diff --from-empty --to-schema prisma/schema --script > "$RUNNER_TEMP/multi-origin.sql"
+          docker exec -i "$POSTGRES_CONTAINER" psql -U postgres -d corely_384_browser_ci -v ON_ERROR_STOP=1 < "$RUNNER_TEMP/multi-origin.sql"
+      - run: pnpm --dir apps/e2e exec playwright install --with-deps chromium webkit
+      - run: node --test scripts/ci/sanitized-e2e-reporter.test.mjs
+      - run: pnpm --dir apps/e2e exec tsc --noEmit -p tsconfig.multi-origin.json
+      - run: pnpm exec vitest run --workspace vitest.workspace.ts packages/web-shared/src/session/session-client.spec.ts packages/web-shared/src/session/session-provider.spec.tsx
+      - run: pnpm --dir services/api exec vitest run --config vitest.config.ts src/modules/identity/__tests__/multi-origin-fixture.int.test.ts src/modules/identity/__tests__/sso.int.test.ts src/modules/identity/__tests__/sso-session-transport.int.test.ts src/modules/platform/__tests__/focused-api-access.int.test.ts --silent
+      - run: pnpm --dir apps/e2e exec playwright test --config playwright.multi-origin.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: multi-origin-sanitized
+          path: |
+            apps/e2e/test-results/multi-origin/safe-summary.json
+            apps/e2e/test-results/multi-origin/**/app-center-*.png
+            apps/e2e/test-results/multi-origin/**/invoice-shell-*.png
+          if-no-files-found: warn

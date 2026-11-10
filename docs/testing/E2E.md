@@ -559,3 +559,11 @@ pnpm e2e:ui
 ✓ Tests are deterministic (no random waits)
 ✓ Test harness guarded by `NODE_ENV=test` and secret header
 ✓ No business logic changes; only test scaffolding
+
+## Focused multi-origin acceptance
+
+See [multi-origin regressions](multi-origin-regressions.md) for the isolated real-session App Center/Invoice Chromium and WebKit suite, guarded database setup, sanitized artifacts and HR release limits.
+
+## Focused multi-origin acceptance
+
+See [multi-origin regressions](multi-origin-regressions.md) for the isolated real-session App Center/Invoice Chromium and WebKit suite, guarded database setup, sanitized artifacts and HR release limits.
