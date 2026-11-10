@@ -56,3 +56,9 @@ limits above remain explicit. No merge or release performed.
 - Synthetic desktop recovery state was visually inspected: [retained HR save draft](../frontend/images/focused-hr/hr-recoverable-save.png). The original form stays editable with its local error; no personnel data or credentials were used.
 
 Visual follow-up removed the misleading reload instruction for uncertain saves. EN/DE/VI copy now explains that entries are retained and saving can be retried without reloading; stale-version conflicts remain blocked until reload. HR browser 10/10, People units 33/33 and HR typecheck passed again after this correction.
+
+## Review fix: dedicated HR browser discovery
+
+- Addressed `discussion_r4522615295`: both general Playwright configurations exclude `focused-hr` and retain the dedicated HR server configuration.
+- The new `playwright-suite-isolation.test.mjs` failed before the fix and passed afterward using the installed runner's matcher. It checks each of the four independently delivered isolated suites only when present; ordinary legacy specs must remain selectable. General browser/API collection changed from **20 / 10 HR cases to 0 / 0**; the dedicated HR suite's **10 passing cases** remain intact.
+- Self-review checked both entry points, the non-isolated control and the dependent #424 test append; recovery tests are placed before the existing last test to keep that append mergeable. No general test or retry policy was disabled. Scoped lint, HR build/typecheck and whitespace checks passed. Normal pre-commit checks are retained; the previously documented unrelated pre-push baseline bypass is retained for publication.

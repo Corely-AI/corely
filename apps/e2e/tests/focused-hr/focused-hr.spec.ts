@@ -82,17 +82,6 @@ test("empty, error, unknown route and invalid workspace stay explicit", async ({
   await expect(page.getByRole("heading", { name: "Team directory" })).toHaveCount(0);
 });
 
-test("keeps a dirty HR edit until the user confirms navigation", async ({ page, context }) => {
-  const fixture = await hrTransport(context, { manager: true });
-  await page.goto("/people/staff/anna/edit?workspaceId=workspace-a");
-  await page.getByLabel("Display name", { exact: true }).fill("Unsaved staff");
-  await page.getByRole("link", { name: /Back to directory/ }).click();
-  await expect(page.getByRole("alertdialog")).toBeVisible();
-  await page.getByRole("button", { name: "Stay", exact: true }).click();
-  await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Unsaved staff");
-  expect(fixture.commands).toHaveLength(0);
-});
-
 for (const failure of ["503", "network"] as const) {
   test(`retains a new profile and its retry key after a recoverable ${failure} failure`, async ({
     page,
@@ -159,3 +148,14 @@ for (const status of [401, 403]) {
     await expect(page.getByRole("button", { name: "Save profile", exact: true })).toHaveCount(0);
   });
 }
+
+test("keeps a dirty HR edit until the user confirms navigation", async ({ page, context }) => {
+  const fixture = await hrTransport(context, { manager: true });
+  await page.goto("/people/staff/anna/edit?workspaceId=workspace-a");
+  await page.getByLabel("Display name", { exact: true }).fill("Unsaved staff");
+  await page.getByRole("link", { name: /Back to directory/ }).click();
+  await expect(page.getByRole("alertdialog")).toBeVisible();
+  await page.getByRole("button", { name: "Stay", exact: true }).click();
+  await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Unsaved staff");
+  expect(fixture.commands).toHaveLength(0);
+});
