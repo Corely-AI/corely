@@ -8,3 +8,5 @@
 - Prose checks: installed Prettier, relative links and whitespace. No new application tests were written for documentation; the meaningful existing rollback browser check was executed.
 - UI/UX: this PR changes documentation only. Existing #396 desktop/phone and #401 synthetic browser evidence is linked in the handoff.
 - Outstanding: authenticated hosting/project/staging bindings (#399), integrated checks and #401's clean-runner gate, real monitoring owner/baselines (#403), approved cohort/decision owner, actual pilot and live rollback outcomes. No approval, owner or release result is fabricated.
+
+- Draft PR: [#430](https://github.com/Corely-AI/corely/pull/430). Read-only approved-host HEAD observations are recorded in the handoff; they do not prove callback/API delivery. The owned disposable PostgreSQL container was removed after local verification; two interrupted private fixture directories remain because automatic approval review rejected deletion.

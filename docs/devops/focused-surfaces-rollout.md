@@ -17,6 +17,10 @@
 
 PRs remain Draft and unmerged. #424 depends on #423; #429 depends on #428. This handoff's PR is based on #429 for documentation links, not evidence that all sibling changes are integrated. Recheck and retarget each stack after its prerequisite merges. Record an integrated source SHA rather than treating seven branch heads as one release artifact. Keep the parent epic incomplete while either wave lacks acceptance. Conditional Invoice roadmap promotion (including #334) is a separate decision.
 
+## Read-only production-host observations
+
+On 2026-11-10, unauthenticated Node HTTPS HEAD requests used normal certificate/hostname verification and followed no redirects. `app.corely.one/` returned 200 with a verified `*.corely.one` certificate; `login.corely.one/` and `/login` returned 404 with the same verified certificate pattern. Invoice and HR application host connections reset before TLS could be verified. These are observations from this client, not a DNS/TLS root-cause diagnosis or callback/API acceptance. The successful responses exposed no CSP/referrer-policy headers in this check; no credentials or cookies were logged. Preserve the existing app binding and resolve #399 through the approved provider configuration before release.
+
 ## Local flag rollback rehearsal
 
 Fresh execution on 2026-11-10 at #396 branch commit `6dfc8569`, Chromium, Node 22.21.1 / Playwright 1.57:
