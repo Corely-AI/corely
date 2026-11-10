@@ -41,3 +41,9 @@ Keyboard checks verify opening/closing and focus restoration, retry and preservi
 No native screen-reader, physical touch device, WebKit or deployed-host verification was run.
 Repeat on HR when #397/#398 are integrated and HR becomes launchable. Production/staging
 bindings and rollout checks depend on #399/#404. No merge or deployment was performed.
+
+## Inline review fix — 2026-11-10
+
+Addressed `discussion_r4522617954`: both general configurations exclude the dedicated `focused-ux` directory, retaining its three server ports and EN/DE/VI projects only in the UX configuration. The same isolation regression used by the other independent PRs failed before the change and passed afterward; it also asserts that legacy specs are still selected.
+
+Fresh verification: isolation regression **1 passed**, general browser/API probes each select **0 UX tests**, dedicated accessibility/locale/state browser suite **21 passed** with no retries. Scoped ESLint, installed Prettier and whitespace checks passed. Self-review checked both collectors and unchanged dedicated projects/servers. Product UI is unchanged by this correction; existing screenshots remain applicable. Publication retains normal signed pre-commit checks and the documented unrelated broad pre-push bypass.
