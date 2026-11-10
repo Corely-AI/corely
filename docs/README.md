@@ -182,3 +182,5 @@ General developer guides and references.
 - [Frontend consumer CI](frontend/consumer-ci.md) — focused and existing Vite consumer checks.
 
 - [Multi-origin session and authorization regressions](testing/multi-origin-regressions.md) — disposable real-session browser journeys and sanitized evidence.
+
+- [Focused surfaces release handoff](devops/focused-surfaces-rollout.md) — integration evidence, local flag rehearsal and outstanding live release gates.
