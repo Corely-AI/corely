@@ -87,6 +87,7 @@ Frontend guidelines and specific docs.
 - [App Center](./frontend/app-center.md) — workspace-aware app directory, authorized host controls, refresh behavior and UI evidence
 - [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition
 - [Focused Invoice client](./frontend/focused-invoice-client.md) — reused invoice screens, scoped customer/supporting workflows, draft-only assistant and verification evidence
+- [Invoice link migration](./frontend/invoice-link-migration.md) — opt-in legacy handoff, route/query map and rollback
 - [Workspace Session Boundary](./frontend/workspace-session-boundary.md) — validated arrival, per-tab context and draft/write guards
 
 ### 🚀 DevOps & Infra
