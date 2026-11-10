@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Run independent regressions even if a preceding check fails.
 set -uo pipefail
-suite=${1:?Expected app-center, invoice or observability}
-case "$suite" in app-center|invoice|observability) ;; *) echo "Unknown focused suite: $suite" >&2; exit 2 ;; esac
+suite=${1:?Expected app-center, invoice, hr, focused-ux or observability}
+case "$suite" in app-center|invoice|hr|focused-ux|observability) ;; *) echo "Unknown focused suite: $suite" >&2; exit 2 ;; esac
 results="ci-results/focused-$suite"
 mkdir -p "$results"
 : > "$results/summary.txt"

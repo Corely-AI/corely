@@ -14,6 +14,7 @@ export function InvoiceNotes() {
         <Label className="text-sm font-medium">{t("invoices.notes")}</Label>
         <textarea
           {...register("notes")}
+          aria-label={t("invoices.notes")}
           className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           placeholder={t("invoices.notesPlaceholder")}
         />
@@ -22,6 +23,7 @@ export function InvoiceNotes() {
         <Label className="text-sm font-medium">{t("invoices.terms")}</Label>
         <textarea
           {...register("terms")}
+          aria-label={t("invoices.terms")}
           className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           placeholder={t("invoices.termsPlaceholder")}
         />

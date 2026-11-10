@@ -2102,7 +2102,44 @@
     "status": {
       "updateFailed": "Status konnte nicht aktualisiert werden"
     },
-    "loading": "Rechnung wird geladen..."
+    "loading": "Rechnung wird geladen...",
+    "focused": {
+      "notFound": "Seite nicht gefunden",
+      "notPart": "Diese Seite gehört nicht zur Rechnungs-App.",
+      "back": "Zurück zu Rechnungen",
+      "setup": "Die Rechnungs-App ist noch nicht vollständig eingerichtet. Bitte kontaktiere deine Administration.",
+      "previous": "Zurück",
+      "duplicate": "Duplizieren",
+      "downloadPdf": "PDF herunterladen",
+      "selectInvoice": "Rechnung {{id}} auswählen",
+      "unit": "Einheit",
+      "removeLine": "Position entfernen",
+      "copilot": {
+        "intro": "Einen E-Mail-Entwurf zur Prüfung erstellen. Copilot sendet keine E-Mails automatisch.",
+        "language": "Sprache",
+        "tone": "Ton der Erinnerung",
+        "de": "Deutsch (de)",
+        "vi": "Vietnamesisch (vi)",
+        "en": "Englisch (en)",
+        "polite": "Höflich",
+        "normal": "Normal",
+        "firm": "Bestimmt",
+        "drafting": "Entwurf wird erstellt...",
+        "issue": "Rechnungs-E-Mail entwerfen",
+        "reminder": "Erinnerung entwerfen",
+        "issueDisabled": "Die Rechnung muss vor dem E-Mail-Entwurf ausgestellt oder gesendet sein.",
+        "reminderDisabled": "Erinnerungen sind nur bei einem offenen Betrag verfügbar.",
+        "review": "Den Entwurf prüfen und bearbeiten, bevor er zum Versand kopiert wird.",
+        "subject": "Betreff",
+        "body": "Inhalt",
+        "copySubject": "Betreff kopieren",
+        "copyBody": "Inhalt kopieren",
+        "subjectCopied": "Betreff kopiert",
+        "bodyCopied": "Inhalt kopiert",
+        "copyError": "Kopieren in die Zwischenablage fehlgeschlagen",
+        "close": "Schließen"
+      }
+    }
   },
   "customers": {
     "title": "Kunden",

@@ -26,6 +26,9 @@ export function bffTarget(path: string, app: SsoAppKey): string | undefined {
   if (/^\/invoices\/public(?:\/|$)/i.test(target)) {
     return;
   }
+  if (target === "/identity/permissions/effective") {
+    return target;
+  }
   return routes[app].some((root) => target === `/${root}` || target.startsWith(`/${root}/`))
     ? target
     : undefined;
@@ -107,6 +110,9 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       }
       const appKey = security.appKey(origin);
       const target = isBff ? bffTarget(path, appKey) : undefined;
+      if (target === "/identity/permissions/effective" && req.method !== "GET") {
+        return res.status(405).end();
+      }
       if (isBff && !target) {
         return res.status(404).end();
       }

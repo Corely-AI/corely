@@ -40,7 +40,7 @@ export function InvoiceTotals({ locale }: InvoiceTotalsProps) {
             name="vatRate"
             render={({ field: { value, onChange } }) => (
               <Select value={String(value)} onValueChange={(val) => onChange(parseInt(val))}>
-                <SelectTrigger className="w-24 h-8">
+                <SelectTrigger aria-label={t("invoices.vatAmount")} className="w-24 h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

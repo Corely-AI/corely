@@ -71,6 +71,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                   <td className="px-4 py-3">
                     <div className="space-y-1">
                       <Input
+                        aria-label={`${t("invoices.description")} ${index + 1}`}
                         data-testid={`invoice-line-description-${index}`}
                         {...register(`lineItems.${index}.description` as const)}
                         placeholder={t("invoices.description")}
@@ -85,6 +86,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Input
+                        aria-label={`${t("invoices.quantity")} ${index + 1}`}
                         data-testid={`invoice-line-qty-${index}`}
                         type="number"
                         {...register(`lineItems.${index}.qty` as const, { valueAsNumber: true })}
@@ -97,7 +99,10 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         name={`lineItems.${index}.unit` as const}
                         render={({ field: { value, onChange } }) => (
                           <Select value={value} onValueChange={onChange}>
-                            <SelectTrigger className="w-20 h-8 border-0">
+                            <SelectTrigger
+                              aria-label={`${t("invoices.focused.unit")} ${index + 1}`}
+                              className="w-20 h-8 border-0"
+                            >
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -119,6 +124,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         name={`lineItems.${index}.unitPriceCents` as const}
                         render={({ field: { value, onChange } }) => (
                           <Input
+                            aria-label={`${t("invoices.rate")} ${index + 1}`}
                             data-testid={`invoice-line-rate-${index}`}
                             type="text"
                             inputMode="decimal"
@@ -141,6 +147,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         type="button"
                         variant="ghost"
                         size="icon"
+                        aria-label={`${t("invoices.focused.removeLine")} ${index + 1}`}
                         onClick={() => remove(index)}
                         className="h-8 w-8"
                       >

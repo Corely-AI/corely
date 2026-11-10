@@ -1,7 +1,10 @@
+import { flushSync } from "react-dom";
+import { usePeopleDraftGuard } from "./people-runtime";
+import { PeopleLink as Link, usePeopleNavigate as useNavigate } from "./people-runtime";
 import { HttpError } from "@corely/api-client";
 import { usePeopleMounted } from "./use-people";
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+
 import { Button, Input, Label } from "@corely/ui";
 import {
   CreateStaffSchema,
@@ -9,7 +12,7 @@ import {
   type StaffProfile,
 } from "@corely/contracts";
 import type { PeopleCopy } from "./people-copy";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 export function StaffProfileForm({
   profile,
   copy: t,
@@ -19,6 +22,9 @@ export function StaffProfileForm({
   copy: PeopleCopy;
   onReload: () => void;
 }) {
+  const peopleApi = usePeopleApi();
+  const [dirty, setDirty] = useState(false);
+  usePeopleDraftGuard(dirty);
   const navigate = useNavigate();
   const mounted = usePeopleMounted();
   const [blocked, setBlocked] = useState(false);
@@ -60,6 +66,7 @@ export function StaffProfileForm({
         key
       );
       if (mounted.current) {
+        flushSync(() => setDirty(false));
         navigate(`/people/staff/${saved.id}`);
       }
     } catch (error) {
@@ -73,11 +80,19 @@ export function StaffProfileForm({
         error.body !== null &&
         "code" in error.body &&
         error.body.code === StaffIdentityLinkConflictCode;
-      setBlocked(
-        error instanceof HttpError &&
-          (error.status === 403 || (error.status === 409 && !linkConflict))
-      );
-      setError({ message: linkConflict ? t.linkConflict : t.changed, reload: !linkConflict });
+      const status =
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        typeof error.status === "number"
+          ? error.status
+          : 0;
+      const recoverable = status === 0 || status === 429 || status >= 500;
+      setBlocked(status === 403 || (status === 409 && !linkConflict));
+      setError({
+        message: recoverable ? t.saveRetry : linkConflict ? t.linkConflict : t.changed,
+        reload: !recoverable && !linkConflict,
+      });
     } finally {
       if (mounted.current) {
         setBusy(false);
@@ -99,6 +114,7 @@ export function StaffProfileForm({
   );
   return (
     <form
+      onChange={() => setDirty(true)}
       onSubmit={(event) => void submit(event)}
       className="space-y-6 rounded-lg border bg-card p-5 sm:p-6"
     >

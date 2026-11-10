@@ -69,3 +69,17 @@ Fresh checks: Login typecheck/build passed, shared telemetry units **7 passed**,
 Addressed `discussion_r4522618393`: both general Playwright configurations now exclude `observability`; its dedicated configuration still starts Login on the required port with its own project and retry policy. The shared suite-isolation regression uses the installed Playwright matcher against the actual configuration and confirms that ordinary browser tests remain discoverable.
 
 The regression failed before the exclusions and passes after them. Fresh general-browser and API discovery each report **0 observability tests**; the dedicated browser suite passes **8/8**, without retries. Scoped TypeScript, ESLint, Prettier and whitespace checks pass. Self-review checked both general runners and the dedicated server configuration; no additional findings. This change only selects the test runner, so UI/UX evidence is not applicable.
+
+## PR #427 conflict resolution — 2026-11-10
+
+Merged `origin/development` at `81fe906a2` into the current observability head `d193130b9`, retaining the integrated Invoice migration, HR/privacy and focused UX work. Resolved six conflicts: the CI matrix and Bash runner retain all five browser suites; both general collectors retain all dedicated exclusions; the documentation index retains every entry; Invoice's not-found view keeps both localized copy and its bounded route observation. Reviewed the automatic shell/session/BFF merges: locale/navigation labels, request-local recoverable failures, dirty guards, Invoice route restrictions and HR's read-only permission discovery remain intact.
+
+Fresh verification after resolution:
+
+- Dedicated browser suites: Login diagnostics **8/8**, focused UX **21/21**, Invoice **13/13**, HR **11/11**, App Center **3/3** passed. The initial Login run had **7 passes and one timeout creating a blank page**, before application code ran. After the concurrent compiler checks finished, the full browser sequence passed with unchanged timeouts and no internal retries.
+- Targeted telemetry, session/client/provider, shell, legacy-route and API observation units **85 passed**. Policy, bundle, isolation and release-report checks **12 passed**; frontend import scan passed. Each general collector finds **0 cases** from each of HR, Invoice migration, focused UX and observability.
+- Frozen offline install, API/Login/Invoice/HR typechecks, dedicated-config/browser-spec TypeScript, scoped lint, formatting, documentation targets and staged whitespace passed. Login production build and Invoice build/bundle boundary check passed (**1,000 rendered modules**).
+- Bash syntax and stub-pnpm selection of HR/UX/observability passed; actual browser execution is counted above. Existing Windows cleanup failures in separate Bash-runner Node tests were not rerun. No database-backed SSO integration or broad root/general E2E check was rerun for this conflict update; prior results and baseline failures above remain historical.
+- Fresh synthetic German phone Invoice and desktop missing-record captures were visually inspected. Existing UI/UX evidence remains representative; resolving the conflicts preserves the already integrated copy and interactions.
+
+Self-review found no further issues and no expanded telemetry metadata or authorization policy. Normal DCO/pre-commit checks and the documented broad pre-push baseline bypass are retained. Current PR review state and operational acceptance gates remain unchanged; no PR merge, collector provisioning or deployment.

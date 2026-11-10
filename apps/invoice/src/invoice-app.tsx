@@ -26,7 +26,7 @@ function InvoiceLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
   const { client } = useSession();
   const workspace = useWorkspaceSession();
   const location = useLocation();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const locale = i18n.language.startsWith("de")
     ? "de"
     : i18n.language.startsWith("vi")
@@ -57,6 +57,7 @@ function InvoiceLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
         app="invoice"
         label="Invoice"
         routeRoots={["/invoices"]}
+        navigationLabels={{ "nav.invoices": t("nav.invoices") }}
         appCenterOrigin={appCenterOrigin}
         workspace={workspace.workspace}
         workspaces={workspace.workspaces}
@@ -64,7 +65,7 @@ function InvoiceLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
         actions={[
           {
             id: "new-invoice",
-            label: "New invoice",
+            label: t("invoices.createInvoice"),
             route: "/invoices/new",
             menuItemId: "invoices",
           },
@@ -84,6 +85,7 @@ function Landing() {
   return <Navigate to={`/invoices${search}`} replace />;
 }
 function NotFound() {
+  const { t } = useTranslation();
   useEffect(
     () =>
       observeFocused({
@@ -97,15 +99,29 @@ function NotFound() {
   const workspace = useWorkspaceSession();
   return (
     <section className="space-y-4" role="status">
-      <h1 className="text-2xl font-semibold">Page not found</h1>
-      <p>This page is not part of Invoice.</p>
+      <h1 className="text-2xl font-semibold">{t("invoices.focused.notFound")}</h1>
+      <p>{t("invoices.focused.notPart")}</p>
       <Link to={`/invoices?workspaceId=${encodeURIComponent(workspace.scope.workspaceId)}`}>
-        Back to invoices
+        {t("invoices.focused.back")}
       </Link>
     </section>
   );
 }
+function InvoiceEntry({ appCenterOrigin }: { appCenterOrigin: string }) {
+  const { i18n } = useTranslation();
+  const locale = i18n.language.startsWith("de")
+    ? "de"
+    : i18n.language.startsWith("vi")
+      ? "vi"
+      : "en";
+  return (
+    <WorkspaceSessionProviders appKey="invoice" homePath="/invoices" locale={locale}>
+      <InvoiceLayout appCenterOrigin={appCenterOrigin} />
+    </WorkspaceSessionProviders>
+  );
+}
 export function InvoiceApp() {
+  const { t } = useTranslation();
   const environment = AppLaunchOriginSchema.safeParse(
     import.meta.env.VITE_CORELY_APP_CENTER_ORIGIN
   );
@@ -114,11 +130,7 @@ export function InvoiceApp() {
       environment.success
         ? createBrowserRouter([
             {
-              element: (
-                <WorkspaceSessionProviders appKey="invoice" homePath="/invoices">
-                  <InvoiceLayout appCenterOrigin={environment.data} />
-                </WorkspaceSessionProviders>
-              ),
+              element: <InvoiceEntry appCenterOrigin={environment.data} />,
               children: [
                 { path: "/", element: <Landing /> },
                 ...invoicesRoutes(),
@@ -132,8 +144,7 @@ export function InvoiceApp() {
   if (!router) {
     return (
       <main role="alert" className="p-6">
-        Invoice is unavailable because its setup is incomplete. Please contact your workspace
-        administrator.
+        {t("invoices.focused.setup")}
       </main>
     );
   }
