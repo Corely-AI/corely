@@ -54,3 +54,5 @@ limits above remain explicit. No merge or release performed.
 - Fresh checks: HR browser **10 passed**, People unit **33 passed**, shared session/adapter/provider **37 passed**; HR typecheck/build passed (existing chunk-size warning retained). Scoped lint/format checked. No API/domain/storage behavior changed and no database tests were needed for this transport/UI correction.
 - Self-review traced HTTP, network and body-stream errors through the existing local failure option, confirmed permission discovery still fails closed, and checked that no automatic command retry was added.
 - Synthetic desktop recovery state was visually inspected: [retained HR save draft](../frontend/images/focused-hr/hr-recoverable-save.png). The original form stays editable with its local error; no personnel data or credentials were used.
+
+Visual follow-up removed the misleading reload instruction for uncertain saves. EN/DE/VI copy now explains that entries are retained and saving can be retried without reloading; stale-version conflicts remain blocked until reload. HR browser 10/10, People units 33/33 and HR typecheck passed again after this correction.

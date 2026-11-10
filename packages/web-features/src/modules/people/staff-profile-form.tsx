@@ -80,11 +80,19 @@ export function StaffProfileForm({
         error.body !== null &&
         "code" in error.body &&
         error.body.code === StaffIdentityLinkConflictCode;
-      setBlocked(
-        error instanceof HttpError &&
-          (error.status === 403 || (error.status === 409 && !linkConflict))
-      );
-      setError({ message: linkConflict ? t.linkConflict : t.changed, reload: !linkConflict });
+      const status =
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        typeof error.status === "number"
+          ? error.status
+          : 0;
+      const recoverable = status === 0 || status === 429 || status >= 500;
+      setBlocked(status === 403 || (status === 409 && !linkConflict));
+      setError({
+        message: recoverable ? t.saveRetry : linkConflict ? t.linkConflict : t.changed,
+        reload: !recoverable && !linkConflict,
+      });
     } finally {
       if (mounted.current) {
         setBusy(false);

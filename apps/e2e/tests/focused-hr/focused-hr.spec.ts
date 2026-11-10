@@ -125,6 +125,8 @@ for (const failure of ["503", "network"] as const) {
     await page.getByLabel("Display name", { exact: true }).fill("Synthetic retry colleague");
     await page.getByRole("button", { name: "Save profile", exact: true }).click();
     await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByRole("alert")).toContainText("save result could not be confirmed");
+    await expect(page.getByRole("button", { name: "Reload profile", exact: true })).toHaveCount(0);
     await expect(page.getByLabel("Display name", { exact: true })).toHaveValue(
       "Synthetic retry colleague"
     );
