@@ -1,14 +1,21 @@
 import type { ApiClient } from "@corely/auth-client";
 import { StaffSelfViewSchema, StaffLifecycleViewSchema } from "@corely/contracts";
-export function createStaffJourneyClient(api: Pick<ApiClient, "request">, workspaceId: string) {
+export function createStaffJourneyClient(
+  api: Pick<ApiClient, "request">,
+  workspaceId: string,
+  focused = false
+) {
   function request(path: string, options: RequestInit = {}, signal?: AbortSignal, key?: string) {
     if (!workspaceId) {
       return Promise.reject(new Error("Workspace required"));
     }
     return api.request(
       `/people${path}`,
-      { ...options, headers: { ...options.headers, "X-Workspace-Id": workspaceId } },
-      { workspaceScope: "none", signal, idempotencyKey: key }
+      {
+        ...options,
+        headers: focused ? options.headers : { ...options.headers, "X-Workspace-Id": workspaceId },
+      },
+      { workspaceScope: focused ? "active" : "none", signal, idempotencyKey: key }
     );
   }
   const write = (path: string, method: string, body: unknown, key: string) =>

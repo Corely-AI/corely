@@ -1,4 +1,6 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { usePeopleRoute } from "./people-runtime";
+import { PeopleLink as Link } from "./people-runtime";
+import { useSearchParams } from "react-router-dom";
 import {
   Button,
   Input,
@@ -12,9 +14,11 @@ import {
 } from "@corely/ui";
 import { CrudListPageLayout, CrudRowActions } from "@corely/web-shared/shared/crud";
 import { staffJourneyCopy } from "./staff-journey-copy";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad } from "./use-people";
 export function PeopleDirectoryPage() {
+  const peopleApi = usePeopleApi();
+  const route = usePeopleRoute();
   const { scope, copy: t, can, loading, locale } = usePeopleAccess();
   const [params, setParams] = useSearchParams();
   const query = new URLSearchParams({
@@ -133,10 +137,13 @@ export function PeopleDirectoryPage() {
                       </TableCell>
                       <TableCell>
                         <CrudRowActions
-                          primaryAction={{ label: t.open, href: `/people/staff/${staff.id}` }}
+                          primaryAction={{
+                            label: t.open,
+                            href: route(`/people/staff/${staff.id}`),
+                          }}
                           secondaryActions={
                             can("profile.manage") && !staff.archivedAt
-                              ? [{ label: t.edit, href: `/people/staff/${staff.id}/edit` }]
+                              ? [{ label: t.edit, href: route(`/people/staff/${staff.id}/edit`) }]
                               : []
                           }
                         />

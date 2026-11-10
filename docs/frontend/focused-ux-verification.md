@@ -54,8 +54,8 @@ images cover loading, empty, missing, denied, error and unsaved-change decisions
 
 - Semantic accessibility trees, automated scans and keyboard interactions were inspected;
   a native screen-reader session (NVDA/VoiceOver), touch device and WebKit were not run.
-- HR is still marked coming soon in the launch catalog. Repeat this suite on its launchable
-  routes after #397/#398 land; this branch does not copy their unmerged implementation.
+- HR is still marked coming soon in the launch catalog. Its #397/#398 implementation is now
+  integrated in the base; launch UX verification remains separate from this three-surface suite.
 - Synthetic customer names and server fixture labels are not a translation coverage audit.
   Existing business workflows outside the checked primary Invoice flow retain their scope.
 - No staging deployment, external app launch or production rollout was performed. Those

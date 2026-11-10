@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { Button, Input, Label } from "@corely/ui";
 import type { StaffAbsence, PersonnelAttachment } from "@corely/contracts";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad, usePeopleMounted } from "./use-people";
 import type { AbsenceCopy } from "./absence-copy";
 export function StaffAbsenceAttachments({
@@ -15,6 +15,7 @@ export function StaffAbsenceAttachments({
   manage: boolean;
   copy: AbsenceCopy;
 }) {
+  const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
   const version = record.revisions[record.revisions.length - 1].version;
   const identity = `${access.scope}:${staffId}:${record.id}:${version}:${manage}`;

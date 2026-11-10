@@ -47,3 +47,17 @@ bindings and rollout checks depend on #399/#404. No merge or deployment was perf
 Addressed `discussion_r4522617954`: both general configurations exclude the dedicated `focused-ux` directory, retaining its three server ports and EN/DE/VI projects only in the UX configuration. The same isolation regression used by the other independent PRs failed before the change and passed afterward; it also asserts that legacy specs are still selected.
 
 Fresh verification: isolation regression **1 passed**, general browser/API probes each select **0 UX tests**, dedicated accessibility/locale/state browser suite **21 passed** with no retries. Scoped ESLint, installed Prettier and whitespace checks passed. Self-review checked both collectors and unchanged dedicated projects/servers. Product UI is unchanged by this correction; existing screenshots remain applicable. Publication retains normal signed pre-commit checks and the documented unrelated broad pre-push bypass.
+
+## PR #426 conflict resolution — 2026-11-10
+
+Merged `origin/development` at `7967ee545` into the current UX head `6bb39d7c9`. Resolved five configuration conflicts by retaining both HR and focused UX in the CI browser matrix and Bash selector, all three dedicated-suite exclusions in both general runners, and all dedicated configurations in the E2E TypeScript project. The automatic lockfile merge retains HR's workspace dependencies and the existing test-only axe dependency; a frozen offline install passed without resolution changes.
+
+Fresh verification after resolution:
+
+- Dedicated browser suites: focused UX **21/21**, HR **11/11**, Invoice **13/13**, without retries. This includes EN/DE/VI accessibility/state coverage, account-switch privacy, recoverable HR saves and reviewed Invoice sending.
+- Shared layout units **27 passed** and Invoice Copilot units **2 passed**. Frontend policy, bundle-policy and suite-isolation regressions **10 passed**; frontend import scan passed. Both general runners collect **0 cases** from each of HR, Invoice migration and focused UX.
+- Bash syntax passed. Stubbed-pnpm selector probes confirmed that both `hr` and `focused-ux` invoke their own browser configuration; actual browser execution is covered above. Existing Windows temporary-cleanup failures in the separate Bash-runner Node tests were not rerun.
+- Invoice and HR typechecks, scoped dedicated-config TypeScript, ESLint, Prettier, documentation targets and staged whitespace passed. Invoice production build and its **998-module** bundle boundary check passed; existing chunk-size warnings remain. Full root/general E2E typechecks and CI are not claimed green.
+- Fresh synthetic 320×740 Invoice and desktop dirty-form captures were visually inspected. This configuration-only conflict resolution adds no visible behavior; the committed screenshot inventory remains representative. HR's implementation is now in the base, while its launch UX acceptance remains separate.
+
+Self-review verified the CI matrix/selector agreement, preserved all exclusions and projects, and confirmed no new API/HR production changes relative to the base. No further findings. Normal DCO/pre-commit checks are retained, as is the documented broad pre-push baseline bypass; the current PR review state is preserved. No PR merge or deployment.

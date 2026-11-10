@@ -1,3 +1,4 @@
+import type { INestApplication, Provider } from "@nestjs/common";
 import { StaffAbsenceController } from "../adapters/http/staff-absence.controller";
 import { StaffAbsenceUseCase } from "../application/staff-absence.usecase";
 import { ExtStaffAbsenceAdapter } from "../infrastructure/ext-staff-absence.adapter";
@@ -63,7 +64,8 @@ import type { UseCaseContext } from "@corely/kernel";
 export async function staffFixture(
   prisma: PrismaService,
   clock: ClockPort = { now: () => new Date() },
-  storage?: ObjectStoragePort
+  storage?: ObjectStoragePort,
+  transport?: { providers: Provider[]; configure: (app: INestApplication) => void }
 ) {
   const uid = () => randomUUID();
   const tenantA = uid(),
@@ -288,6 +290,7 @@ export async function staffFixture(
       PublicDocumentsController,
     ],
     providers: [
+      ...(transport?.providers ?? []),
       { provide: DocumentsApplication, useValue: genericDocuments },
       { provide: RbacGuard, useValue: rbac },
       { provide: StaffAbsenceUseCase, useValue: absenceUseCase },
@@ -303,6 +306,7 @@ export async function staffFixture(
     .compile();
   const app = module.createNestApplication();
   app.useGlobalFilters(new ProblemDetailsExceptionFilter());
+  transport?.configure(app);
   await app.init();
   const ctx: UseCaseContext = { tenantId: tenantA, workspaceId: workspaceA, userId: manager };
   async function cleanup() {
