@@ -27,3 +27,9 @@ Synthetic EN desktop/phone screenshots inspected; link remains an explicit user
 action. Tests use mocked legacy browser APIs separately from a disposable SSO DB
 in task-owned `corely-397-verification`, `corely_384_hr397` on loopback port 57080.
 No actual messages, production data, migration, permanent redirect, merge or release.
+
+## Inline review fix — 2026-11-10
+
+Addressed `discussion_r4522617267`: the general browser and API configurations exclude `invoice-links`; its cohort/rollback projects and servers remain in the dedicated config. The shared isolation regression checks all relevant directories present in each independent branch using Playwright's actual file matcher and verifies legacy specs remain selectable. It failed on the original configuration and passed after the fix.
+
+Fresh checks: isolation regression **1 passed**; both general collection probes select **0 migration tests**; dedicated cohort/rollback browser suite **2 passed**, zero retries. Scoped ESLint, installed Prettier and whitespace checks passed. Self-review checked both collectors, retained legacy selection and unchanged dedicated server/flag setup. No product UI or business behavior changed; existing visual evidence remains applicable. The documented unrelated broad pre-push bypass is retained; signed pre-commit checks run normally.
