@@ -1,4 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
+// Keep even synthetic credentials and handoff markers out of automatic failure snapshots.
+process.env.PLAYWRIGHT_NO_COPY_PROMPT = "1";
 export default defineConfig({
   testDir: "./tests/observability",
   workers: 1,

@@ -55,3 +55,11 @@ approve actual alert/rollback thresholds. Inject failures on approved staging an
 cross-origin transitions. Cross-navigation transaction proofs are intentionally not logged;
 individual requests correlate by UUID, while full transition reproduction uses synthetic
 traffic. Missing answers to these environment/owner questions keep this PR Draft.
+
+## Inline review fix: Login response outcomes — 2026-11-10
+
+Addressed `discussion_r4522618378`: successful Login observations are emitted only after the body is decoded and the existing response/redirect validation succeeds. Non-success statuses retain their immediate bounded classification; malformed JSON/contract responses report unavailable, and a disallowed redirect reports rejected. No origin/CSRF/session policy or event metadata was broadened.
+
+Three browser regressions failed before the fix (malformed 200 JSON, invalid context contract, untrusted redirect all emitted ok). After correction the dedicated suite passes **8 cases**: those failures, 401/503 classification, valid context, trusted handoff and email-code acknowledgement. Navigation diagnostics are captured through a test-only binding before the old console-object context is destroyed; automatic snapshots are disabled. All credentials/URLs are synthetic and API calls intercepted; no mail or live issuer is used.
+
+Fresh checks: Login typecheck/build passed, shared telemetry units **7 passed**, release-report sanitizer **1 passed**; scoped lint has the existing intentional console-info warning and no errors. Self-review traced JSON/body failure, contract failure, abort/timeout and trusted/untrusted redirects; success is recorded once only after validation. Existing UI states are unchanged, so no new layout screenshot is needed. A strict scoped TypeScript check covers the browser spec. Normal signed pre-commit and the documented unrelated broad pre-push bypass are retained.
