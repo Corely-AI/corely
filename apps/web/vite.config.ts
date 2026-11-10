@@ -89,6 +89,15 @@ export default defineConfig(({ mode }) => {
 
   return {
     ...baseConfig,
+    define: {
+      ...baseConfig.define,
+      "import.meta.env.VITE_CORELY_INVOICE_LINK_MIGRATION": JSON.stringify(
+        env.VITE_CORELY_INVOICE_LINK_MIGRATION ?? "false"
+      ),
+      "import.meta.env.VITE_CORELY_INVOICE_LINK_WORKSPACES": JSON.stringify(
+        env.VITE_CORELY_INVOICE_LINK_WORKSPACES ?? ""
+      ),
+    },
     server: {
       ...baseConfig.server,
       proxy: {

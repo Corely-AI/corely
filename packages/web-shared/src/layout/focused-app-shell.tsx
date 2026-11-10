@@ -1,3 +1,4 @@
+import { observeFocused } from "../session/focused-observation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useBeforeUnload, useLocation, useNavigate } from "react-router-dom";
 import { Grid2X2, Menu, Search, UserRound } from "lucide-react";
@@ -43,6 +44,7 @@ export interface FocusedAppShellProps {
   label: string;
   /** Approved route roots from the owning focused client. */
   routeRoots: readonly string[];
+  navigationLabels?: Readonly<Record<string, string>>;
   /** Exact deployment configuration, never a URL query parameter. */
   appCenterOrigin: string;
   workspace: { id: string; name: string };
@@ -59,10 +61,14 @@ function PaletteControls({ commands, label }: { commands: Command[]; label: stri
   const { open, setCommands } = useCommandPalette();
   useEffect(() => setCommands(commands), [commands, setCommands]);
   return (
-    <Button variant="outline" onClick={open} aria-label={label}>
+    <Button
+      variant="outline"
+      onClick={open}
+      aria-label={label}
+      aria-keyshortcuts="Control+k Meta+k"
+    >
       <Search className="h-4 w-4" />
       <span className="hidden sm:inline ml-2">{label}</span>
-      <kbd className="hidden md:inline ml-3 text-xs text-muted-foreground">Ctrl K</kbd>
     </Button>
   );
 }
@@ -72,6 +78,7 @@ export function FocusedAppShell({
   app,
   label,
   routeRoots,
+  navigationLabels = {},
   appCenterOrigin,
   workspace,
   workspaces,
@@ -102,7 +109,13 @@ export function FocusedAppShell({
     workspace.id,
     ready && !navigation.isError ? navigation.data : undefined,
     routeRoots
-  );
+  ).map((group) => ({
+    ...group,
+    items: group.items.map((item) => ({
+      ...item,
+      label: (item.labelKey && navigationLabels[item.labelKey]) || item.label,
+    })),
+  }));
   const availableActions = focusedActions(groups, actions, routeRoots);
   const items = groups.flatMap((group) => group.items);
   const namespace = `${state.status === "authenticated" ? state.session.user.userId : "anon"}:${client.config.tenantId}:${workspace.id}:${app}`;
@@ -207,8 +220,24 @@ export function FocusedAppShell({
     setLaunching(false);
     if (url) {
       // The user can edit while the request is pending. Ask using the latest dirty state.
-      currentGuard.current(() => leavePage(url));
+      currentGuard.current(() => {
+        observeFocused({
+          surface: app,
+          layer: "browser",
+          event: "app-launch",
+          outcome: "ok",
+          destination: id,
+        });
+        leavePage(url);
+      });
     } else {
+      observeFocused({
+        surface: app,
+        layer: "browser",
+        event: "app-launch",
+        outcome: "rejected",
+        destination: id,
+      });
       setLaunchError(true);
     }
   };
@@ -281,6 +310,7 @@ export function FocusedAppShell({
       commandContext={commandContext}
       initialCommands={commands}
       initialNamespace={namespace}
+      labels={copy.palette}
     >
       <div className="flex h-[100dvh] flex-col overflow-hidden bg-background text-foreground">
         <a href="#focused-content" className="sr-only focus:not-sr-only">
@@ -346,7 +376,7 @@ export function FocusedAppShell({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="flex basis-full items-center justify-between gap-2 sm:ml-auto sm:basis-auto">
+          <div className="flex basis-full flex-wrap items-center justify-between gap-2 sm:ml-auto sm:basis-auto">
             <label className="flex min-w-0 items-center gap-2 text-sm">
               <span className="sr-only">{copy.workspace}</span>
               <select

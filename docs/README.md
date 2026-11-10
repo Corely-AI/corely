@@ -85,8 +85,13 @@ Frontend guidelines and specific docs.
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
 - [App Center](./frontend/app-center.md) — workspace-aware app directory, authorized host controls, refresh behavior and UI evidence
+- [Focused surface diagnostics](./observability/focused-surfaces.md) — sanitized request observations, release reports and pilot operations gates
+- [Focused app UX verification](./frontend/focused-ux-verification.md) — accessibility corrections, locale/keyboard checks and responsive evidence
 - [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition
 - [Focused Invoice client](./frontend/focused-invoice-client.md) — reused invoice screens, scoped customer/supporting workflows, draft-only assistant and verification evidence
+- [Invoice link migration](./frontend/invoice-link-migration.md) — opt-in legacy handoff, route/query map and rollback
+- [Focused HR client](./frontend/focused-hr-client.md) — existing People views through host sessions, scoped navigation and evidence
+- [HR privacy verification](./backend/hr-privacy-verification.md) — scoped authorization, private files, revocation and actual test evidence
 - [Workspace Session Boundary](./frontend/workspace-session-boundary.md) — validated arrival, per-tab context and draft/write guards
 
 ### 🚀 DevOps & Infra

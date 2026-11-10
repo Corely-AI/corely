@@ -36,6 +36,7 @@ export function shellConfig(app: AppLaunchId): WorkspaceConfig {
             {
               id: invoice ? "invoices" : "people-directory",
               label: invoice ? "Invoices" : "Staff directory",
+              labelKey: invoice ? "nav.invoices" : "nav.staffDirectory",
               route: invoice ? "/invoices" : "/people/staff",
               icon: invoice ? "FileText" : "Users",
               section: invoice ? "finance" : "team",

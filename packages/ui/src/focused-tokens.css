@@ -1,0 +1,6 @@
+/* Opt-in contrast corrections for the focused internal surfaces. */
+:root.corely-focused:not(.dark) {
+  --foreground-muted: 215 16% 45%;
+  --muted-foreground: 215 16% 45%;
+  --accent-foreground: 222 47% 11%;
+}

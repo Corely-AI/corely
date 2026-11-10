@@ -143,8 +143,8 @@ export async function createSsoTestContext(origins = ssoTestOrigins, realClock =
     const context = await service.context(requestId, undefined);
     return { ...boot, requestId, context };
   }
-  async function login(origin = origins.app) {
-    const initial = await start(origin);
+  async function login(origin = origins.app, returnPath?: string) {
+    const initial = await start(origin, returnPath);
     const result = await service.login(
       {
         requestId: initial.requestId,

@@ -1,4 +1,8 @@
+import { observeFocused } from "./focused-observation";
 import {
+  focusedRequestEvent,
+  focusedOutcome,
+  type FocusedObservation,
   isSafeSsoReturnPath,
   SsoHandleSchema,
   SsoRedirectSchema,
@@ -117,6 +121,23 @@ export class SessionClient {
         listener();
       }
     }
+    const headers = new Headers(options.headers);
+    const requestId = headers.get("x-request-id") ?? crypto.randomUUID();
+    headers.set("x-request-id", requestId);
+    let observed = false;
+    const observe = (outcome: FocusedObservation["outcome"]) => {
+      if (observed) {
+        return;
+      }
+      observed = true;
+      observeFocused({
+        surface: this.config.appKey,
+        layer: "browser",
+        event: focusedRequestEvent(url),
+        outcome,
+        ...(/^[0-9a-f-]{36}$/i.test(requestId) ? { requestId } : {}),
+      });
+    };
     let bodyOpen = false;
     const cleanup = () => {
       options.signal?.removeEventListener("abort", abort);
@@ -130,6 +151,7 @@ export class SessionClient {
     try {
       const response = await this.fetchFn(url, {
         ...options,
+        headers,
         signal: controller.signal,
         credentials: "same-origin",
         // CORS mode preserves Origin on POST under no-referrer (including WebKit).
@@ -143,6 +165,7 @@ export class SessionClient {
         throw new DOMException("Stale session request", "AbortError");
       }
       if (!response.ok) {
+        observe(focusedOutcome(response.status));
         throw fail(
           new SessionRequestError(
             response.status,
@@ -157,6 +180,7 @@ export class SessionClient {
         );
       }
       if (!response.body || [204, 205, 304].includes(response.status)) {
+        observe("ok");
         return response;
       }
       // Keep cancellation attached after headers, until the body/stream is consumed.
@@ -170,12 +194,18 @@ export class SessionClient {
               throw new DOMException("Stale response", "AbortError");
             }
             if (part.done) {
+              observe("ok");
               cleanup();
               sink.close();
             } else {
               sink.enqueue(part.value);
             }
           } catch (error) {
+            observe(
+              controller.signal.aborted || generation !== this.generation
+                ? "aborted"
+                : "unavailable"
+            );
             cleanup();
             // Headers are not the end of a fetch: downloads/SSE/JSON can fail later.
             // Preserve intentional cancellation and stale-scope errors without changing
@@ -188,6 +218,7 @@ export class SessionClient {
           }
         },
         cancel: async (reason) => {
+          observe("aborted");
           cleanup();
           controller.abort();
           await reader.cancel(reason);
@@ -199,6 +230,9 @@ export class SessionClient {
         headers: response.headers,
       });
     } catch (error) {
+      observe(
+        controller.signal.aborted || generation !== this.generation ? "aborted" : "unavailable"
+      );
       if (
         error instanceof SessionRequestError ||
         controller.signal.aborted ||
@@ -369,6 +403,20 @@ export class SessionClient {
   }
   async startLogin(returnPath: string): Promise<string> {
     if (!isSafeSsoReturnPath(returnPath)) {
+      // Record a prevented auth return cycle, without retaining its URL or proofs.
+      try {
+        const pathname = new URL(returnPath, "https://local.invalid").pathname;
+        if (/^\/(?:auth|sso|api\/(?:session|bff))(?:\/|$)/i.test(pathname)) {
+          observeFocused({
+            surface: this.config.appKey,
+            layer: "browser",
+            event: "redirect-loop",
+            outcome: "rejected",
+          });
+        }
+      } catch {
+        /* Keep the existing validation result. */
+      }
       throw new Error("Invalid return path");
     }
     const boot = z

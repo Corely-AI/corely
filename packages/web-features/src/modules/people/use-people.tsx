@@ -5,7 +5,10 @@ import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useEffectivePermissions, hasPermission } from "@corely/web-shared/shared/lib/permissions";
 import { peopleCopy } from "./people-copy";
 
-export function usePeopleAccess() {
+import { createContext, useContext, type ReactNode } from "react";
+import { usePeopleRuntime } from "./people-runtime";
+const Access = createContext<ReturnType<typeof useLegacyPeopleAccess> | undefined>(undefined);
+function useLegacyPeopleAccess() {
   const { user } = useAuth();
   const { activeWorkspaceId } = useWorkspace();
   const { i18n } = useTranslation();
@@ -18,6 +21,37 @@ export function usePeopleAccess() {
     loading: permissions.isLoading,
     can: (key: string) => hasPermission(permissions.data?.permissions, `people.${key}`),
   };
+}
+function LegacyAccess({ children }: { children: ReactNode }) {
+  const value = useLegacyPeopleAccess();
+  return <Access.Provider value={value}>{children}</Access.Provider>;
+}
+export function PeopleAccessProvider({ children }: { children: ReactNode }) {
+  const runtime = usePeopleRuntime();
+  const { i18n } = useTranslation();
+  const locale = i18n.language.split("-")[0];
+  return runtime ? (
+    <Access.Provider
+      value={{
+        locale,
+        scope: JSON.stringify(runtime.scope),
+        copy: peopleCopy[locale === "de" || locale === "vi" ? locale : "en"],
+        loading: false,
+        can: (key: string) => hasPermission(runtime.permissions, `people.${key}`),
+      }}
+    >
+      {children}
+    </Access.Provider>
+  ) : (
+    <LegacyAccess>{children}</LegacyAccess>
+  );
+}
+export function usePeopleAccess() {
+  const access = useContext(Access);
+  if (!access) {
+    throw new Error("PeopleAccessProvider required");
+  }
+  return access;
 }
 // Personnel responses stay in mounted component memory, outside persisted query caches.
 export function usePeopleLoad<T>(

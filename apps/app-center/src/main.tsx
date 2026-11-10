@@ -1,3 +1,4 @@
+import "@corely/ui/focused-tokens.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
     ),
   },
 ]);
+document.documentElement.classList.add("corely-focused");
 const root = document.getElementById("root");
 if (!root) {
   throw new Error("Missing App Center root");

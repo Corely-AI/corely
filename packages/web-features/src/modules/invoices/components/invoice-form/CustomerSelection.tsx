@@ -153,14 +153,14 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
         <Button
           type="button"
           variant="outline"
-          className="w-full justify-between text-left"
+          className="h-auto min-h-11 w-full justify-between whitespace-normal text-left"
           onClick={() => {
             setSearch("");
             setCustomerDialogOpen(true);
           }}
           data-testid="invoice-customer-select"
         >
-          <div className="flex flex-col items-start">
+          <div className="min-w-0 flex flex-col items-start break-words">
             <span className="text-sm font-medium">
               {selectedCustomer ? selectedCustomer.displayName : t("customers.selectCustomer")}
             </span>
@@ -168,7 +168,7 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
               {selectedCustomerAddress || selectedCustomer?.email || t("customers.searchOrAdd")}
             </span>
           </div>
-          <span className="text-xs text-muted-foreground">{t("common.search")}</span>
+          <span className="shrink-0 text-xs text-muted-foreground">{t("common.search")}</span>
         </Button>
         {errors.customerPartyId && (
           <p className="text-sm text-destructive">{errors.customerPartyId.message}</p>

@@ -1,14 +1,16 @@
+import { PeopleLink as Link } from "./people-runtime";
 import { staffJourneyCopy } from "./staff-journey-copy";
 import { StaffAbsences } from "./staff-absences";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { Button, Badge } from "@corely/ui";
 import type { StaffProfile } from "@corely/contracts";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad } from "./use-people";
 import { StaffProfileForm } from "./staff-profile-form";
 import { StaffAvailability } from "./staff-availability";
 import { StaffPrivateDetails } from "./staff-private-details";
 export function StaffProfilePage() {
+  const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
   const { id } = useParams<{ id: string }>();
   const { pathname } = useLocation();

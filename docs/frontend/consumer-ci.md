@@ -1,8 +1,7 @@
 # Frontend consumer CI
 
 The `Frontend consumers` workflow runs on PRs and pushes to `development`.
-It discovers Vite workspaces from their package manifests, including future HR
-when that workspace exists. Every consumer runs on every change: app-only changes
+It discovers Vite workspaces from their package manifests, including HR. Every consumer runs on every change: app-only changes
 and shared-package changes use the same conservative fan-out. This costs more CI
 work than pruning by changed paths, but cannot omit an affected consumer because
 of an incomplete dependency graph. Existing web, freelancer, CRM and OpenBuk
@@ -29,7 +28,7 @@ Supporting shared components remain reusable. The check rebuilds with
 module inventory in `ci-results/invoice-bundle-modules.json`. This does not set
 bundle-size budgets or audit each component's business behavior.
 
-App Center and focused Invoice browser suites exercise existing shared contracts
+App Center, focused Invoice and HR browser suites exercise existing shared contracts
 with synthetic cookie-session transport. Shared session/shell and App Center unit
 regressions also run. These independent checks run through
 `scripts/ci/run-focused-checks.sh`: a failed unit suite does not suppress the

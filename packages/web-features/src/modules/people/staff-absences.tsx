@@ -1,8 +1,9 @@
+import { usePeopleDraftGuard } from "./people-runtime";
 import { useState, useRef, type FormEvent } from "react";
 import { Button, Input, Label, Textarea, Badge } from "@corely/ui";
 import { ConfirmDeleteDialog } from "@corely/web-shared/shared/crud";
 import { RecordStaffAbsenceSchema, type StaffAbsence } from "@corely/contracts";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad, usePeopleMounted } from "./use-people";
 import { absenceCopy, type AbsenceCopy } from "./absence-copy";
 import { StaffAbsenceAttachments } from "./staff-absence-attachments";
@@ -44,6 +45,7 @@ function AbsenceRecords({
   documents: boolean;
   onSaved: () => void;
 }) {
+  const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
   const t = absenceCopy[access.locale === "de" || access.locale === "vi" ? access.locale : "en"];
   const result = usePeopleLoad(
@@ -267,6 +269,9 @@ function AbsenceForm({
   onClose: () => void;
   onReload: () => void;
 }) {
+  const [dirty, setDirty] = useState(false);
+  usePeopleDraftGuard(dirty);
+  const peopleApi = usePeopleApi();
   const current = record?.revisions.at(-1);
   const [kind, setKind] = useState(current?.range.kind ?? "full-day");
   const [busy, setBusy] = useState(false),
@@ -320,7 +325,11 @@ function AbsenceForm({
     }
   }
   return (
-    <form className="space-y-4 rounded-md bg-muted/40 p-4" onSubmit={(event) => void submit(event)}>
+    <form
+      onChange={() => setDirty(true)}
+      className="space-y-4 rounded-md bg-muted/40 p-4"
+      onSubmit={(event) => void submit(event)}
+    >
       <h3 className="font-medium">{record ? t.edit : t.add}</h3>
       <p className="text-sm text-muted-foreground">{t.hint}</p>
       <fieldset disabled={busy} className="space-y-4">

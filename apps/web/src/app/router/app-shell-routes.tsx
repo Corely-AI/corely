@@ -1,3 +1,4 @@
+import { LegacyInvoiceHandoff } from "./legacy-invoice-handoff";
 import { DailyWorkPage } from "@corely/web-features/modules/tasks/daily-work-page";
 import {
   PeopleDirectoryPage,
@@ -252,11 +253,46 @@ export const appShellRoutes = (
           </RequireSurface>
         }
       />
-      <Route path="/invoices" element={<InvoicesPage />} />
-      <Route path="/invoices/new" element={<NewInvoicePage />} />
-      <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
-      <Route path="/invoices/:id/edit" element={<InvoiceDetailPage />} />
-      <Route path="/audit" element={<InvoiceAuditPage />} />
+      <Route
+        path="/invoices"
+        element={
+          <LegacyInvoiceHandoff>
+            <InvoicesPage />
+          </LegacyInvoiceHandoff>
+        }
+      />
+      <Route
+        path="/invoices/new"
+        element={
+          <LegacyInvoiceHandoff>
+            <NewInvoicePage />
+          </LegacyInvoiceHandoff>
+        }
+      />
+      <Route
+        path="/invoices/:id"
+        element={
+          <LegacyInvoiceHandoff>
+            <InvoiceDetailPage />
+          </LegacyInvoiceHandoff>
+        }
+      />
+      <Route
+        path="/invoices/:id/edit"
+        element={
+          <LegacyInvoiceHandoff>
+            <InvoiceDetailPage />
+          </LegacyInvoiceHandoff>
+        }
+      />
+      <Route
+        path="/audit"
+        element={
+          <LegacyInvoiceHandoff>
+            <InvoiceAuditPage />
+          </LegacyInvoiceHandoff>
+        }
+      />
       <Route
         path="/coaching/offers"
         element={

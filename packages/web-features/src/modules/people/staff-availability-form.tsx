@@ -1,3 +1,4 @@
+import { usePeopleDraftGuard } from "./people-runtime";
 import { useRef, useState } from "react";
 import { Button, Input, Label } from "@corely/ui";
 import {
@@ -6,7 +7,7 @@ import {
   type StaffPattern,
 } from "@corely/contracts";
 import type { AvailabilityCopy } from "./availability-copy";
-import { peopleApi } from "./people-api";
+import { usePeopleApi } from "./people-runtime";
 import { usePeopleMounted } from "./use-people";
 
 function template(pattern?: StaffPattern): StaffPattern {
@@ -43,13 +44,19 @@ export function StaffAvailabilityForm({
   onSaved: () => void;
   onReload: () => void;
 }) {
+  const peopleApi = usePeopleApi();
+  const [dirty, setDirty] = useState(false);
+  usePeopleDraftGuard(dirty);
   const [pattern, setPattern] = useState(() => template(value.plans.at(-1)?.pattern));
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [invalid, setInvalid] = useState<string[]>([]);
   const mounted = usePeopleMounted();
   const operation = useRef<{ fingerprint: string; key: string }>();
-  const update = (fields: Partial<StaffPattern>) => setPattern((p) => ({ ...p, ...fields }));
+  const update = (fields: Partial<StaffPattern>) => {
+    setDirty(true);
+    setPattern((p) => ({ ...p, ...fields }));
+  };
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const parsed = SaveStaffAvailabilitySchema.safeParse({
@@ -71,6 +78,7 @@ export function StaffAvailabilityForm({
     try {
       await peopleApi.saveAvailability(id, parsed.data, operation.current.key);
       if (mounted.current) {
+        setDirty(false);
         onSaved();
       }
     } catch {
@@ -88,7 +96,7 @@ export function StaffAvailabilityForm({
       weeklyHours: pattern.weeklyHours.map((w, i) => (i === index ? { ...w, ...fields } : w)),
     });
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form onChange={() => setDirty(true)} onSubmit={submit} className="space-y-5">
       <fieldset disabled={busy} className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
@@ -307,6 +315,7 @@ export function StaffAvailabilityForm({
                   variant="outline"
                   disabled={busy}
                   onClick={() => {
+                    setDirty(true);
                     setPattern(template(p.pattern));
                     setInvalid([]);
                     setFailed(false);

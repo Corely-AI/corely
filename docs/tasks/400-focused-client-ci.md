@@ -47,6 +47,19 @@ UI/UX evidence is not applicable: this follow-up changes CI, local validation an
 fixtures, with no customer screen changes. No merge, deployment or rollout is performed. Keep
 Draft until remaining required checks have an accepted resolution.
 
+## PR #428 conflict resolution — November 10, 2026
+
+Merged `origin/development` at `d050cd5b8` into the current CI head `4517c3dba`, preserving the #401 multi-origin work already merged through #429. Resolved three conflicts: both general Playwright collectors retain the multi-origin exclusion alongside every integrated focused suite, and the E2E TypeScript project retains both observability and multi-origin configurations. Reviewed the automatic session/context/transport-test merges: WebKit's CORS-mode correction, bounded diagnostics, request-local failures, HR permission discovery and Invoice's restricted route roots remain intact.
+
+Fresh checks after resolution:
+
+- All CI-script tests **15 passed**, no skips, including Windows Git Bash execution, absolute-path hook filtering, forced-failure continuation and sanitized browser reporting. Frontend import scan passed; both general collectors find **0 cases** in each of the five isolated focused/multi-origin directories.
+- Targeted session/provider/shell/telemetry/legacy-route units **85 passed**. Five API integration files **53 passed**, no skips, including all **27** SSO transport cases, real callback diagnostics and direct authorization boundaries.
+- Workspace-session browser suite **6/6** and real HTTPS multi-origin suite **18/18** passed, without retries; the latter executes the actual clients in Chromium and WebKit. The saved sanitized summary reports passed for all 18 cases. Fresh Chromium App Center and masked WebKit Invoice evidence were visually inspected.
+- Frozen offline install, Prisma generation, shared/browser package builds, data/API typechecks, multi-origin and scoped configuration TypeScript, changed-config lint, formatting, local links and staged whitespace passed. Current-schema DDL was applied only to a newly created, labelled, loopback-only PostgreSQL container/database. The task-owned container was removed after the tests; no application database or historical migration was changed.
+
+Self-review found no further issues. This conflict update adds no customer UI behavior and does not broaden backend access. Required legacy consumer/architecture checks and deployment/pilot gates remain separate; they were not rerun or suppressed here, and full root/hosted CI is not claimed green. Normal DCO/pre-commit checks and the documented broad pre-push baseline bypass are retained; current PR review state is preserved. No PR merge or deployment.
+
 ## Historical verification from PR #420
 
 - Import policy: four node tests passed; actual frontend source scan passed.

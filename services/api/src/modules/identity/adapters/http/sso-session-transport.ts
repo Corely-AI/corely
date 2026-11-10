@@ -8,6 +8,7 @@ import { json, urlencoded, type Request, type Response, type NextFunction } from
 import { SsoSessionService } from "../../application/services/sso-session.service";
 import { SsoHttpSecurity, SSO_COOKIES } from "./sso-http-security";
 import { setSsoSessionPrincipal } from "./sso-session-principal";
+import { configureFocusedObservation } from "./focused-observation.middleware";
 import type { SsoAppKey } from "@corely/contracts";
 
 const shared = ["documents", "workspaces", "menu", "platform/apps", "copilot", "ai-copilot"];
@@ -24,6 +25,9 @@ export function bffTarget(path: string, app: SsoAppKey): string | undefined {
   const target = path.slice("/api/bff".length);
   if (/^\/invoices\/public(?:\/|$)/i.test(target)) {
     return;
+  }
+  if (target === "/identity/permissions/effective") {
+    return target;
   }
   return routes[app].some((root) => target === `/${root}` || target.startsWith(`/${root}/`))
     ? target
@@ -48,6 +52,7 @@ function bodyErrorStatus(error: unknown): number {
 
 /** Install before SSO CORS, legacy parsers, public URL rewriting and Nest routing. */
 export function configureSsoSessionTransport(app: INestApplication): void {
+  configureFocusedObservation(app);
   const sessions = app.get(SsoSessionService);
   const security = app.get(SsoHttpSecurity);
   const parseJson = json({ limit: "16mb" });
@@ -105,6 +110,9 @@ export function configureSsoSessionTransport(app: INestApplication): void {
       }
       const appKey = security.appKey(origin);
       const target = isBff ? bffTarget(path, appKey) : undefined;
+      if (target === "/identity/permissions/effective" && req.method !== "GET") {
+        return res.status(405).end();
+      }
       if (isBff && !target) {
         return res.status(404).end();
       }
