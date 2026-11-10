@@ -66,6 +66,14 @@ This is representative navigation verification, not an audit of every module scr
 
 ## Configuration and remaining limits
 
+The repository pre-push unit run completed with 328 passing files, 1 failed suite,
+1,505 passed tests and 8 skipped. The existing cash-handoff integration suite
+overrides its connection to a passwordless `hadoan` local database and fails at
+SCRAM initialization. It is outside this change. The Draft branch is published
+using the hook's documented `HUSKY=0` override; this does not claim that the full
+suite or subsequent repository-wide push gates passed. Both signed commits ran
+the normal formatting/lint/line-limit commit hooks.
+
 Set the legacy origin only to the retained web client. Production requires HTTPS;
 the existing HTTPS/SSO deployment and rollout gates are unchanged. Rollback removes
 that variable and/or the directory descriptors without changing records. The local
