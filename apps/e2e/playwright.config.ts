@@ -21,6 +21,7 @@ export default defineConfig({
     "**/app-center/**",
     "**/focused-hr/**",
     "**/invoice-links/**",
+    "**/expenses-shell/**",
     "**/focused-ux/**",
     "**/observability/**",
     "**/multi-origin/**",
