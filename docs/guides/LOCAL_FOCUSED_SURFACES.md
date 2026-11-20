@@ -58,6 +58,14 @@ pnpm focused:check
 pnpm dev:focused:api
 ```
 
+This local API runner also sets `CORELY_LAUNCH_INVOICE_ENABLED=true`, so the
+App Center Invoice tile opens the existing Invoice client with invoice-only
+navigation. The default outside this runner remains disabled. Its configured
+Invoice origin is required; a missing origin does not fall back to the full
+administration UI. Existing routes on the legacy web client remain available.
+For local rollback, set `CORELY_LAUNCH_INVOICE_ENABLED=false` in
+`.env.focused.local` and restart the API runner.
+
 Run the second command in a dedicated terminal. It starts the existing `dev:api`
 workflow with validated server-side registrations, proxy key, SSO encryption key
 and launch origins; no secrets are printed. The API must already have a developer-

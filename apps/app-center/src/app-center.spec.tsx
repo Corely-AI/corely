@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppCenter } from "./app-center";
+import type { AppCatalogItem } from "@corely/contracts";
+import { catalogEntryUrl } from "./catalog-entry";
 
 const mocks = vi.hoisted(() => ({
   json: vi.fn(),
@@ -32,15 +34,21 @@ vi.mock("@corely/web-shared/session/workspace-session-context", () => ({
     confirmExternalNavigation: mocks.leave,
   }),
 }));
-const invoice = {
+const invoice: AppCatalogItem = {
   appId: "invoices",
+  name: "Invoices",
+  tier: 1,
+  version: "1.0.0",
+  dependencies: [],
   enabled: true,
   launch: {
     launchId: "invoice",
+    surfaceId: "platform",
+    iconKey: "FileText",
     category: "finance",
     availability: "available",
     url: "https://invoice.app.corely.one/",
-    displayName: { en: "Invoice" },
+    displayName: { en: "Invoice", de: "Rechnungen", vi: "Hóa đơn" },
   },
 };
 afterEach(() => {
@@ -59,6 +67,25 @@ function setup(management: { path?: string } = {}) {
   );
 }
 describe("app launch revalidation", () => {
+  it("opens the focused Invoice origin instead of an available legacy directory destination", async () => {
+    const entry: AppCatalogItem = {
+      ...invoice,
+      directory: {
+        menuId: "invoices",
+        category: "finance",
+        displayName: { en: "Invoice", de: "Rechnungen", vi: "Hóa đơn" },
+        destination: { origin: "https://admin.corely.one", path: "/invoices" },
+      },
+    };
+    mocks.directory.mockResolvedValue([entry]);
+    setup();
+    fireEvent.click(await screen.findByRole("button", { name: "Open: Invoice" }));
+    await waitFor(() => expect(mocks.leave).toHaveBeenCalledOnce());
+    expect(catalogEntryUrl(entry, "workspace-a", "en")).toBe(
+      "https://invoice.app.corely.one/?workspaceId=workspace-a&lang=en"
+    );
+  });
+
   it("offers host administration only when the server supplies a link", async () => {
     mocks.directory.mockResolvedValue([invoice]);
     setup({ path: "/settings/tenants/tenant-a" });

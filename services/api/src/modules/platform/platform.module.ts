@@ -1,5 +1,8 @@
 import { EnvModule } from "@corely/config";
-import { appLaunchOriginsProvider } from "./infrastructure/configuration/app-launch-origins.provider";
+import {
+  appLaunchOriginsProvider,
+  invoiceLaunchEnabledProvider,
+} from "./infrastructure/configuration/app-launch-origins.provider";
 import { ListAppCatalogUseCase } from "./application/use-cases/list-app-catalog.usecase";
 import { ListAppLaunchesUseCase } from "./application/use-cases/list-app-launches.usecase";
 import { GetAppManagementLinkUseCase } from "./application/use-cases/get-app-management-link.usecase";
@@ -120,6 +123,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     OperationalPackageService,
 
     appLaunchOriginsProvider,
+    invoiceLaunchEnabledProvider,
     ListAppCatalogUseCase,
     ListAppLaunchesUseCase,
     GetAppManagementLinkUseCase,

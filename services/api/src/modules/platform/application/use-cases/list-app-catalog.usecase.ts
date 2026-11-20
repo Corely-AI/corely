@@ -11,7 +11,10 @@ import {
   TENANT_APP_INSTALL_REPOSITORY_TOKEN,
   type TenantAppInstallRepositoryPort,
 } from "../ports/tenant-app-install-repository.port";
-import { APP_LAUNCH_ORIGINS_TOKEN } from "../ports/app-launch-origins.port";
+import {
+  APP_LAUNCH_ORIGINS_TOKEN,
+  APP_INVOICE_LAUNCH_ENABLED_TOKEN,
+} from "../ports/app-launch-origins.port";
 
 @Injectable()
 export class ListAppCatalogUseCase {
@@ -19,7 +22,8 @@ export class ListAppCatalogUseCase {
     @Inject(APP_REGISTRY_TOKEN) private readonly registry: AppRegistryPort,
     @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
     private readonly installs: TenantAppInstallRepositoryPort,
-    @Inject(APP_LAUNCH_ORIGINS_TOKEN) private readonly origins: AppLaunchOrigins
+    @Inject(APP_LAUNCH_ORIGINS_TOKEN) private readonly origins: AppLaunchOrigins,
+    @Inject(APP_INVOICE_LAUNCH_ENABLED_TOKEN) private readonly invoiceLaunchEnabled = false
   ) {}
 
   async execute(tenantId: string | null): Promise<AppCatalogItem[]> {
@@ -35,7 +39,9 @@ export class ListAppCatalogUseCase {
       description: app.description,
       dependencies: app.dependencies,
       enabled: enabled.has(app.appId),
-      ...(app.directory ? { directory: app.directory } : {}),
+      ...(app.directory
+        ? { directory: this.isFocusedInvoice(app) ? undefined : app.directory }
+        : {}),
       ...(app.launch ? { launch: this.projectLaunch(app, enabled.has(app.appId)) } : {}),
     }));
   }
@@ -45,7 +51,7 @@ export class ListAppCatalogUseCase {
     if (!launch) {
       return undefined;
     }
-    if (launch.availability === "coming-soon") {
+    if (launch.availability === "coming-soon" && !this.isFocusedInvoice(app)) {
       return { ...launch, availability: "coming-soon" };
     }
     if (!enabled) {
@@ -55,5 +61,9 @@ export class ListAppCatalogUseCase {
     return url
       ? { ...launch, availability: "available", url }
       : { ...launch, availability: "unconfigured" };
+  }
+
+  private isFocusedInvoice(app: AppManifest): boolean {
+    return this.invoiceLaunchEnabled && app.launch?.launchId === "invoice";
   }
 }

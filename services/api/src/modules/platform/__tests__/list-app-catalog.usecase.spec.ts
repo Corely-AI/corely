@@ -38,6 +38,34 @@ const released = (app: AppManifest): AppManifest => ({
 });
 
 describe("existing app catalog launch projection", () => {
+  it("opens the focused Invoice client when opted in instead of the broad legacy directory", async () => {
+    const f = fixture();
+    const useCase = new ListAppCatalogUseCase(
+      f.registry,
+      f.installs,
+      { invoice: "https://invoice.app.corely.one", legacy: "https://admin.corely.one" },
+      true
+    );
+    const items = await useCase.execute("tenant-a");
+    expect(items[0].launch).toMatchObject({
+      availability: "available",
+      url: "https://invoice.app.corely.one/",
+    });
+    expect(items[0].directory).toBeUndefined();
+    expect(items[1].launch?.availability).toBe("coming-soon");
+
+    const unconfigured = new ListAppCatalogUseCase(
+      f.registry,
+      f.installs,
+      { legacy: "https://admin.corely.one" },
+      true
+    );
+    const missingOrigin = (await unconfigured.execute("tenant-a"))[0];
+    expect(missingOrigin.launch?.availability).toBe("unconfigured");
+    expect(missingOrigin.directory).toBeUndefined();
+    expect((await useCase.execute("tenant-b"))[0].launch?.availability).toBe("app-disabled");
+  });
+
   it("maps display IDs to existing owners, preserves dependencies and never promotes unshipped UIs", async () => {
     const f = fixture();
     const items = await f.useCase.execute("tenant-a");

@@ -49,6 +49,7 @@ export const focusedDevEnvSchema = z.object({
   CORELY_DEV_API_ORIGIN: loopbackOrigin,
   CORELY_DEV_TLS_KEY: z.string().min(1),
   CORELY_DEV_TLS_CERT: z.string().min(1),
+  CORELY_LAUNCH_INVOICE_ENABLED: z.enum(["true", "false"]).default("true"),
   CORELY_SSO_SECRET: z.string().regex(/^[a-f0-9]{64}$/i),
   CORELY_SSO_PROXY_KEY: z
     .string()
@@ -107,6 +108,7 @@ export function parseFocusedDevEnv(input: Record<string, string | undefined>) {
       CORELY_SSO_PROXY_KEY: server.CORELY_SSO_PROXY_KEY,
       CORELY_SSO_REGISTRATIONS: JSON.stringify({ loginOrigin: origins.login, apps }),
       CORELY_LAUNCH_INVOICE_ORIGIN: origins.invoice,
+      CORELY_LAUNCH_INVOICE_ENABLED: server.CORELY_LAUNCH_INVOICE_ENABLED,
       CORELY_LAUNCH_HR_ORIGIN: origins.hr,
     },
     callbacks: Object.fromEntries(apps.map(({ key, origin }) => [key, `${origin}/auth/callback`])),

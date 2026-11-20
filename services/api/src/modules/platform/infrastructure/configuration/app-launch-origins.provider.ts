@@ -1,6 +1,15 @@
 import { EnvService } from "@corely/config";
 import { AppLaunchOriginsSchema } from "@corely/contracts";
-import { APP_LAUNCH_ORIGINS_TOKEN } from "../../application/ports/app-launch-origins.port";
+import {
+  APP_LAUNCH_ORIGINS_TOKEN,
+  APP_INVOICE_LAUNCH_ENABLED_TOKEN,
+} from "../../application/ports/app-launch-origins.port";
+
+export const invoiceLaunchEnabledProvider = {
+  provide: APP_INVOICE_LAUNCH_ENABLED_TOKEN,
+  useFactory: (env: EnvService) => env.getValue("CORELY_LAUNCH_INVOICE_ENABLED"),
+  inject: [EnvService],
+};
 
 export const appLaunchOriginsProvider = {
   provide: APP_LAUNCH_ORIGINS_TOKEN,
