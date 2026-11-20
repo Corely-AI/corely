@@ -4,6 +4,7 @@
 
 - [Issue #433](https://github.com/Corely-AI/corely/issues/433); follows #431, #394 and #396.
 - Branch: `433-invoice-only-navigation`; base: `origin/development` at `f7d3f822`.
+- [Draft PR #434](https://github.com/Corely-AI/corely/pull/434).
 - Goal: App Center opens the existing focused Invoice client, whose business
   navigation contains only invoices, with authorized workspace and language intent.
 - Excludes new invoice screens, HR activation, schema changes and deployment.
@@ -38,6 +39,13 @@ their existing gates and behavior.
 | Existing focused UX accessibility test, English            | Failed on `label-content-name-mismatch` at the unchanged Language control. No claim that accessibility verification is clean; keep PR Draft.             |
 
 ## UI/UX evidence
+
+The normal pre-push unit check completed with 328 passing files, one failed
+suite, 1,508 passing tests and eight skipped tests. The unchanged Cash Management
+`confirm-handoff.integration.spec.ts` fails with
+`SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string`. Later broad
+hook checks did not run. The branch was published as Draft using the hook's
+documented `HUSKY=0` override; the full pre-push gate is not claimed passed.
 
 Changed-file ESLint, Prettier, whitespace and local documentation links passed.
 `pnpm arch:check` reports existing Prisma boundary violations in untouched files;
