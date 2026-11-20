@@ -7,6 +7,8 @@ focused business navigation as Invoice: opening Expenses shows only Expenses.
 The existing `/expenses`, `/expenses/new`, `/expenses/:id` and
 `/expenses/:id/edit` screens now share an Expenses shell within `apps/web`.
 
+[Draft PR #436](https://github.com/Corely-AI/corely/pull/436) contains this change.
+
 Branch `435-expenses-only-navigation` is stacked on
 `433-invoice-only-navigation` while [PR #434](https://github.com/Corely-AI/corely/pull/434)
 remains open. The verified remote default is `development` at `f7d3f822`.
@@ -42,10 +44,18 @@ EN/DE/VI locale, without credentials. Invalid or absent configuration omits it.
   `pnpm --dir apps/e2e exec playwright test --config playwright.expenses-shell.config.ts`.
   It starts an isolated Vite server on loopback port 5198, uses synthetic
   authentication and route-mocked API records, and performs no real writes.
-- Full web and E2E typechecks report existing errors in untouched files. These
-  are not clean gates; details and any hook failures are recorded in the PR.
-- Changed-file ESLint, Prettier and whitespace checks passed. The E2E fixture's
-  missing widget metadata was corrected during verification.
+- Full web typecheck reports existing errors in untouched Tenant Management,
+  Assistant, Cash and Invoice code. The final E2E typecheck reports 39 errors
+  outside the new shell/configuration, including the general Playwright
+  configuration's existing optional-worker typing. Neither is a clean gate.
+- Changed-file ESLint, Prettier and whitespace checks passed. The mobile check
+  passed again after disabling animations for its evidence capture.
+- The regular pre-push run finished with 329 passing files, one failed suite,
+  1,520 passing tests and eight skipped. The unchanged Cash Management
+  `confirm-handoff.integration.spec.ts` fails with
+  `SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string`.
+  Later broad hook stages did not run. Draft publication uses the hook's
+  documented `HUSKY=0` override; the full gate is not claimed passed.
 
 The browser suite covers all four routes, loaded expense details/edit values,
 the keyboard palette, reload, App Center return URL, phone drawer selection and
