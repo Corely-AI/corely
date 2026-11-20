@@ -1,13 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { Test } from "@nestjs/testing";
 import { EnvService, envSchema } from "@corely/config";
-import { APP_LAUNCH_ORIGINS_TOKEN } from "../application/ports/app-launch-origins.port";
-import { appLaunchOriginsProvider } from "../infrastructure/configuration/app-launch-origins.provider";
+import {
+  APP_LAUNCH_ORIGINS_TOKEN,
+  APP_INVOICE_LAUNCH_ENABLED_TOKEN,
+} from "../application/ports/app-launch-origins.port";
+import {
+  appLaunchOriginsProvider,
+  invoiceLaunchEnabledProvider,
+} from "../infrastructure/configuration/app-launch-origins.provider";
 
 const compile = (origins: Record<string, string> = {}) =>
   Test.createTestingModule({
     providers: [
       appLaunchOriginsProvider,
+      invoiceLaunchEnabledProvider,
       {
         provide: EnvService,
         useValue: new EnvService(
@@ -18,6 +25,16 @@ const compile = (origins: Record<string, string> = {}) =>
   }).compile();
 
 describe("deployment launch configuration initialization", () => {
+  it("requires explicit Invoice opt-in and rejects ambiguous flag values", async () => {
+    const disabled = await compile();
+    expect(disabled.get(APP_INVOICE_LAUNCH_ENABLED_TOKEN)).toBe(false);
+    await disabled.close();
+    const enabled = await compile({ CORELY_LAUNCH_INVOICE_ENABLED: "true" });
+    expect(enabled.get(APP_INVOICE_LAUNCH_ENABLED_TOKEN)).toBe(true);
+    await enabled.close();
+    expect(() => compile({ CORELY_LAUNCH_INVOICE_ENABLED: "yes" })).toThrow();
+  });
+
   it("uses only a validated deployment origin for existing module destinations", async () => {
     const module = await compile({ CORELY_LAUNCH_LEGACY_ORIGIN: "http://localhost:5173/" });
     expect(module.get(APP_LAUNCH_ORIGINS_TOKEN)).toMatchObject({ legacy: "http://localhost:5173" });

@@ -50,6 +50,14 @@ no cookies or bearer tokens transfer between origins. A validated workspace hint
 survives sign-in, and children stay unmounted until discovery authorizes and adopts
 that workspace. Invalid or inaccessible hints show the existing not-found state.
 
+`CORELY_LAUNCH_INVOICE_ENABLED=true` opts an environment into the existing focused
+Invoice client. Its configured `CORELY_LAUNCH_INVOICE_ORIGIN` then replaces the
+legacy Invoice directory destination, so opening Invoice uses invoice-only
+navigation. A missing origin stays unavailable rather than falling back to the
+broad administration sidebar. The flag defaults to `false`; HR's separate
+availability gate is unchanged. The local `dev:focused:api` runner opts in
+automatically. Disable the flag and restart the API to restore the legacy launch.
+
 Only enabled, available entries with a valid configured origin can open. Disabled,
 unconfigured and Coming soon entries have disabled controls and a neutral reason.
 Each open action refreshes the projection; removed grants or availability prevent

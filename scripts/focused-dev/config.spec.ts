@@ -6,12 +6,19 @@ describe("focused local configuration", () => {
     const config = parseFocusedDevEnv(validEnv);
     expect(config.callbacks.invoice).toBe("https://invoice.app.corely.test:8443/auth/callback");
     expect(JSON.parse(config.apiEnv.CORELY_SSO_REGISTRATIONS).apps).toHaveLength(3);
+    expect(config.apiEnv).toHaveProperty("CORELY_LAUNCH_INVOICE_ENABLED", "true");
     expect(JSON.stringify(config.browser)).not.toContain(validEnv.CORELY_SSO_SECRET);
     expect(JSON.stringify(config.browser)).not.toContain(validEnv.CORELY_SSO_PROXY_KEY);
     expect(Object.keys(config.browser)).toHaveLength(5);
   });
   it("refuses example placeholders", () => {
     expect(() => parseFocusedDevEnv(example)).toThrow();
+  });
+  it("allows the local Invoice rollout to be explicitly disabled", () => {
+    expect(
+      parseFocusedDevEnv({ ...validEnv, CORELY_LAUNCH_INVOICE_ENABLED: "false" }).apiEnv
+        .CORELY_LAUNCH_INVOICE_ENABLED
+    ).toBe("false");
   });
   it.each([
     "VITE_DATABASE_URL",

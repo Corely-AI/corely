@@ -32,6 +32,11 @@ before any hosted activation. No deployment is performed by this ticket.
 
 ## Routes and access
 
+The local focused API runner opts into this client's catalog destination with
+`CORELY_LAUNCH_INVOICE_ENABLED=true`. Other environments must explicitly opt in
+and configure `CORELY_LAUNCH_INVOICE_ORIGIN`; otherwise their existing legacy
+launch remains unchanged. See [App Center](app-center.md) for rollback behavior.
+
 | Route                                 | Behavior                                                              |
 | ------------------------------------- | --------------------------------------------------------------------- |
 | `/`                                   | Redirects to `/invoices`, retaining the workspace hint.               |
