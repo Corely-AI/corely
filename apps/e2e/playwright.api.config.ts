@@ -12,6 +12,7 @@ export default defineConfig({
     "**/focused-invoice/**",
     "**/focused-hr/**",
     "**/invoice-links/**",
+    "**/expenses-shell/**",
     "**/focused-ux/**",
     "**/observability/**",
     "**/multi-origin/**",
