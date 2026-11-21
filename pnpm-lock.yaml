@@ -739,6 +739,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@corely/issues-ui':
+        specifier: workspace:*
+        version: link:../../packages/issues-ui
       '@corely/sales-ui':
         specifier: workspace:*
         version: link:../../packages/sales-ui
@@ -1406,11 +1409,40 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/issues:
+    dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@corely/domain':
+        specifier: workspace:*
+        version: link:../domain
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
   packages/invoices:
     devDependencies:
       '@corely/tsconfig':
         specifier: workspace:*
         version: link:../tooling/tsconfig
+
+  packages/issues-ui:
+    dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
 
   packages/invoices-ui:
     devDependencies:
@@ -2056,6 +2088,9 @@ importers:
       '@corely/integrations-sumup':
         specifier: workspace:*
         version: link:../../packages/integrations/sumup
+      '@corely/issues':
+        specifier: workspace:*
+        version: link:../../packages/issues
       '@corely/invoices':
         specifier: workspace:*
         version: link:../../packages/invoices

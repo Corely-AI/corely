@@ -1,0 +1,24 @@
+{
+  "name": "@corely/issues-ui",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*",
+    "@types/react": "catalog:",
+    "react": "catalog:"
+  }
+}

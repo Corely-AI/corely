@@ -57,6 +57,11 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@shared": path.resolve(__dirname, "src/shared"),
+      "@corely/issues/extensions": path.resolve(
+        __dirname,
+        "../../packages/issues/src/extensions.ts"
+      ),
+      "@corely/issues/rules": path.resolve(__dirname, "../../packages/issues/src/issue-rules.ts"),
       "@corely/sales/extensions": path.resolve(__dirname, "../../packages/sales/src/extensions.ts"),
       "@corely/sales/quote": path.resolve(__dirname, "../../packages/sales/src/quote.aggregate.ts"),
       "@corely/sales/totals": path.resolve(__dirname, "../../packages/sales/src/totals.ts"),

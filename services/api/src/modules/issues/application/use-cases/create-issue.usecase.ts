@@ -5,7 +5,9 @@ import {
   type CreateIssueRequest,
 } from "@corely/contracts";
 import type { OutboxPort, UseCaseContext } from "@corely/kernel";
-import { RequireTenant } from "@corely/kernel";
+import { RequireTenant, ValidationError } from "@corely/kernel";
+import { ISSUE_REPORT_POLICY_REJECTED, issueReportRejection } from "@corely/issues/extensions";
+import { issueReportPolicies } from "../../issue-report-extensions";
 import { assertCan } from "@/shared/policies/assert-can";
 import type { AuditPort } from "@/shared/ports/audit.port";
 import type { IdempotencyStoragePort } from "@/shared/ports/idempotency-storage.port";
@@ -94,6 +96,12 @@ export class CreateIssueUseCase {
     if (cached) {
       return fromStoredIssue(cached.body);
     }
+
+    const rejection = issueReportRejection(issueReportPolicies, tenantId, {
+      priority: input.priority ?? "MEDIUM",
+      hasDescription: Boolean(input.description?.trim()),
+    });
+    if (rejection) {throw new ValidationError(rejection, undefined, ISSUE_REPORT_POLICY_REJECTED);}
 
     const attachments = input.attachments ?? [];
     if (attachments.length) {

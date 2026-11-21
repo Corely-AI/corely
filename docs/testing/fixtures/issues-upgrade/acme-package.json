@@ -1,0 +1,8 @@
+{
+  "name": "@acme/issue-report-policy",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@corely/issues": "^1.0.0",
+    "@corely/issues-ui": "^1.0.0"
+  }
+}
