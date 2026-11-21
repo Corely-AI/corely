@@ -37,10 +37,10 @@ afterAll(async () => {
   rmSync(directory, { recursive: true, force: true });
 });
 describe("private files behind the focused Vite server", () => {
-  it("continues serving the public login entry", async () => {
-    const response = await fetch(new URL("/index.html", origin));
+  it("serves the shared web entry at the login path", async () => {
+    const response = await fetch(new URL("/login", origin));
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain("Sign in to Corely");
+    expect(await response.text()).toContain('src="/src/main.tsx"');
   });
   it.each(
     [settings, key, certificate].flatMap((file) =>

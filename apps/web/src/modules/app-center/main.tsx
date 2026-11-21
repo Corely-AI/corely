@@ -22,6 +22,7 @@ const router = createBrowserRouter([
   },
 ]);
 document.documentElement.classList.add("corely-focused");
+document.title = "Corely · All apps";
 const root = document.getElementById("root");
 if (!root) {
   throw new Error("Missing App Center root");

@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { LoginPage } from "./login-page";
 import "./styles.css";
 document.documentElement.classList.add("corely-focused");
+document.title = "Sign in to Corely";
 const root = document.getElementById("root");
 if (!root) {
   throw new Error("Missing login root element");

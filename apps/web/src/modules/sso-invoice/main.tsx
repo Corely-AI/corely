@@ -13,6 +13,7 @@ const locale = resolveFocusedLocale(
 void i18n.changeLanguage(locale);
 document.documentElement.lang = locale;
 document.documentElement.classList.add("corely-focused");
+document.title = "Corely Invoice";
 const root = document.getElementById("root");
 if (!root) {
   throw new Error("Missing Invoice root element");
