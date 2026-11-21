@@ -2,7 +2,7 @@
 
 ## Tracking and outcome
 
-- [Corely #466](https://github.com/Corely-AI/corely/issues/466)
+- [Corely #466](https://github.com/Corely-AI/corely/issues/466) and [Draft PR #467](https://github.com/Corely-AI/corely/pull/467)
 - Branch `466-centralize-backoffice-app-menus`, base `development`
 - Invoice, Expenses, CRM, Tasks, People, and Booking display their app's navigation and an All apps link.
 - Dashboard, All apps, account/workspace settings and their details, and Billing share the general sidebar. All apps remains available throughout Backoffice. CRM engagement templates keep the CRM menu.
