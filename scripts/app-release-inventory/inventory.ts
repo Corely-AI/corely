@@ -16,6 +16,7 @@ const appPackageDirectories: Readonly<Record<string, readonly string[]>> = {
   people: ["people", "people-ui"],
   tasks: ["tasks", "tasks-ui"],
   sales: ["sales", "sales-ui"],
+  issues: ["issues", "issues-ui"],
 };
 
 function readPackage(directory: string) {
