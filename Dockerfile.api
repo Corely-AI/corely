@@ -14,6 +14,7 @@ COPY services/api/package.json ./services/api/
 COPY packages/booking/package.json ./packages/booking/
 COPY packages/data/package.json ./packages/data/
 COPY packages/domain/package.json ./packages/domain/
+COPY packages/customers/package.json ./packages/customers/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/kernel/package.json ./packages/kernel/
 COPY packages/core/package.json ./packages/core/
