@@ -13,7 +13,7 @@ ownership of authorization, numbering, tax, and accounting. Acme's example requi
 a due date before finalizing an invoice.
 
 Register an InvoiceDraftGuidance component by workspace ID in
-apps/web/src/modules/invoices/invoice-ui-extensions.tsx. The host renders it only on
+packages/invoices-ui/src/index.tsx. The host renders it only on
 an existing draft detail screen. The Backoffice and focused Invoice entry points
 share the registration. Support the configured locale in the customer component.
 

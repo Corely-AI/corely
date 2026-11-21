@@ -1,4 +1,4 @@
-import { InvoiceUiExtensions } from "./modules/invoices/invoice-ui-extensions";
+import { InvoiceUiExtensions } from "@corely/invoices-ui";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";

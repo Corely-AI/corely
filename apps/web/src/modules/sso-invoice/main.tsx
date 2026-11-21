@@ -3,7 +3,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import i18n from "@corely/web-shared/shared/i18n";
 import { resolveFocusedLocale } from "@corely/web-shared/session/focused-locale";
-import { InvoiceUiExtensions } from "../invoices/invoice-ui-extensions";
+import { InvoiceUiExtensions } from "@corely/invoices-ui";
 import { InvoiceApp } from "./invoice-app";
 import "./style.css";
 const locale = resolveFocusedLocale(
