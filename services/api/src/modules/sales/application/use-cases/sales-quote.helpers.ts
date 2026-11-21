@@ -1,5 +1,5 @@
 import { ValidationError, type IdGeneratorPort } from "@corely/kernel";
-import type { QuoteLineItem } from "../../domain/sales.types";
+import type { QuoteLineItem } from "@corely/sales/types";
 
 const requireValue = <T>(value: T | null | undefined, label: string): NonNullable<T> => {
   if (value === null || value === undefined) {
