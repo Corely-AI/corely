@@ -16,6 +16,11 @@ import {
   type CreateCustomerInput,
   type CreateCustomerOutput,
 } from "@corely/contracts";
+import {
+  CUSTOMER_CREATION_POLICY_REJECTED,
+  customerCreationRejection,
+  type CustomerCreationRegistration,
+} from "@corely/customers/extensions";
 import { type PartyRepoPort } from "../../ports/party-repository.port";
 import { PartyAggregate } from "../../../domain/party.aggregate";
 import type { Address } from "../../../domain/address";
@@ -32,6 +37,7 @@ type Deps = {
   clock: ClockPort;
   dimensionsWritePort: DimensionsWritePort;
   customFieldsWritePort: CustomFieldsWritePort;
+  policies?: readonly CustomerCreationRegistration[];
 };
 
 export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, CreateCustomerOutput> {
@@ -52,6 +58,19 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
   ): Promise<Result<CreateCustomerOutput, UseCaseError>> {
     if (!ctx.tenantId) {
       return err(new ValidationError("tenantId is required"));
+    }
+
+    const { policies = [] } = this.useCaseDeps;
+    // Suppliers and student/guardian creation share this use case but have separate workflows.
+    if (!input.role || input.role === "CUSTOMER") {
+      const rejection = customerCreationRejection(
+        policies,
+        { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId },
+        { kind: input.kind ?? "INDIVIDUAL", organizationName: input.organizationName ?? null }
+      );
+      if (rejection) {
+        return err(new ValidationError(rejection, undefined, CUSTOMER_CREATION_POLICY_REJECTED));
+      }
     }
 
     const now = this.useCaseDeps.clock.now();

@@ -12,6 +12,7 @@
     "@corely/config": "workspace:*",
     "@corely/contracts": "workspace:*",
     "@corely/core": "workspace:*",
+    "@corely/customers": "workspace:*",
     "@corely/data": "workspace:*",
     "@corely/domain": "workspace:*",
     "@corely/email": "workspace:*",

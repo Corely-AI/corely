@@ -66,6 +66,10 @@ export default defineConfig({
         __dirname,
         "../../packages/tooling/acme-booking-policy-fixture/src/index.ts"
       ),
+      "@corely/customers/extensions": path.resolve(
+        __dirname,
+        "../../packages/customers/src/extensions.ts"
+      ),
       "@acme/invoice-fixture/policy": path.resolve(
         __dirname,
         "../../packages/tooling/acme-invoice-fixture/src/policy.ts"
