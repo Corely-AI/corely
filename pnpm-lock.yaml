@@ -739,6 +739,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@corely/invoices-ui':
+        specifier: workspace:*
+        version: link:../../packages/invoices-ui
       '@corely/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1331,6 +1334,24 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/invoices:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/invoices-ui:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
   packages/kernel:
     dependencies:
       '@corely/domain':
@@ -1522,6 +1543,21 @@ importers:
       '@corely/booking-ui':
         specifier: workspace:*
         version: link:../../booking-ui
+
+  packages/tooling/acme-invoice-fixture:
+    devDependencies:
+      '@corely/invoices':
+        specifier: workspace:*
+        version: link:../../invoices
+      '@corely/invoices-ui':
+        specifier: workspace:*
+        version: link:../../invoices-ui
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
 
   packages/tooling/eslint-config:
     devDependencies:
@@ -1722,6 +1758,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@corely/invoices-ui':
+        specifier: workspace:*
+        version: link:../invoices-ui
       '@corely/ui':
         specifier: workspace:*
         version: link:../ui
@@ -1858,6 +1897,9 @@ importers:
       '@corely/integrations-sumup':
         specifier: workspace:*
         version: link:../../packages/integrations/sumup
+      '@corely/invoices':
+        specifier: workspace:*
+        version: link:../../packages/invoices
       '@corely/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
@@ -2024,6 +2066,9 @@ importers:
       '@acme/booking-policy-fixture':
         specifier: workspace:*
         version: link:../../packages/tooling/acme-booking-policy-fixture
+      '@acme/invoice-fixture':
+        specifier: workspace:*
+        version: link:../../packages/tooling/acme-invoice-fixture
       '@corely/testkit':
         specifier: workspace:*
         version: link:../../packages/testkit

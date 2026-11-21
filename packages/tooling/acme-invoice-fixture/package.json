@@ -1,0 +1,25 @@
+{
+  "name": "@acme/invoice-fixture",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "exports": {
+    "./policy": "./dist/policy.mjs",
+    "./guidance": "./src/guidance.tsx"
+  },
+  "scripts": {
+    "build": "tsdown src/policy.ts --dts"
+  },
+  "peerDependencies": {
+    "@corely/invoices": "^1.0.0",
+    "@corely/invoices-ui": "^1.0.0",
+    "react": "^18.3.0"
+  },
+  "devDependencies": {
+    "@corely/invoices": "workspace:*",
+    "@corely/invoices-ui": "workspace:*",
+    "@types/react": "catalog:",
+    "react": "catalog:"
+  }
+}

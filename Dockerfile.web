@@ -9,6 +9,7 @@ WORKDIR /app
 COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/booking-ui/package.json ./packages/booking-ui/
+COPY packages/invoices-ui/package.json ./packages/invoices-ui/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/offline-core/package.json ./packages/offline-core/
