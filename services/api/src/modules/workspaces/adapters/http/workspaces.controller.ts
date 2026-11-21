@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UseGuards,
   BadRequestException,
+  ForbiddenException,
 } from "@nestjs/common";
 import type { Request } from "express";
 import {
@@ -40,7 +41,7 @@ import { ListWorkspaceMembersUseCase } from "../../application/use-cases/list-wo
 import { DeleteWorkspaceUseCase } from "../../application/use-cases/delete-workspace.usecase";
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
-import { toUseCaseContext } from "../../../../shared/request-context";
+import { toUseCaseContext, type ContextAwareRequest } from "../../../../shared/request-context";
 
 // Auth context extraction - compatible with tests and production
 interface AuthUser {
@@ -91,7 +92,10 @@ export class WorkspacesController {
   ) {}
 
   @Post()
-  async create(@Body() body: unknown, @Req() req: Request) {
+  async create(@Body() body: unknown, @Req() req: ContextAwareRequest) {
+    if (req.user?.tenantAdminRoleId) {
+      throw new ForbiddenException("Workspace creation requires a permanent tenant membership");
+    }
     const input = CreateWorkspaceInputSchema.parse(body);
     const auth = extractAuthUser(req, body);
 
@@ -104,23 +108,25 @@ export class WorkspacesController {
   }
 
   @Get()
-  async list(@Req() req: Request) {
+  async list(@Req() req: ContextAwareRequest) {
     const auth = extractAuthUser(req, (req as any).body);
 
     return this.listWorkspaces.execute({
       tenantId: auth.tenantId,
       userId: auth.id,
+      tenantAdminRoleId: req.user?.tenantAdminRoleId,
     });
   }
 
   @Get(":workspaceId")
-  async getById(@Param("workspaceId") workspaceId: string, @Req() req: Request) {
+  async getById(@Param("workspaceId") workspaceId: string, @Req() req: ContextAwareRequest) {
     const auth = extractAuthUser(req, (req as any).body);
 
     return this.getWorkspace.execute({
       tenantId: auth.tenantId,
       userId: auth.id,
       workspaceId,
+      tenantAdminRoleId: req.user?.tenantAdminRoleId,
     });
   }
 

@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { readWorkspaceHint } from "@corely/web-shared/session/workspace-launch";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { getTenantAdminSession } from "@corely/web-shared/lib/tenant-admin-session";
+import { TenantAdminSessionBanner } from "../../modules/platform/screens/tenant-management/tenant-admin-session-banner";
 import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import NotFound from "@corely/web-shared/shared/components/NotFound";
@@ -51,6 +53,9 @@ export const RequireAuth: React.FC = () => {
     return null;
   }
 
+  if (!isAuthenticated && getTenantAdminSession()) {
+    return <TenantAdminSessionBanner />;
+  }
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
@@ -63,6 +68,9 @@ export const RequireAuth: React.FC = () => {
   }
 
   const isOnboardingRoute = location.pathname === "/onboarding";
+  if (getTenantAdminSession() && workspaces.length === 0) {
+    return <TenantAdminSessionBanner />;
+  }
   if (!isOnboardingRoute && workspaces.length === 0 && !isHostScope) {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }

@@ -3454,6 +3454,13 @@
     "create": "Create Workspace"
   },
   "tenants": {
+    "openAdminSession": "Open as tenant admin",
+    "openingAdminSession": "Opening…",
+    "openAdminSessionError": "Could not open the tenant admin session.",
+    "adminSessionTitle": "Tenant admin session",
+    "adminSessionBanner": "Working as tenant admin in {{name}}",
+    "returnToPlatform": "Return to platform",
+    "endAdminSessionError": "Could not end the tenant admin session. Try again.",
     "title": "Tenants",
     "description": "Manage tenant entitlements and settings.",
     "listTitle": "Tenant list",

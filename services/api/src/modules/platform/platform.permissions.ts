@@ -66,6 +66,14 @@ export const platformPermissions: PermissionGroup[] = [
         side: "HOST",
       },
       {
+        key: "platform.tenants.access",
+        group: "platform",
+        side: "HOST",
+        label: "Open tenant admin sessions",
+        description: "Open an administrative session in a tenant.",
+        danger: true,
+      },
+      {
         key: "platform.tenants.write",
         group: "platform",
         label: "Manage Tenants",

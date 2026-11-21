@@ -1,3 +1,4 @@
+import { getTenantAdminSession } from "./tenant-admin-session";
 import type { TokenStorage } from "@corely/auth-client";
 import {
   getActiveWorkspaceId,
@@ -20,7 +21,7 @@ export class WebStorageAdapter implements TokenStorage {
 
   async getAccessToken(): Promise<string | null> {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+      return getTenantAdminSession()?.accessToken ?? localStorage.getItem(this.ACCESS_TOKEN_KEY);
     }
     return null;
   }
@@ -33,7 +34,7 @@ export class WebStorageAdapter implements TokenStorage {
 
   async getRefreshToken(): Promise<string | null> {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+      return getTenantAdminSession() ? null : localStorage.getItem(this.REFRESH_TOKEN_KEY);
     }
     return null;
   }
@@ -47,7 +48,7 @@ export class WebStorageAdapter implements TokenStorage {
   }
 
   async clear(): Promise<void> {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && !getTenantAdminSession()) {
       localStorage.removeItem(this.ACCESS_TOKEN_KEY);
       localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     }

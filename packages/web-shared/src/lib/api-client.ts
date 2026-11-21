@@ -4,6 +4,7 @@
  */
 
 import { ApiClient } from "@corely/auth-client";
+import { getTenantAdminSession } from "./tenant-admin-session";
 import { authClient } from "./auth-client";
 import { WebStorageAdapter } from "./storage-adapter";
 import { defaultApiBaseUrl } from "./api-base-url";
@@ -20,7 +21,7 @@ const sharedApiClient = new ApiClient({
   storage,
   onAuthError: () => {
     if (typeof window !== "undefined") {
-      window.location.href = "/auth/login";
+      window.location.href = getTenantAdminSession() ? "/dashboard" : "/auth/login";
     }
   },
 });

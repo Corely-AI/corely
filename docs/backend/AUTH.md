@@ -34,6 +34,22 @@ The Identity context owns all authentication, authorization, and user management
 - The role system key `SUPERADMIN` may exist, but it is **not** used for authorization. If needed, assign platform permissions to that role.
 - If context is missing or `tenantId` is not `null`, platform actions are denied by default.
 
+#### Tenant admin sessions
+
+From the Backoffice tenant list, a host with the explicit `platform.tenants.access` grant can
+open a session for an active tenant. The session uses the host user's identity and the target
+tenant's system Admin role. Identity checks the host grant, user status, tenant status and target
+role on every authenticated request. Workspace selectors must belong to the target tenant.
+
+The session has no automatic time limit or refresh token. The browser keeps the credential in
+the current tab across reloads. **Return to platform** revokes the server-side session and reloads
+the host view. The start and end are recorded in the tenant audit log under the host user's ID.
+Opening the session creates no tenant or workspace membership. Workspace creation continues to
+require a tenant membership because it creates a permanent workspace owner.
+
+Existing host roles need the new grant explicitly. The existing `update-superadmin.ts` maintenance
+script includes this grant when it updates a designated platform superadmin.
+
 #### RBAC (Role-Based Access Control)
 
 - **Roles**: Tenant-specific roles (OWNER, ADMIN, MEMBER)

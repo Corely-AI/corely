@@ -4,6 +4,8 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  ForbiddenException,
+  Optional,
   Inject,
 } from "@nestjs/common";
 import { AuthorizeRequestContextUseCase } from "../../application/use-cases/authorize-request-context.usecase";
@@ -12,6 +14,10 @@ import {
   type ContextAwareRequest,
 } from "../../../../shared/request-context";
 import type { TokenServicePort } from "../../application/ports/token-service.port";
+import {
+  TENANT_ADMIN_TOKEN_PREFIX,
+  TenantAdminSessions,
+} from "../../application/services/tenant-admin-sessions";
 import { TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port";
 
 /**
@@ -22,13 +28,17 @@ import { TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port"
 export class AuthGuard implements CanActivate {
   constructor(
     @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
-    private readonly authorizeRequestContext: AuthorizeRequestContextUseCase
+    private readonly authorizeRequestContext: AuthorizeRequestContextUseCase,
+    @Optional() private readonly tenantAdminSessions?: TenantAdminSessions
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<ContextAwareRequest>();
     const sessionPrincipal = getSsoSessionPrincipal(request);
-    if (sessionPrincipal) {
+    if (
+      sessionPrincipal &&
+      !request.headers.authorization?.split(/\s+/)[1]?.startsWith(TENANT_ADMIN_TOKEN_PREFIX)
+    ) {
       request.user = { ...sessionPrincipal };
       await this.validateContext(request);
       return true;
@@ -63,6 +73,28 @@ export class AuthGuard implements CanActivate {
     }
 
     const token = parts[1];
+
+    if (token.startsWith(TENANT_ADMIN_TOKEN_PREFIX)) {
+      if (!this.tenantAdminSessions || request.publicContext) {
+        throw new ForbiddenException("Tenant admin session unavailable");
+      }
+      request.user = await this.tenantAdminSessions.authenticate(token);
+      const ctx = resolveRequestContext(request);
+      const selectors = [
+        request.params?.tenantId,
+        request.headers["x-tenant-id"],
+        request.query["x-tenant-id"],
+        request.query.tenantId,
+      ];
+      if (selectors.some((tenantId) => tenantId !== undefined && tenantId !== ctx.tenantId)) {
+        throw new ForbiddenException("Tenant admin session is scoped to its tenant");
+      }
+      if (request.params?.workspaceId && request.params.workspaceId !== ctx.workspaceId) {
+        throw new ForbiddenException("Select the target workspace before using it");
+      }
+      await this.validateContext(request);
+      return true;
+    }
 
     // Verify and decode token
     const decoded = await this.tokenService.verifyAccessToken(token);

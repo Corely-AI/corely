@@ -13,6 +13,7 @@ export const toUseCaseContext = (req: ContextAwareRequest): UseCaseContext => {
     correlationId: ctx.correlationId ?? ctx.requestId,
     requestId: ctx.requestId,
     roles: ctx.roles,
+    tenantAdminRoleId: ctx.tenantAdminRoleId,
     metadata: ctx.metadata,
   };
 };

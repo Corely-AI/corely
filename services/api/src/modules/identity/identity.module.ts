@@ -1,3 +1,5 @@
+import { TENANT_ADMIN_SESSION_LOCK } from "./application/ports/tenant-admin-session-lock.port";
+import { PrismaTenantAdminSessionLock } from "./infrastructure/adapters/prisma-tenant-admin-session-lock.adapter";
 import { SsoSessionService } from "./application/services/sso-session.service";
 import { randomBytes } from "node:crypto";
 import { AssociateInvitedAccountUseCase } from "./application/use-cases/associate-invited-account.usecase";
@@ -30,6 +32,8 @@ import { PlatformModule } from "../platform/platform.module";
 import { AuthController } from "./adapters/http/auth.controller";
 import { RolesController } from "./adapters/http/roles.controller";
 import { PermissionsController } from "./adapters/http/permissions.controller";
+import { TenantAdminSessions } from "./application/services/tenant-admin-sessions";
+import { TenantAdminSessionController } from "./adapters/http/tenant-admin-session.controller";
 import { TenantsController } from "./adapters/http/tenants.controller";
 
 // Infrastructure adapters
@@ -104,6 +108,7 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     RolesController,
     PermissionsController,
     TenantsController,
+    TenantAdminSessionController,
     SsoController,
   ],
   providers: [
@@ -153,6 +158,9 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     PrismaOutboxAdapter,
     AuthGuard,
     RbacGuard,
+
+    TenantAdminSessions,
+    { provide: TENANT_ADMIN_SESSION_LOCK, useClass: PrismaTenantAdminSessionLock },
 
     // Security
     BcryptPasswordHasher,
@@ -258,6 +266,7 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     PermissionCatalogRegistry,
   ],
   exports: [
+    TenantAdminSessions,
     DeliverSsoEmailCodeUseCase,
     AssociateInvitedAccountUseCase,
     GetEffectivePermissionsUseCase,

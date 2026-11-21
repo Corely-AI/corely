@@ -139,17 +139,15 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     return mapped;
   }
 
-  async listWorkspacesByTenant(tenantId: string, userId: string): Promise<Workspace[]> {
-    // Get workspaces where user has active membership
+  async listWorkspacesByTenant(
+    tenantId: string,
+    userId: string,
+    tenantAdminRoleId?: string
+  ): Promise<Workspace[]> {
     const workspaces = await this.prisma.workspace.findMany({
       where: {
         tenantId,
-        memberships: {
-          some: {
-            userId,
-            status: "ACTIVE",
-          },
-        },
+        ...(tenantAdminRoleId ? {} : { memberships: { some: { userId, status: "ACTIVE" } } }),
         deletedAt: null,
       } as any,
       include: { legalEntity: true },

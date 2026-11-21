@@ -87,7 +87,11 @@ export interface WorkspaceRepositoryPort {
     tx?: TransactionContext
   ): Promise<Workspace | null>;
   getWorkspaceByIdWithLegalEntity(tenantId: string, id: string): Promise<Workspace | null>;
-  listWorkspacesByTenant(tenantId: string, userId: string): Promise<Workspace[]>;
+  listWorkspacesByTenant(
+    tenantId: string,
+    userId: string,
+    tenantAdminRoleId?: string
+  ): Promise<Workspace[]>;
   updateWorkspace(tenantId: string, id: string, input: UpdateWorkspaceInput): Promise<Workspace>;
   softDeleteWorkspace(tenantId: string, id: string): Promise<void>;
 
