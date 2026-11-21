@@ -2349,6 +2349,10 @@
     "notes": "Notes",
     "invoiceHistory": "Invoice history",
     "totalRevenue": "Total revenue",
+    "kindLabel": "Customer type",
+    "kindIndividual": "Individual",
+    "kindOrganization": "Organization",
+    "organizationName": "Organization name",
     "basicInformation": "Basic Information",
     "billingAddress": "Billing Address",
     "placeholders": {

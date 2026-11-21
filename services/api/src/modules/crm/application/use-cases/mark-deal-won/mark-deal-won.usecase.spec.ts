@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { isOk } from "@corely/kernel";
+import { isOk, NoopLogger } from "@corely/kernel";
 import { DealAggregate } from "../../../domain/deal.aggregate";
 import { MarkDealWonUseCase } from "./mark-deal-won.usecase";
 import { MarkDealLostUseCase } from "../mark-deal-lost/mark-deal-lost.usecase";
@@ -46,6 +46,36 @@ describe("Deal close sequence cancellation", () => {
       "tenant-1",
       "deal-won-1"
     );
+  });
+
+  it("declines a loss without a reason for the registered tenant before writes", async () => {
+    const deal = openDeal("policy-deal");
+    const repo = { findById: vi.fn(async () => deal), update: vi.fn(async () => {}) };
+    const enrollment = { cancelPendingByDealContext: vi.fn(async () => 0) };
+    const useCase = new MarkDealLostUseCase(
+      repo,
+      enrollment,
+      { now: () => new Date("2026-03-02T12:00:00.000Z") },
+      new NoopLogger(),
+      [
+        {
+          tenantId: "tenant-1",
+          check: ({ reason }) => (reason?.trim() ? undefined : "Enter a reason."),
+        },
+      ]
+    );
+    const ctx = { tenantId: "tenant-1", userId: "user-1" };
+    const rejected = await useCase.execute({ dealId: deal.id, reason: "  " }, ctx);
+    expect(rejected).toMatchObject({ ok: false, error: { code: "Crm:DealLossPolicyRejected" } });
+    expect(deal.status).toBe("OPEN");
+    expect(repo.update).not.toHaveBeenCalled();
+    expect(enrollment.cancelPendingByDealContext).not.toHaveBeenCalled();
+    const accepted = await useCase.execute({ dealId: deal.id, reason: "No budget" }, ctx);
+    expect(accepted).toMatchObject({
+      ok: true,
+      value: { deal: { status: "LOST", lostReason: "No budget", partyId: "party-1" } },
+    });
+    expect(enrollment.cancelPendingByDealContext).toHaveBeenCalledTimes(1);
   });
 
   it("cancels pending enrollments when marking deal lost", async () => {

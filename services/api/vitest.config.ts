@@ -74,6 +74,24 @@ export default defineConfig({
         __dirname,
         "../../packages/tooling/acme-booking-policy-fixture/src/index.ts"
       ),
+      "@corely/crm/extensions": path.resolve(__dirname, "../../packages/crm/src/extensions.ts"),
+      "@corely/expenses/extensions": path.resolve(
+        __dirname,
+        "../../packages/expenses/src/extensions.ts"
+      ),
+      "@corely/customers/extensions": path.resolve(
+        __dirname,
+        "../../packages/customers/src/extensions.ts"
+      ),
+      "@acme/invoice-fixture/policy": path.resolve(
+        __dirname,
+        "../../packages/tooling/acme-invoice-fixture/src/policy.ts"
+      ),
+      "@corely/invoices/extensions": path.resolve(
+        __dirname,
+        "../../packages/invoices/src/extensions.ts"
+      ),
+      "@corely/invoices": path.resolve(__dirname, "../../packages/invoices/src/index.ts"),
       "@corely/config": path.resolve(__dirname, "../..", "packages/config/src"),
       "@corely/contracts": path.resolve(__dirname, "../..", "packages/contracts/src"),
       "@corely/core": path.resolve(__dirname, "../..", "packages/core/src"),

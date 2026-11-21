@@ -742,6 +742,18 @@ importers:
       '@corely/people-ui':
         specifier: workspace:*
         version: link:../../packages/people-ui
+      '@corely/crm-ui':
+        specifier: workspace:*
+        version: link:../../packages/crm-ui
+      '@corely/expenses-ui':
+        specifier: workspace:*
+        version: link:../../packages/expenses-ui
+      '@corely/customers-ui':
+        specifier: workspace:*
+        version: link:../../packages/customers-ui
+      '@corely/invoices-ui':
+        specifier: workspace:*
+        version: link:../../packages/invoices-ui
       '@corely/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1212,6 +1224,42 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.3)(jsdom@24.1.3)(lightningcss@1.30.2)(msw@2.12.4(@types/node@22.19.3)(typescript@5.9.3))(terser@5.46.0)
 
+  packages/crm:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/customers:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/crm-ui:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
+  packages/customers-ui:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
   packages/data:
     dependencies:
       '@corely/contracts':
@@ -1286,6 +1334,24 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.3)(jsdom@24.1.3)(lightningcss@1.30.2)(msw@2.12.4(@types/node@22.19.3)(typescript@5.9.3))(terser@5.46.0)
 
+  packages/expenses:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/expenses-ui:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
   packages/integrations/adyen:
     dependencies:
       '@corely/domain':
@@ -1333,6 +1399,24 @@ importers:
       '@corely/integrations-core':
         specifier: workspace:*
         version: link:../core
+
+  packages/invoices:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/invoices-ui:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
 
   packages/kernel:
     dependencies:
@@ -1548,6 +1632,21 @@ importers:
         specifier: workspace:*
         version: link:../../booking-ui
 
+  packages/tooling/acme-invoice-fixture:
+    devDependencies:
+      '@corely/invoices':
+        specifier: workspace:*
+        version: link:../../invoices
+      '@corely/invoices-ui':
+        specifier: workspace:*
+        version: link:../../invoices-ui
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
   packages/tooling/eslint-config:
     devDependencies:
       '@eslint/js':
@@ -1750,6 +1849,15 @@ importers:
       '@corely/people-ui':
         specifier: workspace:*
         version: link:../people-ui
+      '@corely/crm-ui':
+        specifier: workspace:*
+        version: link:../crm-ui
+      '@corely/expenses-ui':
+        specifier: workspace:*
+        version: link:../expenses-ui
+      '@corely/invoices-ui':
+        specifier: workspace:*
+        version: link:../invoices-ui
       '@corely/ui':
         specifier: workspace:*
         version: link:../ui
@@ -1856,6 +1964,12 @@ importers:
       '@corely/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@corely/crm':
+        specifier: workspace:*
+        version: link:../../packages/crm
+      '@corely/customers':
+        specifier: workspace:*
+        version: link:../../packages/customers
       '@corely/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -1868,6 +1982,9 @@ importers:
       '@corely/email-templates':
         specifier: workspace:*
         version: link:../../packages/email-templates
+      '@corely/expenses':
+        specifier: workspace:*
+        version: link:../../packages/expenses
       '@corely/integrations-adyen':
         specifier: workspace:*
         version: link:../../packages/integrations/adyen
@@ -1886,6 +2003,9 @@ importers:
       '@corely/integrations-sumup':
         specifier: workspace:*
         version: link:../../packages/integrations/sumup
+      '@corely/invoices':
+        specifier: workspace:*
+        version: link:../../packages/invoices
       '@corely/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
@@ -2055,6 +2175,9 @@ importers:
       '@acme/booking-policy-fixture':
         specifier: workspace:*
         version: link:../../packages/tooling/acme-booking-policy-fixture
+      '@acme/invoice-fixture':
+        specifier: workspace:*
+        version: link:../../packages/tooling/acme-invoice-fixture
       '@corely/testkit':
         specifier: workspace:*
         version: link:../../packages/testkit

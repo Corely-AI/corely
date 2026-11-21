@@ -1,4 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { InvoiceFinalizationRegistration } from "@corely/invoices/extensions";
+import { requireDueDate } from "@acme/invoice-fixture/policy";
+import type { LocalDate } from "@corely/kernel";
 import { FinalizeInvoiceUseCase } from "./finalize-invoice.usecase";
 import { FakeInvoiceRepository } from "../../../testkit/fakes/fake-invoice-repo";
 import { FakeInvoiceNumbering } from "../../../testkit/fakes/fake-numbering";
@@ -21,6 +24,7 @@ describe("FinalizeInvoiceUseCase", () => {
   let useCase: FinalizeInvoiceUseCase;
   let customers: FakeCustomerQueryPort;
   let payments: FakePaymentMethodQuery;
+  let policies: InvoiceFinalizationRegistration[];
 
   // Real Tax Engine dependencies
   let taxEngine: TaxEngineService;
@@ -48,6 +52,7 @@ describe("FinalizeInvoiceUseCase", () => {
       billingAddress: { line1: "Street 1", city: "Paris", country: "FR" },
     });
     payments = new FakePaymentMethodQuery();
+    policies = [];
 
     // Setup Real Tax Engine
     profileRepo = new InMemoryTaxProfileRepo();
@@ -107,6 +112,7 @@ describe("FinalizeInvoiceUseCase", () => {
       taxEngine: taxEngine,
       prisma: prismaMock as unknown as PrismaService,
       cogsPostingService: cogsPostingServiceMock as CogsPostingService,
+      policies,
     });
   });
 
@@ -128,6 +134,42 @@ describe("FinalizeInvoiceUseCase", () => {
     const dto = unwrap(result).invoice;
     expect(dto.status).toBe("ISSUED");
     expect(dto.number).toBe("INV-000001");
+  });
+
+  it("rejects an undated draft only in the configured workspace before consuming a number", async () => {
+    const scope = { tenantId: "tenant-1", workspaceId: "workspace-1" };
+    const invoice = InvoiceAggregate.createDraft({
+      id: "inv-policy",
+      tenantId: scope.workspaceId,
+      customerPartyId: "cust",
+      currency: "EUR",
+      lineItems: [{ id: "line-1", description: "Work", qty: 1, unitPriceCents: 1000 }],
+      createdAt: clock.now(),
+    });
+    repo.invoices = [invoice];
+    const nextNumber = vi.spyOn(numbering, "nextInvoiceNumber");
+    const save = vi.spyOn(repo, "save");
+
+    // A policy in another workspace cannot affect the current workspace.
+    const otherRule = vi.fn(requireDueDate);
+    policies.push({ ...scope, workspaceId: "another-workspace", validate: otherRule });
+    policies.push({ ...scope, validate: requireDueDate });
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const result = await useCase.execute({ invoiceId: invoice.id }, scope);
+      expect(result).toMatchObject({
+        ok: false,
+        error: { code: "Invoices:FinalizationPolicyRejected" },
+      });
+    }
+    expect(invoice.status).toBe("DRAFT");
+    expect(otherRule).not.toHaveBeenCalled();
+    expect(nextNumber).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+
+    invoice.updateDates({ dueDate: "2025-01-31" as LocalDate }, clock.now());
+    const dto = unwrap(await useCase.execute({ invoiceId: invoice.id }, scope)).invoice;
+    expect(dto).toMatchObject({ status: "ISSUED", number: "INV-000001", customerPartyId: "cust" });
+    expect(save).toHaveBeenCalledTimes(1);
   });
 
   it("keeps bill-to snapshot stable after finalize", async () => {

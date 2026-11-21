@@ -1,0 +1,4 @@
+{
+  "extends": "@corely/tsconfig/react.json",
+  "include": ["src"]
+}

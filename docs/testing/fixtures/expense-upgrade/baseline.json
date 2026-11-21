@@ -1,0 +1,12 @@
+{
+  "fixture": true,
+  "productRelease": "1.0.0",
+  "runtime": {
+    "@corely/expenses": "1.0.0",
+    "@corely/expenses-ui": "1.0.0",
+    "@corely/contracts": "0.0.0"
+  },
+  "extensions": {
+    "@acme/expense-guidance": "1.0.0"
+  }
+}

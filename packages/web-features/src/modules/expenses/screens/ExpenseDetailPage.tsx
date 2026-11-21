@@ -1,4 +1,6 @@
 import React from "react";
+import { ApiError } from "@corely/api-client";
+import { ExpenseSubmissionGuidanceSlot, type ExpenseSubmissionGuidance } from "@corely/expenses-ui";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck, ShieldOff, ShieldAlert } from "lucide-react";
@@ -80,7 +82,13 @@ function DeductibilitySummary({ d, locale }: { d: ExpenseDeductibilityResult; lo
   );
 }
 
-export const ExpenseDetailPage = () => {
+export const ExpenseDetailPage = ({
+  workspaceId,
+  submissionGuidance,
+}: {
+  workspaceId?: string;
+  submissionGuidance?: ExpenseSubmissionGuidance;
+} = {}) => {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -107,7 +115,12 @@ export const ExpenseDetailPage = () => {
       toast.success(t("expenses.notifications.transitioned", { to: vars.to }));
       await invalidateResourceQueries(queryClient, "expenses", { id });
     },
-    onError: () => toast.error(t("expenses.notifications.transitionFailed")),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError && error.code === "Expenses:SubmissionPolicyRejected"
+          ? error.detail
+          : t("expenses.notifications.transitionFailed")
+      ),
   });
 
   const deleteMutation = useMutation({
@@ -210,6 +223,12 @@ export const ExpenseDetailPage = () => {
           </div>
         )}
       </div>
+
+      {workspaceId &&
+        expense.tenantId === workspaceId &&
+        capabilities?.transitions.some(({ to, enabled }) => to === "SUBMITTED" && enabled) && (
+          <ExpenseSubmissionGuidanceSlot status={expense.status} Guidance={submissionGuidance} />
+        )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
