@@ -1,3 +1,4 @@
+import { validateInvoiceDraft } from "@corely/invoices";
 import { type LocalDate } from "@corely/kernel";
 import {
   type InvoiceLine,
@@ -276,18 +277,7 @@ export class InvoiceAggregate {
     billTo: BillToSnapshot,
     paymentDetails?: PaymentDetailsSnapshot
   ) {
-    if (this.status !== "DRAFT") {
-      throw new Error("Only draft invoices can be finalized");
-    }
-    if (!this.customerPartyId) {
-      throw new Error("Customer is required to finalize");
-    }
-    if (!this.lineItems.length) {
-      throw new Error("At least one line item is required to finalize");
-    }
-    if (!billTo.name.trim()) {
-      throw new Error("Bill-to name is required to finalize");
-    }
+    validateInvoiceDraft(this, billTo.name);
 
     this.setBillToSnapshot(billTo);
     if (paymentDetails) {

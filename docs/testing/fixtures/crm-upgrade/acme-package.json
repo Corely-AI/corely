@@ -1,0 +1,8 @@
+{
+  "name": "@acme/crm-guidance",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@corely/crm": "^1.0.0",
+    "@corely/crm-ui": "^1.0.0"
+  }
+}

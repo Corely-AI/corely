@@ -61,6 +61,16 @@ export default defineConfig({
       "@corely/sales/quote": path.resolve(__dirname, "../../packages/sales/src/quote.aggregate.ts"),
       "@corely/sales/totals": path.resolve(__dirname, "../../packages/sales/src/totals.ts"),
       "@corely/sales/types": path.resolve(__dirname, "../../packages/sales/src/sales.types.ts"),
+      "@corely/tasks/extensions": path.resolve(__dirname, "../../packages/tasks/src/extensions.ts"),
+      "@corely/tasks/task-rules": path.resolve(__dirname, "../../packages/tasks/src/task-rules.ts"),
+      "@corely/people/extensions": path.resolve(
+        __dirname,
+        "../../packages/people/src/extensions.ts"
+      ),
+      "@corely/people/staff-rules": path.resolve(
+        __dirname,
+        "../../packages/people/src/staff-rules.ts"
+      ),
       "@corely/booking/extensions": path.resolve(
         __dirname,
         "../../packages/booking/src/extensions.ts"
@@ -70,6 +80,24 @@ export default defineConfig({
         __dirname,
         "../../packages/tooling/acme-booking-policy-fixture/src/index.ts"
       ),
+      "@corely/crm/extensions": path.resolve(__dirname, "../../packages/crm/src/extensions.ts"),
+      "@corely/expenses/extensions": path.resolve(
+        __dirname,
+        "../../packages/expenses/src/extensions.ts"
+      ),
+      "@corely/customers/extensions": path.resolve(
+        __dirname,
+        "../../packages/customers/src/extensions.ts"
+      ),
+      "@acme/invoice-fixture/policy": path.resolve(
+        __dirname,
+        "../../packages/tooling/acme-invoice-fixture/src/policy.ts"
+      ),
+      "@corely/invoices/extensions": path.resolve(
+        __dirname,
+        "../../packages/invoices/src/extensions.ts"
+      ),
+      "@corely/invoices": path.resolve(__dirname, "../../packages/invoices/src/index.ts"),
       "@corely/config": path.resolve(__dirname, "../..", "packages/config/src"),
       "@corely/contracts": path.resolve(__dirname, "../..", "packages/contracts/src"),
       "@corely/core": path.resolve(__dirname, "../..", "packages/core/src"),

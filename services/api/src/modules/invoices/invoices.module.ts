@@ -1,3 +1,4 @@
+import { invoiceFinalizationPolicies } from "./invoice-extensions";
 import { Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { PrismaService } from "@corely/data";
@@ -196,6 +197,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
           taxEngine,
           prisma,
           cogsPostingService,
+          policies: invoiceFinalizationPolicies,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,

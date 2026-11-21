@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { StaffProfileSchema, CreateStaffSchema, UpdateStaffPrivateSchema } from "@corely/contracts";
-import { directoryEntry, staffLinkConflict, validManager } from "../domain/staff-rules";
+import { directoryEntry, staffLinkConflict, validManager } from "@corely/people/staff-rules";
 const profile = (id: string, fields: object = {}) =>
   StaffProfileSchema.parse({
     id,

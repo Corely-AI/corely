@@ -8,6 +8,7 @@ import {
   RecurringChecklists,
   createChecklistsClient,
 } from "@corely/web-features/modules/tasks";
+import { getTaskCreationGuidance } from "../../../tasks/task-creation-guidance";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import type {
@@ -239,6 +240,7 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
             <DailyWork
               key={workspace.id}
               client={tasksClient}
+              creationGuidance={getTaskCreationGuidance(workspace.id)}
               locale={locale}
               templatesHref={prefix + "/app/tasks/templates"}
             />

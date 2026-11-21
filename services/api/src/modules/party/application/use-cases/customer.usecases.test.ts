@@ -1,3 +1,4 @@
+import type { CustomerCreationRegistration } from "@corely/customers/extensions";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   ConflictError,
@@ -22,6 +23,7 @@ describe("Party & CRM - Customers", () => {
   let clock: FixedClock;
   let idGenerator: FakeIdGenerator;
   let createCustomer: CreateCustomerUseCase;
+  let policies: CustomerCreationRegistration[];
   let updateCustomer: UpdateCustomerUseCase;
   let archiveCustomer: ArchiveCustomerUseCase;
   let unarchiveCustomer: UnarchiveCustomerUseCase;
@@ -49,7 +51,9 @@ describe("Party & CRM - Customers", () => {
       "extra-2",
     ]);
 
+    policies = [];
     createCustomer = new CreateCustomerUseCase({
+      policies,
       logger: new NoopLogger(),
       partyRepo: repo,
       idGenerator,
@@ -127,6 +131,40 @@ describe("Party & CRM - Customers", () => {
     expect(repo.customers[0].contactPoints.find((c) => c.type === "EMAIL")?.value).toBe(
       "billing@acme.com"
     );
+  });
+
+  it("rejects company customers only in the configured workspace before creating a Party", async () => {
+    const restricted = { ...ctx, workspaceId: "restricted" };
+    const draft = { displayName: "Example Company", kind: "ORGANIZATION" as const };
+    policies.push({
+      ...restricted,
+      check: ({ kind, organizationName }) =>
+        kind === "ORGANIZATION" && !organizationName?.trim()
+          ? "Enter the organization name."
+          : undefined,
+    });
+
+    const rejected = await createCustomer.execute(draft, restricted);
+    expect(rejected).toMatchObject({
+      ok: false,
+      error: { code: "Customers:CreationPolicyRejected" },
+    });
+    expect(repo.customers).toHaveLength(0);
+
+    const configured = unwrap(
+      await createCustomer.execute({ ...draft, organizationName: "Example GmbH" }, restricted)
+    ).customer;
+    expect(configured).toMatchObject({ kind: "ORGANIZATION", organizationName: "Example GmbH" });
+
+    const defaultCustomer = unwrap(
+      await createCustomer.execute(draft, { ...ctx, workspaceId: "default" })
+    ).customer;
+    expect(repo.customers.find(({ id }) => id === defaultCustomer.id)?.roles).toContain("CUSTOMER");
+
+    const supplier = unwrap(
+      await createCustomer.execute({ ...draft, role: "SUPPLIER" }, restricted)
+    ).customer;
+    expect(repo.customers.find(({ id }) => id === supplier.id)?.roles).toContain("SUPPLIER");
   });
 
   it("updates a customer", async () => {
