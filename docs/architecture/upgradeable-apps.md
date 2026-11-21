@@ -34,7 +34,7 @@ Landing, Restaurant Listing and POS have their own client entry points. The E2E 
 .NET ERiC gateway serve testing and tax integration respectively. Reuse existing UI, client,
 integration, POS and offline packages according to their responsibilities.
 
-[Self-host Booking upgrade guide](../products/openbuk/self-host-upgrades.md)
+[Self-host Booking upgrade guide](../products/openbuk/self-host-upgrades.md) · [Self-host Invoice upgrade guide](../platform/invoice-self-host-upgrades.md)
 
 Export the app, contract and host revisions for your checkout with
 `pnpm app:release-inventory`. See the [source release inventory](../tasks/457-export-app-release-inventory.md).

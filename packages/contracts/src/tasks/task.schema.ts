@@ -13,6 +13,7 @@ const fields = {
     .nullable()
     .default(null),
 };
+export const TaskCreationPolicyRejectedCode = "Tasks:CreationPolicyRejected";
 export const CreateEmployeeTaskSchema = z.object(fields).strict();
 export const UpdateEmployeeTaskSchema = z
   .object({ ...fields, version: z.number().int().positive() })

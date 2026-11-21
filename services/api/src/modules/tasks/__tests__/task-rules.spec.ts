@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CreateEmployeeTaskSchema, UpdateEmployeeTaskSchema } from "@corely/contracts";
-import { transitionTask, type TaskRecord } from "../domain/task-rules";
+import { transitionTask, type TaskRecord } from "@corely/tasks/task-rules";
 describe("Employee task contracts and lifecycle", () => {
   it("normalizes due instants while rejecting invalid or privileged fields", () => {
     expect(

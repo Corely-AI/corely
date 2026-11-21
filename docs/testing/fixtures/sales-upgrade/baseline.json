@@ -1,0 +1,12 @@
+{
+  "fixture": true,
+  "productRelease": "1.0.0",
+  "runtime": {
+    "@corely/sales": "1.0.0",
+    "@corely/sales-ui": "1.0.0",
+    "@corely/contracts": "0.0.0"
+  },
+  "extensions": {
+    "@acme/quote-send-policy": "1.0.0"
+  }
+}

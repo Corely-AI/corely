@@ -1,5 +1,5 @@
-import { type QuoteAggregate } from "../../domain/quote.aggregate";
-import { type QuoteStatus } from "../../domain/sales.types";
+import { type QuoteAggregate } from "@corely/sales/quote";
+import { type QuoteStatus } from "@corely/sales/types";
 
 export type ListQuotesFilters = {
   status?: QuoteStatus;

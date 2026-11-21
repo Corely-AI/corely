@@ -11,7 +11,7 @@ import {
   RequireTenant,
 } from "@corely/kernel";
 import type { CreateQuoteInput, CreateQuoteOutput } from "@corely/contracts";
-import { QuoteAggregate } from "../../domain/quote.aggregate";
+import { QuoteAggregate } from "@corely/sales/quote";
 import { toQuoteDto } from "../mappers/sales-dto.mapper";
 import { getIdempotentResult, storeIdempotentResult } from "./idempotency";
 import type { QuoteDeps } from "./sales-quote.deps";

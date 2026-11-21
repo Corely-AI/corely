@@ -1,0 +1,8 @@
+{
+  "name": "@acme/task-creation-policy",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@corely/tasks": "^1.0.0",
+    "@corely/tasks-ui": "^1.0.0"
+  }
+}

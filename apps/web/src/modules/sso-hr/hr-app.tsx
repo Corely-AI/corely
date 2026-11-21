@@ -1,3 +1,4 @@
+import { StaffProfilePage } from "../people/staff-profile-extensions";
 import { useMemo } from "react";
 import {
   createBrowserRouter,
@@ -21,7 +22,6 @@ import { sessionScopeQueryKey } from "@corely/web-shared/session/workspace-launc
 import { FocusedAppShell } from "@corely/web-shared/layout/focused-app-shell";
 import {
   PeopleDirectoryPage,
-  StaffProfilePage,
   StaffJourneyPage,
   PeopleRuntimeProvider,
   createPeopleApi,

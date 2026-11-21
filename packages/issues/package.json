@@ -1,0 +1,22 @@
+{
+  "name": "@corely/issues",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./rules": "./dist/issue-rules.mjs",
+    "./extensions": "./dist/extensions.mjs"
+  },
+  "scripts": {
+    "build": "tsdown src/issue-rules.ts src/extensions.ts --dts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*",
+    "@corely/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*"
+  }
+}

@@ -1,4 +1,7 @@
 import React from "react";
+import { normalizeError } from "@corely/api-client";
+import { QuoteSendGuidanceSlot } from "@corely/sales-ui";
+import { quoteSendGuidance } from "../quote-send-guidance";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
@@ -87,7 +90,12 @@ export default function QuoteDetailPage() {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.quotes.detail(quoteId ?? "") });
       toast.success("Quote sent");
     },
-    onError: () => toast.error("Failed to send quote"),
+    onError: (error) => {
+      const problem = normalizeError(error);
+      toast.error(
+        problem.code === "Sales:QuoteSendPolicyRejected" ? problem.detail : "Failed to send quote"
+      );
+    },
   });
 
   const acceptMutation = useMutation({
@@ -143,7 +151,7 @@ export default function QuoteDetailPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-h1 text-foreground">Quote {quote.number ?? "Draft"}</h1>
@@ -151,7 +159,7 @@ export default function QuoteDetailPage() {
           </div>
           <p className="text-muted-foreground">Manage quote details and next steps.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => navigate("/sales/copilot")}>
             <Sparkles className="h-4 w-4" />
             AI Assist
@@ -184,6 +192,12 @@ export default function QuoteDetailPage() {
         </div>
       </div>
 
+      {isDraft && (
+        <QuoteSendGuidanceSlot
+          Guidance={quoteSendGuidance.get(quote.tenantId)}
+          validUntilDate={quote.validUntilDate ?? null}
+        />
+      )}
       <Card>
         <CardContent className="p-6">
           <QuoteForm

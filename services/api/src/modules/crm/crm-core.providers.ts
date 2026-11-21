@@ -1,3 +1,4 @@
+import { dealLossPolicies } from "./crm-extensions";
 import { type Provider } from "@nestjs/common";
 import {
   AUDIT_PORT,
@@ -285,7 +286,14 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
       dealRepo: PrismaDealRepoAdapter,
       enrollmentRepo: PrismaEnrollmentRepoAdapter,
       clock: ClockPort
-    ) => new MarkDealLostUseCase(dealRepo, enrollmentRepo, clock, new NestLoggerAdapter()),
+    ) =>
+      new MarkDealLostUseCase(
+        dealRepo,
+        enrollmentRepo,
+        clock,
+        new NestLoggerAdapter(),
+        dealLossPolicies
+      ),
     inject: [DEAL_REPO_PORT, ENROLLMENT_REPO_PORT, CLOCK_PORT_TOKEN],
   },
   {

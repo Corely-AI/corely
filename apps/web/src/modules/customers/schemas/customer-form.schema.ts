@@ -3,6 +3,8 @@ import type { CreateCustomerInput, UpdateCustomerInput, CustomerDto } from "@cor
 
 export const customerFormSchema = z.object({
   displayName: z.string().min(1, "Display name is required"),
+  kind: z.enum(["INDIVIDUAL", "ORGANIZATION"]).optional(),
+  organizationName: z.string().trim().optional(),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   phone: z.string().optional(),
   birthday: z.string().optional(),
@@ -45,6 +47,8 @@ export type CustomerFormData = z.infer<typeof customerFormSchema>;
 export function toCreateCustomerInput(data: CustomerFormData): CreateCustomerInput {
   return {
     displayName: data.displayName,
+    kind: data.kind,
+    organizationName: data.kind === "ORGANIZATION" ? data.organizationName || undefined : undefined,
     email: data.email || undefined,
     phone: data.phone || undefined,
     birthday: data.birthday || undefined,

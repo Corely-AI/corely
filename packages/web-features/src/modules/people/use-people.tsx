@@ -16,6 +16,8 @@ function useLegacyPeopleAccess() {
   const locale = i18n.language.split("-")[0];
   return {
     locale,
+    tenantId: user?.activeTenantId,
+    workspaceId: activeWorkspaceId ?? undefined,
     scope: JSON.stringify([user?.userId, user?.activeTenantId, activeWorkspaceId]),
     copy: peopleCopy[locale === "de" || locale === "vi" ? locale : "en"],
     loading: permissions.isLoading,
@@ -34,6 +36,8 @@ export function PeopleAccessProvider({ children }: { children: ReactNode }) {
     <Access.Provider
       value={{
         locale,
+        tenantId: runtime.scope.tenantId,
+        workspaceId: runtime.scope.workspaceId,
         scope: JSON.stringify(runtime.scope),
         copy: peopleCopy[locale === "de" || locale === "vi" ? locale : "en"],
         loading: false,

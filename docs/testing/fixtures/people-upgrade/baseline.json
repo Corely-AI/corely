@@ -1,0 +1,12 @@
+{
+  "fixture": true,
+  "productRelease": "1.0.0",
+  "runtime": {
+    "@corely/people": "1.0.0",
+    "@corely/people-ui": "1.0.0",
+    "@corely/contracts": "0.0.0"
+  },
+  "extensions": {
+    "@acme/staff-profile-policy": "1.0.0"
+  }
+}

@@ -1,4 +1,4 @@
-import type { SalesSettingsProps } from "./sales.types";
+import type { SalesSettingsProps } from "@corely/sales/types";
 
 export class SalesSettingsAggregate {
   private props: SalesSettingsProps;

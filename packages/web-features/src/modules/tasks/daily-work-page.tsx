@@ -1,3 +1,4 @@
+import type { TaskCreationGuidance } from "@corely/tasks-ui";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "@corely/web-shared/lib/api-client";
@@ -7,7 +8,13 @@ import { RecurringChecklists } from "./recurring-checklists";
 import { createChecklistsClient } from "./checklists-client";
 import { DailyWork } from "./daily-work";
 import { createTasksClient } from "./tasks-client";
-export function DailyWorkPage({ templates = false }: { templates?: boolean }) {
+export function DailyWorkPage({
+  templates = false,
+  getCreationGuidance,
+}: {
+  templates?: boolean;
+  getCreationGuidance?: (workspaceId: string) => TaskCreationGuidance | undefined;
+}) {
   const { activeWorkspaceId } = useWorkspace();
   const { user } = useAuth();
   const { i18n } = useTranslation();
@@ -33,6 +40,7 @@ export function DailyWorkPage({ templates = false }: { templates?: boolean }) {
     <DailyWork
       key={JSON.stringify([user?.userId, user?.activeTenantId, activeWorkspaceId])}
       client={client}
+      creationGuidance={activeWorkspaceId ? getCreationGuidance?.(activeWorkspaceId) : undefined}
       locale={i18n.language.split("-")[0]}
     />
   );

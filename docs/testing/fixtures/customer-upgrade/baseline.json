@@ -1,0 +1,12 @@
+{
+  "fixture": true,
+  "productRelease": "1.0.0",
+  "runtime": {
+    "@corely/customers": "1.0.0",
+    "@corely/customers-ui": "1.0.0",
+    "@corely/contracts": "0.0.0"
+  },
+  "extensions": {
+    "@acme/customer-guidance": "1.0.0"
+  }
+}
