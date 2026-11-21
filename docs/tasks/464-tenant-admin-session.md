@@ -2,7 +2,7 @@
 
 ## Tracking and outcome
 
-- [Corely #464](https://github.com/Corely-AI/corely/issues/464)
+- [Corely #464](https://github.com/Corely-AI/corely/issues/464) and [Draft PR #465](https://github.com/Corely-AI/corely/pull/465)
 - Branch `464-tenant-admin-session`, base `development`
 - A host with `platform.tenants.access` can open an active tenant from its row using the tenant's current system Admin grants and the host's own identity.
 - The session lasts until explicitly ended and does not create tenant or workspace memberships.
