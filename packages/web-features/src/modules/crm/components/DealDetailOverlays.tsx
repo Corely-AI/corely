@@ -1,4 +1,5 @@
 import React from "react";
+import { DealLossGuidanceSlot } from "@corely/crm-ui";
 import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import {
@@ -143,6 +144,7 @@ export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
           </DialogHeader>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">{t("crm.deals.markLostDescription")}</p>
+            <DealLossGuidanceSlot tenantId={deal.tenantId} />
             <Input
               placeholder={t("crm.deals.markLostPlaceholder")}
               value={lostReason}

@@ -15,6 +15,7 @@ COPY packages/booking/package.json ./packages/booking/
 COPY packages/data/package.json ./packages/data/
 COPY packages/expenses/package.json ./packages/expenses/
 COPY packages/domain/package.json ./packages/domain/
+COPY packages/crm/package.json ./packages/crm/
 COPY packages/customers/package.json ./packages/customers/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/invoices/package.json ./packages/invoices/
