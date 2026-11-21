@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, Camera, RefreshCw } from "lucide-react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
+import { Mic, MicOff } from "lucide-react";
+import { normalizeError } from "@corely/api-client";
+import { IssueReportGuidanceSlot } from "@corely/issues-ui";
+import { useAuth } from "@corely/web-shared/lib/auth-provider";
+import { fileToBase64, getAudioDuration } from "../components/issue-attachment-input";
+import { IssueImageInput } from "../components/issue-image-input";
+import { issueReportGuidance } from "../issue-report-guidance";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { AttachmentMetadata, UploadFileOutput } from "@corely/contracts";
@@ -28,34 +33,11 @@ type UploadedAttachment = AttachmentMetadata & {
   fileId?: string;
 };
 
-const fileToBase64 = (file: Blob) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result || "");
-      const base64 = result.includes(",") ? result.split(",")[1] : result;
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-
-const getAudioDuration = (file: Blob) =>
-  new Promise<number | undefined>((resolve) => {
-    const audio = document.createElement("audio");
-    audio.preload = "metadata";
-    audio.onloadedmetadata = () => {
-      resolve(Number.isFinite(audio.duration) ? audio.duration : undefined);
-      URL.revokeObjectURL(audio.src);
-    };
-    audio.onerror = () => resolve(undefined);
-    audio.src = URL.createObjectURL(file);
-  });
-
 export default function NewIssuePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const tenantId = useAuth().user?.activeTenantId;
   type ImageState = {
     id: string;
     file: File;
@@ -153,7 +135,10 @@ export default function NewIssuePage() {
     },
     onError: (error) => {
       console.error(error);
-      toast.error("Failed to create issue");
+      const problem = normalizeError(error);
+      toast.error(
+        problem.code === "Issues:ReportPolicyRejected" ? problem.detail : "Failed to create issue"
+      );
     },
   });
 
@@ -376,6 +361,10 @@ export default function NewIssuePage() {
             <div className="space-y-2">
               <Label htmlFor="description">{t("issues.fields.description")}</Label>
               <Textarea id="description" rows={4} {...form.register("description")} />
+              <IssueReportGuidanceSlot
+                priority={form.watch("priority") ?? "MEDIUM"}
+                Guidance={tenantId ? issueReportGuidance.get(tenantId) : undefined}
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -415,123 +404,19 @@ export default function NewIssuePage() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>{t("issues.attachments.images")}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    id="image-upload"
-                    onChange={handleImageUpload}
-                  />
-                  {imageState.length > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setImageState([])}
-                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      {t("common.delete")}
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => document.getElementById("image-upload")?.click()}
-                  >
-                    {t("issues.attachments.addImages")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsCameraOpen(true)}
-                  >
-                    <Camera className="h-4 w-4 mr-2" />
-                    {t("issues.attachments.takePicture")}
-                  </Button>
-                </div>
-              </div>
-
-              <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>{t("issues.attachments.takePicture")}</DialogTitle>
-                  </DialogHeader>
-                  <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-                    <video
-                      ref={videoRefCallback}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
-                    <Button variant="ghost" size="icon" onClick={toggleCamera}>
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                    <Button onClick={capturePhoto} variant="default" className="w-full mx-4">
-                      <Camera className="h-4 w-4 mr-2" />
-                      {t("issues.attachments.takePicture")}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              {imageState.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {imageState.map((image) => (
-                    <div
-                      key={image.id}
-                      className="group relative aspect-square rounded-md border overflow-hidden bg-muted"
-                    >
-                      <img
-                        src={image.previewUrl}
-                        alt="Preview"
-                        className={`w-full h-full object-cover transition-opacity ${image.isUploading ? "opacity-50" : "opacity-100"}`}
-                        onError={(e) => {
-                          if (image.isUploading) {
-                            return;
-                          } // Ignore errors during upload/switching
-                          (e.target as HTMLImageElement).src = image.previewUrl; // Fallback? Or just log
-                        }}
-                      />
-                      {image.isUploading && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                        </div>
-                      )}
-
-                      {!image.isUploading && (
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() =>
-                              setImageState((prev) => prev.filter((p) => p.id !== image.id))
-                            }
-                          >
-                            &times;
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="h-32 bg-muted flex items-center justify-center rounded-md border border-dashed text-muted-foreground text-sm">
-                  {t("issues.attachments.empty")}
-                </div>
-              )}
-            </div>
+            <IssueImageInput
+              imageState={imageState}
+              handleImageUpload={handleImageUpload}
+              clearImages={() => setImageState([])}
+              removeImage={(id) =>
+                setImageState((previous) => previous.filter((image) => image.id !== id))
+              }
+              isCameraOpen={isCameraOpen}
+              setIsCameraOpen={setIsCameraOpen}
+              videoRefCallback={videoRefCallback}
+              toggleCamera={toggleCamera}
+              capturePhoto={capturePhoto}
+            />
 
             <div className="space-y-3">
               <Label>{t("issues.voiceNote")}</Label>

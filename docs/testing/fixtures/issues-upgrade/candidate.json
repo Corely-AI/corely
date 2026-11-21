@@ -1,0 +1,9 @@
+{
+  "fixture": true,
+  "productRelease": "1.1.0",
+  "appId": "issues",
+  "packageManifests": ["packages/issues/package.json", "packages/issues-ui/package.json"],
+  "extensionManifests": ["docs/testing/fixtures/issues-upgrade/acme-package.json"],
+  "migrations": [],
+  "localPatches": []
+}

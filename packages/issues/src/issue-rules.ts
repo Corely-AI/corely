@@ -1,5 +1,5 @@
 import { ConflictError } from "@corely/domain";
-import type { IssueStatus } from "./issue.types";
+import type { IssueStatus } from "@corely/contracts";
 
 const ISSUE_STATUS_TRANSITIONS: Record<IssueStatus, IssueStatus[]> = {
   NEW: ["TRIAGED", "IN_PROGRESS", "WAITING"],
