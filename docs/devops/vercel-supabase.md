@@ -188,7 +188,7 @@ Run the setup again as the same database role to update the named schedule and r
 
 ### Verify the scheduled run
 
-1. In the isolated test workspace, use a supported operation that creates a known pending outbox job and record its ID. Once #448 lands, use the invoice PDF flow below and capture its `invoice.pdf.render.requested` event. If the API's on-demand wakeup already processed the event, use another job that is still pending at the scheduled tick.
+1. In the isolated test workspace, enable Tasks and create one employee task from the UI. Record its task ID. The Tasks application writes a `tasks.task.create` event with the task, workspace and version in the payload. The background runtime acknowledges this event without sending a message. Create the task before enabling the Cron schedule if you want to observe the pending event first, then enable the schedule using the command above.
 2. Use read-only CLI queries from the repository root. Replace `<request-id>` with the numeric ID from the matching Postgres log and `<event-id>` with the event ID. Check the timestamps against the Cron run and API log. The HTTP response should show processing with no errors, and the specific event must reach `SENT`.
 
    ```bash
@@ -204,16 +204,35 @@ Run the setup again as the same database role to update the named schedule and r
      "select id, status, attempts, \"updatedAt\" from workflow.\"OutboxEvent\" where id = '<event-id>';"
    ```
 
-   To find the event ID, filter `workflow."OutboxEvent"` by the test tenant, `"eventType" = 'invoice.pdf.render.requested'` and `"payloadJson"::jsonb ->> 'invoiceId'` equal to the test invoice ID. Query promptly because the `pg_net` response table retains results for a limited time.
+   To find the event ID, filter `workflow."OutboxEvent"` by the test tenant, `"eventType" = 'tasks.task.create'` and `"payloadJson"::jsonb ->> 'taskId'` equal to the test task ID. Query promptly because the `pg_net` response table retains results for a limited time. If a different API invocation already processed the event, repeat with a fresh task and observe the scheduled invocation.
 
 3. A successful Cron run shows that PostgreSQL dispatched the HTTP request. The matching API result and outbox event status establish that the job completed. For a `401`, reconcile the Vault token with the API token and check deployment protection. For a timeout, compare the Supabase HTTP deadline, Vercel invocation duration and outbox lease and retry state. [Background runtime guide](background-runtime.md)
 
 ## 5. Verify invoice PDFs in Supabase Storage
 
-This check depends on [#448](https://github.com/Corely-AI/corely/issues/448). Use the adapter's tested CLI steps to provision a private bucket in the same Supabase project and bind its server-side configuration to the Vercel API. Record the actual bucket and credential setup here once the adapter lands.
+Invoice rendering and download depend on [#448](https://github.com/Corely-AI/corely/issues/448). You can provision and inspect the test bucket independently using Supabase CLI v3. From the repository root, run this in a scratch directory so the test Supabase config stays outside the deployment checkout. Use `corely-invoice-pdfs` as the bucket name when configuring the adapter.
+
+```bash
+(
+  storage_setup_dir="$(mktemp -d)"
+  cd "$storage_setup_dir"
+  supabase init
+  cat >> supabase/config.toml <<'TOML'
+
+[storage.buckets.corely-invoice-pdfs]
+public = false
+TOML
+  supabase seed buckets --remote="$SUPABASE_PROJECT_REF" --yes
+)
+
+supabase db query --remote="$SUPABASE_PROJECT_REF" --read-only \
+  "select id, public from storage.buckets where id = 'corely-invoice-pdfs';"
+```
+
+Expect one row with `public = false`. After #448 lands, use its tested server-side configuration to bind that bucket to the Vercel API. The operator's Supabase CLI access token is for provisioning. Use the adapter's documented runtime credential for Corely. [Supabase CLI reference](https://supabase.com/docs/reference/cli/introduction#supabase-seed-buckets)
 
 1. Enable Invoices in the test workspace and create an invoice with an account that has PDF access. Request the PDF in the app or call `POST /invoices/:invoiceId/pdf`. Track readiness using the app or `GET /invoices/:invoiceId/pdf?waitMs=<ms>`.
-2. Confirm the corresponding outbox event reaches `SENT` and the object exists in the private Supabase Storage bucket. Open the PDF from Corely's authorized download and check the invoice number. Record the Vercel deployment ID and invocation duration. Repeat after a cold start.
+2. Confirm the corresponding outbox event reaches `SENT`. Compare the object key recorded by Corely to the output of `supabase storage ls ss:///corely-invoice-pdfs --recursive --remote="$SUPABASE_PROJECT_REF" --experimental` in the test project. Open the PDF from Corely's authorized download and check the invoice number. Record the Vercel deployment ID and invocation duration. Repeat after a cold start.
 3. For rendering failures, check Vercel logs for the Chromium binary, shared libraries and browser launch timing. For storage failures, verify the Supabase project, bucket and credentials against the adapter configuration. [Vercel Function limits](https://vercel.com/docs/functions/limitations) · [Supabase Storage documentation](https://supabase.com/docs/guides/storage)
 
 ## 6. Verify durable workflows with Vercel Queues

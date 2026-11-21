@@ -22,4 +22,6 @@ The change is documentation only. The deployed sign-in and persistence smoke tes
 
 ## Impact and remaining work
 
+The runbook includes the CLI-only private bucket setup and an independent Cron smoke test based on the Tasks application event. The bucket and scheduled worker steps were checked against provider docs and the owning source. They still need a hosted run.
+
 Validate the API bundle and Chromium on Vercel. Once #447 and #448 land, add their tested CLI settings to the runbook and verify stored PDF downloads, queue delivery across a redeploy, and retry behavior on a Vercel and Supabase test deployment.
