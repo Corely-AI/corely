@@ -2,6 +2,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { checklistsCopy } from "./checklists-copy";
 import "./checklists.css";
+import { normalizeError } from "@corely/api-client";
+import { TaskCreationGuidanceSlot, type TaskCreationGuidance } from "@corely/tasks-ui";
+import { TaskCreationPolicyRejectedCode } from "@corely/contracts";
 import { Button, Input } from "@corely/ui";
 import type { EmployeeTask, EmployeeTaskList, TaskAssignee } from "@corely/contracts";
 import type { TasksClient } from "./tasks-client";
@@ -24,10 +27,12 @@ export function DailyWork({
   client,
   locale = "en",
   templatesHref = "/tasks/templates",
+  creationGuidance,
 }: {
   client: TasksClient;
   locale?: string;
   templatesHref?: string;
+  creationGuidance?: TaskCreationGuidance;
 }) {
   const c = checklistsCopy[locale === "de" || locale === "vi" ? locale : "en"];
   const t = tasksCopy[locale === "de" || locale === "vi" ? locale : "en"];
@@ -40,6 +45,7 @@ export function DailyWork({
   const [error, setError] = useState<
     "denied" | "error" | "conflict" | "failed" | "invalidTime" | ""
   >("");
+  const [policyError, setPolicyError] = useState<string>();
   const [notice, setNotice] = useState(false);
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<EmployeeTask | "new" | null>(null);
@@ -92,6 +98,7 @@ export function DailyWork({
     return () => controller.abort();
   }, [client, filter, page, revision, t]);
   function begin(task: EmployeeTask | "new") {
+    setPolicyError(undefined);
     setEditing(task);
     setNotice(false);
     setError("");
@@ -108,6 +115,7 @@ export function DailyWork({
     const key = commandKeys.current.get(signature) ?? crypto.randomUUID();
     commandKeys.current.set(signature, key);
     setBusy(true);
+    setPolicyError(undefined);
     setError("");
     setNotice(false);
     try {
@@ -131,6 +139,11 @@ export function DailyWork({
       }
     } catch (error: unknown) {
       if (mounted.current) {
+        const problem = normalizeError(error);
+        if (method === "POST" && path === "" && problem.code === TaskCreationPolicyRejectedCode) {
+          setPolicyError(problem.detail);
+          return;
+        }
         if ([401, 403, 404].includes(statusOf(error))) {
           // Current authority/ownership no longer permits this projection. Fetch it again
           // only on explicit retry; keep drafts solely for conflict/transient recovery.
@@ -225,6 +238,12 @@ export function DailyWork({
       {editing && (
         <form className="task-form" onSubmit={submit}>
           <h2>{editing === "new" ? t.add : t.edit}</h2>
+          <TaskCreationGuidanceSlot active={editing === "new"} Guidance={creationGuidance} />
+          {editing === "new" && policyError && (
+            <p className="task-error" role="alert">
+              {policyError}
+            </p>
+          )}
           <label>
             {t.task}
             <Input

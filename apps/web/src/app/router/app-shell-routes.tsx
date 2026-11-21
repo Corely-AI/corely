@@ -1,4 +1,5 @@
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
+import { getTaskCreationGuidance } from "../../modules/tasks/task-creation-guidance";
 import { DailyWorkPage } from "@corely/web-features/modules/tasks/daily-work-page";
 import {
   PeopleDirectoryPage,
@@ -174,7 +175,10 @@ export const appShellRoutes = (
         </Route>
       )}
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
-      <Route path="/tasks" element={<DailyWorkPage />} />
+      <Route
+        path="/tasks"
+        element={<DailyWorkPage getCreationGuidance={getTaskCreationGuidance} />}
+      />
       <Route path="/tasks/templates" element={<DailyWorkPage templates />} />
       <Route path="/people/me" element={<StaffJourneyPage />} />
       <Route path="/people/staff/:id/lifecycle" element={<StaffJourneyPage manager />} />

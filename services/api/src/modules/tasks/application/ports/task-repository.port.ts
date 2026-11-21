@@ -1,5 +1,5 @@
 import type { TransactionContext } from "@corely/kernel";
-import type { TaskRecord } from "../../domain/task-rules";
+import type { TaskRecord } from "@corely/tasks/task-rules";
 export interface TaskScope {
   tenantId: string;
   workspaceId: string;
