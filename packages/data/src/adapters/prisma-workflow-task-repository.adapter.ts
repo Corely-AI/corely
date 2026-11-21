@@ -115,12 +115,15 @@ export class WorkflowTaskRepository {
     });
   }
 
-  async claimTask(tenantId: string, id: string, workerId: string, now: Date) {
+  async claimTask(tenantId: string, id: string, workerId: string, now: Date, staleBefore?: Date) {
     const updated = await this.prisma.task.updateMany({
       where: {
         tenantId,
         id,
-        status: "PENDING",
+        OR: [
+          { status: "PENDING" },
+          ...(staleBefore ? [{ status: "RUNNING" as const, lockedAt: { lt: staleBefore } }] : []),
+        ],
         AND: [
           {
             OR: [{ lockedAt: null }, { lockedAt: { lt: new Date(now.getTime() - 60000) } }],

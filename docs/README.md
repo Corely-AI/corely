@@ -104,6 +104,7 @@ Deployment, configuration, and infrastructure.
 - [Docker](./devops/DOCKER.md)
 - [Configuration](./devops/configuration.md)
 - [Background Runtime](./devops/background-runtime.md)
+- [Vercel Queues for workflows](./tasks/447-vercel-workflow-queues.md)
 - [Customization](./devops/customization.md)
 - [Licensing](./devops/licensing.md)
 - [Supabase Storage for invoice PDFs](./tasks/448-supabase-pdf-storage.md)

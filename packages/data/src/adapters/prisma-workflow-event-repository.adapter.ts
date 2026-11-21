@@ -34,4 +34,10 @@ export class WorkflowEventRepository {
       orderBy: { createdAt: "asc" },
     });
   }
+
+  async findDeliveryMarker(tenantId: string, instanceId: string, type: string, prefix: string) {
+    return this.prisma.workflowEvent.findFirst({
+      where: { tenantId, instanceId, type, payload: { startsWith: prefix } },
+    });
+  }
 }
