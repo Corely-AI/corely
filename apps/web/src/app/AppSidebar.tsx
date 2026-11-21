@@ -17,10 +17,11 @@ export function AppSidebar(props: AppSidebarProps) {
   const locale = appCenterLocale(i18n.language ?? "en");
   const { isLoading: isConfigLoading, error: configError, navigationGroups } = useWorkspaceConfig();
 
+  const sidebarGroups = props.navigationGroups ?? navigationGroups;
+
   const hasTaxNav = React.useMemo(
-    () =>
-      navigationGroups.some((group) => group.items.some((item) => item.route?.startsWith("/tax"))),
-    [navigationGroups]
+    () => sidebarGroups.some((group) => group.items.some((item) => item.route?.startsWith("/tax"))),
+    [sidebarGroups]
   );
   const { data: taxCapabilities } = useTaxCapabilitiesQuery(!isConfigLoading && hasTaxNav);
   const paymentsEnabled = taxCapabilities?.paymentsEnabled ?? false;
@@ -40,7 +41,7 @@ export function AppSidebar(props: AppSidebarProps) {
           <span className={props.collapsed ? "sr-only" : undefined}>{copy[locale].title}</span>
         </Link>
       }
-      navigationGroups={navigationGroups}
+      navigationGroups={sidebarGroups}
       isConfigLoading={isConfigLoading}
       configError={configError}
       hiddenItemIds={hiddenItemIds}
