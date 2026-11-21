@@ -21,7 +21,15 @@ export const envSchema = z.object({
   // REDIS CACHE & QUEUE
   // ============================================================================
   REDIS_URL: z.string().url("REDIS_URL must be a valid Redis connection string").optional(),
-  WORKFLOW_QUEUE_DRIVER: z.enum(["memory", "cloudtasks"]).optional(),
+  WORKFLOW_QUEUE_DRIVER: z.enum(["memory", "cloudtasks", "vercel"]).optional(),
+  VERCEL_WORKFLOW_QUEUE_REGION: z
+    .string()
+    .regex(/^[a-z]{3}[0-9]+$/)
+    .optional(),
+  VERCEL_WORKFLOW_QUEUE_NAMESPACE: z
+    .string()
+    .regex(/^[a-z0-9-]{1,48}$/)
+    .optional(),
   WORKFLOW_CLOUDTASKS_LOCATION: z.string().optional(),
   WORKFLOW_CLOUDTASKS_QUEUE_PREFIX: z.string().optional(),
   WORKFLOW_CLOUDTASKS_TARGET_BASE_URL: z.string().url().optional(),

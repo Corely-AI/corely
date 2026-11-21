@@ -41,7 +41,10 @@ export class WorkflowOrchestratorProcessor implements OnModuleInit, OnModuleDest
   ) {}
 
   async onModuleInit() {
-    if (this.env.WORKFLOW_QUEUE_DRIVER === "cloudtasks") {
+    if (
+      this.env.getValue("WORKFLOW_QUEUE_DRIVER") &&
+      this.env.getValue("WORKFLOW_QUEUE_DRIVER") !== "memory"
+    ) {
       return;
     }
     this.subscription = await this.orchestratorQueue.subscribe(async (job) => this.handleJob(job), {
@@ -74,6 +77,27 @@ export class WorkflowOrchestratorProcessor implements OnModuleInit, OnModuleDest
           tenantId,
           instanceId,
         })
+      );
+      return;
+    }
+
+    const deliveryMarker =
+      this.env.getValue("WORKFLOW_QUEUE_DRIVER") === "vercel" && job.id
+        ? { tenantId, instanceId, type: "QUEUE_DELIVERY_APPLIED", payload: JSON.stringify(job.id) }
+        : undefined;
+    if (
+      deliveryMarker &&
+      (await this.events.findDeliveryMarker(
+        tenantId,
+        instanceId,
+        deliveryMarker.type,
+        deliveryMarker.payload
+      ))
+    ) {
+      await this.enqueueTasks(
+        tenantId,
+        instanceId,
+        await this.tasks.listByTraceId(tenantId, String(job.id))
       );
       return;
     }
@@ -162,6 +186,7 @@ export class WorkflowOrchestratorProcessor implements OnModuleInit, OnModuleDest
 
       await this.events.appendMany(
         [
+          ...(deliveryMarker ? [deliveryMarker] : []),
           ...historyEvents,
           ...createdTasks.map((task) => ({
             tenantId,

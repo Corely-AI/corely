@@ -12,10 +12,7 @@ export class EnvService {
   getValue<K extends keyof Env>(key: K): Env[K] {
     return this.config[key];
   }
-
-  // ============================================================================
   // COMMON SETTINGS
-  // ============================================================================
 
   get NODE_ENV(): "development" | "test" | "production" {
     return this.config.NODE_ENV;
@@ -28,10 +25,7 @@ export class EnvService {
   get LOG_LEVEL(): "error" | "warn" | "info" | "debug" | "verbose" {
     return this.config.LOG_LEVEL;
   }
-
-  // ============================================================================
   // DATABASE
-  // ============================================================================
 
   get DATABASE_URL(): string {
     return this.config.DATABASE_URL;
@@ -41,7 +35,7 @@ export class EnvService {
     return this.config.REDIS_URL;
   }
 
-  get WORKFLOW_QUEUE_DRIVER(): "memory" | "cloudtasks" | undefined {
+  get WORKFLOW_QUEUE_DRIVER(): Env["WORKFLOW_QUEUE_DRIVER"] {
     return this.config.WORKFLOW_QUEUE_DRIVER;
   }
 
@@ -88,10 +82,7 @@ export class EnvService {
   get CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL(): string | undefined {
     return this.config.CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL;
   }
-
-  // ============================================================================
   // PORTS
-  // ============================================================================
 
   get PORT(): number {
     return this.config.PORT;
@@ -120,10 +111,7 @@ export class EnvService {
   get DIRECTORY_LEADS_NOTIFY_EMAIL(): string | undefined {
     return this.config.DIRECTORY_LEADS_NOTIFY_EMAIL;
   }
-
-  // ============================================================================
   // WORKER
-  // ============================================================================
 
   get API_BASE_URL(): string | undefined {
     return this.config.API_BASE_URL;
@@ -268,10 +256,7 @@ export class EnvService {
   get INVOICE_REMINDER_RUN_TIMEZONE(): string {
     return this.config.INVOICE_REMINDER_RUN_TIMEZONE;
   }
-
-  // ============================================================================
   // AI PROVIDERS
-  // ============================================================================
 
   get AI_MODEL_PROVIDER(): "openai" | "anthropic" {
     return this.config.AI_MODEL_PROVIDER;
@@ -304,10 +289,7 @@ export class EnvService {
   get CRM_AI_INTENT_SENTIMENT_ENABLED(): boolean {
     return this.config.CRM_AI_INTENT_SENTIMENT_ENABLED;
   }
-
-  // ============================================================================
   // EMAIL PROVIDERS
-  // ============================================================================
 
   get EMAIL_PROVIDER(): "resend" | "sendgrid" | "ses" | "postmark" {
     return this.config.EMAIL_PROVIDER;
@@ -368,10 +350,7 @@ export class EnvService {
   get STRIPE_BILLING_PORTAL_RETURN_URL(): string | undefined {
     return this.config.STRIPE_BILLING_PORTAL_RETURN_URL;
   }
-
-  // ============================================================================
   // OBJECT STORAGE
-  // ============================================================================
 
   get STORAGE_PROVIDER(): "gcs" | "s3" | "local" {
     return this.config.STORAGE_PROVIDER;
@@ -404,10 +383,7 @@ export class EnvService {
   get GOOGLE_APPLICATION_CREDENTIALS(): string | undefined {
     return this.config.GOOGLE_APPLICATION_CREDENTIALS;
   }
-
-  // ============================================================================
   // OBSERVABILITY
-  // ============================================================================
 
   get OBSERVABILITY_PROVIDER(): "none" | "otel" | "langfuse" {
     return this.config.OBSERVABILITY_PROVIDER;
@@ -440,10 +416,7 @@ export class EnvService {
   get LANGFUSE_SECRET_KEY(): string | undefined {
     return this.config.LANGFUSE_SECRET_KEY;
   }
-
-  // ============================================================================
   // SECURITY & AUTH
-  // ============================================================================
 
   get JWT_SECRET(): string | undefined {
     return this.config.JWT_SECRET;
@@ -468,10 +441,7 @@ export class EnvService {
   get CORELY_PROXY_KEY_CRM(): string | undefined {
     return this.config.CORELY_PROXY_KEY_CRM;
   }
-
-  // ============================================================================
   // HELPER METHODS
-  // ============================================================================
 
   /**
    * Returns true if running in production mode.

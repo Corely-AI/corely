@@ -1,13 +1,23 @@
 import type { EnvService } from "@corely/config";
 import { getInMemoryQueue, type QueuePort } from "@corely/kernel";
 import { CloudTasksQueueAdapter } from "./cloud-tasks-queue.adapter";
+import { createVercelWorkflowQueue } from "@/shared/infrastructure/vercel-workflow-queue.adapter";
 
-export function createWorkflowQueueAdapter<T>(
+export function createWorkflowQueueAdapter<T extends { tenantId: string }>(
   name: string,
   env: EnvService,
   queueRoute: string
 ): QueuePort<T> {
-  const driver = env.WORKFLOW_QUEUE_DRIVER ?? "memory";
+  const driver = env.getValue("WORKFLOW_QUEUE_DRIVER") ?? "memory";
+
+  if (driver === "vercel") {
+    return createVercelWorkflowQueue<T>(
+      name,
+      env.getValue("VERCEL_WORKFLOW_QUEUE_REGION"),
+      env.getValue("VERCEL_WORKFLOW_QUEUE_NAMESPACE"),
+      env.WORKER_API_SERVICE_TOKEN
+    );
+  }
 
   if (driver === "cloudtasks") {
     if (!env.GOOGLE_CLOUD_PROJECT) {
