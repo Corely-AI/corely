@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { type FileRepoPort } from "@corely/kernel";
-import { FileEntity, type FileKind } from "@corely/domain";
+import { isRestrictedDocumentId, FileEntity, type FileKind } from "@corely/domain";
 
 const mapFile = (row: any): FileEntity =>
   new FileEntity({
@@ -24,6 +24,8 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(file: FileEntity): Promise<void> {
+    if (isRestrictedDocumentId(file.id) || isRestrictedDocumentId(file.documentId))
+      throw new Error("Restricted document");
     await this.prisma.file.create({
       data: {
         id: file.id,
@@ -43,6 +45,8 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
   }
 
   async save(file: FileEntity): Promise<void> {
+    if (isRestrictedDocumentId(file.id) || isRestrictedDocumentId(file.documentId))
+      throw new Error("Restricted document");
     await this.prisma.file.update({
       where: { id: file.id },
       data: {
@@ -60,15 +64,16 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
 
   async findById(tenantId: string, fileId: string): Promise<FileEntity | null> {
     const row = await this.prisma.file.findFirst({ where: { id: fileId, tenantId } });
-    return row ? mapFile(row) : null;
+    return row && !isRestrictedDocumentId(row.documentId) ? mapFile(row) : null;
   }
 
   async findByIdGlobal(fileId: string): Promise<FileEntity | null> {
     const row = await this.prisma.file.findUnique({ where: { id: fileId } });
-    return row ? mapFile(row) : null;
+    return row && !isRestrictedDocumentId(row.documentId) ? mapFile(row) : null;
   }
 
   async findByDocument(tenantId: string, documentId: string): Promise<FileEntity[]> {
+    if (isRestrictedDocumentId(documentId)) return [];
     const rows = await this.prisma.file.findMany({ where: { tenantId, documentId } });
     return rows.map(mapFile);
   }
@@ -79,6 +84,6 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
     kind: FileKind
   ): Promise<FileEntity | null> {
     const row = await this.prisma.file.findFirst({ where: { tenantId, documentId, kind } });
-    return row ? mapFile(row) : null;
+    return row && !isRestrictedDocumentId(row.documentId) ? mapFile(row) : null;
   }
 }

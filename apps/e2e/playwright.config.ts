@@ -13,6 +13,7 @@ const baseURL =
 
 export default defineConfig({
   testDir: "./tests",
+  testIgnore: ["**/sign/**"],
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,

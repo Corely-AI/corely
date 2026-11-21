@@ -50,7 +50,10 @@ export class WorkspaceExperienceResolverService {
     const entitlement = await this.entitlementService.getTenantEntitlement(input.tenantId);
     const workspace = await this.resolveWorkspace(input.tenantId, input.workspaceId);
     const workspaceKind = workspace?.legalEntity?.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-    const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
+    const capabilities = {
+      ...this.templateService.getDefaultCapabilities(workspaceKind),
+      "sign.templates": entitlement.hasCapability("sign.templates"),
+    };
     const capabilityKeys = new Set(Object.keys(capabilities));
     const enabledCapabilities = new Set(
       Object.entries(capabilities)

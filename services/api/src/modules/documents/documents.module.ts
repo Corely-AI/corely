@@ -1,3 +1,5 @@
+import { PrismaTemplateDocuments } from "./infrastructure/prisma/prisma-template-documents";
+import { TemplateDocuments } from "./public";
 import { Module, forwardRef } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { DocumentsController } from "./adapters/http/documents.controller";
@@ -33,6 +35,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
   imports: [forwardRef(() => IdentityModule), KernelModule],
   controllers: [DocumentsController, InvoicePdfController, PublicDocumentsController],
   providers: [
+    { provide: TemplateDocuments, useClass: PrismaTemplateDocuments },
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
     PrismaDocumentLinkAdapter,
@@ -336,6 +339,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     },
   ],
   exports: [
+    TemplateDocuments,
     DocumentsApplication,
     GcsObjectStorageAdapter,
     ListLinkedDocumentsUseCase,

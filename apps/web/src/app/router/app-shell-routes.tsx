@@ -66,6 +66,14 @@ import CoachingOfferDetailPage from "../../modules/coaching-engagements/screens/
 import CoachingOfferEditorPage from "../../modules/coaching-engagements/screens/CoachingOfferEditorPage";
 import { useSurfaceId } from "@corely/web-shared/shared/surface";
 
+const SignOverviewPage = React.lazy(
+  () => import("@corely/web-features/modules/sign/overview-page")
+);
+const SignRequestPage = React.lazy(() => import("@corely/web-features/modules/sign/request-page"));
+const SignTemplateEditor = React.lazy(
+  () => import("@corely/web-features/modules/sign/template-page")
+);
+
 const SurfaceAssistantPage = () => {
   const surfaceId = useSurfaceId();
 
@@ -116,6 +124,47 @@ const PosPackPlaceholderPage = ({ title, description }: { title: string; descrip
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
     <Route element={<AppShell />}>
+      {(import.meta.env.DEV ||
+        /^\/source\/corely-sign-[a-f0-9]{40}\.zip$/.test(
+          import.meta.env.VITE_SIGN_SOURCE_URL ?? ""
+        )) &&
+        [
+          "/sign/requests/new",
+          "/sign/templates",
+          "/sign/templates/new",
+          "/sign/templates/:id",
+          "/sign/templates/:id/edit",
+        ].map((path) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <React.Suspense fallback={<p>Loading editor…</p>}>
+                <SignTemplateEditor />
+              </React.Suspense>
+            }
+          />
+        ))}
+      {(import.meta.env.DEV ||
+        /^\/source\/corely-sign-[a-f0-9]{40}\.zip$/.test(
+          import.meta.env.VITE_SIGN_SOURCE_URL ?? ""
+        )) &&
+        ["/sign", "/sign/settings", "/sign/requests", "/sign/requests/:id"].map((path) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <React.Suspense fallback={<p>Loading request…</p>}>
+                {path === "/sign" || path === "/sign/settings" ? (
+                  <SignOverviewPage />
+                ) : (
+                  <SignRequestPage />
+                )}
+              </React.Suspense>
+            }
+          />
+        ))}
+
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />

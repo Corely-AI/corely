@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { PrismaService, getPrismaClient as transactionClient } from "@corely/data";
 import type { TransactionContext } from "@corely/kernel";
 import {
   type TenantAppInstallRepositoryPort,
@@ -12,7 +12,8 @@ type PrismaTransactionContext = TransactionContext & { prisma: PrismaService };
 
 function getPrismaClient(prisma: PrismaService, tx?: TransactionContext) {
   const prismaTx = tx as PrismaTransactionContext | undefined;
-  return prismaTx?.prisma ?? prisma;
+  // Accept both the historical wrapped context and the shared direct transaction client.
+  return prismaTx?.prisma ?? transactionClient(prisma, tx);
 }
 
 @Injectable()

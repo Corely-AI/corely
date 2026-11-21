@@ -69,8 +69,16 @@ import { RequestPasswordResetUseCase } from "./application/use-cases/request-pas
 import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-password-reset.usecase";
 import { TenantRoleSeederService } from "./application/services/tenant-role-seeder.service";
 
+import { WorkspacesModule } from "../workspaces/workspaces.module";
+import { GetWorkspacePermissionsUseCase } from "./public";
 @Module({
-  imports: [EnvModule.forRoot(), DataModule, KernelModule, forwardRef(() => PlatformModule)],
+  imports: [
+    forwardRef(() => WorkspacesModule),
+    EnvModule.forRoot(),
+    DataModule,
+    KernelModule,
+    forwardRef(() => PlatformModule),
+  ],
   controllers: [AuthController, RolesController, PermissionsController, TenantsController],
   providers: [
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()
@@ -172,6 +180,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     DeleteRoleUseCase,
     GetPermissionCatalogUseCase,
     GetEffectivePermissionsUseCase,
+    GetWorkspacePermissionsUseCase,
     GetRolePermissionsUseCase,
     UpdateRolePermissionsUseCase,
     SyncRolePermissionsFromManifestsUseCase,
@@ -188,6 +197,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     PermissionCatalogRegistry,
   ],
   exports: [
+    GetWorkspacePermissionsUseCase,
     Reflector,
     USER_REPOSITORY_TOKEN,
     TENANT_REPOSITORY_TOKEN,

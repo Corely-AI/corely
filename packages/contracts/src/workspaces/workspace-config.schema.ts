@@ -26,6 +26,7 @@ export const WorkspaceCapabilitiesSchema = z.object({
   "tax.profiles": z.boolean(),
   "crm.advanced": z.boolean(),
   "marketing.basic": z.boolean(),
+  "sign.templates": z.boolean().optional(),
   "booking.basic": z.boolean(),
   "booking.advanced": z.boolean(),
   "pos.basic": z.boolean(),

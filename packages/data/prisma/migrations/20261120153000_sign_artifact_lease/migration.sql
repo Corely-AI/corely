@@ -1,0 +1,1 @@
+ALTER TABLE platform."SignCeremony" ADD COLUMN "leaseId" UUID, ADD COLUMN "leaseUntil" TIMESTAMPTZ(6), ADD COLUMN "candidateSha256" TEXT, ADD COLUMN "finalizationFailed" BOOLEAN NOT NULL DEFAULT FALSE;

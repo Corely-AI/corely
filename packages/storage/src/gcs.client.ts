@@ -15,12 +15,17 @@ const tryParseServiceAccount = (value?: string) => {
   }
 };
 
-export const createGcsClient = (config?: { projectId?: string; keyFilename?: string }) => {
+export const createGcsClient = (config?: {
+  projectId?: string;
+  keyFilename?: string;
+  apiEndpoint?: string;
+}) => {
   const projectId = config?.projectId;
   const keyFilename = config?.keyFilename;
   const credentials = tryParseServiceAccount(keyFilename);
   const resolvedProjectId = projectId ?? credentials?.project_id;
   return new Storage({
+    ...(config?.apiEndpoint ? { apiEndpoint: config.apiEndpoint } : {}),
     ...(resolvedProjectId ? { projectId: resolvedProjectId } : {}),
     ...(credentials ? { credentials } : {}),
     ...(!credentials && keyFilename ? { keyFilename } : {}),

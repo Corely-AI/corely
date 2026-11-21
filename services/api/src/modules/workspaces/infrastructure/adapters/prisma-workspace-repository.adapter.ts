@@ -1,5 +1,6 @@
+import type { TransactionContext } from "@corely/kernel";
 import { Inject, Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import type {
   WorkspaceRepositoryPort,
   CreateLegalEntityInput,
@@ -108,9 +109,13 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     return workspace ? this.mapWorkspaceFromPrisma(workspace) : null;
   }
 
-  async getWorkspaceById(tenantId: string, id: string): Promise<Workspace | null> {
-    const workspace = await this.prisma.workspace.findFirst({
-      where: { id, tenantId, deletedAt: null } as any,
+  async getWorkspaceById(
+    tenantId: string,
+    id: string,
+    tx?: TransactionContext
+  ): Promise<Workspace | null> {
+    const workspace = await getPrismaClient(this.prisma, tx).workspace.findFirst({
+      where: { id, tenantId, deletedAt: null },
     });
 
     return workspace ? this.mapWorkspaceFromPrisma(workspace) : null;
@@ -210,9 +215,10 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
 
   async getMembershipByUserAndWorkspace(
     workspaceId: string,
-    userId: string
+    userId: string,
+    tx?: TransactionContext
   ): Promise<WorkspaceMembership | null> {
-    const membership = await this.prisma.workspaceMembership.findUnique({
+    const membership = await getPrismaClient(this.prisma, tx).workspaceMembership.findUnique({
       where: {
         workspaceId_userId: { workspaceId, userId },
       },

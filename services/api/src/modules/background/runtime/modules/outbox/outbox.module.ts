@@ -1,3 +1,10 @@
+import { SignModule } from "../../../../sign/public";
+import {
+  SignVerifiedHandler,
+  SignCollectedHandler,
+  SignInvitationHandler,
+} from "../sign/sign-invitation.handler";
+import { signRecordedHandlers } from "../sign/sign-recorded.handler";
 import { Module } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import {
@@ -70,8 +77,12 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     DocumentsModule,
     InvoicesModule,
     CoachingWorkerModule,
+    SignModule,
   ],
   providers: [
+    SignVerifiedHandler,
+    SignCollectedHandler,
+    SignInvitationHandler,
     {
       provide: ID_GENERATOR_TOKEN,
       useFactory: (): IdGeneratorPort => ({
@@ -139,9 +150,16 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         coachingPrepFormSubmittedHandler: CoachingPrepFormSubmittedHandler,
         coachingSessionCompletedHandler: CoachingSessionCompletedHandler,
         coachingDebriefRequestedHandler: CoachingDebriefRequestedHandler,
+        verified: SignVerifiedHandler,
+        collected: SignCollectedHandler,
+        invite: SignInvitationHandler,
         coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
+          verified,
+          collected,
+          invite,
+          ...signRecordedHandlers,
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,
@@ -184,6 +202,9 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         CoachingPrepFormSubmittedHandler,
         CoachingSessionCompletedHandler,
         CoachingDebriefRequestedHandler,
+        SignVerifiedHandler,
+        SignCollectedHandler,
+        SignInvitationHandler,
         CoachingExportBundleRequestedHandler,
       ],
     },

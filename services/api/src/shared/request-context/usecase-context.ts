@@ -16,3 +16,10 @@ export const toUseCaseContext = (req: ContextAwareRequest): UseCaseContext => {
     metadata: ctx.metadata,
   };
 };
+
+/** Bind identity to the authenticated principal; the use case authorizes the selected workspace. */
+export const toAuthenticatedWorkspaceContext = (req: ContextAwareRequest): UseCaseContext => ({
+  ...toUseCaseContext(req),
+  userId: req.user?.userId,
+  tenantId: req.user?.tenantId,
+});

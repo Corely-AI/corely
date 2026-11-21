@@ -394,3 +394,9 @@ export const EVENT_NAMES = {
 
 export * from "./common/customization/custom-field";
 export * from "./common/customization/custom-attributes";
+
+export * from "./sign/layout.schema";
+export * from "./sign/template.schema";
+export * from "./sign/request.schema";
+export * from "./sign/ceremony.schema";
+export * from "./sign/field-placement";

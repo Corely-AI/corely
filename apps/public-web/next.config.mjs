@@ -21,9 +21,31 @@ const apiHost = resolveApiHost();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: "/sign/receive",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store" },
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+          },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+    ];
+  },
   outputFileTracingRoot: repoRoot,
+  outputFileTracingIncludes: {
+    "/api/signing/pdf-module": ["./node_modules/pdfjs-dist/legacy/build/pdf.mjs"],
+    "/api/signing/pdf-worker": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs"],
+  },
   transpilePackages: [
     "@corely/ui",
+    "@corely/web-shared",
     "@corely/contracts",
     "@corely/api-client",
     "@corely/public-api-client",

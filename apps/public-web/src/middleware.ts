@@ -10,6 +10,9 @@ import { isWebsiteHost } from "@/lib/website-host";
 const PUBLIC_FILE = /\.[^/]+$/;
 
 const shouldSkip = (pathname: string) => {
+  if (pathname === "/sign/receive") {
+    return true;
+  }
   if (pathname.startsWith("/_next")) {
     return true;
   }

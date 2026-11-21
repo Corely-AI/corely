@@ -11,3 +11,5 @@ export * from "./customization/use-cases/create-custom-field-definition.usecase"
 export * from "./customization/use-cases/list-custom-field-definitions.usecase";
 export * from "./customization/use-cases/update-custom-field-definition.usecase";
 export * from "./customization/use-cases/upsert-entity-layout.usecase";
+
+export * from "./documents/restricted-document";

@@ -213,6 +213,41 @@ const mapProviderEvent = (row: any): CoachingPaymentProviderEventRecord => ({
 @Injectable()
 export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngagementRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
+  nativeAgreementEvent(
+    tenantId: string,
+    workspaceId: string,
+    stage: "prepared" | "verified",
+    requestId: string,
+    tx: TransactionContext
+  ) {
+    return getPrismaClient(this.prisma, tx).coachingEngagementEvent.findFirst({
+      where: { tenantId, workspaceId, id: "sign-" + stage + "-" + requestId },
+      select: { engagementId: true },
+    });
+  }
+  async recordVerifiedAgreement(
+    tenantId: string,
+    workspaceId: string,
+    engagementId: string,
+    requestId: string,
+    artifactSha256: string,
+    tx: TransactionContext
+  ) {
+    await getPrismaClient(this.prisma, tx).coachingEngagementEvent.createMany({
+      data: [
+        {
+          id: "sign-verified-" + requestId,
+          tenantId,
+          workspaceId,
+          engagementId,
+          eventType: "coaching.agreement.verified",
+          metadataJson: { requestId, artifactSha256 },
+          occurredAt: new Date(),
+        },
+      ],
+      skipDuplicates: true,
+    });
+  }
 
   async createOffer(
     offer: CoachingOfferRecord,

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ForbiddenError, TENANT_ENTITLEMENTS_READ_PORT_TOKEN } from "@corely/kernel";
-import type { TenantEntitlementsReadPort } from "@corely/kernel";
+import type { TenantEntitlementsReadPort, TransactionContext } from "@corely/kernel";
 import { TenantEntitlement } from "../../domain/entitlement.aggregate";
 import { APP_REGISTRY_TOKEN, type AppRegistryPort } from "../ports/app-registry.port";
 import {
@@ -26,11 +26,14 @@ export class TenantEntitlementService {
   /**
    * Get tenant entitlement (enabled apps + capabilities)
    */
-  async getTenantEntitlement(tenantId: string): Promise<TenantEntitlement> {
-    const installs = await this.appInstallRepo.listEnabledByTenant(tenantId);
+  async getTenantEntitlement(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<TenantEntitlement> {
+    const installs = await this.appInstallRepo.listEnabledByTenant(tenantId, tx);
 
     // Fetch effective enablement from platform-entitlements (includes overrides)
-    const enablementMap = await this.entitlementsReadPort.getAppEnablementMap(tenantId);
+    const enablementMap = await this.entitlementsReadPort.getAppEnablementMap(tenantId, tx);
 
     // Filter installs: Must be installed AND enabled in configuration
     const enabledAppIds = installs
@@ -69,8 +72,8 @@ export class TenantEntitlementService {
   /**
    * Check if an app is enabled (without throwing)
    */
-  async isAppEnabled(tenantId: string, appId: string): Promise<boolean> {
-    const entitlement = await this.getTenantEntitlement(tenantId);
+  async isAppEnabled(tenantId: string, appId: string, tx?: TransactionContext): Promise<boolean> {
+    const entitlement = await this.getTenantEntitlement(tenantId, tx);
     return entitlement.isAppEnabled(appId);
   }
 

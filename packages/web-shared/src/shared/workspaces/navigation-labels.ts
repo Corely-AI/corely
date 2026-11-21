@@ -162,10 +162,9 @@ export const resolveNavigationItemLabelKey = (
     return fromId;
   }
 
-  if (item.route) {
-    const fromRoute = NAV_ITEM_KEY_BY_ROUTE_PREFIX.find(([prefix]) =>
-      item.route.startsWith(prefix)
-    );
+  const route = item.route;
+  if (route) {
+    const fromRoute = NAV_ITEM_KEY_BY_ROUTE_PREFIX.find(([prefix]) => route.startsWith(prefix));
     if (fromRoute) {
       return fromRoute[1];
     }

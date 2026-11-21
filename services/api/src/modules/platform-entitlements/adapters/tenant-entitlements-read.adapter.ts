@@ -1,13 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { TenantEntitlementsReadPort } from "@corely/kernel";
+import { type TenantEntitlementsReadPort, type TransactionContext } from "@corely/kernel";
 import { TenantEntitlementsService } from "../application/tenant-entitlements.service";
 
 @Injectable()
 export class TenantEntitlementsReadAdapter implements TenantEntitlementsReadPort {
   constructor(private readonly service: TenantEntitlementsService) {}
 
-  async getAppEnablementMap(tenantId: string): Promise<Record<string, boolean>> {
-    const entitlements = await this.service.getEntitlements(tenantId);
+  async getAppEnablementMap(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<Record<string, boolean>> {
+    const entitlements = await this.service.getEntitlements(tenantId, tx);
 
     // Convert ResolvedAppEntitlement[] to Record<string, boolean>
     return entitlements.apps.reduce(
@@ -19,8 +22,8 @@ export class TenantEntitlementsReadAdapter implements TenantEntitlementsReadPort
     );
   }
 
-  async isAppEnabled(tenantId: string, appId: string): Promise<boolean> {
-    const entitlements = await this.service.getEntitlements(tenantId);
+  async isAppEnabled(tenantId: string, appId: string, tx?: TransactionContext): Promise<boolean> {
+    const entitlements = await this.service.getEntitlements(tenantId, tx);
     const app = entitlements.apps.find((a) => a.appId === appId);
     return app?.enabled ?? false;
   }

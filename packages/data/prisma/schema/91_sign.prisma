@@ -1,0 +1,112 @@
+model SignTemplateRevision {
+  tenantId String
+  workspaceId String
+  templateId String @db.Uuid
+  revision Int
+  actorId String
+  commandId String @db.Uuid
+  fingerprint String @db.Char(64)
+  title String @db.VarChar(160)
+  archived Boolean @default(false)
+  layout Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  publication SignTemplatePublication?
+  workspace Workspace @relation(fields: [tenantId, workspaceId], references: [tenantId, id], onDelete: Restrict)
+  @@id([tenantId, workspaceId, templateId, revision])
+  @@unique([tenantId, workspaceId, templateId, actorId, commandId], map: "sign_template_command_uq")
+  @@schema("platform")
+}
+model SignTemplatePublication {
+  tenantId String
+  workspaceId String
+  templateId String @db.Uuid
+  revision Int
+  originalSha256 String @db.Char(64)
+  canonicalSha256 String @db.Char(64)
+  profile String
+  actorId String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  requests SignRequestDraft[]
+  snapshot SignTemplateRevision @relation(fields:[tenantId, workspaceId, templateId, revision], references:[tenantId,workspaceId,templateId,revision],onDelete:Restrict)
+  @@id([tenantId,workspaceId,templateId,revision])
+  @@schema("platform")
+}
+model SignRequestDraft {
+  tenantId String
+  workspaceId String
+  requestId String @db.Uuid
+  templateId String @db.Uuid
+  templateRevision Int
+  actorId String
+  commandId String @db.Uuid
+  fingerprint String @db.Char(64)
+  routing String
+  ceremony SignCeremony?
+  recipients Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  publication SignTemplatePublication @relation(fields:[tenantId,workspaceId,templateId,templateRevision],references:[tenantId,workspaceId,templateId,revision],onDelete:Restrict)
+  @@id([tenantId,workspaceId,requestId])
+  @@unique([tenantId,workspaceId,actorId,commandId],map:"sign_request_create_uq")
+  @@index([tenantId,workspaceId,actorId,requestId])
+  @@schema("platform")
+}
+
+model SignCeremony {
+  tenantId String
+  workspaceId String
+  requestId String @db.Uuid
+  status String
+  expiresAt DateTime @db.Timestamptz(6)
+  sentAt DateTime @db.Timestamptz(6)
+  consent String
+  senderWorkspace String?
+  invitation String
+  revision Int @default(1)
+  leaseId String? @db.Uuid
+  leaseUntil DateTime? @db.Timestamptz(6)
+  candidateSha256 String?
+  finalizationFailed Boolean @default(false)
+  verifiedAt DateTime? @db.Timestamptz(6)
+  artifactSha256 String?
+  evidenceSha256 String?
+  request SignRequestDraft @relation(fields:[tenantId,workspaceId,requestId],references:[tenantId,workspaceId,requestId],onDelete:Restrict)
+  reminders SignReminder[]
+  signers SignCeremonyRecipient[]
+  @@id([tenantId,workspaceId,requestId])
+  @@index([status,expiresAt])
+  @@schema("platform")
+}
+model SignCeremonyRecipient {
+  id String @id @db.Uuid
+  tenantId String
+  workspaceId String
+  requestId String @db.Uuid
+  roleId String
+  position Int
+  status String
+  tokenDigest String? @unique
+  envelope String?
+  sessionDigest String? @unique
+  sessionUntil DateTime? @db.Timestamptz(6)
+  deliveredAt DateTime? @db.Timestamptz(6)
+  acceptedAt DateTime? @db.Timestamptz(6)
+  values Json?
+  reviewedSha256 String?
+  ceremony SignCeremony @relation(fields:[tenantId,workspaceId,requestId],references:[tenantId,workspaceId,requestId],onDelete:Restrict)
+  @@unique([tenantId,workspaceId,requestId,roleId])
+  @@schema("platform")
+}
+
+model SignReminder {
+ createdAt DateTime @default(now()) @db.Timestamptz(6)
+ @@index([tenantId,workspaceId,requestId,roleId,createdAt], map:"sign_reminder_rate_idx")
+ tenantId String
+ workspaceId String
+ requestId String @db.Uuid
+ commandId String @db.Uuid
+ roleId String
+ ceremony SignCeremony @relation(fields:[tenantId,workspaceId,requestId],references:[tenantId,workspaceId,requestId],onDelete:Restrict)
+ @@id([tenantId,workspaceId,requestId,commandId])
+ @@schema("platform")
+}

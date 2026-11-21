@@ -1,6 +1,7 @@
+import { AuthorizeWorkspaceUseCase } from "./application/use-cases/authorize-workspace.usecase";
 import { Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
-import { IdentityModule } from "../identity";
+import { IdentityModule } from "../identity/identity.module";
 import { WorkspacesController } from "./adapters/http/workspaces.controller";
 import { PrismaWorkspaceRepository } from "./infrastructure/adapters/prisma-workspace-repository.adapter";
 import { WORKSPACE_REPOSITORY_PORT } from "./application/ports/workspace-repository.port";
@@ -21,6 +22,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
   imports: [DataModule, forwardRef(() => IdentityModule), KernelModule],
   controllers: [WorkspacesController],
   providers: [
+    AuthorizeWorkspaceUseCase,
     // Repository
     PrismaWorkspaceRepository,
     { provide: WORKSPACE_REPOSITORY_PORT, useExisting: PrismaWorkspaceRepository },
@@ -40,6 +42,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     DeleteWorkspaceUseCase,
   ],
   exports: [
+    AuthorizeWorkspaceUseCase,
     // Expose repository + token so external modules (e.g., TestHarness) can inject it
     PrismaWorkspaceRepository,
     WORKSPACE_REPOSITORY_PORT,

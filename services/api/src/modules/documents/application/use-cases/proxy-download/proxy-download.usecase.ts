@@ -41,7 +41,7 @@ export class ProxyDownloadUseCase extends BaseUseCase<
       ? await this.useCaseDeps.fileRepo.findById(tenantId, input.fileId)
       : (await this.useCaseDeps.fileRepo.findByDocument(tenantId, document.id))[0];
 
-    if (!file) {
+    if (!file || file.documentId !== document.id || file.tenantId !== tenantId) {
       throw new NotFoundError("File not found");
     }
 

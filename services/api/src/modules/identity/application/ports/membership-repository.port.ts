@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 import { type Membership } from "../../domain/entities/membership.entity";
 
 /**
@@ -32,7 +33,11 @@ export interface MembershipRepositoryPort {
   /**
    * Find membership by tenant and user
    */
-  findByTenantAndUser(tenantId: string | null, userId: string): Promise<Membership | null>;
+  findByTenantAndUser(
+    tenantId: string | null,
+    userId: string,
+    tx?: TransactionContext
+  ): Promise<Membership | null>;
 
   /**
    * Check if membership exists

@@ -288,7 +288,7 @@ export function AppShell({
         <div
           className={cn(
             "fixed inset-y-0 left-0 z-50 w-[min(85vw,20rem)] lg:hidden transition-transform duration-300",
-            mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            mobileSidebarOpen ? "translate-x-0" : "invisible -translate-x-full"
           )}
         >
           {sidebarRenderer({
@@ -311,7 +311,7 @@ export function AppShell({
             </Button>
             {showMobileSwitcher ? (
               <div className="flex-1 px-3">
-                <WorkspaceSwitcher />
+                <WorkspaceSwitcher allowCreate={sidebarProps?.allowWorkspaceCreation} />
               </div>
             ) : (
               <div className="flex-1" />

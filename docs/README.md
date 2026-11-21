@@ -121,3 +121,5 @@ General developer guides and references.
 - [Platform](./platform/)
 - [Workflows](./workflows/)
 - [Trademarks](./TRADEMARKS.md)
+
+- [Native signing ownership](decisions/ADR-0005-native-sign.md)

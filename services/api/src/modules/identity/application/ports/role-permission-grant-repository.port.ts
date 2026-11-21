@@ -1,13 +1,18 @@
+import type { TransactionContext } from "@corely/kernel";
 import type { RolePermissionEffect } from "@corely/contracts";
 import { ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN } from "../../identity.tokens";
 
 export interface RolePermissionGrantRepositoryPort {
   listByRoleIdsAndTenant(
     tenantId: string,
-    roleIds: string[]
+    roleIds: string[],
+    tx?: TransactionContext
   ): Promise<Array<{ key: string; effect: RolePermissionEffect }>>;
 
-  listByRoleIds(roleIds: string[]): Promise<Array<{ key: string; effect: RolePermissionEffect }>>;
+  listByRoleIds(
+    roleIds: string[],
+    tx?: TransactionContext
+  ): Promise<Array<{ key: string; effect: RolePermissionEffect }>>;
 
   replaceAll(
     tenantId: string,
