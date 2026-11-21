@@ -29,6 +29,7 @@ type Deps = {
   fileRepo: FileRepoPort;
   linkRepo: DocumentLinkRepoPort;
   objectStorage: ObjectStoragePort;
+  storageForFile?: (file: { storageProvider: string; bucket: string }) => ObjectStoragePort;
   outbox: OutboxPort;
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
@@ -86,7 +87,8 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
     }
 
     if (document && !input.forceRegenerate && document.status === "READY" && file) {
-      const signed = await this.useCaseDeps.objectStorage.createSignedDownloadUrl({
+      const storage = this.useCaseDeps.storageForFile?.(file) ?? this.useCaseDeps.objectStorage;
+      const signed = await storage.createSignedDownloadUrl({
         tenantId,
         objectKey: file.objectKey,
         expiresInSeconds: this.useCaseDeps.downloadTtlSeconds,
