@@ -11,6 +11,8 @@
     "@corely/booking-ui": "workspace:*",
     "@corely/contracts": "workspace:*",
     "@corely/expenses-ui": "workspace:*",
+    "@corely/customers-ui": "workspace:*",
+    "@corely/invoices-ui": "workspace:*",
     "@corely/web-features": "workspace:*",
     "@corely/web-shared": "workspace:*",
     "@corely/ui": "workspace:*",
