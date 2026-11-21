@@ -4,7 +4,8 @@
 
 - [Issue #438](https://github.com/Corely-AI/corely/issues/438). Branch `438-vercel-supabase-setup`, based on `origin/development` at `b9e552413`.
 - [Deployment guide](../devops/vercel-supabase.md). CLI-first test deployment with Prisma migrations, API-hosted outbox processing triggered by Supabase Cron, and smoke checks for the app, invoice PDF, and workflow durability.
-- Reuses the existing Vite web configuration, NestJS background endpoints, GCS PDF storage and Cloud Tasks queue adapter. Runtime changes belong in separate tickets.
+- Reuses the existing Vite web configuration and NestJS background endpoints. Full acceptance depends on [the Vercel Queues adapter (#447)](https://github.com/Corely-AI/corely/issues/447) and [the Supabase Storage adapter (#448)](https://github.com/Corely-AI/corely/issues/448).
+- [Draft PR #442](https://github.com/Corely-AI/corely/pull/442).
 
 ## Verification
 
@@ -21,4 +22,4 @@ The change is documentation only. The deployed sign-in and persistence smoke tes
 
 ## Impact and remaining work
 
-Validate the API bundle and Chromium binary on a deployed Vercel function, verify the actual PDF in GCS, and verify Cloud Tasks credentials and retry behavior in the deployed runtime. Durable workflows with only Vercel and Supabase would require a new queue adapter.
+Validate the API bundle and Chromium on Vercel. Once #447 and #448 land, add their tested CLI settings to the runbook and verify stored PDF downloads, queue delivery across a redeploy, and retry behavior on a Vercel and Supabase test deployment.

@@ -2,7 +2,9 @@
 
 Use Vercel for the Backoffice and NestJS API, Supabase PostgreSQL for application data, and Supabase Cron to wake the API's outbox worker. Corely account creation and sign-in use the Corely API.
 
-This is a **test deployment runbook**. Corely's API build, Playwright/Chromium renderer, and durable workflow queue still need end-to-end evidence on Vercel. The existing invoice renderer uses Google Cloud Storage (GCS). Durable workflows use Google Cloud Tasks. The verification steps below show where those dependencies enter the deployment.
+This is a **test deployment runbook** for a stack with two providers. Vercel hosts the web app, API and durable workflow queues. Supabase hosts PostgreSQL, Cron and private storage for invoice PDFs.
+
+Full deployment is pending [the Vercel Queues adapter (#447)](https://github.com/Corely-AI/corely/issues/447) and [the Supabase Storage adapter (#448)](https://github.com/Corely-AI/corely/issues/448). The sections below document the base deployment and define the checks for those integrations. Fill in their tested CLI commands and runtime settings when the adapters land.
 
 ## 1. Prepare a test target
 
@@ -12,8 +14,8 @@ Use Node 22, the pnpm version in `package.json`, Vercel CLI 54.7.1 or a compatib
 
 - Supply `VERCEL_TOKEN` with access to create, link, configure and deploy projects in `VERCEL_SCOPE`. Also supply the corresponding `VERCEL_TEAM_ID`, distinct test project names in `WEB_PROJECT` and `API_PROJECT`, and their stable HTTPS origins in `WEB_ORIGIN` and `API_ORIGIN` (no trailing slash).
 - Supply `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, and the test database password through a secret store. Provision the test project in the intended organization and region if needed. Check the available flags with `supabase projects create --help`.
-- Supply a fresh `JWT_SECRET` and a different `WORKER_API_SERVICE_TOKEN` as secrets. For the PDF test, provision a private GCS bucket and a service identity with access to write and read its objects. For workflows, arrange Cloud Tasks access as described below.
-- Account creation, token issuance and domain ownership may require operator action. If test deployment protection is enabled, arrange an approved machine-access path for Supabase Cron and Cloud Tasks before testing delivery endpoints.
+- Supply distinct `JWT_SECRET`, `WORKER_API_SERVICE_TOKEN` and `WORKFLOW_QUEUE_SECRET` values for the test API. The invoice PDF and workflow sections describe the resources their adapters will use.
+- Account creation, token issuance and domain ownership may require operator action. If test deployment protection is enabled, arrange an approved machine-access path for Supabase Cron before testing the outbox endpoint.
 
 ```bash
 set -euo pipefail
@@ -106,18 +108,9 @@ set_vercel_env OUTBOX_CONCURRENCY 1
 set_vercel_env PDF_RENDER_CONCURRENCY 1
 ```
 
-For the PDF test, set the following on the API. The GCS adapter accepts service-account JSON in `GOOGLE_APPLICATION_CREDENTIALS`.
+For full deployment, configure Vercel Queues and Supabase Storage using the tested instructions from #447 and #448. Their environment variable names and binding commands are pending. Keep `WORKFLOW_QUEUE_SECRET` configured for the existing internal workflow routes, including during a base smoke test.
 
-```bash
-set_vercel_env STORAGE_PROVIDER gcs
-set_vercel_env STORAGE_BUCKET "$STORAGE_BUCKET"
-set_vercel_env GOOGLE_CLOUD_PROJECT "$GOOGLE_CLOUD_PROJECT"
-set_vercel_env GOOGLE_APPLICATION_CREDENTIALS "$GCS_SERVICE_ACCOUNT_JSON"
-```
-
-Set `PLAYWRIGHT_LAUNCH_TIMEOUT_MS` only if startup measurements justify changing the default. Validate that Playwright can load Chromium and its system libraries inside the deployed function. A local browser install alone does not establish that the deployed function includes a compatible binary.
-
-Provide a distinct `WORKFLOW_QUEUE_SECRET` even for a smoke test using the memory driver, since the internal workflow endpoints check this secret when configured. For the workflow test, configure the remaining API queue variables from section 5 before deployment. Deploy the API first, then the web project. Relink at the repository root and verify the project ID before each project-specific command sequence.
+Deploy the API first, then the web project. Relink at the repository root and verify the project ID before each project-specific command sequence.
 
 ```bash
 vercel deploy --prod --yes --non-interactive --token "$VERCEL_TOKEN"
@@ -193,9 +186,9 @@ SQL
 
 Run the setup again as the same database role to update the named schedule and rotate values. Check that exactly one active row exists. To disable the job, run `select cron.unschedule('corely-outbox');` against the same test target with `supabase db query --remote="$SUPABASE_PROJECT_REF" --yes`. Reference [Supabase Cron](https://supabase.com/docs/guides/cron), [pg_net](https://supabase.com/docs/guides/database/extensions/pg_net), and [Vault](https://supabase.com/docs/guides/database/vault).
 
-### Verify the scheduled run and invoice PDF
+### Verify the scheduled run
 
-1. In the test workspace, enable Invoices and use an account with invoice PDF access. Create a test invoice and request the PDF in the app. The API also exposes `POST /invoices/:invoiceId/pdf` and `GET /invoices/:invoiceId/pdf?waitMs=<ms>`. Capture the invoice ID and the corresponding `invoice.pdf.render.requested` outbox event ID from the test database. An event processed by the API's on-demand wakeup verifies that handler, so use a run with a job still pending at the scheduled tick to verify Cron specifically.
+1. In the isolated test workspace, use a supported operation that creates a known pending outbox job and record its ID. Once #448 lands, use the invoice PDF flow below and capture its `invoice.pdf.render.requested` event. If the API's on-demand wakeup already processed the event, use another job that is still pending at the scheduled tick.
 2. Use read-only CLI queries from the repository root. Replace `<request-id>` with the numeric ID from the matching Postgres log and `<event-id>` with the event ID. Check the timestamps against the Cron run and API log. The HTTP response should show processing with no errors, and the specific event must reach `SENT`.
 
    ```bash
@@ -213,31 +206,22 @@ Run the setup again as the same database role to update the named schedule and r
 
    To find the event ID, filter `workflow."OutboxEvent"` by the test tenant, `"eventType" = 'invoice.pdf.render.requested'` and `"payloadJson"::jsonb ->> 'invoiceId'` equal to the test invoice ID. Query promptly because the `pg_net` response table retains results for a limited time.
 
-3. Download and open the PDF. Check the invoice number against the test invoice and record the function duration and deployment ID. Repeat after a cold start. A successful Cron job means PostgreSQL queued the HTTP request. A downloaded, readable PDF and the event status establish completion.
-4. For a `401`, reconcile the Vault token with the API token and check protection at the API URL. For a timeout, compare Supabase's HTTP deadline, the Vercel invocation duration, and the outbox lease/retry state. For a render failure, inspect Vercel logs for missing Chromium files, shared libraries or browser launch timeouts. For a storage failure, confirm the API identity can write, read and sign downloads for the test bucket. Check [Vercel Function limits](https://vercel.com/docs/functions/limitations) and the [background runtime guide](background-runtime.md).
+3. A successful Cron run shows that PostgreSQL dispatched the HTTP request. The matching API result and outbox event status establish that the job completed. For a `401`, reconcile the Vault token with the API token and check deployment protection. For a timeout, compare the Supabase HTTP deadline, Vercel invocation duration and outbox lease and retry state. [Background runtime guide](background-runtime.md)
 
-## 5. Verify durable workflows
+## 5. Verify invoice PDFs in Supabase Storage
 
-Supabase Cron drains the PostgreSQL outbox. Workflow orchestration and workflow tasks use separate queue ports. Corely's `memory` driver keeps jobs in the process. Its existing durable driver is `cloudtasks`. A Vercel and Supabase deployment without Google Cloud Tasks needs a new durable adapter to pass this check.
+This check depends on [#448](https://github.com/Corely-AI/corely/issues/448). Use the adapter's tested CLI steps to provision a private bucket in the same Supabase project and bind its server-side configuration to the Vercel API. Record the actual bucket and credential setup here once the adapter lands.
 
-For the Cloud Tasks path, enable Cloud Tasks in the test Google Cloud project. The API producer and API background consumers share these Vercel API variables. Use `set_vercel_env` from section 3 after linking the API project.
+1. Enable Invoices in the test workspace and create an invoice with an account that has PDF access. Request the PDF in the app or call `POST /invoices/:invoiceId/pdf`. Track readiness using the app or `GET /invoices/:invoiceId/pdf?waitMs=<ms>`.
+2. Confirm the corresponding outbox event reaches `SENT` and the object exists in the private Supabase Storage bucket. Open the PDF from Corely's authorized download and check the invoice number. Record the Vercel deployment ID and invocation duration. Repeat after a cold start.
+3. For rendering failures, check Vercel logs for the Chromium binary, shared libraries and browser launch timing. For storage failures, verify the Supabase project, bucket and credentials against the adapter configuration. [Vercel Function limits](https://vercel.com/docs/functions/limitations) · [Supabase Storage documentation](https://supabase.com/docs/guides/storage)
 
-| Variable                              | Test value                                                          |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| `WORKFLOW_QUEUE_DRIVER`               | `cloudtasks`                                                        |
-| `GOOGLE_CLOUD_PROJECT`                | Test Google Cloud project ID                                        |
-| `WORKFLOW_CLOUDTASKS_LOCATION`        | Cloud Tasks region                                                  |
-| `WORKFLOW_CLOUDTASKS_QUEUE_PREFIX`    | A unique test prefix, ending in `-`                                 |
-| `WORKFLOW_CLOUDTASKS_TARGET_BASE_URL` | Stable `$API_ORIGIN` with a trailing slash                          |
-| `WORKFLOW_QUEUE_SECRET`               | Separate generated secret passed by the adapter as `x-queue-secret` |
+## 6. Verify durable workflows with Vercel Queues
 
-The Cloud Tasks client uses Google Application Default Credentials. Provide a supported credential configuration to the Vercel runtime with permission to inspect the queues and enqueue tasks. The adapter can try to create missing queues, so provision both queues in advance if the producer lacks create permission. Use `workflow-orchestrator` and `workflow-task-runner` with the chosen prefix. The GCS adapter's inline JSON support is specific to that adapter and is not proof that Cloud Tasks can authenticate with the same value. Verify Cloud Tasks credentials in the deployed runtime before starting the workflow test.
+This check depends on [#447](https://github.com/Corely-AI/corely/issues/447). Use the adapter's tested CLI and deployment settings to configure isolated orchestration and task-runner producers and consumers. Record the exact topic, trigger and project bindings here once the adapter lands. Supabase Cron continues to trigger the PostgreSQL outbox. [Vercel Queues documentation](https://vercel.com/docs/queues)
 
-1. Pause delivery on the isolated test orchestrator queue. Start a harmless published workflow using the authenticated `POST /workflow/instances` endpoint. Confirm that Cloud Tasks retains a pending task and record its ID and the Corely instance ID.
-2. Redeploy the API to the same stable origin. Confirm health and resume the queue. Verify that the existing task reaches `/internal/queues/workflow-orchestrator` and that the runner can consume tasks at `/internal/queues/workflow-task-runner`.
-3. Exercise a retry with a test step that fails transiently, then succeeds. Capture delivery attempts, the workflow instance's final status and exactly one durable effect for that step. Use a fixture that records an observable effect in the test environment. A healthy queue or a completed instance alone cannot establish that the effect occurred once.
-4. Record any missing runtime capability, including unavailable credentials or inadequate retry/idempotency behavior, with the exact failing step. Track required runtime changes separately.
+1. Start a harmless published workflow in the test workspace. Use delayed delivery or a fixture that keeps a step pending. Record the Vercel Queues message ID and the Corely workflow instance ID.
+2. Redeploy the API to the same stable origin before that step completes. Check API health and verify the pending workflow reaches the expected state through the configured Vercel Queues consumers.
+3. Exercise a transient failure so delivery retries. Capture the delivery attempts, final workflow state and exactly one observable durable effect for the step.
 
-Use `gcloud tasks queues pause` and `gcloud tasks queues resume` with the full prefixed queue name and explicit `--project` and `--location`. Use `gcloud tasks list --queue` with the same target to check what is queued. The Google Cloud CLI is required for these queue operations.
-
-Record the source commit, CLI versions, deployment IDs, redacted commands and actual outcomes for the sign-in and persistence smoke test, Cron, invoice PDF, and workflow redeploy and retry. Restore paused test queues and disable the test schedule when finished.
+Record the source commit, CLI versions, deployment IDs, redacted commands and observed outcomes for sign-in and persistence, Cron, invoice PDF and workflow redeploy and retry. Disable the test Cron schedule when finished.
