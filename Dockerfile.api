@@ -13,6 +13,7 @@ COPY patches ./patches/
 COPY services/api/package.json ./services/api/
 COPY packages/booking/package.json ./packages/booking/
 COPY packages/data/package.json ./packages/data/
+COPY packages/expenses/package.json ./packages/expenses/
 COPY packages/domain/package.json ./packages/domain/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/kernel/package.json ./packages/kernel/

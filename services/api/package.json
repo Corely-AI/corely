@@ -16,6 +16,7 @@
     "@corely/domain": "workspace:*",
     "@corely/email": "workspace:*",
     "@corely/email-templates": "workspace:*",
+    "@corely/expenses": "workspace:*",
     "@corely/integrations-adyen": "workspace:*",
     "@corely/integrations-core": "workspace:*",
     "@corely/integrations-google-gmail": "workspace:*",

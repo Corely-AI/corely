@@ -21,6 +21,7 @@
   "dependencies": {
     "@corely/contracts": "workspace:*",
     "@corely/api-client": "workspace:*",
+    "@corely/expenses-ui": "workspace:*",
     "@corely/ui": "workspace:*",
     "@corely/web-shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
