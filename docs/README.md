@@ -39,6 +39,7 @@ current readiness or authorize implementing the catalog.
 High-level design, boundaries, and core decisions.
 
 - [Upgradeable app customizations](./architecture/upgradeable-apps.md)
+- [Source release inventory](./tasks/457-export-app-release-inventory.md)
 - [Architecture Overview](./architecture/architect.md)
 - [Boundaries](./architecture/BOUNDARIES.md)
 - [Overall Structure](./architecture/overall-structure.md)
