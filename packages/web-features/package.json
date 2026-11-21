@@ -19,6 +19,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@corely/people-ui": "workspace:*",
     "@corely/contracts": "workspace:*",
     "@corely/invoices-ui": "workspace:*",
     "@corely/api-client": "workspace:*",

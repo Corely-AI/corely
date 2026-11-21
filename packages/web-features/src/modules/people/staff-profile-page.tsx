@@ -1,3 +1,4 @@
+import { StaffProfileGuidanceSlot, type StaffProfileGuidanceRegistration } from "@corely/people-ui";
 import { PeopleLink as Link } from "./people-runtime";
 import { staffJourneyCopy } from "./staff-journey-copy";
 import { StaffAbsences } from "./staff-absences";
@@ -9,7 +10,11 @@ import { usePeopleAccess, usePeopleLoad } from "./use-people";
 import { StaffProfileForm } from "./staff-profile-form";
 import { StaffAvailability } from "./staff-availability";
 import { StaffPrivateDetails } from "./staff-private-details";
-export function StaffProfilePage() {
+export function StaffProfilePage({
+  guidance,
+}: {
+  guidance?: readonly StaffProfileGuidanceRegistration[];
+}) {
   const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
   const { id } = useParams<{ id: string }>();
@@ -44,6 +49,14 @@ export function StaffProfilePage() {
         </h1>
         {profile && <Badge variant="outline">{profile.archivedAt ? t.archived : t.active}</Badge>}
       </div>
+      {editing && (create || (profile && !profile.archivedAt)) && (
+        <StaffProfileGuidanceSlot
+          registrations={guidance}
+          tenantId={access.tenantId}
+          workspaceId={access.workspaceId}
+          operation={create ? "create" : "update"}
+        />
+      )}
       {create ? (
         <StaffProfileForm copy={t} onReload={() => window.location.reload()} />
       ) : result.loading ? (

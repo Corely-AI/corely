@@ -5,6 +5,7 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "dependencies": {
+    "@corely/people": "workspace:*",
     "@ai-sdk/anthropic": "catalog:",
     "@ai-sdk/openai": "catalog:",
     "@ai-sdk/ui-utils": "catalog:",
