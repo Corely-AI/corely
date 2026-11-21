@@ -3,7 +3,7 @@ import { PrismaService, PrismaExtKvAdapter, getPrismaClient } from "@corely/data
 import type { TransactionContext } from "@corely/kernel";
 import { EmployeeTaskSchema } from "@corely/contracts";
 import { z } from "zod";
-import type { TaskRecord } from "../domain/task-rules";
+import type { TaskRecord } from "@corely/tasks/task-rules";
 import type {
   TaskRepositoryPort,
   TaskScope,

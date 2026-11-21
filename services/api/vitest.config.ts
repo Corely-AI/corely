@@ -57,6 +57,8 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@shared": path.resolve(__dirname, "src/shared"),
+      "@corely/tasks/extensions": path.resolve(__dirname, "../../packages/tasks/src/extensions.ts"),
+      "@corely/tasks/task-rules": path.resolve(__dirname, "../../packages/tasks/src/task-rules.ts"),
       "@corely/people/extensions": path.resolve(
         __dirname,
         "../../packages/people/src/extensions.ts"

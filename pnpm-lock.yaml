@@ -739,6 +739,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@corely/tasks-ui':
+        specifier: workspace:*
+        version: link:../../packages/tasks-ui
       '@corely/people-ui':
         specifier: workspace:*
         version: link:../../packages/people-ui
@@ -1561,6 +1564,28 @@ importers:
         specifier: ^10.0.0
         version: 10.4.22(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
 
+  packages/tasks:
+    dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/tasks-ui:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
   packages/testkit:
     dependencies:
       '@corely/contracts':
@@ -1846,6 +1871,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@corely/tasks-ui':
+        specifier: workspace:*
+        version: link:../tasks-ui
       '@corely/people-ui':
         specifier: workspace:*
         version: link:../people-ui
@@ -2021,6 +2049,9 @@ importers:
       '@corely/storage':
         specifier: workspace:*
         version: link:../../packages/storage
+      '@corely/tasks':
+        specifier: workspace:*
+        version: link:../../packages/tasks
       '@google-cloud/speech':
         specifier: ^6.7.1
         version: 6.7.1
