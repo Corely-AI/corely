@@ -2328,6 +2328,10 @@
     "notes": "Notizen",
     "invoiceHistory": "Rechnungshistorie",
     "totalRevenue": "Gesamtumsatz",
+    "kindLabel": "Kundentyp",
+    "kindIndividual": "Privatperson",
+    "kindOrganization": "Organisation",
+    "organizationName": "Name der Organisation",
     "basicInformation": "Grundinformationen",
     "billingAddress": "Rechnungsadresse",
     "placeholders": {

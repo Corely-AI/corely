@@ -1,0 +1,8 @@
+{
+  "name": "@acme/expense-guidance",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@corely/expenses": "^1.0.0",
+    "@corely/expenses-ui": "^1.0.0"
+  }
+}
