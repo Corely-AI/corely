@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@corely/contracts": "workspace:*",
+    "@corely/invoices-ui": "workspace:*",
     "@corely/api-client": "workspace:*",
     "@corely/ui": "workspace:*",
     "@corely/web-shared": "workspace:*",
