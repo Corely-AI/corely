@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { type DocumentLinkRepoPort } from "@corely/kernel";
-import { type DocumentLinkEntityType } from "@corely/domain";
+import { isRestrictedDocumentId, type DocumentLinkEntityType } from "@corely/domain";
 
 @Injectable()
 export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
@@ -13,6 +13,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
     entityType: DocumentLinkEntityType;
     entityId: string;
   }): Promise<void> {
+    if (isRestrictedDocumentId(params.documentId)) throw new Error("Restricted document");
     const existing = await this.prisma.documentLink.findFirst({
       where: {
         tenantId: params.tenantId,
@@ -46,7 +47,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
         entityId: params.entityId,
       },
     });
-    return rows.map((row) => row.documentId);
+    return rows.map((row) => row.documentId).filter((id) => !isRestrictedDocumentId(id));
   }
 
   async deleteLink(params: {
@@ -55,6 +56,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
     entityType: DocumentLinkEntityType;
     entityId: string;
   }): Promise<void> {
+    if (isRestrictedDocumentId(params.documentId)) throw new Error("Restricted document");
     await this.prisma.documentLink.deleteMany({
       where: {
         tenantId: params.tenantId,

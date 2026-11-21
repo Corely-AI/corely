@@ -4,11 +4,16 @@ import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { coachingApi } from "@/lib/coaching-api";
 import { coachingKeys } from "../queries";
 
 export const CoachingEngagementDetailPage = () => {
   const { t } = useTranslation();
+  const { navigationGroups } = useWorkspaceConfig();
+  const canPrepareAgreement = navigationGroups.some((group) =>
+    group.items.some((item) => item.route === "/sign/templates")
+  );
   const { engagementId = "" } = useParams();
   const queryClient = useQueryClient();
 
@@ -95,6 +100,14 @@ export const CoachingEngagementDetailPage = () => {
             <CardTitle>{t("coaching.detail.sections.workflow")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
+            {canPrepareAgreement && (
+              <Link
+                className="underline"
+                to={"/sign/templates?coaching=" + encodeURIComponent(engagementId)}
+              >
+                {t("sign.coachingAgreement")}
+              </Link>
+            )}
             <div>Status: {engagement.status}</div>
             <div>Payment: {engagement.paymentStatus}</div>
             <div>Contract: {engagement.contractStatus}</div>

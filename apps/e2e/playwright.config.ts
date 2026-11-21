@@ -15,6 +15,7 @@ export default defineConfig({
   testDir: "./tests",
   // This suite requires its own disposable HTTPS/database fixture.
   testIgnore: [
+    "**/sign/**",
     "**/sso/**",
     "**/workspace-session/**",
     "**/focused-invoice/**",

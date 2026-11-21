@@ -400,3 +400,9 @@ export * from "./people/staff-availability.schema";
 export * from "./tasks";
 
 export * from "./people/staff-absence.schema";
+
+export * from "./sign/layout.schema";
+export * from "./sign/template.schema";
+export * from "./sign/request.schema";
+export * from "./sign/ceremony.schema";
+export * from "./sign/field-placement";

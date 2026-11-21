@@ -1,6 +1,8 @@
 import { PersonnelDocumentsAdapter } from "./infrastructure/prisma/personnel-documents.adapter";
 import { PERSONNEL_DOCUMENTS } from "./public";
 import { DataModule } from "@corely/data";
+import { PrismaTemplateDocuments } from "./infrastructure/prisma/prisma-template-documents";
+import { TemplateDocuments } from "./public";
 import { Module, forwardRef } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { DocumentsController } from "./adapters/http/documents.controller";
@@ -44,6 +46,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
   providers: [
     PersonnelDocumentsAdapter,
     { provide: PERSONNEL_DOCUMENTS, useExisting: PersonnelDocumentsAdapter },
+    { provide: TemplateDocuments, useClass: PrismaTemplateDocuments },
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
     PrismaDocumentLinkAdapter,
@@ -348,6 +351,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
   ],
   exports: [
     PERSONNEL_DOCUMENTS,
+    TemplateDocuments,
     DocumentsApplication,
     GcsObjectStorageAdapter,
     ListLinkedDocumentsUseCase,

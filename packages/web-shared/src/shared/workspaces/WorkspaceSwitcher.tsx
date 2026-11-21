@@ -17,9 +17,13 @@ import { cn } from "@corely/web-shared/shared/lib/utils";
 
 interface WorkspaceSwitcherProps {
   collapsed?: boolean;
+  allowCreate?: boolean;
 }
 
-export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed }) => {
+export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
+  collapsed,
+  allowCreate = true,
+}) => {
   const { workspaces, activeWorkspaceId, setWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -29,6 +33,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
   }
 
   if (!workspaces.length) {
+    if (!allowCreate) return null;
     return (
       <Button
         variant="secondary"
@@ -98,11 +103,15 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
             </div>
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/onboarding")}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {t("workspace.create")}
-        </DropdownMenuItem>
+        {allowCreate && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/onboarding")}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              {t("workspace.create")}
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -82,6 +82,9 @@ model Workspace {
   cashHandoffsTargeted    CashWorkspaceHandoff[]   @relation("HandoffTarget")
   cashLocationTransfers   CashLocationTransfer[]
 
+  signTemplateRevisions SignTemplateRevision[]
+
+  @@unique([tenantId, id])
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([legalEntityId])

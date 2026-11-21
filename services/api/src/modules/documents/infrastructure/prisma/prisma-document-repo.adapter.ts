@@ -1,4 +1,4 @@
-import { isPersonnelDocumentId } from "../../domain/personnel-document";
+import { isRestrictedDocumentId } from "../../domain/restricted-document";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { DocumentRepoPort } from "../../application/ports/document-repository.port";
@@ -77,7 +77,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
     documentId: string,
     opts?: { includeArchived?: boolean }
   ): Promise<DocumentAggregate | null> {
-    if (isPersonnelDocumentId(documentId)) {
+    if (isRestrictedDocumentId(documentId)) {
       return null;
     }
     const doc = await this.prisma.document.findFirst({
@@ -106,7 +106,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
     });
     if (
       !link ||
-      isPersonnelDocumentId(link.documentId) ||
+      isRestrictedDocumentId(link.documentId) ||
       link.document.type !== type ||
       (link.document as any).archivedAt
     ) {

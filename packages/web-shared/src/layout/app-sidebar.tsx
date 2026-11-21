@@ -13,11 +13,12 @@ import {
   Store,
   BookOpen,
 } from "lucide-react";
-import { Logo, LanguageSelector } from "@corely/web-shared/shared/components";
+import { LanguageSelector } from "@corely/web-shared/shared/components/LanguageSelector";
 import { useThemeStore } from "@corely/web-shared/shared/theme/themeStore";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { WorkspaceSwitcher } from "@corely/web-shared/shared/workspaces/WorkspaceSwitcher";
 import {
+  Logo,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +52,7 @@ export interface AppSidebarProps {
   showPlatformAdminNav?: boolean;
   showWorkspaceTypeBadge?: boolean;
   workspaceSwitcherMode?: WorkspaceSwitcherMode;
+  allowWorkspaceCreation?: boolean;
   notificationBell?: React.ReactNode;
   logo?: React.ReactNode;
   onNavigate?: () => void;
@@ -96,6 +98,7 @@ export function AppSidebar({
   showPlatformAdminNav = true,
   showWorkspaceTypeBadge = true,
   workspaceSwitcherMode = "always",
+  allowWorkspaceCreation,
   notificationBell,
   logo,
   onNavigate,
@@ -180,7 +183,9 @@ export function AppSidebar({
       </div>
 
       <div className="px-3 py-3">
-        {showSwitcher ? <WorkspaceSwitcher collapsed={collapsed} /> : null}
+        {showSwitcher ? (
+          <WorkspaceSwitcher collapsed={collapsed} allowCreate={allowWorkspaceCreation} />
+        ) : null}
       </div>
 
       <nav

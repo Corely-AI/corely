@@ -57,6 +57,7 @@ import { RequestContextInterceptor } from "./shared/request-context";
 import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared/public";
 import { SurfaceGuard } from "./shared/surface";
 
+import { SignModule } from "./modules/sign/sign.module";
 @Module({
   controllers: [AppController],
   providers: [
@@ -72,6 +73,7 @@ import { SurfaceGuard } from "./shared/surface";
     },
   ],
   imports: [
+    SignModule,
     // Config must be first to validate env before other modules use it
     EnvModule.forRoot(),
     // DataModule must be imported for global providers (OUTBOX_PORT, AUDIT_PORT, etc.)

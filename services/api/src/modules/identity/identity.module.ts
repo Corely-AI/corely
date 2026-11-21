@@ -90,6 +90,8 @@ import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-pas
 import { AuthorizeRequestContextUseCase } from "./application/use-cases/authorize-request-context.usecase";
 import { TenantRoleSeederService } from "./application/services/tenant-role-seeder.service";
 
+import { WorkspacesModule } from "../workspaces/workspaces.module";
+import { GetWorkspacePermissionsUseCase } from "./public";
 @Module({
   imports: [
     EnvModule.forRoot(),
@@ -240,6 +242,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     GetPermissionCatalogUseCase,
     GetEffectivePermissionsUseCase,
     AuthorizeRequestContextUseCase,
+    GetWorkspacePermissionsUseCase,
     GetRolePermissionsUseCase,
     UpdateRolePermissionsUseCase,
     SyncRolePermissionsFromManifestsUseCase,
@@ -260,6 +263,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     AssociateInvitedAccountUseCase,
     GetEffectivePermissionsUseCase,
     AuthorizeRequestContextUseCase,
+    GetWorkspacePermissionsUseCase,
     Reflector,
     USER_REPOSITORY_TOKEN,
     TENANT_REPOSITORY_TOKEN,

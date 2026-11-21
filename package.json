@@ -80,7 +80,8 @@
     "test:int": "pnpm prisma:generate && vitest run --workspace ./vitest.workspace.int.ts",
     "test:watch": "vitest --workspace ./vitest.workspace.ts --watch",
     "coverage": "vitest run --workspace ./vitest.workspace.ts --coverage",
-    "dev:openbuk": "pnpm --filter @corely/openbuk-web dev"
+    "dev:openbuk": "pnpm --filter @corely/openbuk-web dev",
+    "dev:sign": "node scripts/build-deps-if-stale.mjs @corely/sign && pnpm --filter @corely/sign dev"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

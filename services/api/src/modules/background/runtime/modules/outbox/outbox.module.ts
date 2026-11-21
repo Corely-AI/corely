@@ -6,6 +6,13 @@ import {
 import { createStaffLifecycleEventHandlers } from "../tasks/staff-lifecycle-recorded.handler";
 import { createChecklistEventHandlers } from "../tasks/recurring-checklist-recorded.handler";
 import { createEmployeeTaskEventHandlers } from "../tasks/employee-task-recorded.handler";
+import { SignModule } from "../../../../sign/public";
+import {
+  SignVerifiedHandler,
+  SignCollectedHandler,
+  SignInvitationHandler,
+} from "../sign/sign-invitation.handler";
+import { signRecordedHandlers } from "../sign/sign-recorded.handler";
 import { Module } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import {
@@ -79,9 +86,13 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     DocumentsModule,
     InvoicesModule,
     CoachingWorkerModule,
+    SignModule,
   ],
   providers: [
     SsoEmailCodeRequestedHandler,
+    SignVerifiedHandler,
+    SignCollectedHandler,
+    SignInvitationHandler,
     {
       provide: ID_GENERATOR_TOKEN,
       useFactory: (): IdGeneratorPort => ({
@@ -149,6 +160,9 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         coachingPrepFormSubmittedHandler: CoachingPrepFormSubmittedHandler,
         coachingSessionCompletedHandler: CoachingSessionCompletedHandler,
         coachingDebriefRequestedHandler: CoachingDebriefRequestedHandler,
+        verified: SignVerifiedHandler,
+        collected: SignCollectedHandler,
+        invite: SignInvitationHandler,
         coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler,
         ssoEmailHandler: SsoEmailCodeRequestedHandler
       ) => {
@@ -158,6 +172,10 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
           ...createEmployeeTaskEventHandlers(),
           ...createChecklistEventHandlers(),
           ...createStaffLifecycleEventHandlers(),
+          verified,
+          collected,
+          invite,
+          ...signRecordedHandlers,
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,
@@ -200,6 +218,9 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         CoachingPrepFormSubmittedHandler,
         CoachingSessionCompletedHandler,
         CoachingDebriefRequestedHandler,
+        SignVerifiedHandler,
+        SignCollectedHandler,
+        SignInvitationHandler,
         CoachingExportBundleRequestedHandler,
         SsoEmailCodeRequestedHandler,
       ],

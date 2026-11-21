@@ -188,3 +188,4 @@ General developer guides and references.
 - [Frontend consumer CI](frontend/consumer-ci.md) — focused and existing Vite consumer checks.
 
 - [Multi-origin session and authorization regressions](testing/multi-origin-regressions.md) — disposable real-session browser journeys and sanitized evidence.
+- [Native signing ownership](decisions/ADR-0005-native-sign.md)

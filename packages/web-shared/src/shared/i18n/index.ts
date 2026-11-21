@@ -1,8 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import en from "./locales/en.json";
-import de from "./locales/de.json";
-import vi from "./locales/vi.json";
+import { resources } from "./resources";
 import { resolveFocusedLocale } from "../../session/focused-locale";
 
 let savedLanguage: string | null = null;
@@ -18,11 +16,7 @@ const language = resolveFocusedLocale(
 );
 
 void i18n.use(initReactI18next).init({
-  resources: {
-    en: { translation: en },
-    de: { translation: de },
-    vi: { translation: vi },
-  },
+  resources,
   lng: language,
   fallbackLng: "en",
   interpolation: {

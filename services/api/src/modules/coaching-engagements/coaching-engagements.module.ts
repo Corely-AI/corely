@@ -62,10 +62,14 @@ import { GetCoachingArtifactSummaryUseCase } from "./application/use-cases/get-c
 import { CoachingEngagementsController } from "./http/coaching-engagements.controller";
 import { CoachingEngagementsPublicController } from "./http/coaching-engagements-public.controller";
 import { CoachingEngagementsWebhookController } from "./http/coaching-engagements-webhook.controller";
+import { SignModule } from "../sign/public";
+import { NativeCoachingAgreements } from "./application/native-agreements";
+import { NativeAgreementsController } from "./http/native-agreements.controller";
 import { CoachingOffersController } from "./http/coaching-offers.controller";
 
 @Module({
   imports: [
+    SignModule,
     DataModule,
     KernelModule,
     forwardRef(() => IdentityModule),
@@ -75,12 +79,14 @@ import { CoachingOffersController } from "./http/coaching-offers.controller";
     forwardRef(() => PlatformModule),
   ],
   controllers: [
+    NativeAgreementsController,
     CoachingOffersController,
     CoachingEngagementsController,
     CoachingEngagementsPublicController,
     CoachingEngagementsWebhookController,
   ],
   providers: [
+    NativeCoachingAgreements,
     NestLoggerAdapter,
     PrismaCoachingEngagementRepositoryAdapter,
     CoachingArtifactService,
@@ -633,6 +639,7 @@ import { CoachingOffersController } from "./http/coaching-offers.controller";
     },
   ],
   exports: [
+    NativeCoachingAgreements,
     CoachingEngagementsApplication,
     PrismaCoachingEngagementRepositoryAdapter,
     CoachingArtifactService,

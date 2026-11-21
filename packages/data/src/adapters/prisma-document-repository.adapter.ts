@@ -1,3 +1,4 @@
+import { isRestrictedDocumentId } from "@corely/domain";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { type DocumentRepoPort } from "@corely/kernel";
@@ -45,6 +46,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(document: DocumentAggregate): Promise<void> {
+    if (isRestrictedDocumentId(document.id)) throw new Error("Restricted document");
     await this.prisma.document.create({
       data: {
         id: document.id,
@@ -62,6 +64,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
   }
 
   async save(document: DocumentAggregate): Promise<void> {
+    if (isRestrictedDocumentId(document.id)) throw new Error("Restricted document");
     await this.prisma.document.update({
       where: { id: document.id },
       data: {
@@ -80,6 +83,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
     documentId: string,
     opts?: { includeArchived?: boolean }
   ): Promise<DocumentAggregate | null> {
+    if (isRestrictedDocumentId(documentId)) return null;
     const doc = await this.prisma.document.findFirst({
       where: {
         id: documentId,
@@ -104,7 +108,12 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
       where: { tenantId, entityType: entityType as any, entityId },
       include: { document: { include: { files: true } } },
     });
-    if (!link || link.document.type !== type || (link.document as any).archivedAt) {
+    if (
+      !link ||
+      isRestrictedDocumentId(link.documentId) ||
+      link.document.type !== type ||
+      (link.document as any).archivedAt
+    ) {
       return null;
     }
     return mapDocument(link.document);

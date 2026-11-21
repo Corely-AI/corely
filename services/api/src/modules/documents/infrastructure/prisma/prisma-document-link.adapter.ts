@@ -1,5 +1,5 @@
 import { NotFoundException } from "@nestjs/common";
-import { isPersonnelDocumentId } from "../../domain/personnel-document";
+import { isRestrictedDocumentId } from "../../domain/restricted-document";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { DocumentLinkRepoPort } from "../../application/ports/document-link.port";
@@ -15,7 +15,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
     entityType: DocumentLinkEntityType;
     entityId: string;
   }): Promise<void> {
-    if (isPersonnelDocumentId(params.documentId)) {
+    if (isRestrictedDocumentId(params.documentId)) {
       throw new NotFoundException("Document not found");
     }
     const existing = await this.prisma.documentLink.findFirst({
@@ -52,7 +52,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
       },
     });
     return rows
-      .filter((row) => !isPersonnelDocumentId(row.documentId))
+      .filter((row) => !isRestrictedDocumentId(row.documentId))
       .map((row) => row.documentId);
   }
 
@@ -62,7 +62,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
     entityType: DocumentLinkEntityType;
     entityId: string;
   }): Promise<void> {
-    if (isPersonnelDocumentId(params.documentId)) {
+    if (isRestrictedDocumentId(params.documentId)) {
       throw new NotFoundException("Document not found");
     }
     await this.prisma.documentLink.deleteMany({

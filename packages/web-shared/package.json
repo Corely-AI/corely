@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./*": "./src/*"
+    "./*": "./src/*",
+    "./shared/i18n/sign-recipient": "./src/shared/i18n/sign-recipient.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
