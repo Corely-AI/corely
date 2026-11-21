@@ -31,8 +31,7 @@ used 1.0.1 with the same extension configuration.
 
 Four rendered Backoffice cases passed on each version. The configured desktop
 case also saved, observed the policy failure, corrected the field and saved again.
-Evidence covers the shared editor in Backoffice. The focused HR sign-in path was
-not independently exercised in this rehearsal.
+The existing 11 focused HR Playwright scenarios also passed with their mock BFF transport. The configured policy was exercised against the real API through Backoffice.
 
 | Width   | Default                                                                  | Configured                                                              |
 | ------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
