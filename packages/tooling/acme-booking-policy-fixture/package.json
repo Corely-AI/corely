@@ -1,0 +1,17 @@
+{
+  "name": "@acme/booking-policy-fixture",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "exports": "./dist/index.mjs",
+  "peerDependencies": {
+    "@corely/booking": "^1.0.0"
+  },
+  "devDependencies": {
+    "@corely/booking": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --dts"
+  }
+}

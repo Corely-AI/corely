@@ -1,0 +1,13 @@
+{
+  "fixture": true,
+  "bookingRelease": "1.0.0",
+  "runtime": {
+    "@corely/booking": "1.0.0",
+    "@corely/booking-ui": "1.0.0",
+    "@corely/contracts": "0.0.0"
+  },
+  "extensions": {
+    "@acme/booking-policy-fixture": "1.0.0",
+    "@acme/booking-ui-fixture": "1.0.0"
+  }
+}

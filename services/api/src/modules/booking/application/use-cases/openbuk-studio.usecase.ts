@@ -38,6 +38,9 @@ import { openBukAvailability, studioDate } from "../../domain/openbuk-availabili
 import { assertPublicModuleEnabled } from "../../../../shared/public";
 import { toHttpException } from "../../../../shared/http/usecase-error.mapper";
 
+import type { BookingPolicyRegistration } from "@corely/booking/extensions";
+import { BOOKING_POLICIES, enforceBookingPolicy } from "../booking-policy";
+
 @Injectable()
 export class OpenBukStudioUseCase {
   constructor(
@@ -50,7 +53,9 @@ export class OpenBukStudioUseCase {
     private readonly authorize: Pick<AuthorizeWorkspaceUseCase, "execute">,
     @Inject(PilotSetupUseCase) private readonly pilot: Pick<PilotSetupUseCase, "publish">,
     @Inject(StaffAvailabilityConstraintService)
-    private readonly staffAvailability: Pick<StaffAvailabilityConstraintService, "windows">
+    private readonly staffAvailability: Pick<StaffAvailabilityConstraintService, "windows">,
+    @Inject(BOOKING_POLICIES)
+    private readonly policies: readonly BookingPolicyRegistration[] = []
   ) {}
 
   private scope(ctx: UseCaseContext): StudioScope {
@@ -218,6 +223,13 @@ export class OpenBukStudioUseCase {
           message: "Booking:SlotUnavailable",
         });
       }
+      enforceBookingPolicy(
+        this.policies,
+        scope,
+        new Date(slot.startAt),
+        new Date(slot.endAt),
+        this.clock.now()
+      );
       const receipt: OpenBukReceipt = {
         ...slot,
         reference: `OB-${randomBytes(6).toString("hex").toUpperCase()}`,

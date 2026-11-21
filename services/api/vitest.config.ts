@@ -57,6 +57,15 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@shared": path.resolve(__dirname, "src/shared"),
+      "@corely/booking/extensions": path.resolve(
+        __dirname,
+        "../../packages/booking/src/extensions.ts"
+      ),
+      "@corely/booking": path.resolve(__dirname, "../../packages/booking/src/index.ts"),
+      "@acme/booking-policy-fixture": path.resolve(
+        __dirname,
+        "../../packages/tooling/acme-booking-policy-fixture/src/index.ts"
+      ),
       "@corely/config": path.resolve(__dirname, "../..", "packages/config/src"),
       "@corely/contracts": path.resolve(__dirname, "../..", "packages/contracts/src"),
       "@corely/core": path.resolve(__dirname, "../..", "packages/core/src"),

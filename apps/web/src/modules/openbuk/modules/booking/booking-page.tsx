@@ -1,7 +1,9 @@
+import { BookingConfirmation } from "@corely/booking-ui";
+import { confirmationFooters } from "../../confirmation-extensions";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import type { OpenBukPublicStudio, OpenBukSlot, OpenBukReceipt } from "@corely/contracts";
-import { publicApi, json } from "../../shared/api";
+import { publicApi, json, BookingPolicyError } from "../../shared/api";
 import { LanguageSwitch, useLanguage } from "../../shared/i18n";
 import { Logo, Loading, ErrorMessage, Field, localDay, money, time } from "../../shared/ui";
 export default function BookingPage() {
@@ -13,6 +15,7 @@ export default function BookingPage() {
   const [slot, setSlot] = useState<OpenBukSlot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"requestFailed" | "slotConflict" | null>(null);
+  const [policyRejection, setPolicyRejection] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [receipt, setReceipt] = useState<OpenBukReceipt | null>(null);
   const [revision, setRevision] = useState(0);
@@ -45,6 +48,7 @@ export default function BookingPage() {
     }
     const abort = new AbortController();
     setSlot(null);
+    setPolicyRejection(null);
     setSlots([]);
     setLoading(true);
     publicApi<{ slots: OpenBukSlot[] }>(studioSlug, `availability?day=${day}`, {
@@ -74,6 +78,7 @@ export default function BookingPage() {
     }
     setPending(true);
     setError(null);
+    setPolicyRejection(null);
     const data = new FormData(event.currentTarget);
     const body = {
       serviceId: studio.serviceId,
@@ -93,6 +98,10 @@ export default function BookingPage() {
       });
       setReceipt(result.receipt);
     } catch (e) {
+      if (e instanceof BookingPolicyError) {
+        setPolicyRejection(e.message);
+        return;
+      }
       const conflict = e instanceof Error && e.message === "slotConflict";
       setError(conflict ? "slotConflict" : "requestFailed");
       if (conflict) {
@@ -122,32 +131,20 @@ export default function BookingPage() {
             </>
           )
         ) : receipt ? (
-          <section className="confirmation">
-            <span className="success-icon">✓</span>
-            <p className="eyebrow">{studio.studioName}</p>
-            <h1>{t("success")}</h1>
-            <p className="muted">{t("successBody")}</p>
-            <div className="receipt">
-              <h2>{receipt.serviceName}</h2>
-              <p>
-                {new Intl.DateTimeFormat(locale, {
-                  dateStyle: "full",
-                  timeZone: receipt.timezone,
-                }).format(new Date(receipt.startAt))}
-              </p>
-              <strong>
-                {time(receipt.startAt, receipt.timezone, locale)} –{" "}
-                {time(receipt.endAt, receipt.timezone, locale)}
-              </strong>
-              <p>
-                {t("withStaff")} {receipt.staffName} · {receipt.timezone}
-              </p>
-              <p>{money(receipt.priceCents, receipt.currency, locale)}</p>
-              <hr />
-              <small>{t("reference")}</small>
-              <p className="reference">{receipt.reference}</p>
-            </div>
-          </section>
+          <BookingConfirmation
+            studioName={studio.studioName}
+            receipt={receipt}
+            locale={locale}
+            labels={{
+              success: t("success"),
+              successBody: t("successBody"),
+              withStaff: t("withStaff"),
+              reference: t("reference"),
+            }}
+            formatTime={time}
+            formatMoney={money}
+            confirmationFooter={confirmationFooters.get(studio.slug)}
+          />
         ) : (
           <>
             <div className="booking-banner">
@@ -216,6 +213,11 @@ export default function BookingPage() {
                 </div>
               )}
               {error ? <ErrorMessage message={error} /> : null}
+              {policyRejection ? (
+                <p className="error" role="alert">
+                  {policyRejection}
+                </p>
+              ) : null}
               {slot ? (
                 <form className="customer-form" onSubmit={(e) => void confirm(e)}>
                   <h2>{t("details")}</h2>
