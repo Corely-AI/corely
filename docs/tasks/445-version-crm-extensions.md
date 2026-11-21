@@ -22,3 +22,29 @@ change introduces no database migration.
 
 The scoped loss tests exercise rejection before writes, valid loss,
 preserved Party references, and sequence cancellation.
+
+## Reproduce the upgrade
+
+1. Start the API and Backoffice against a migrated disposable database. Create two
+   test tenants with a company workspace each and seed an open Deal referencing an existing Customer.
+2. Register a loss-reason check for the Acme tenant and matching guidance in the loss dialog.
+   Keep the second tenant on the defaults. Confirm the Acme action is rejected
+   with `Crm:DealLossPolicyRejected`. A valid reason allows the action.
+3. Keep both datasets and leave the fixture registrations unchanged. Bump the app
+   and server package to 1.1.0 and the UI package to 1.0.1. Rebuild, confirm the same
+   Deal and Party references, and repeat the actions in the two scopes.
+4. Run the shared preview without the Booking-specific `--verify` option. Confirm
+   the candidate matches both peer ranges. Set a test copy of the UI revision to
+   2.0.0 and confirm the compatibility report rejects it.
+
+The unchanged registrations were exercised on both fixture versions using one
+disposable PostgreSQL database. In both API builds the existing record remained
+readable, the configured action failed before updating, a valid action succeeded
+and the default tenant completed the action without the customer rule.
+API and web typechecks passed. The preview accepted the candidate and rejected
+UI 2.0.0. Four Playwright checks passed on each version at the following widths.
+
+| Width   | Default                                                               | Configured                                                           |
+| ------- | --------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1280 px | [Default desktop](../platform/evidence/crm-upgrade-standard-1280.jpg) | [Configured desktop](../platform/evidence/crm-upgrade-acme-1280.jpg) |
+| 390 px  | [Default mobile](../platform/evidence/crm-upgrade-standard-390.jpg)   | [Configured mobile](../platform/evidence/crm-upgrade-acme-390.jpg)   |
