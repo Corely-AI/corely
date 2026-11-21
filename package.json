@@ -9,6 +9,7 @@
     "node": ">=22.19.0"
   },
   "scripts": {
+    "app:release-inventory": "tsx --tsconfig scripts/app-release-inventory/tsconfig.json scripts/app-release-inventory/index.ts",
     "focused:init": "tsx scripts/focused-dev/cli.ts init",
     "focused:check": "tsx scripts/focused-dev/cli.ts check",
     "dev:focused": "node scripts/build-deps-if-stale.mjs @corely/web && tsx scripts/focused-dev/cli.ts dev",
