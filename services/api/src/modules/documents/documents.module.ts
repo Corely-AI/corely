@@ -21,6 +21,10 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
 import { PlatformModule } from "../platform/platform.module";
 import { IdentityModule } from "../identity/identity.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
+import {
+  InvoicePdfStorage,
+  InvoicePdfStorageModule,
+} from "@/shared/infrastructure/invoice-pdf-storage.module";
 
 import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/complete-upload.usecase";
 import { CreateUploadIntentUseCase } from "./application/use-cases/create-upload-intent/create-upload-intent.usecase";
@@ -40,6 +44,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     forwardRef(() => IdentityModule),
     forwardRef(() => PlatformModule),
     KernelModule,
+    InvoicePdfStorageModule,
     DataModule,
   ],
   controllers: [DocumentsController, InvoicePdfController, PublicDocumentsController],
@@ -118,22 +123,18 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       useFactory: (
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter,
+        storage: InvoicePdfStorage,
         env: EnvService
       ) =>
         new GetDownloadUrlUseCase({
           logger: new NestLoggerAdapter(),
           documentRepo,
           fileRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
           downloadTtlSeconds: env.SIGNED_URL_DOWNLOAD_TTL_SECONDS,
         }),
-      inject: [
-        PrismaDocumentRepoAdapter,
-        PrismaFileRepoAdapter,
-        GcsObjectStorageAdapter,
-        EnvService,
-      ],
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, InvoicePdfStorage, EnvService],
     },
     {
       provide: GetDocumentUseCase,
@@ -191,7 +192,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
         linkRepo: PrismaDocumentLinkAdapter,
-        storage: GcsObjectStorageAdapter,
+        storage: InvoicePdfStorage,
         outbox: OutboxPort,
         idGen: IdGeneratorPort,
         clock: ClockPort,
@@ -202,7 +203,8 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
           documentRepo,
           fileRepo,
           linkRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
           outbox,
           idGenerator: idGen,
           clock,
@@ -213,7 +215,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         PrismaDocumentRepoAdapter,
         PrismaFileRepoAdapter,
         PrismaDocumentLinkAdapter,
-        GcsObjectStorageAdapter,
+        InvoicePdfStorage,
         OUTBOX_PORT,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
@@ -226,7 +228,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         requestInvoicePdf: RequestInvoicePdfUseCase,
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter,
+        storage: InvoicePdfStorage,
         env: EnvService
       ) =>
         new GetInvoicePdfUseCase({
@@ -234,7 +236,8 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
           requestInvoicePdf,
           documentRepo,
           fileRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
           downloadTtlSeconds: env.SIGNED_URL_DOWNLOAD_TTL_SECONDS,
           defaultWaitMs: 15000,
           maxWaitMs: 30000,
@@ -247,7 +250,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         RequestInvoicePdfUseCase,
         PrismaDocumentRepoAdapter,
         PrismaFileRepoAdapter,
-        GcsObjectStorageAdapter,
+        InvoicePdfStorage,
         EnvService,
       ],
     },
@@ -294,14 +297,15 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       useFactory: (
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter
+        storage: InvoicePdfStorage
       ) =>
         new ProxyDownloadUseCase({
           documentRepo,
           fileRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
         }),
-      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, GcsObjectStorageAdapter],
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, InvoicePdfStorage],
     },
     {
       provide: DocumentsApplication,
