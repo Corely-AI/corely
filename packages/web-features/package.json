@@ -20,8 +20,12 @@
   },
   "dependencies": {
     "@corely/tasks-ui": "workspace:*",
+    "@corely/people-ui": "workspace:*",
     "@corely/contracts": "workspace:*",
+    "@corely/invoices-ui": "workspace:*",
     "@corely/api-client": "workspace:*",
+    "@corely/crm-ui": "workspace:*",
+    "@corely/expenses-ui": "workspace:*",
     "@corely/ui": "workspace:*",
     "@corely/web-shared": "workspace:*",
     "@tanstack/react-query": "catalog:",

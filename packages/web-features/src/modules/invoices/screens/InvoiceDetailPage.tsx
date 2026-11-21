@@ -1,3 +1,4 @@
+import { InvoiceDraftGuidanceSlot } from "@corely/invoices-ui";
 import { invoiceCustomerOptions } from "../utils/invoice-customer-options";
 import { invoiceFormValues } from "../utils/invoice-form-values";
 import { useInvoicesApi, useInvoiceKeys, useInvoiceNavigate } from "../invoice-runtime";
@@ -31,7 +32,6 @@ import { useSendInvoice } from "../hooks/use-send-invoice";
 import { useInvoicePdfDownload } from "../hooks/use-invoice-pdf-download";
 import { downloadInvoiceExportCsv } from "../utils/invoice-export";
 
-// Sub-components
 import { CustomerSelection } from "../components/invoice-form/CustomerSelection";
 import { InvoiceMetadata } from "../components/invoice-form/InvoiceMetadata";
 import { InvoiceLineItems } from "../components/invoice-form/InvoiceLineItems";
@@ -401,6 +401,10 @@ export default function InvoiceDetailPage() {
           onTransition={handleTransition}
           onAction={handleAction}
         />
+
+        {invoice.status === "DRAFT" && (
+          <InvoiceDraftGuidanceSlot workspaceId={activeWorkspace?.id} />
+        )}
 
         <SendInvoiceDialog
           open={sendDialogOpen}

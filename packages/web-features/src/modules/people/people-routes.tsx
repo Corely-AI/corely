@@ -1,3 +1,4 @@
+import type { StaffProfileGuidanceRegistration } from "@corely/people-ui";
 import { PeopleAccessProvider } from "./use-people";
 import { PeopleDirectoryPage } from "./people-directory-page";
 import { StaffProfilePage } from "./staff-profile-page";
@@ -8,10 +9,14 @@ export function PeopleDirectoryRoute() {
     </PeopleAccessProvider>
   );
 }
-export function StaffProfileRoute() {
+export function StaffProfileRoute({
+  guidance,
+}: {
+  guidance?: readonly StaffProfileGuidanceRegistration[];
+} = {}) {
   return (
     <PeopleAccessProvider>
-      <StaffProfilePage />
+      <StaffProfilePage guidance={guidance} />
     </PeopleAccessProvider>
   );
 }

@@ -1,11 +1,8 @@
+import { StaffProfilePage } from "../../modules/people/staff-profile-extensions";
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
 import { getTaskCreationGuidance } from "../../modules/tasks/task-creation-guidance";
 import { DailyWorkPage } from "@corely/web-features/modules/tasks/daily-work-page";
-import {
-  PeopleDirectoryPage,
-  StaffProfilePage,
-  StaffJourneyPage,
-} from "@corely/web-features/modules/people";
+import { PeopleDirectoryPage, StaffJourneyPage } from "@corely/web-features/modules/people";
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
 import { posAdminRoutes } from "@corely/web-features/features/pos-admin";

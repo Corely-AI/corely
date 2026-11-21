@@ -2326,6 +2326,10 @@
     "notes": "Ghi chú",
     "invoiceHistory": "Lịch sử hóa đơn",
     "totalRevenue": "Tổng doanh thu",
+    "kindLabel": "Loại khách hàng",
+    "kindIndividual": "Cá nhân",
+    "kindOrganization": "Tổ chức",
+    "organizationName": "Tên tổ chức",
     "basicInformation": "Thông tin cơ bản",
     "billingAddress": "Địa chỉ thanh toán",
     "placeholders": {

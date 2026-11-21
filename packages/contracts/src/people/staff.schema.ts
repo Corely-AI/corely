@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+export const StaffProfilePolicyRejectedCode = "People:StaffProfilePolicyRejected";
 export const StaffIdentityLinkConflictCode = "People:IdentityLinkConflict";
 
 const id = z.string().trim().min(1).max(160);
