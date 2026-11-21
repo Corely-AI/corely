@@ -10,6 +10,7 @@ import {
 import { AuthContext, type AuthContextValue } from "./auth-context";
 import { setActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
 import { setPublicWorkspaceSlug } from "@corely/web-shared/shared/public-workspace";
+import { getTenantAdminSession } from "./tenant-admin-session";
 import { clearClientLocalData } from "./clear-local-data";
 
 export interface AuthProviderProps {
@@ -89,13 +90,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       await authClient.signout();
     } catch (err) {
+      if (getTenantAdminSession()) {
+        throw err;
+      }
       logoutError = err;
-    } finally {
+    }
+    try {
       await authClient.clearTokens();
       setActiveWorkspaceId(null);
       setPublicWorkspaceSlug(null);
       queryClient.clear();
       await clearClientLocalData();
+    } finally {
       setUser(null);
     }
 

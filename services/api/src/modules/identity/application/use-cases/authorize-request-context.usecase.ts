@@ -18,8 +18,10 @@ export class AuthorizeRequestContextUseCase {
     if (!ctx.userId || ctx.tenantId === undefined) {
       throw new ForbiddenException("Authenticated tenant or host context required");
     }
-    const member = await this.memberships.findByTenantAndUser(ctx.tenantId, ctx.userId);
-    if (!member) {
+    const roleId =
+      ctx.tenantAdminRoleId ??
+      (await this.memberships.findByTenantAndUser(ctx.tenantId, ctx.userId))?.getRoleId();
+    if (!roleId || (ctx.tenantAdminRoleId && !ctx.tenantId)) {
       throw new ForbiddenException("Current tenant membership required");
     }
     if (ctx.workspaceId) {
@@ -30,8 +32,9 @@ export class AuthorizeRequestContextUseCase {
         tenantId: ctx.tenantId,
         workspaceId: ctx.workspaceId,
         userId: ctx.userId,
+        ...(ctx.tenantAdminRoleId ? { tenantAdminRoleId: ctx.tenantAdminRoleId } : {}),
       });
     }
-    return { roleIds: [member.getRoleId()] };
+    return { roleIds: [roleId] };
   }
 }

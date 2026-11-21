@@ -1,3 +1,5 @@
+import { getTenantAdminSession } from "../../lib/tenant-admin-session";
+
 const STORAGE_KEY = "corely-active-workspace";
 
 let activeWorkspaceId: string | null = null;
@@ -10,7 +12,9 @@ export function loadActiveWorkspaceId(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
-  activeWorkspaceId = localStorage.getItem(STORAGE_KEY);
+  activeWorkspaceId = (getTenantAdminSession() ? sessionStorage : localStorage).getItem(
+    STORAGE_KEY
+  );
   return activeWorkspaceId;
 }
 
@@ -21,10 +25,11 @@ export function getActiveWorkspaceId(): string | null {
 export function setActiveWorkspaceId(workspaceId: string | null): void {
   activeWorkspaceId = workspaceId;
   if (typeof window !== "undefined") {
+    const storage = getTenantAdminSession() ? sessionStorage : localStorage;
     if (workspaceId) {
-      localStorage.setItem(STORAGE_KEY, workspaceId);
+      storage.setItem(STORAGE_KEY, workspaceId);
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      storage.removeItem(STORAGE_KEY);
     }
   }
   subscribers.forEach((fn) => fn(workspaceId));

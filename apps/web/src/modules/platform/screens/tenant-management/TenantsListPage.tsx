@@ -9,7 +9,15 @@ import { CreditCard, Loader2, AlertCircle, Power, PowerOff } from "lucide-react"
 import { useTenants } from "../../hooks/useTenants";
 import { useUpdateTenant } from "../../hooks/useUpdateTenant";
 import type { TenantDto, UpdateTenantInput } from "@corely/contracts";
-import { useCanManageTenants } from "@/shared/lib/permissions";
+import { apiClient } from "@corely/web-shared/lib/api-client";
+import { setTenantAdminSession } from "@corely/web-shared/lib/tenant-admin-session";
+import { TenantAdminSessionSchema } from "@corely/contracts";
+import {
+  hasPermission,
+  useCanManageTenants,
+  useEffectivePermissions,
+  useIsHostScope,
+} from "@/shared/lib/permissions";
 import { useTranslation } from "react-i18next";
 import { TenantPlanModal } from "./TenantPlanModal";
 import {
@@ -29,6 +37,27 @@ import {
 
 export function TenantsListPage() {
   const { t } = useTranslation();
+  const { data: effectivePermissions } = useEffectivePermissions();
+  const canOpenTenant =
+    useIsHostScope() && hasPermission(effectivePermissions?.permissions, "platform.tenants.access");
+  const [openingTenant, setOpeningTenant] = useState<string | null>(null);
+  const [openError, setOpenError] = useState<string | null>(null);
+  async function openTenant(tenant: TenantDto) {
+    setOpeningTenant(tenant.id);
+    setOpenError(null);
+    try {
+      const result = await apiClient.post(
+        "/platform/tenants/" + encodeURIComponent(tenant.id) + "/admin-session",
+        undefined,
+        { workspaceScope: "none" }
+      );
+      setTenantAdminSession(TenantAdminSessionSchema.parse(result));
+      window.location.assign("/dashboard");
+    } catch {
+      setOpenError(tenant.id);
+      setOpeningTenant(null);
+    }
+  }
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [state, setUrlState] = useListUrlState(
     { pageSize: 20, sort: "createdAt:desc" },
@@ -206,7 +235,19 @@ export function TenantsListPage() {
                       {tenant.id}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex flex-wrap justify-end gap-2 xl:flex-nowrap">
+                        {canOpenTenant && tenant.status === "ACTIVE" ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={openingTenant !== null}
+                            onClick={() => void openTenant(tenant)}
+                          >
+                            {openingTenant === tenant.id
+                              ? t("tenants.openingAdminSession")
+                              : t("tenants.openAdminSession")}
+                          </Button>
+                        ) : null}
                         {canManageTenants ? (
                           <Button
                             variant="ghost"
@@ -245,6 +286,11 @@ export function TenantsListPage() {
                           <Link to={`/settings/tenants/${tenant.id}`}>{t("tenants.manage")}</Link>
                         </Button>
                       </div>
+                      {openError === tenant.id ? (
+                        <p className="mt-2 text-sm text-destructive" role="alert">
+                          {t("tenants.openAdminSessionError")}
+                        </p>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 ))

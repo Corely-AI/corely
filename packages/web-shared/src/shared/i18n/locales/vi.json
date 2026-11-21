@@ -3412,6 +3412,13 @@
     "create": "Tạo không gian làm việc"
   },
   "tenants": {
+    "openAdminSession": "Mở với quyền quản trị tenant",
+    "openingAdminSession": "Đang mở…",
+    "openAdminSessionError": "Không thể mở phiên quản trị tenant.",
+    "adminSessionTitle": "Phiên quản trị tenant",
+    "adminSessionBanner": "Đang quản trị tenant {{name}}",
+    "returnToPlatform": "Quay lại nền tảng",
+    "endAdminSessionError": "Không thể kết thúc phiên quản trị tenant. Hãy thử lại.",
     "title": "Tổ chức (Tenants)",
     "description": "Quản lý quyền và cài đặt của tổ chức.",
     "listTitle": "Danh sách tổ chức",

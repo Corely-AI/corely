@@ -18,6 +18,7 @@ import { computeBackoffDelayMs, defaultRetryPolicy } from "@corely/api-client";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { getActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
+import { getTenantAdminSession } from "../lib/tenant-admin-session";
 import { scopePersister } from "./scope-persister";
 
 interface OfflineContextValue {
@@ -65,7 +66,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ queryClient, c
   const syncEngineRef = useRef<SyncEngine | null>(null);
 
   useEffect(() => {
-    if (!syncEngineRef.current) {
+    if (!getTenantAdminSession() && !syncEngineRef.current) {
       const store = new IndexedDbOutboxStore();
       const lock = new LocalStorageSyncLock();
       const networkMonitor = new WebNetworkMonitor();
@@ -95,6 +96,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ queryClient, c
   }, [activeWorkspaceId]);
 
   useEffect(() => {
+    if (getTenantAdminSession()) {
+      return;
+    }
     let mounted = true;
     const persister = scopePersister(
       createIndexedDbPersister({ key: persisterKey }),

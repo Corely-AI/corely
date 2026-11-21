@@ -98,7 +98,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const roleIds = Array.isArray(req.user?.roleIds) ? req.user?.roleIds : undefined;
 
   const publicContext: PublicWorkspaceContext | undefined = req.publicContext;
-  const usePublicContext = Boolean(publicContext);
+  const usePublicContext = Boolean(publicContext) && !req.user?.tenantAdminRoleId;
 
   // Workspace / tenant with precedence
   const routeWorkspaceId = (req.params as Record<string, string | undefined> | undefined)
@@ -170,6 +170,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
     surfaceHeaderMismatch,
     activeAppId,
     roles: roleIds,
+    tenantAdminRoleId: req.user?.tenantAdminRoleId,
     metadata,
     sources: {
       requestId: headerRequestId ? "header" : traceId ? "route" : "generated",

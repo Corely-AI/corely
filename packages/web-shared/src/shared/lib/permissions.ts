@@ -28,6 +28,7 @@ export const useEffectivePermissions = () => {
 export const HOST_PLATFORM_PERMISSION_KEYS = new Set<string>([
   "platform.tenants.read",
   "platform.tenants.write",
+  "platform.tenants.access",
   "platform.roles.read",
   "platform.roles.write",
   "platform.settings.read",

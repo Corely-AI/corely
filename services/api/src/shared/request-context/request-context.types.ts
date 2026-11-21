@@ -31,6 +31,7 @@ export interface RequestPrincipal {
   tenantId?: string | null;
   workspaceId?: string | null;
   roleIds?: string[];
+  tenantAdminRoleId?: string;
 }
 
 export interface RequestContext {
@@ -45,6 +46,7 @@ export interface RequestContext {
   surfaceResolutionSource: SurfaceResolutionSource;
   surfaceHeaderMismatch: boolean;
   roles?: string[];
+  tenantAdminRoleId?: string;
   scopes?: string[];
   activeAppId?: string;
   metadata?: Record<string, unknown>;

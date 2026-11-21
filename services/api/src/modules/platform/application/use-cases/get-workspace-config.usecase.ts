@@ -39,6 +39,7 @@ export interface GetWorkspaceConfigInput {
   launchId?: AppLaunchId;
   tenantId: string;
   userId: string;
+  tenantAdminRoleId?: string;
   workspaceId: string;
   permissions: string[];
   scope: "web" | "pos";
@@ -156,7 +157,7 @@ export class GetWorkspaceConfigUseCase {
       input.workspaceId,
       input.userId
     );
-    if (!hasAccess) {
+    if (!hasAccess && !input.tenantAdminRoleId) {
       throw new ForbiddenException("You do not have access to this workspace");
     }
 
@@ -201,7 +202,9 @@ export class GetWorkspaceConfigUseCase {
       input.workspaceId,
       input.userId
     );
-    const membershipRole = (membership?.role ?? "MEMBER") as WorkspaceMembershipRole;
+    const membershipRole = (
+      input.tenantAdminRoleId ? "ADMIN" : (membership?.role ?? "MEMBER")
+    ) as WorkspaceMembershipRole;
     const isWorkspaceAdmin = membershipRole === "OWNER" || membershipRole === "ADMIN";
     const operationalPackage = input.packageId
       ? await this.operationalPackages.compose(experience, isWorkspaceAdmin)

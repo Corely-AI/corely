@@ -21,10 +21,14 @@ export class AuthorizeWorkspaceUseCase {
       workspaceId: string;
       userId: string;
       manage?: boolean;
+      tenantAdminRoleId?: string;
     },
     tx?: TransactionContext
   ): Promise<{ slug?: string; name: string; canManage?: boolean }> {
     const workspace = await this.repo.getWorkspaceById(input.tenantId, input.workspaceId, tx);
+    if (workspace && input.tenantAdminRoleId) {
+      return { slug: workspace.slug, name: workspace.name, canManage: true };
+    }
     const membership = workspace
       ? await this.repo.getMembershipByUserAndWorkspace(input.workspaceId, input.userId, tx)
       : null;

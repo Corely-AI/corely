@@ -3401,6 +3401,13 @@
     "create": "Arbeitsbereich erstellen"
   },
   "tenants": {
+    "openAdminSession": "Als Tenant Admin öffnen",
+    "openingAdminSession": "Wird geöffnet …",
+    "openAdminSessionError": "Die Admin-Sitzung konnte nicht geöffnet werden.",
+    "adminSessionTitle": "Tenant-Admin-Sitzung",
+    "adminSessionBanner": "Als Tenant Admin in {{name}}",
+    "returnToPlatform": "Zurück zur Plattform",
+    "endAdminSessionError": "Die Admin-Sitzung konnte nicht beendet werden. Bitte erneut versuchen.",
     "title": "Mandanten",
     "description": "Verwalte Mandanten-Berechtigungen und Einstellungen.",
     "listTitle": "Mandantenliste",

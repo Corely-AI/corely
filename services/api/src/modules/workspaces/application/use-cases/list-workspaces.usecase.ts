@@ -6,6 +6,7 @@ import { WORKSPACE_REPOSITORY_PORT } from "../ports/workspace-repository.port";
 export interface ListWorkspacesCommand {
   tenantId: string;
   userId: string;
+  tenantAdminRoleId?: string;
 }
 
 @Injectable()
@@ -18,7 +19,8 @@ export class ListWorkspacesUseCase {
   async execute(command: ListWorkspacesCommand): Promise<ListWorkspacesOutput> {
     const workspaces = await this.workspaceRepo.listWorkspacesByTenant(
       command.tenantId,
-      command.userId
+      command.userId,
+      ...(command.tenantAdminRoleId ? ([command.tenantAdminRoleId] as const) : [])
     );
 
     return {

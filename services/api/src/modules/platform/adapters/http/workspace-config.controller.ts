@@ -66,6 +66,7 @@ export class WorkspaceConfigController {
     return this.getWorkspaceConfig.execute({
       tenantId,
       userId,
+      ...(ctx.tenantAdminRoleId ? { tenantAdminRoleId: ctx.tenantAdminRoleId } : {}),
       workspaceId,
       permissions,
       scope: parsed.data.scope,
