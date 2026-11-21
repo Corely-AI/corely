@@ -2,10 +2,10 @@
 
 ## Tracking and outcome
 
-- [Issue #438](https://github.com/Corely-AI/corely/issues/438). Branch `438-vercel-supabase-setup`, based on `origin/development` at `b9e552413`.
+- [Issue #438](https://github.com/Corely-AI/corely/issues/438). Branch `438-vercel-supabase-setup` includes `origin/development` at `197b1029`.
 - [Deployment guide](../devops/vercel-supabase.md). CLI-first test deployment with Prisma migrations, API-hosted outbox processing triggered by Supabase Cron, and smoke checks for the app, invoice PDF, and workflow durability.
-- Reuses the existing Vite web configuration and NestJS background endpoints. Full acceptance depends on [the Vercel Queues adapter (#447)](https://github.com/Corely-AI/corely/issues/447) and [the Supabase Storage adapter (#448)](https://github.com/Corely-AI/corely/issues/448).
-- [Draft PR #442](https://github.com/Corely-AI/corely/pull/442).
+- Reuses the existing Vite web configuration and NestJS background endpoints. The Vercel Queues and Supabase Storage adapters are merged into `development`. [PR #463](https://github.com/Corely-AI/corely/pull/463) · [PR #462](https://github.com/Corely-AI/corely/pull/462)
+- [Documentation PR #442](https://github.com/Corely-AI/corely/pull/442).
 
 ## Verification
 
@@ -24,4 +24,4 @@ The change is documentation only. The deployed sign-in and persistence smoke tes
 
 The runbook includes the CLI-only private bucket setup and an independent Cron smoke test based on the Tasks application event. The bucket and scheduled worker steps were checked against provider docs and the owning source. They still need a hosted run.
 
-Validate the API bundle and Chromium on Vercel. Once #447 and #448 land, add their tested CLI settings to the runbook and verify stored PDF downloads, queue delivery across a redeploy, and retry behavior on a Vercel and Supabase test deployment.
+The runbook's adapter flags and endpoint match the merged code. The hosted run still needs to verify the API bundle and Chromium on Vercel, stored PDF downloads, and queue delivery and retry across a redeploy. Run those checks against a named Vercel and Supabase test target with authenticated CLI access.

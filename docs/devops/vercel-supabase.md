@@ -4,7 +4,7 @@ Use Vercel for the Backoffice and NestJS API, Supabase PostgreSQL for applicatio
 
 This is a **test deployment runbook** for a stack with two providers. Vercel hosts the web app, API and durable workflow queues. Supabase hosts PostgreSQL, Cron and private storage for invoice PDFs.
 
-Full deployment requires a Corely revision with [the Vercel Queues adapter (#447)](https://github.com/Corely-AI/corely/issues/447) and [the Supabase Storage adapter (#448)](https://github.com/Corely-AI/corely/issues/448). The commands below include their implementation settings. Run both integrations on the same test stack before signing off on the guide.
+Use a Corely revision that includes both adapters. Both are available on `development` from `197b1029` onward. Run both integrations on the same test stack before signing off on the guide. [Vercel Queues adapter](../tasks/447-vercel-workflow-queues.md) · [Supabase Storage adapter](../tasks/448-supabase-pdf-storage.md)
 
 ## 1. Prepare a test target
 
@@ -276,7 +276,17 @@ SQL
 Check `cron.job_run_details` and the Vercel API logs as in section 4, using the `corely-workflow-queues` job name and the `/internal/queues/vercel/poll` route. [Vercel Queues documentation](https://vercel.com/docs/queues)
 
 1. Start a harmless published workflow in the test workspace. Use delayed delivery or a fixture that keeps a step pending. Record the Vercel Queues message ID and the Corely workflow instance ID.
-2. Redeploy the API to the same stable origin before that step completes. Preserve the region and namespace. Check API health, enable the polling schedule, and verify the pending workflow reaches the expected state through the Vercel Queues consumers.
+2. Redeploy the API to the same stable origin before that step completes. Preserve the region and namespace. From the repository root, relink the API project using the helper in section 3. Use `--force` so even a redeploy of the same source creates a new deployment.
+
+   ```bash
+   link_project "$API_PROJECT" "$API_PROJECT_ID"
+   api_redeploy_url="$(vercel deploy --prod --force --yes --non-interactive --token "$VERCEL_TOKEN")"
+   vercel inspect "$api_redeploy_url" --wait --format=json --token "$VERCEL_TOKEN"
+   curl --fail --silent --show-error "$API_ORIGIN/health" | jq -e '.ok == true'
+   ```
+
+   Confirm the deployment ID differs from the one recorded before enqueueing. Enable the polling schedule and verify the pending workflow reaches the expected state through the Vercel Queues consumers.
+
 3. Exercise a transient failure so delivery retries. Capture the delivery attempts, final workflow state and exactly one observable durable effect for the step.
 
 Record the source commit, CLI versions, deployment IDs, redacted commands and observed outcomes for sign-in and persistence, Cron, invoice PDF and workflow redeploy and retry. Disable both test schedules when finished using `cron.unschedule` for `corely-workflow-queues` and `corely-outbox`.
