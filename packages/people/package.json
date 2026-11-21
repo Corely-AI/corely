@@ -1,0 +1,21 @@
+{
+  "name": "@corely/people",
+  "private": true,
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./staff-rules": "./dist/staff-rules.mjs",
+    "./extensions": "./dist/extensions.mjs"
+  },
+  "scripts": {
+    "build": "tsdown src/staff-rules.ts src/extensions.ts --dts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*"
+  }
+}
