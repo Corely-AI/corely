@@ -3,6 +3,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import i18n from "@corely/web-shared/shared/i18n";
 import { resolveFocusedLocale } from "@corely/web-shared/session/focused-locale";
+import { InvoiceUiExtensions } from "@corely/invoices-ui";
 import { InvoiceApp } from "./invoice-app";
 import "./style.css";
 const locale = resolveFocusedLocale(
@@ -18,4 +19,8 @@ const root = document.getElementById("root");
 if (!root) {
   throw new Error("Missing Invoice root element");
 }
-createRoot(root).render(<InvoiceApp />);
+createRoot(root).render(
+  <InvoiceUiExtensions>
+    <InvoiceApp />
+  </InvoiceUiExtensions>
+);

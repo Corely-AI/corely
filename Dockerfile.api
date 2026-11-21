@@ -16,12 +16,15 @@ COPY packages/data/package.json ./packages/data/
 COPY packages/domain/package.json ./packages/domain/
 COPY packages/customers/package.json ./packages/customers/
 COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/invoices/package.json ./packages/invoices/
+COPY packages/invoices-ui/package.json ./packages/invoices-ui/
 COPY packages/kernel/package.json ./packages/kernel/
 COPY packages/core/package.json ./packages/core/
 COPY packages/prompts/package.json ./packages/prompts/
 COPY packages/config/package.json ./packages/config/
 COPY packages/email-templates/package.json ./packages/email-templates/
 COPY packages/tooling/acme-booking-policy-fixture/package.json ./packages/tooling/acme-booking-policy-fixture/
+COPY packages/tooling/acme-invoice-fixture/package.json ./packages/tooling/acme-invoice-fixture/
 COPY packages/tooling/tsconfig/package.json ./packages/tooling/tsconfig/
 
 # Install all workspace deps (includes dev deps needed for tsx watch)

@@ -23,6 +23,7 @@
     "@corely/integrations-microsoft-graph-mail": "workspace:*",
     "@corely/integrations-resend": "workspace:*",
     "@corely/integrations-sumup": "workspace:*",
+    "@corely/invoices": "workspace:*",
     "@corely/kernel": "workspace:*",
     "@corely/prompts": "workspace:*",
     "@corely/public-urls": "workspace:*",
@@ -80,6 +81,7 @@
   },
   "devDependencies": {
     "@acme/booking-policy-fixture": "workspace:*",
+    "@acme/invoice-fixture": "workspace:*",
     "@corely/testkit": "workspace:*",
     "@nestjs/testing": "catalog:",
     "@swc/cli": "^0.7.9",
