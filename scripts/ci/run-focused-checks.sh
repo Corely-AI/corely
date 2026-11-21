@@ -23,7 +23,7 @@ run_check() {
 }
 if [ "$suite" = app-center ]; then
   run_check shared-unit pnpm --dir packages/web-shared exec vitest run --config vitest.config.ts
-  run_check app-center-unit pnpm --dir apps/app-center test
+  run_check app-center-unit pnpm --dir apps/web exec vitest run --config vitest.config.ts src/modules/app-center
 fi
 run_check browser pnpm --dir apps/e2e exec playwright test --config "playwright.$suite.config.ts"
 exit "$result"

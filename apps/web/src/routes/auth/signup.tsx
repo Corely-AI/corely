@@ -1,5 +1,6 @@
+import { getReturnPath } from "@/app/router/return-path";
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth-provider";
 import { Button } from "@corely/ui";
@@ -11,11 +12,13 @@ import { normalizeError } from "@corely/api-client";
 /**
  * Signup Page
  */
-export const SignupPage: React.FC = () => {
+export const SignupPage = ({ defaultPath = "/" }: { defaultPath?: string }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { signup } = useAuth();
 
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,11 +38,12 @@ export const SignupPage: React.FC = () => {
 
     try {
       await signup({
+        fullName: fullName.trim() || undefined,
         email,
         password,
       });
 
-      navigate("/");
+      navigate(getReturnPath(state, defaultPath), { replace: true });
     } catch (err) {
       const apiError = normalizeError(err);
       const message = apiError.isNetworkError
@@ -80,6 +84,16 @@ export const SignupPage: React.FC = () => {
 
               <div className="space-y-4">
                 <div className="space-y-2">
+                  <Label htmlFor="fullName">{t("auth.fields.fullName")}</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    autoComplete="name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="email">{t("auth.fields.email")}</Label>
                   <Input
                     id="email"
@@ -118,6 +132,7 @@ export const SignupPage: React.FC = () => {
                   {t("auth.signup.hasAccount")}{" "}
                   <Link
                     to="/auth/login"
+                    state={state ?? { from: { pathname: defaultPath } }}
                     className="font-medium text-accent hover:underline underline-offset-4"
                   >
                     {t("auth.signin.cta")}

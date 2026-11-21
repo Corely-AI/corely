@@ -1,23 +1,24 @@
+import React from "react";
 import { Navigate } from "react-router-dom";
-import CrmDashboardPage from "./screens/CrmDashboardPage";
-import DealsPage from "./screens/DealsPage";
-import NewDealPage from "./screens/NewDealPage";
-import DealDetailPage from "./screens/DealDetailPage";
-import ActivitiesPage from "./screens/ActivitiesPage";
-import NewActivityPage from "./screens/NewActivityPage";
-import LeadsPage from "./screens/LeadsPage";
-import NewLeadPage from "./screens/NewLeadPage";
-import LeadDetailPage from "./screens/LeadDetailPage";
-import SequencesPage from "./screens/SequencesPage";
-import NewSequencePage from "./screens/NewSequencePage";
-import SequenceDetailPage from "./screens/SequenceDetailPage";
-import CrmEmailSettingsPage from "./screens/CrmEmailSettingsPage";
-import ContactsPage from "./screens/ContactsPage";
-import ContactFormPage from "./screens/ContactFormPage";
-import ContactDetailPage from "./screens/ContactDetailPage";
-import AccountsPage from "./screens/AccountsPage";
-import AccountDetailPage from "./screens/AccountDetailPage";
-import AccountFormPage from "./screens/AccountFormPage";
+const CrmDashboardPage = React.lazy(() => import("./screens/CrmDashboardPage"));
+const DealsPage = React.lazy(() => import("./screens/DealsPage"));
+const NewDealPage = React.lazy(() => import("./screens/NewDealPage"));
+const DealDetailPage = React.lazy(() => import("./screens/DealDetailPage"));
+const ActivitiesPage = React.lazy(() => import("./screens/ActivitiesPage"));
+const NewActivityPage = React.lazy(() => import("./screens/NewActivityPage"));
+const LeadsPage = React.lazy(() => import("./screens/LeadsPage"));
+const NewLeadPage = React.lazy(() => import("./screens/NewLeadPage"));
+const LeadDetailPage = React.lazy(() => import("./screens/LeadDetailPage"));
+const SequencesPage = React.lazy(() => import("./screens/SequencesPage"));
+const NewSequencePage = React.lazy(() => import("./screens/NewSequencePage"));
+const SequenceDetailPage = React.lazy(() => import("./screens/SequenceDetailPage"));
+const CrmEmailSettingsPage = React.lazy(() => import("./screens/CrmEmailSettingsPage"));
+const ContactsPage = React.lazy(() => import("./screens/ContactsPage"));
+const ContactFormPage = React.lazy(() => import("./screens/ContactFormPage"));
+const ContactDetailPage = React.lazy(() => import("./screens/ContactDetailPage"));
+const AccountsPage = React.lazy(() => import("./screens/AccountsPage"));
+const AccountDetailPage = React.lazy(() => import("./screens/AccountDetailPage"));
+const AccountFormPage = React.lazy(() => import("./screens/AccountFormPage"));
 
 export const crmRoutes = [
   {
@@ -92,6 +93,7 @@ export const crmRoutes = [
     path: "/crm/settings/email",
     element: <CrmEmailSettingsPage />,
   },
+  { path: "/crm/deals/:id/edit", element: <DealDetailPage /> },
   // ── Account routes ──
   {
     path: "/crm/accounts",

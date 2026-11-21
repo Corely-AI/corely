@@ -6,7 +6,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { invoiceBundlePolicy } from "./invoice-bundle-policy.mjs";
-const require = createRequire(path.resolve("apps/invoice/package.json"));
+const require = createRequire(path.resolve("apps/web/package.json"));
 const { build } = await import(
   pathToFileURL(
     path.resolve(

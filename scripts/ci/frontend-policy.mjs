@@ -62,7 +62,7 @@ export function forbiddenImports(source, file, root) {
       const owner = path.relative(root, file).split(path.sep).slice(0, 2).join("/");
       const otherApp = target.startsWith("apps/") && !target.startsWith(`${owner}/`);
       const unrelatedRoutes =
-        owner === "apps/invoice" &&
+        path.relative(root, file).split(path.sep).join("/").startsWith("apps/web/src/modules/sso-invoice/") &&
         (spec === "@corely/web-features" ||
           (/^@corely\/web-features\/features\//.test(spec) &&
             spec !== "@corely/web-features/features/invoices"));

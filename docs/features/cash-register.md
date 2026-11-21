@@ -1,6 +1,6 @@
 # Cash Register (Cash Management)
 
-The **Cash Register** is the central entity in the Corely Cash Management module (`apps/cash-management`). It models a physical or logical till (e.g., "Front Desk Register", "Safe") used to record and reconcile cash movements in strict compliance with accounting standards (e.g., GoBD and KassenSichV in Germany).
+The **Cash Register** is the central entity in the Corely Cash Management module (`apps/web`). It models a physical or logical till (e.g., "Front Desk Register", "Safe") used to record and reconcile cash movements in strict compliance with accounting standards (e.g., GoBD and KassenSichV in Germany).
 
 ## Core Concepts
 
@@ -51,5 +51,5 @@ At the end of a month (or any accounting period), a register's activity must be 
 ## Technical Architecture
 
 - **Domain Schema**: All data contracts and validations are located in `packages/contracts/src/cash-management/schema.ts`.
-- **Application Surface**: The dedicated Vite + React frontend at `apps/cash-management` provides specialized screens (Registers, Day Close, Dashboard) for operational users.
+- **Application Surface**: The shared back-office frontend at `apps/web` provides specialized screens (Registers, Day Close, Dashboard) for operational users.
 - **AI Integration**: The module includes an embedded **Cash Assistant** (`CashAssistantWorkspace`) that helps users perform daily day-close reviews, monthly reviews, and answers general operational queries regarding their cashbooks.

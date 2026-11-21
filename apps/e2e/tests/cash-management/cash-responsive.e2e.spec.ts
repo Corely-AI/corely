@@ -110,7 +110,7 @@ test.describe("Cash Management responsive surfaces", () => {
     await expectNoPageOverflow(page);
 
     await page.getByRole("button", { name: /close/i }).click();
-    await page.goto("/assistant");
+    await page.goto("/cash/assistant");
     await expect(page.getByTestId("cash-assistant-message-input")).toBeVisible();
     await page
       .getByTestId("cash-assistant-message-input")

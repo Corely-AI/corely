@@ -474,12 +474,12 @@ try {
   }
 
   $syncTargets = @(
-    @{ Source = "favicon-16x16.png"; Targets = @("assets/favicon-16x16.png", "apps/web/public/favicon-16x16.png", "apps/public-web/public/favicon-16x16.png", "apps/freelancer/public/favicon-16x16.png", "apps/crm/public/favicon-16x16.png", "apps/landing/assets/public/favicon-16x16.png") },
-    @{ Source = "favicon-32x32.png"; Targets = @("assets/favicon-32x32.png", "apps/web/public/favicon-32x32.png", "apps/public-web/public/favicon-32x32.png", "apps/freelancer/public/favicon-32x32.png", "apps/crm/public/favicon-32x32.png", "apps/landing/assets/public/favicon-32x32.png") },
+    @{ Source = "favicon-16x16.png"; Targets = @("assets/favicon-16x16.png", "apps/web/public/favicon-16x16.png", "apps/public-web/public/favicon-16x16.png", "apps/landing/assets/public/favicon-16x16.png") },
+    @{ Source = "favicon-32x32.png"; Targets = @("assets/favicon-32x32.png", "apps/web/public/favicon-32x32.png", "apps/public-web/public/favicon-32x32.png", "apps/landing/assets/public/favicon-32x32.png") },
     @{ Source = "favicon.ico"; Targets = @("assets/favicon.ico", "apps/landing/assets/public/favicon.ico") },
-    @{ Source = "apple-touch-icon.png"; Targets = @("apps/web/public/apple-touch-icon.png", "apps/public-web/public/apple-touch-icon.png", "apps/freelancer/public/apple-touch-icon.png", "apps/crm/public/apple-touch-icon.png", "apps/landing/assets/public/apple-touch-icon.png") },
-    @{ Source = "icon-192x192.png"; Targets = @("apps/web/public/icon-192x192.png", "apps/public-web/public/icon-192x192.png", "apps/freelancer/public/icon-192x192.png", "apps/crm/public/icon-192x192.png", "apps/landing/assets/public/icon-192x192.png") },
-    @{ Source = "icon-512x512.png"; Targets = @("apps/web/public/icon-512x512.png", "apps/public-web/public/icon-512x512.png", "apps/freelancer/public/icon-512x512.png", "apps/crm/public/icon-512x512.png", "apps/landing/assets/public/icon-512x512.png") },
+    @{ Source = "apple-touch-icon.png"; Targets = @("apps/web/public/apple-touch-icon.png", "apps/public-web/public/apple-touch-icon.png", "apps/landing/assets/public/apple-touch-icon.png") },
+    @{ Source = "icon-192x192.png"; Targets = @("apps/web/public/icon-192x192.png", "apps/public-web/public/icon-192x192.png", "apps/landing/assets/public/icon-192x192.png") },
+    @{ Source = "icon-512x512.png"; Targets = @("apps/web/public/icon-512x512.png", "apps/public-web/public/icon-512x512.png", "apps/landing/assets/public/icon-512x512.png") },
     @{ Source = "expo-icon-1024.png"; Targets = @("apps/pos/assets/icon.png") },
     @{ Source = "expo-adaptive-foreground-1024.png"; Targets = @("apps/pos/assets/adaptive-icon.png") },
     @{ Source = "favicon-48x48.png"; Targets = @("apps/pos/assets/favicon.png") }

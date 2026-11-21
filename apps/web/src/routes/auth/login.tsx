@@ -1,3 +1,4 @@
+import { COPILOT_AUTH_RETURN_TO_KEY } from "@corely/web-shared/lib/copilot-auth-fetch";
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams, useLocation } from "react-router-dom";
 import { authReturnPath } from "../../app/router/auth-return-path";
@@ -91,7 +92,10 @@ export const LoginPage: React.FC = () => {
         localStorage.removeItem("corely-remember-login");
       }
 
-      navigate(authReturnPath(location.state), { replace: true });
+      const savedPath = sessionStorage.getItem(COPILOT_AUTH_RETURN_TO_KEY);
+      sessionStorage.removeItem(COPILOT_AUTH_RETURN_TO_KEY);
+      const fallback = authReturnPath({ from: { pathname: savedPath ?? "" } });
+      navigate(authReturnPath(location.state, fallback), { replace: true });
     } catch (err) {
       const apiError = normalizeError(err);
       const message = apiError.isNetworkError
@@ -197,6 +201,7 @@ export const LoginPage: React.FC = () => {
                   {t("auth.signin.noAccount")}{" "}
                   <Link
                     to="/auth/signup"
+                    state={location.state}
                     className="font-medium text-accent hover:underline underline-offset-4"
                   >
                     {t("auth.signup.cta")}

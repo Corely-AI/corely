@@ -10,6 +10,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
       "@corely/api-client": path.resolve(__dirname, "../../packages/api-client/src"),
       "@corely/auth-client": path.resolve(__dirname, "../../packages/auth-client/src"),
+      "@corely/contracts/identity/sso": path.resolve(
+        __dirname,
+        "../../packages/contracts/src/identity/sso.schema.ts"
+      ),
       "@corely/contracts": path.resolve(__dirname, "../../packages/contracts/src"),
       "@corely/domain": path.resolve(__dirname, "../../packages/domain/src"),
       "@corely/offline-core": path.resolve(__dirname, "../../packages/offline-core/src"),

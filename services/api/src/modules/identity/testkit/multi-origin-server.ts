@@ -148,7 +148,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     ) {
       return next();
     }
-    const assets = resolve(actual, surface === "app-center" ? "app-center" : surface);
+    const assets = resolve(actual, "web");
     security.headers(res);
     staticFiles(assets)(req, res, () => res.sendFile(resolve(assets, "index.html")));
   } catch {

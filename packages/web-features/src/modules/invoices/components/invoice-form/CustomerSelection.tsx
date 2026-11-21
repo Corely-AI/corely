@@ -102,7 +102,7 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
     onSuccess: (customer) => {
       if (customer?.id) {
         void queryClient.invalidateQueries({ queryKey: customerKeys.all() });
-        setChosenCustomer(customer);
+        setChosenCustomer({ ...customer, id: customer.id, displayName: customer.displayName });
         setValue("customerPartyId", customer.id, { shouldValidate: true, shouldDirty: true });
         toast.success(t("common.success"));
         setNewCustomerDialogOpen(false);
@@ -246,7 +246,11 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
                     value={customer.id}
                     data-testid={`invoice-customer-option-${customer.id}`}
                     onSelect={() => {
-                      setChosenCustomer(customer);
+                      setChosenCustomer({
+                        ...customer,
+                        id: customer.id,
+                        displayName: customer.displayName,
+                      });
                       setValue("customerPartyId", customer.id, {
                         shouldValidate: true,
                         shouldDirty: true,

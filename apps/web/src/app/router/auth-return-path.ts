@@ -1,9 +1,9 @@
 import { isSafeSsoReturnPath } from "@corely/contracts";
 
 /** Restore an internal deep link after legacy sign-in; never accept an external return URL. */
-export function authReturnPath(state: unknown): string {
+export function authReturnPath(state: unknown, fallback = "/"): string {
   if (!state || typeof state !== "object" || !("from" in state)) {
-    return "/";
+    return fallback;
   }
   const from = state.from;
   if (
@@ -12,13 +12,13 @@ export function authReturnPath(state: unknown): string {
     !("pathname" in from) ||
     typeof from.pathname !== "string"
   ) {
-    return "/";
+    return fallback;
   }
   const search = "search" in from && typeof from.search === "string" ? from.search : "";
   const hash = "hash" in from && typeof from.hash === "string" ? from.hash : "";
   if ((search && !search.startsWith("?")) || (hash && !hash.startsWith("#"))) {
-    return "/";
+    return fallback;
   }
   const path = `${from.pathname}${search}${hash}`;
-  return isSafeSsoReturnPath(path) ? path : "/";
+  return isSafeSsoReturnPath(path) ? path : fallback;
 }

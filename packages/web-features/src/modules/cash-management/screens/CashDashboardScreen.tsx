@@ -1169,7 +1169,7 @@ export function ClosingWorkflowCard({
         />
         {!dailyClosingEnabled ? (
           <Button variant="accent" asChild data-testid="cash-dashboard-close-day-button">
-            <Link to="/billing">{upgradeCopy.upgradeToStarter}</Link>
+            <Link to="/cash/billing">{upgradeCopy.upgradeToStarter}</Link>
           </Button>
         ) : (
           <Button
@@ -1255,7 +1255,7 @@ export function ExportStatusCard({
         />
         {!exportEnabled ? (
           <Button variant="accent" asChild data-testid="cash-dashboard-export-button">
-            <Link to="/billing">{upgradeCopy.upgradeToStarter}</Link>
+            <Link to="/cash/billing">{upgradeCopy.upgradeToStarter}</Link>
           </Button>
         ) : (
           <Button
@@ -1391,7 +1391,7 @@ export function AssistantHelpWidget({
             <Badge variant="outline">Pro+</Badge>
           </div>
           <Button variant="accent" asChild>
-            <Link to="/billing">{upgradeCopy.upgradeToPro}</Link>
+            <Link to="/cash/billing">{upgradeCopy.upgradeToPro}</Link>
           </Button>
         </CardContent>
       </Card>

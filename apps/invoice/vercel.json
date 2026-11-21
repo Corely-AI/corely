@@ -1,5 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/((?!api/|auth/callback|auth/logged-out).*)", "destination": "/index.html" }
-  ]
-}

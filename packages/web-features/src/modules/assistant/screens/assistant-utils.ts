@@ -49,3 +49,13 @@ export const getChronologicalGroupKey = (isoDate: string): ThreadGroupKey => {
   }
   return "older";
 };
+
+export const getErrorMessage = (e: unknown): string | undefined => {
+  if (e instanceof Error) {
+    return e.message;
+  }
+  if (typeof e === "string") {
+    return e;
+  }
+  return undefined;
+};

@@ -7,7 +7,7 @@ test("studio signup → setup → anonymous booking → appointment in studio", 
   browser,
 }) => {
   const suffix = Date.now().toString();
-  await page.goto("/signup");
+  await page.goto("/openbuk/signup");
   await page.getByLabel("Your name", { exact: true }).fill("OpenBuk Test Owner");
   await page.getByLabel("Studio name", { exact: true }).fill(`OpenBuk Test ${suffix}`);
   await page.getByLabel("Email", { exact: true }).fill(`openbuk-${suffix}@example.test`);

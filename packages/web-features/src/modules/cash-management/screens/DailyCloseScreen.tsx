@@ -47,8 +47,8 @@ export function DailyCloseScreen() {
   });
 
   const previewRecord = previewQuery.data?.preview;
-  const isClosed = previewRecord?.status === "LOCKED";
   const status = previewRecord?.status;
+  const isClosed = status === "LOCKED" || status === "CLOSED";
   const expectedBalance = previewRecord?.expectedClosingCashCents ?? 0;
   const countedClosingCash = previewRecord?.countedClosingCashCents;
   const cashDifference = previewRecord?.cashDifferenceCents;
@@ -181,7 +181,7 @@ export function DailyCloseScreen() {
           </div>
 
           {/* ── OPEN or CALCULATED: Kassensturz entry form ── */}
-          {(status === "OPEN" || status === "CALCULATED") && (
+          {status && !isClosed && (
             <div className="space-y-5 mt-6 animate-in fade-in slide-in-from-bottom-2">
               {/* Expected / Counted / Difference summary */}
               <div className="grid gap-4 md:grid-cols-3">
@@ -320,7 +320,7 @@ export function DailyCloseScreen() {
           )}
 
           {/* ── LOCKED: summary display only ── */}
-          {status === "LOCKED" && (
+          {isClosed && (
             <div className="space-y-6 mt-6">
               {verificationStatus === "NOT_COUNTED" ? (
                 <div className="p-4 rounded-lg bg-blue-50 text-blue-800 flex flex-col gap-2">

@@ -35,7 +35,7 @@ pnpm billing:stripe:cash:setup
 **Notes:**
 
 - Requires `stripe login` first.
-- Uses `http://localhost:3000` for the API and `http://localhost:8088` for the
+- Uses `http://localhost:3000` for the API and `http://localhost:8080` for the
   frontend by default.
 - Override with `API_BASE_URL` and `FRONTEND_BASE_URL` if needed.
 

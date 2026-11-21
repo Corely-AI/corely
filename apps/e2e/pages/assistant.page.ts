@@ -18,7 +18,7 @@ export class CashAssistantPage {
   }
 
   async goto(registerId: string, day?: string) {
-    let url = `/assistant?registerId=${encodeURIComponent(registerId)}`;
+    let url = `/cash/assistant?registerId=${encodeURIComponent(registerId)}`;
     if (day) url += `&day=${day}`;
     await this.page.goto(url);
     await expect(this.chatInput).toBeVisible();

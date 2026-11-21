@@ -47,7 +47,7 @@ vi.mock("@corely/ui", async () => {
 
 const renderPage = (
   activeModule: "cash-management" | "assistant" = "cash-management",
-  initialEntry = "/assistant"
+  initialEntry = activeModule === "cash-management" ? "/cash/assistant" : "/assistant"
 ) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -55,14 +55,18 @@ const renderPage = (
     },
   });
 
+  const basePath = activeModule === "cash-management" ? "/cash/assistant" : "/assistant";
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <QueryClientProvider client={queryClient}>
         <Routes>
-          <Route path="/assistant" element={<AssistantPage activeModule={activeModule} />} />
           <Route
-            path="/assistant/t/:threadId"
-            element={<AssistantPage activeModule={activeModule} />}
+            path={basePath}
+            element={<AssistantPage activeModule={activeModule} basePath={basePath} />}
+          />
+          <Route
+            path={`${basePath}/t/:threadId`}
+            element={<AssistantPage activeModule={activeModule} basePath={basePath} />}
           />
         </Routes>
       </QueryClientProvider>
@@ -320,7 +324,7 @@ describe("AssistantPage billing access", () => {
       ],
     });
 
-    renderPage("cash-management", "/assistant/t/legacy-thread");
+    renderPage("cash-management", "/cash/assistant/t/legacy-thread");
 
     expect(await screen.findByTestId("cash-register-selector")).toBeInTheDocument();
     expect(screen.queryByTestId("assistant-chat-mock")).not.toBeInTheDocument();

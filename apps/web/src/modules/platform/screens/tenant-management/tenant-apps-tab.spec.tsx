@@ -98,9 +98,7 @@ describe("existing host app controls", () => {
     fireEvent.click(confirm);
     await waitFor(() => expect(screen.getByRole("alertdialog").textContent).toContain("forms"));
     expect(update).toHaveBeenLastCalledWith("tenant-a", "parties", false, true, ["invoices"]);
-    expect(document.activeElement).toBe(
-      screen.getByRole("button", { name: "Cancel", exact: true })
-    );
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
     fireEvent.click(screen.getByRole("button", { name: "Disable app and dependents" }));
     await waitFor(() =>
       expect(update).toHaveBeenLastCalledWith("tenant-a", "parties", false, true, [

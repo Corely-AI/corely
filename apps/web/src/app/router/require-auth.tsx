@@ -62,7 +62,7 @@ export const RequireAuth: React.FC = () => {
     return null;
   }
 
-  const isOnboardingRoute = location.pathname.startsWith("/onboarding");
+  const isOnboardingRoute = location.pathname === "/onboarding";
   if (!isOnboardingRoute && workspaces.length === 0 && !isHostScope) {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }

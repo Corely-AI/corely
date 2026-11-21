@@ -97,7 +97,7 @@ test.describe("Cash management onboarding - happy path", () => {
     expect(progressAfterReceipt.progress?.completedAt).toBeFalsy();
     await completeOnboarding(request, auth);
 
-    await page.goto("/dashboard");
-    await page.waitForURL("**/dashboard", { timeout: 15_000 });
+    await page.goto("/cash/dashboard");
+    await page.waitForURL("**/cash/dashboard", { timeout: 15_000 });
   });
 });

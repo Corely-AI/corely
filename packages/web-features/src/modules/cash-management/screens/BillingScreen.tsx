@@ -58,8 +58,8 @@ export function BillingScreen() {
       billingApi.createCheckoutSession({
         productKey: billingProductKey,
         planCode,
-        successPath: "/billing?checkout=success",
-        cancelPath: "/billing?checkout=cancelled",
+        successPath: "/cash/billing?checkout=success",
+        cancelPath: "/cash/billing?checkout=cancelled",
       }),
     onSuccess: (result) => {
       window.location.assign(result.checkoutUrl);
@@ -70,7 +70,7 @@ export function BillingScreen() {
     mutationFn: () =>
       billingApi.createPortalSession({
         productKey: billingProductKey,
-        returnPath: "/billing",
+        returnPath: "/cash/billing",
       }),
     onSuccess: (result) => {
       window.location.assign(result.portalUrl);

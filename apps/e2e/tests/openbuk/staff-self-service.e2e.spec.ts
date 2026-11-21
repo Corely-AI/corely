@@ -18,7 +18,7 @@ async function signup(page: Page, email: string) {
   await page.getByRole("button", { name: "Start free", exact: true }).click();
 }
 async function auth(page: Page) {
-  const token = await page.evaluate(() => localStorage.getItem("openbuk:access"));
+  const token = await page.evaluate(() => localStorage.getItem("accessToken"));
   if (!token) throw new Error("Test authentication missing");
   return { Authorization: `Bearer ${token}` };
 }
@@ -34,7 +34,7 @@ test("staff edit their own details, complete approved onboarding and lose curren
     throw new Error("Staff acceptance requires a local administration client");
   const run = randomUUID(),
     email = `tasks-owner-${run}@example.test`;
-  await page.goto("/signup");
+  await page.goto("/openbuk/signup");
   await signup(page, email);
   await expect(page.getByRole("button", { name: "Save draft", exact: true })).toBeVisible();
   await page.getByLabel("Studio name", { exact: true }).fill("Linden Studio");
@@ -75,7 +75,7 @@ test("staff edit their own details, complete approved onboarding and lose curren
   const { invite } = (await invitation.json()) as CreateWorkspaceInviteOutput;
   const staffContext = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } });
   const member = await staffContext.newPage();
-  await member.goto(`/invite#${invite.token}`);
+  await member.goto(`/openbuk/invite#${invite.token}`);
   await member.getByRole("link", { name: "Create your studio account" }).click();
   await signup(member, staffEmail);
   await member.getByRole("button", { name: "Accept invitation", exact: true }).click();
@@ -122,7 +122,7 @@ test("staff edit their own details, complete approved onboarding and lose curren
     },
   });
   expect(pattern.status(), await pattern.text()).toBe(201);
-  await member.goto("/app/me");
+  await member.goto("/openbuk/app/me");
   await expect(
     member.getByText("No approved onboarding checklist is linked.", { exact: true })
   ).toBeVisible();
@@ -131,8 +131,8 @@ test("staff edit their own details, complete approved onboarding and lose curren
     fullPage: true,
   });
   const tokens = await page.evaluate(() => ({
-    access: localStorage.getItem("openbuk:access"),
-    refresh: localStorage.getItem("openbuk:refresh"),
+    access: localStorage.getItem("accessToken"),
+    refresh: localStorage.getItem("refreshToken"),
   }));
   const adminContext = await browser.newContext({
     baseURL: adminUrl,
@@ -168,7 +168,7 @@ test("staff edit their own details, complete approved onboarding and lose curren
     bookingRequests.push(route.request().url());
     await route.abort();
   });
-  await member.goto("/app/me");
+  await member.goto("/openbuk/app/me");
   await expect(
     member.getByRole("heading", { name: "Your staff profile", exact: true })
   ).toBeVisible();
@@ -243,7 +243,7 @@ test("staff edit their own details, complete approved onboarding and lose curren
   ).toBeChecked();
   await task.getByRole("button", { name: "Complete", exact: true }).click();
   await expect(task.getByText("Completed", { exact: true })).toBeVisible();
-  await member.goto("/app/me");
+  await member.goto("/openbuk/app/me");
   await expect(member.getByText("2/2 steps complete", { exact: true })).toBeVisible();
   await member.screenshot({
     path: testInfo.outputPath("self-onboarding-mobile-en.png"),

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Loader2, Plus, Search, Sparkles, Menu } from "lucide-react";
-import { Button, Sheet, SheetContent, SheetTrigger, useToast } from "@corely/ui";
+import { Loader2, Plus, Search, Sparkles } from "lucide-react";
+import { Button, useToast } from "@corely/ui";
 import {
   listCopilotThreads,
   searchCopilotThreads,
@@ -21,7 +21,7 @@ import {
 } from "@corely/contracts";
 import { getAssistantCapabilityGroups, getAssistantSuggestions } from "./assistant-suggestions";
 import { CashHandoffConfirmationCard } from "../components/CashHandoffConfirmationCard";
-import { type ThreadGroupKey, THREAD_LIST_QUERY_KEY } from "./assistant-utils";
+import { getErrorMessage, type ThreadGroupKey, THREAD_LIST_QUERY_KEY } from "./assistant-utils";
 import { CashAssistantEmptyState } from "../../cash-management/components/cash-assistant-empty-state";
 import { CashConversationContextHeader } from "../../cash-management/components/cash-conversation-context-header";
 import { CashAssistantRegisterSelector } from "../../cash-management/components/cash-assistant-register-selector";
@@ -30,23 +30,17 @@ import { useAssistantRegisterBinding } from "./use-assistant-register-binding";
 import { useAssistantHandoffs } from "./use-assistant-handoffs";
 import { useAssistantToolRenderers } from "./use-assistant-tool-renderers";
 import { useGroupedThreads } from "./use-grouped-threads";
-import { AssistantSidebar } from "./AssistantSidebar";
+import { AssistantSidebar, MobileAssistantSidebar } from "./AssistantSidebar";
 
 interface AssistantPageProps {
   activeModule?: string;
+  basePath?: string;
 }
 
-const getErrorMessage = (e: unknown): string | undefined => {
-  if (e instanceof Error) {
-    return e.message;
-  }
-  if (typeof e === "string") {
-    return e;
-  }
-  return undefined;
-};
-
-export default function AssistantPage({ activeModule = "assistant" }: AssistantPageProps) {
+export default function AssistantPage({
+  activeModule = "assistant",
+  basePath = "/assistant",
+}: AssistantPageProps) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -78,7 +72,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     lastAutoBindingKeyRef,
     resolveWorkspaceMutation,
     bindRegister,
-  } = useAssistantRegisterBinding(activeModule, threadId, t, toast, getErrorMessage);
+  } = useAssistantRegisterBinding(threadId, t, toast, getErrorMessage);
   const [openGroups, setOpenGroups] = useState<Record<ThreadGroupKey, boolean>>({
     today: true,
     needsAttention: true,
@@ -162,7 +156,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     mutationFn: async () => createCopilotThread(),
     onSuccess: (id) => {
       void queryClient.invalidateQueries({ queryKey: THREAD_LIST_QUERY_KEY });
-      navigate(`/assistant/t/${id}`);
+      navigate(`${basePath}/t/${id}`);
     },
   });
 
@@ -221,13 +215,13 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
 
   const openThread = (id: string) => {
     setSheetOpen(false);
-    navigate(`/assistant/t/${id}`);
+    navigate(`${basePath}/t/${id}`);
   };
 
   const openSearchResult = (result: CopilotThreadSearchResult) => {
     setSearchOpen(false);
     setSheetOpen(false);
-    navigate(`/assistant/t/${result.threadId}?m=${result.messageId}`);
+    navigate(`${basePath}/t/${result.threadId}?m=${result.messageId}`);
   };
 
   const handleRunResolved = (resolvedRunId: string) => {
@@ -236,7 +230,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     }
 
     if (threadId !== resolvedRunId) {
-      navigate(`/assistant/t/${resolvedRunId}`, {
+      navigate(`${basePath}/t/${resolvedRunId}`, {
         replace: !threadId,
       });
     }
@@ -260,14 +254,14 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
       variant: "destructive",
     });
     if (billingProductKey) {
-      navigate("/billing");
+      navigate("/cash/billing");
     }
   };
 
   const handleNewChat = () => {
     setSheetOpen(false);
     if (activeModule === "cash-management") {
-      navigate("/assistant");
+      navigate(basePath);
     } else {
       createThreadMutation.mutate();
     }
@@ -316,7 +310,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
   };
 
   const groupedThreads = useGroupedThreads(
-    threadsQuery.data?.threads ?? [],
+    threadsQuery.data?.items ?? [],
     workspacesQuery.data?.items ?? [],
     isCashModule,
     t
@@ -347,18 +341,9 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
             <h1 className="text-h1 text-foreground">{t("assistant.title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{t("assistant.subtitle")}</p>
           </div>
-          <div className="md:hidden">
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="flex w-80 flex-col p-0">
-                {sidebarContent}
-              </SheetContent>
-            </Sheet>
-          </div>
+          <MobileAssistantSidebar open={sheetOpen} onOpenChange={setSheetOpen}>
+            {sidebarContent}
+          </MobileAssistantSidebar>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Button

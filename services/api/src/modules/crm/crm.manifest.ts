@@ -43,10 +43,10 @@ export const crmAppManifest: AppManifest = {
       section: "crm",
       labelKey: "nav.assistant",
       defaultLabel: "Assistant",
-      route: "/assistant",
+      route: "/crm/assistant",
       icon: "Sparkles",
       order: 31,
-      allowedSurfaces: ["crm"],
+      allowedSurfaces: ["platform", "crm"],
     },
     {
       id: "crm-deals",

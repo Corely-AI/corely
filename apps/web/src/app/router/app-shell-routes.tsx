@@ -1,4 +1,4 @@
-import { LegacyInvoiceHandoff } from "./legacy-invoice-handoff";
+import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
 import { DailyWorkPage } from "@corely/web-features/modules/tasks/daily-work-page";
 import {
   PeopleDirectoryPage,
@@ -7,8 +7,9 @@ import {
 } from "@corely/web-features/modules/people";
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
-import { cashManagementFeature, posAdminFeature } from "@corely/web-features";
+import { posAdminRoutes } from "@corely/web-features/features/pos-admin";
 import { RequirePermission, RequireSurface } from "@corely/web-shared/shared/permissions";
+import { SignWorkspace } from "./sign-workspace";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
@@ -73,6 +74,11 @@ import CoachingOfferDetailPage from "../../modules/coaching-engagements/screens/
 import CoachingOfferEditorPage from "../../modules/coaching-engagements/screens/CoachingOfferEditorPage";
 import { useSurfaceId } from "@corely/web-shared/shared/surface";
 
+const OpenBukStudio = React.lazy(() => import("../../modules/openbuk/embedded-studio"));
+const CashLayout = React.lazy(() => import("./cash-layout"));
+const CashOnboarding = React.lazy(() => import("./cash-onboarding"));
+const FreelancerSettings = React.lazy(() => import("../../modules/freelancer/settings-page"));
+
 const SignOverviewPage = React.lazy(
   () => import("@corely/web-features/modules/sign/overview-page")
 );
@@ -91,26 +97,13 @@ const SurfaceAssistantPage = () => {
   return <AssistantPage activeModule={surfaceId === "crm" ? "crm" : "freelancer"} />;
 };
 
-const CashLegacyRedirect = () => {
-  const { id } = useParams<{ id?: string }>();
-  const location = useLocation();
-
-  return (
-    <Navigate to={id ? `/cash/registers/${id}${location.search}` : "/cash/registers"} replace />
-  );
-};
-
-const CashLegacyDayCloseRedirect = () => {
-  const { id } = useParams<{ id?: string }>();
-  const location = useLocation();
-
+const CashLegacyRedirect = ({ dayClose = false }: { dayClose?: boolean }) => {
+  const { id } = useParams();
+  const { search, hash } = useLocation();
+  const register = id ? `/cash/registers/${encodeURIComponent(id)}` : "/cash/registers";
   return (
     <Navigate
-      to={
-        id
-          ? `/cash/registers/${id}/day-close${location.search}`
-          : `/cash/registers${location.search}`
-      }
+      to={{ pathname: dayClose && id ? `${register}/day-close` : register, search, hash }}
       replace
     />
   );
@@ -130,48 +123,56 @@ const PosPackPlaceholderPage = ({ title, description }: { title: string; descrip
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
+    {["/onboarding/cash-management", "/onboarding/cash-management/resume"].map((path) => (
+      <Route
+        key={path}
+        path={path}
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <React.Suspense fallback={null}>
+              <CashOnboarding />
+            </React.Suspense>
+          </RequireSurface>
+        }
+      />
+    ))}
     <Route element={<AppShell />}>
+      <Route path="/openbuk/app/*" element={<OpenBukStudio />} />
+      <Route path="/apps" element={<BackofficeDirectory />} />
+      <Route path="/freelancer/settings" element={<FreelancerSettings />} />
+      {["/crm/assistant", "/crm/assistant/t/:threadId"].map((path) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            <RequireSurface surfaces={["platform", "crm"]}>
+              <AssistantPage basePath="/crm/assistant" activeModule="crm" />
+            </RequireSurface>
+          }
+        />
+      ))}
       {(import.meta.env.DEV ||
         /^\/source\/corely-sign-[a-f0-9]{40}\.zip$/.test(
           import.meta.env.VITE_SIGN_SOURCE_URL ?? ""
-        )) &&
-        [
-          "/sign/requests/new",
-          "/sign/templates",
-          "/sign/templates/new",
-          "/sign/templates/:id",
-          "/sign/templates/:id/edit",
-        ].map((path) => (
-          <Route
-            key={path}
-            path={path}
-            element={
-              <React.Suspense fallback={<p>Loading editor…</p>}>
-                <SignTemplateEditor />
-              </React.Suspense>
-            }
-          />
-        ))}
-      {(import.meta.env.DEV ||
-        /^\/source\/corely-sign-[a-f0-9]{40}\.zip$/.test(
-          import.meta.env.VITE_SIGN_SOURCE_URL ?? ""
-        )) &&
-        ["/sign", "/sign/settings", "/sign/requests", "/sign/requests/:id"].map((path) => (
-          <Route
-            key={path}
-            path={path}
-            element={
-              <React.Suspense fallback={<p>Loading request…</p>}>
-                {path === "/sign" || path === "/sign/settings" ? (
-                  <SignOverviewPage />
-                ) : (
-                  <SignRequestPage />
-                )}
-              </React.Suspense>
-            }
-          />
-        ))}
-
+        )) && (
+        <Route element={<SignWorkspace />}>
+          {["/sign", "/sign/settings"].map((path) => (
+            <Route key={path} path={path} element={<SignOverviewPage />} />
+          ))}
+          {["/sign/requests", "/sign/requests/:id"].map((path) => (
+            <Route key={path} path={path} element={<SignRequestPage />} />
+          ))}
+          {[
+            "/sign/requests/new",
+            "/sign/templates",
+            "/sign/templates/new",
+            "/sign/templates/:id",
+            "/sign/templates/:id/edit",
+          ].map((path) => (
+            <Route key={path} path={path} element={<SignTemplateEditor />} />
+          ))}
+        </Route>
+      )}
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route path="/tasks" element={<DailyWorkPage />} />
       <Route path="/tasks/templates" element={<DailyWorkPage templates />} />
@@ -220,14 +221,15 @@ export const appShellRoutes = (
       <Route path="/expenses/new" element={<NewExpensePage />} />
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />
-      {cashManagementFeature.cashManagementRoutes().map((route) => (
-        <Route
-          key={route.path}
-          path={route.path}
-          element={<RequireSurface surfaces={["platform", "pos"]}>{route.element}</RequireSurface>}
-        />
-      ))}
-      {posAdminFeature.posAdminRoutes().map((route) => (
+      <Route
+        path="/cash/*"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <CashLayout />
+          </RequireSurface>
+        }
+      />
+      {posAdminRoutes().map((route) => (
         <Route
           key={route.path}
           path={route.path}
@@ -254,7 +256,7 @@ export const appShellRoutes = (
         path="/cash-registers/:id/daily-close"
         element={
           <RequireSurface surfaces={["platform", "pos"]}>
-            <CashLegacyDayCloseRedirect />
+            <CashLegacyRedirect dayClose />
           </RequireSurface>
         }
       />
@@ -302,46 +304,11 @@ export const appShellRoutes = (
           </RequireSurface>
         }
       />
-      <Route
-        path="/invoices"
-        element={
-          <LegacyInvoiceHandoff>
-            <InvoicesPage />
-          </LegacyInvoiceHandoff>
-        }
-      />
-      <Route
-        path="/invoices/new"
-        element={
-          <LegacyInvoiceHandoff>
-            <NewInvoicePage />
-          </LegacyInvoiceHandoff>
-        }
-      />
-      <Route
-        path="/invoices/:id"
-        element={
-          <LegacyInvoiceHandoff>
-            <InvoiceDetailPage />
-          </LegacyInvoiceHandoff>
-        }
-      />
-      <Route
-        path="/invoices/:id/edit"
-        element={
-          <LegacyInvoiceHandoff>
-            <InvoiceDetailPage />
-          </LegacyInvoiceHandoff>
-        }
-      />
-      <Route
-        path="/audit"
-        element={
-          <LegacyInvoiceHandoff>
-            <InvoiceAuditPage />
-          </LegacyInvoiceHandoff>
-        }
-      />
+      <Route path="/invoices" element={<InvoicesPage />} />
+      <Route path="/invoices/new" element={<NewInvoicePage />} />
+      <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+      <Route path="/invoices/:id/edit" element={<InvoiceDetailPage />} />
+      <Route path="/audit" element={<InvoiceAuditPage />} />
       <Route
         path="/coaching/offers"
         element={
@@ -419,6 +386,8 @@ export const appShellRoutes = (
       />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/reports/eur" element={<TaxEurReportPage />} />
+      <Route path="/tax/annual" element={<TaxAnnualAssistantPage />} />
+      <Route path="/tax/annual/t/:threadId" element={<TaxAnnualAssistantPage />} />
       <Route path="/tax/annual/:year" element={<TaxAnnualAssistantPage />} />
       <Route path="/tax/annual/:year/t/:threadId" element={<TaxAnnualAssistantPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />

@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { PrismaAuditAdapter, PrismaOutboxAdapter, type PrismaService } from "@corely/data";
 import { AuthGuard } from "../../identity/adapters/http/auth.guard";
-import { GetWorkspacePermissionsUseCase } from "../../identity/public";
+import {
+  AuthorizeRequestContextUseCase,
+  GetWorkspacePermissionsUseCase,
+} from "../../identity/public";
 import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
 import { PrismaMembershipRepository } from "../../identity/infrastructure/adapters/prisma-membership-repository.adapter";
 import { PrismaRolePermissionGrantRepository } from "../../identity/infrastructure/adapters/prisma-role-permission-grant-repository.adapter";
@@ -59,27 +62,32 @@ export async function signFixture(prisma: PrismaService) {
     }
   }
 
+  const memberships = new PrismaMembershipRepository(prisma);
+  const authorizeWorkspace = new AuthorizeWorkspaceUseCase(new PrismaWorkspaceRepository(prisma));
   const permissions = new GetWorkspacePermissionsUseCase(
     new PrismaRolePermissionGrantRepository(prisma),
-    new PrismaMembershipRepository(prisma),
-    new AuthorizeWorkspaceUseCase(new PrismaWorkspaceRepository(prisma))
+    memberships,
+    authorizeWorkspace
   );
-  const auth = new AuthGuard({
-    verifyAccessToken: async (token) =>
-      token === "manager"
-        ? {
-            userId: manager,
-            tenantId: tenantA,
-            roleIds: [],
-            email: "test@example.invalid",
-            iat: 0,
-            exp: 9999999999,
-          }
-        : null,
-    generateAccessToken: () => "unused",
-    generateRefreshToken: () => "unused",
-    getExpirationTimes: () => ({ accessTokenExpiresIn: "1h", refreshTokenExpiresInMs: 3600000 }),
-  });
+  const auth = new AuthGuard(
+    {
+      verifyAccessToken: async (token) =>
+        token === "manager"
+          ? {
+              userId: manager,
+              tenantId: tenantA,
+              roleIds: [],
+              email: "test@example.invalid",
+              iat: 0,
+              exp: 9999999999,
+            }
+          : null,
+      generateAccessToken: () => "unused",
+      generateRefreshToken: () => "unused",
+      getExpirationTimes: () => ({ accessTokenExpiresIn: "1h", refreshTokenExpiresInMs: 3600000 }),
+    },
+    new AuthorizeRequestContextUseCase(memberships, authorizeWorkspace)
+  );
   return {
     auth,
     permissions,

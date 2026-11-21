@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: "list",
   use: { ...devices["Desktop Chrome"], trace: "off", screenshot: "off" },
   webServer: {
-    cwd: "../login",
+    cwd: "../web",
     command: "pnpm exec vite --host 127.0.0.1 --port 5192",
     url: "http://127.0.0.1:5192",
     reuseExistingServer: false,

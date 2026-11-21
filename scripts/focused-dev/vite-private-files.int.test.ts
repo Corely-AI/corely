@@ -23,7 +23,7 @@ beforeAll(async () => {
   server = await createServer({
     ...options,
     configFile: false,
-    root: resolve("apps/login"),
+    root: resolve("apps/web"),
     server: { ...options.server, host: "127.0.0.1", port: 0, hmr: false },
   });
   await server.listen();

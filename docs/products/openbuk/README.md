@@ -45,7 +45,7 @@ Reuse these; do not create another booking bounded context or database.
 
 ## First increment
 
-Add `apps/openbuk-web` with marketing `/`, branded `/login` and `/signup`, studio
+The Backoffice includes `apps/web/src/modules/openbuk` with marketing `/`, branded `/login` and `/signup`, studio
 setup and operations under `/app`, and public `/book/:studioSlug`. The first slice
 supports one location, one service and one staff member, recurring hours, blocked
 periods, buffers, authoritative availability and guest booking visible in the admin.
@@ -102,9 +102,9 @@ load and security review remain release gates.
 
 ## Deployment
 
-Run `pnpm dev:openbuk` with the existing Corely API. Configure `VITE_API_URL` (default
+Open `/openbuk/app` for Studio and `/openbuk/book/:studioSlug` for booking on the Backoffice host. Run `pnpm dev:openbuk` with the existing Corely API. Configure `VITE_API_URL` (default
 `/api`), `VITE_OPENBUK_APP_URL` and `VITE_OPENBUK_BOOKING_URL`. The Vite dev proxy
-forwards `/api` to the existing API at localhost:3000; `OPENBUK_API_PROXY_TARGET`
+forwards `/api` to the existing API at localhost:3000; `CORELY_DEV_API_TARGET`
 can select an isolated test API instead.
 
 One static frontend build can serve all three domains. The app recognizes configured
@@ -131,8 +131,8 @@ From the repository root:
 
 ```sh
 pnpm --filter @corely/api typecheck
-pnpm --filter @corely/openbuk-web typecheck
-pnpm --filter @corely/openbuk-web build
+pnpm --filter @corely/web typecheck
+pnpm --filter @corely/web build
 pnpm --dir services/api exec vitest run --config vitest.openbuk.config.ts --maxWorkers=1 --minWorkers=1
 pnpm --dir apps/e2e exec playwright test --config playwright.openbuk.config.ts
 ```

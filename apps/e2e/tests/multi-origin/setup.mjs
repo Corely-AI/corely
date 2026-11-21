@@ -104,12 +104,13 @@ export default async function setup() {
     const previousOrigin = process.env.VITE_CORELY_APP_CENTER_ORIGIN;
     process.env.VITE_CORELY_APP_CENTER_ORIGIN = "https://app.corely.test:8444";
     try {
-      for (const surface of ["login", "app-center", "invoice"]) {
+      {
         await build({
-          root: path.join(root, "apps", surface),
-          configFile: path.join(root, "apps", surface, "vite.config.ts"),
+          root: path.join(root, "apps", "web"),
+          configFile: path.join(root, "apps", "web", "vite.config.ts"),
+          define: { "import.meta.env.VITE_CORELY_INVOICE_ORIGIN": JSON.stringify("https://invoice.app.corely.test:8444") },
           logLevel: "warn",
-          build: { outDir: path.join(directory, surface), emptyOutDir: true },
+          build: { outDir: path.join(directory, "web"), emptyOutDir: true },
         });
       }
     } finally {

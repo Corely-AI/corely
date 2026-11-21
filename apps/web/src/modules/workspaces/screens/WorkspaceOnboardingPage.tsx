@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { getReturnPath } from "@/app/router/return-path";
+import React, { useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Building2, CheckCircle2, User, ArrowRight } from "lucide-react";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
@@ -14,6 +15,7 @@ const steps = ["Workspace", "Legal & Address", "Tax & Bank"];
 
 export const WorkspaceOnboardingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { setWorkspace, refresh } = useWorkspace();
   const { toast } = useToast();
 
@@ -109,7 +111,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
       setWorkspace(createdId);
       await refresh();
       toast({ title: "Workspace created", description: `${result.workspace.name} is now active.` });
-      navigate("/dashboard");
+      navigate(getReturnPath(state, "/dashboard"), { replace: true });
     } catch (error) {
       toast({
         title: "Workspace creation failed",

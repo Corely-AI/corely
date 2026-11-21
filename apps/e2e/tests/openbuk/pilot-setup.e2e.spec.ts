@@ -14,14 +14,14 @@ test.beforeAll(() => {
   }
 });
 async function headers(page: Page) {
-  const token = await page.evaluate(() => localStorage.getItem("openbuk:access"));
+  const token = await page.evaluate(() => localStorage.getItem("accessToken"));
   if (!token) {
     throw new Error("Missing test account authentication");
   }
   return { Authorization: `Bearer ${token}` };
 }
 async function signup(page: Page, email: string, name: string) {
-  await page.goto("/signup");
+  await page.goto("/openbuk/signup");
   await page.getByLabel("Your name", { exact: true }).fill("Pilot test account");
   await page.getByLabel("Studio name", { exact: true }).fill(name);
   await page.getByLabel("Email", { exact: true }).fill(email);
@@ -133,7 +133,7 @@ test("private setup resumes, publishes explicitly, and repeated staff invitation
   expect((await rejectedInvite).headers()["x-workspace-id"]).toBeUndefined();
   await expect(page.getByRole("alert")).toContainText("invitation could not be accepted");
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem("openbuk:workspace")))
+    .poll(() => page.evaluate(() => localStorage.getItem("corely-active-workspace")))
     .toBe(workspace.id);
   await page.screenshot({ path: testInfo.outputPath("invitation-rejected.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -160,7 +160,7 @@ test("private setup resumes, publishes explicitly, and repeated staff invitation
 
   const staffContext = await browser.newContext();
   const member = await staffContext.newPage();
-  await member.goto("/invite#invalid");
+  await member.goto("/openbuk/invite#invalid");
   await expect(member.getByRole("alert")).toContainText("invitation could not be accepted");
   await member.goto(link);
   await expect(member.getByRole("heading", { name: "Join a workspace" })).toBeVisible();
@@ -218,7 +218,7 @@ test("private setup resumes, publishes explicitly, and repeated staff invitation
     });
     expect(response.status()).toBe(403);
   }
-  await member.goto("/app/settings");
+  await member.goto("/openbuk/app/settings");
   await expect(
     member.getByRole("heading", { name: "Workspace membership is active" })
   ).toBeVisible();

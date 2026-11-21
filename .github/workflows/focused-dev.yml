@@ -4,7 +4,7 @@ on:
     paths:
       - "scripts/focused-dev/**"
       - "packages/config/**"
-      - "apps/login/**"
+      - "apps/web/**"
       - ".env.focused.example"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -32,6 +32,7 @@ jobs:
       - run: pnpm test:focused-dev
       - run: pnpm test:focused-dev:int
       - run: pnpm exec tsc -p scripts/focused-dev/tsconfig.json
+      - run: pnpm build:web-packages
       - run: pnpm build:focused --surface=login
       - name: Start the actual local topology and check all origins
         run: |

@@ -25,7 +25,7 @@ async function signup(page: Page, email: string) {
   await page.getByRole("button", { name: "Start free", exact: true }).click();
 }
 async function auth(page: Page) {
-  const token = await page.evaluate(() => localStorage.getItem("openbuk:access"));
+  const token = await page.evaluate(() => localStorage.getItem("accessToken"));
   if (!token) throw new Error("Test authentication missing");
   return { Authorization: `Bearer ${token}` };
 }
@@ -37,7 +37,7 @@ test("a manager publishes one recurring task, an assignee checks its steps and c
   test.setTimeout(120000);
   const run = randomUUID(),
     email = `tasks-owner-${run}@example.test`;
-  await page.goto("/signup");
+  await page.goto("/openbuk/signup");
   await signup(page, email);
   await expect(page.getByRole("button", { name: "Save draft", exact: true })).toBeVisible();
   await page.getByLabel("Studio name", { exact: true }).fill("Linden Studio");
@@ -64,7 +64,7 @@ test("a manager publishes one recurring task, an assignee checks its steps and c
     bookingRequests.push(route.request().url());
     await route.abort();
   });
-  await page.goto("/app/tasks");
+  await page.goto("/openbuk/app/tasks");
   await page.getByRole("link", { name: "Recurring checklists", exact: true }).click();
   await expect(page.getByRole("heading", { name: "No recurring checklists yet" })).toBeVisible();
   await page.screenshot({
@@ -187,7 +187,7 @@ test("a manager publishes one recurring task, an assignee checks its steps and c
   const { invite } = (await invitation.json()) as CreateWorkspaceInviteOutput;
   const staffContext = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } });
   const member = await staffContext.newPage();
-  await member.goto(`/invite#${invite.token}`);
+  await member.goto(`/openbuk/invite#${invite.token}`);
   await member.getByRole("link", { name: "Create your studio account" }).click();
   await signup(member, staffEmail);
   await member.getByRole("button", { name: "Accept invitation", exact: true }).click();
@@ -209,7 +209,7 @@ test("a manager publishes one recurring task, an assignee checks its steps and c
   const beforeCompletion = (await (
     await page.request.get(`/api/tasks/recurring/${template.id}`, { headers })
   ).json()) as ChecklistTemplateView;
-  await member.goto("/app/tasks");
+  await member.goto("/openbuk/app/tasks");
   const taskCard = member.getByRole("article", { name: "Opening routine", exact: true });
   await expect(taskCard).toBeVisible();
   await expect(taskCard.getByRole("button", { name: "Complete", exact: true })).toBeDisabled();
@@ -242,7 +242,7 @@ test("a manager publishes one recurring task, an assignee checks its steps and c
     await page.request.get(`/api/tasks/recurring/${template.id}`, { headers })
   ).json()) as ChecklistTemplateView;
   expect(afterCompletion).toEqual(beforeCompletion);
-  await member.goto("/app/tasks/templates");
+  await member.goto("/openbuk/app/tasks/templates");
   await expect(member.getByRole("alert")).toContainText("Checklist management is unavailable");
   await member.screenshot({
     path: testInfo.outputPath("checklists-denied-staff-mobile.png"),
@@ -254,8 +254,8 @@ test("a manager publishes one recurring task, an assignee checks its steps and c
     if (!["127.0.0.1", "localhost"].includes(new URL(adminUrl).hostname))
       throw new Error("Cross-surface verification uses a local test client");
     const tokens = await page.evaluate(() => ({
-      access: localStorage.getItem("openbuk:access"),
-      refresh: localStorage.getItem("openbuk:refresh"),
+      access: localStorage.getItem("accessToken"),
+      refresh: localStorage.getItem("refreshToken"),
     }));
     const adminContext = await browser.newContext({
       baseURL: adminUrl,
@@ -304,7 +304,7 @@ test("the credentialed existing background runtime generates the same occurrence
     throw new Error("Set the local API's configured TASKS_RECURRING_SERVICE_TOKEN for acceptance");
   const run = randomUUID(),
     email = `tasks-owner-${run}@example.test`;
-  await page.goto("/signup");
+  await page.goto("/openbuk/signup");
   await signup(page, email);
   await expect(page.getByRole("button", { name: "Save draft", exact: true })).toBeVisible();
   await page.getByLabel("Studio name", { exact: true }).fill("Linden Studio");

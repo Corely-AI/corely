@@ -14,10 +14,11 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "pnpm exec vite --config ../hr/vite.config.ts --port 5189",
+    cwd: "../web",
+    command: "pnpm exec vite --host 127.0.0.1 --port 5189",
     url: "http://127.0.0.1:5189",
     reuseExistingServer: false,
     timeout: 30_000,
-    env: { VITE_CORELY_APP_CENTER_ORIGIN: "http://app.localhost:5189" },
+    env: { VITE_CORELY_HR_ORIGIN: "http://127.0.0.1:5189", VITE_CORELY_APP_CENTER_ORIGIN: "http://app.localhost:5189" },
   },
 });

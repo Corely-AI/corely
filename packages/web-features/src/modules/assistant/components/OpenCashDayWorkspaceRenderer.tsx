@@ -37,7 +37,7 @@ export const OpenCashDayWorkspaceRenderer: React.FC<ToolRendererProps> = ({ stat
 
   const handleNavigate = () => {
     // Navigate to the workspace and pass handoffId in query params
-    navigate(`/assistant/t/${output.conversationId}?handoffId=${output.handoffId}`);
+    navigate(`/cash/assistant/t/${output.conversationId}?handoffId=${output.handoffId}`);
   };
 
   return (

@@ -71,7 +71,15 @@ export type CashReportPreviewDto = {
     operands: CashReportCalculationOperand[];
   };
 
-  status: "DRAFT" | "NEEDS_REVIEW" | "READY_TO_CLOSE" | "CLOSED";
+  status:
+    | "OPEN"
+    | "CALCULATED"
+    | "VERIFIED"
+    | "LOCKED"
+    | "DRAFT"
+    | "NEEDS_REVIEW"
+    | "READY_TO_CLOSE"
+    | "CLOSED";
 
   warnings: CashReportWarning[];
   evidenceRequirements: CashReportEvidenceRequirement[];

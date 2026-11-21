@@ -33,11 +33,10 @@ implementation or operational-readiness audit.
 - **Web (`apps/web`, Vite + React):** Admin/backoffice UI. Uses TanStack Query with backoff from `@corely/api-client`, workspace + auth providers, and an offline provider backed by `@corely/offline-web` (IndexedDB cache + outbox; transport is still a placeholder).
 - **Public Web (`apps/public-web`, Next.js App Router):** Public-facing UI for portfolios, rentals, blog, and CMS pages. Uses the public API surface under `/public/*` and is deployed as a server-rendered app (no SPA rewrite required).
 - **POS (`apps/pos`, Expo + React Native):** Offline-first shell wired to `@corely/offline-core`, `@corely/offline-rn`, and `@corely/pos-core`.
-- **Corely Cash (`apps/cash-management`, Vite + React):** Dedicated admin app for cash-management workflows (registers, entries, day close, cashbook exports). Uses shared packages `@corely/web-shared` and `@corely/web-features`.
 - **API (`services/api`, NestJS 11):** Modules for identity, accounting, sales, purchasing, inventory, approvals, engagements, workflows, AI copilot, etc. Global env validation via `@corely/config`, Prisma-powered `DataModule`, and trace-ID middleware.
 - **Background runtime (`services/api/src/modules/background`, NestJS 11):** API-hosted internal execution path for outbox processing, scheduled runners, and workflow queue handlers. Cloud Scheduler and Cloud Tasks target internal API endpoints instead of a separate service.
-- **OpenBuk (`apps/openbuk-web`, Vite + React):** Focused booking product with marketing/auth/studio/public journeys, using the existing Booking API and records.
-- **Other surfaces:** freelancer, CRM, portal, restaurant-listing and landing (Vite); website-runtime (Next.js); ERiC gateway (.NET). See the alignment inventory.
+- **OpenBuk (`apps/web/src/modules/openbuk`):** Focused booking product with marketing/auth/studio/public journeys, using the existing Booking API and records.
+- **Other surfaces:** portal, restaurant-listing and landing (Vite); website-runtime (Next.js); ERiC gateway (.NET). See the alignment inventory.
 - **Historical mock server:** `services/mock-server` has no tracked runtime/package in this commit; do not assume it starts.
 
 ---
@@ -88,11 +87,15 @@ implementation or operational-readiness audit.
 
 ---
 
-## Corely Cash (Cash Management)
+## Back-office deployment
 
-- Dedicated Vite + React application (`apps/cash-management`) focused exclusively on cash-management workflows (registers, entries, day close, cashbook exports).
-- Shares the same API and authentication environment as the main web app (`apps/web`).
-- Composes UI and business logic from shared packages: `@corely/web-shared` (providers, layout, infrastructure) and `@corely/web-features` (routes and screens).
+Build the authenticated workspace once with `pnpm build:web` and publish `apps/web/dist`. Set the Vercel project root to `apps/web` with access to workspace files outside that directory. CRM, Cash Management, Freelancer workflows, invoicing, HR, tasks, OpenBuk Studio and Sign share the workspace session and navigation. Use `pnpm dev:web` locally. The module-specific dev commands open their entry paths on that server.
+
+The authenticated app directory is at `/apps`, HR at `/people/staff`, self-service at `/people/me`, Tasks at `/tasks`, and OpenBuk Studio at `/openbuk/app`. The same build serves public OpenBuk booking links at `/openbuk/book/:studioSlug` and invitations at `/openbuk/invite`. On a branded OpenBuk host, the original paths and browser storage remain available.
+
+Point the existing login, App Center, HR and Invoice SSO hosts at this same artifact. Preserve their origin allowlist, HTTPS gateway and backend routing for SSO, BFF and callbacks. The host-specific screens use the existing cookie sessions. Set `VITE_CORELY_LOGIN_ORIGIN`, `VITE_CORELY_APP_CENTER_ORIGIN`, `VITE_CORELY_HR_ORIGIN` and `VITE_CORELY_INVOICE_ORIGIN` to those origins. Keep `admin.corely.one` as the general Backoffice entry when `app.corely.one` serves the SSO app directory.
+
+Attach the former CRM, Cash, Freelancer and Sign domains to the web project after verifying the new deployment. The host-specific redirects in `apps/web/vercel.json` preserve deep links and query strings on the Backoffice host `admin.corely.one`. Configure the listed host names and destination to match the deployment. Set `VITE_API_BASE_URL` to the deployed API URL, or to `/api` when using the [back-office edge proxy](../guides/VERCEL_SURFACE_PROXY.md). For Sign, stage the corresponding source archive from the release commit using `scripts/sign/package-source.mjs` and set `VITE_SIGN_SOURCE_URL` to its published `/source/corely-sign-<commit>.zip` path before building.
 
 ---
 

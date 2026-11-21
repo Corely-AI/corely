@@ -1,7 +1,15 @@
 import React from "react";
 import { format } from "date-fns";
-import { ChevronDown, Loader2, Plus } from "lucide-react";
-import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger } from "@corely/ui";
+import { ChevronDown, Loader2, Menu, Plus } from "lucide-react";
+import {
+  Button,
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@corely/ui";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { useTranslation } from "react-i18next";
 import { type ThreadGroup, type ThreadGroupKey } from "./assistant-utils";
@@ -120,5 +128,31 @@ export function AssistantSidebar({
         ))}
       </div>
     </>
+  );
+}
+
+export function MobileAssistantSidebar({
+  open,
+  onOpenChange,
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  children: React.ReactNode;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="md:hidden">
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" aria-label={t("assistant.title")}>
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex w-80 flex-col p-0">
+          {children}
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }

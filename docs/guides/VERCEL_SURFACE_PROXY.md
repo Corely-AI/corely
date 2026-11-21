@@ -64,31 +64,6 @@ Examples below use Vercel `routes` plus `transforms` so request headers are set 
 }
 ```
 
-## crm.corely.one
+## Legacy CRM domain
 
-```json
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "routes": [
-    {
-      "src": "^/api/(.*)$",
-      "dest": "https://api.corely.one/$1",
-      "transforms": [
-        {
-          "type": "request.headers",
-          "op": "set",
-          "target": { "key": "x-corely-proxy-key" },
-          "args": "$CORELY_PROXY_KEY_CRM",
-          "env": ["CORELY_PROXY_KEY_CRM"]
-        },
-        {
-          "type": "request.headers",
-          "op": "set",
-          "target": { "key": "x-corely-surface" },
-          "args": "crm"
-        }
-      ]
-    }
-  ]
-}
-```
+Attach `crm.corely.one` to the back-office web project. The host-specific redirects in `apps/web/vercel.json` send CRM bookmarks to `app.corely.one`, where the app proxy handles API requests.

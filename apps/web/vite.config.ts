@@ -39,6 +39,8 @@ const resolveSurfaceProxyHeaders = (
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(__dirname, "../.."), "");
+  const apiTarget =
+    process.env.CORELY_DEV_API_TARGET || env.CORELY_DEV_API_TARGET || "http://localhost:3000";
   const baseConfig = createBaseViteConfig({
     port: 8080,
     plugins: [
@@ -51,6 +53,10 @@ export default defineConfig(({ mode }) => {
       "@": path.resolve(__dirname, "./src"),
       "@corely/api-client": path.resolve(__dirname, "../../packages/api-client/src"),
       "@corely/auth-client": path.resolve(__dirname, "../../packages/auth-client/src"),
+      "@corely/contracts/identity/sso": path.resolve(
+        __dirname,
+        "../../packages/contracts/src/identity/sso.schema.ts"
+      ),
       "@corely/contracts": path.resolve(__dirname, "../../packages/contracts/src"),
       "@corely/domain": path.resolve(__dirname, "../../packages/domain/src"),
       "@corely/offline-core": path.resolve(__dirname, "../../packages/offline-core/src"),
@@ -63,12 +69,12 @@ export default defineConfig(({ mode }) => {
     excludeFromOptimizeDeps: ["@corely/contracts", "@corely/domain"],
     watchWorkspacePackages: ["@corely/*"],
     apiProxy: {
-      target: "http://localhost:3000",
+      target: apiTarget,
     },
   });
 
   const apiProxy = {
-    target: "http://localhost:3000",
+    target: apiTarget,
     changeOrigin: true,
     xfwd: true,
     rewrite: (requestPath: string) => requestPath.replace(/^\/api/, ""),
@@ -89,55 +95,22 @@ export default defineConfig(({ mode }) => {
 
   return {
     ...baseConfig,
-    define: {
-      ...baseConfig.define,
-      "import.meta.env.VITE_CORELY_INVOICE_LINK_MIGRATION": JSON.stringify(
-        env.VITE_CORELY_INVOICE_LINK_MIGRATION ?? "false"
-      ),
-      "import.meta.env.VITE_CORELY_INVOICE_LINK_WORKSPACES": JSON.stringify(
-        env.VITE_CORELY_INVOICE_LINK_WORKSPACES ?? ""
-      ),
+    root: __dirname,
+    build: {
+      ...baseConfig.build,
+      rollupOptions: {
+        ...baseConfig.build?.rollupOptions,
+        input: {
+          web: path.resolve(__dirname, "index.html"),
+          openbuk: path.resolve(__dirname, "openbuk.html"),
+        },
+      },
     },
     server: {
       ...baseConfig.server,
       proxy: {
         ...(baseConfig.server?.proxy ?? {}),
         "/api": apiProxy,
-      },
-    },
-    build: {
-      ...baseConfig.build,
-      rollupOptions: {
-        ...baseConfig.build?.rollupOptions,
-        output: {
-          ...baseConfig.build?.rollupOptions?.output,
-          manualChunks(id) {
-            if (!id.includes("node_modules")) {
-              return;
-            }
-
-            if (id.includes("react") || id.includes("scheduler")) {
-              return "react";
-            }
-            if (id.includes("@radix-ui")) {
-              return "radix";
-            }
-            if (id.includes("@tanstack")) {
-              return "tanstack";
-            }
-            if (id.includes("lucide-react")) {
-              return "icons";
-            }
-            if (id.includes("date-fns")) {
-              return "date-fns";
-            }
-            if (id.includes("zod")) {
-              return "zod";
-            }
-
-            return "vendor";
-          },
-        },
       },
     },
   };

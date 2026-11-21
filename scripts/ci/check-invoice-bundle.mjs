@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import { invoiceBundlePolicy } from "./invoice-bundle-policy.mjs";
 
 const root = process.cwd();
-const require = createRequire(path.join(root, "apps/invoice/package.json"));
+const require = createRequire(path.join(root, "apps/web/package.json"));
 const { build } = await import(
   pathToFileURL(
     path.resolve(
@@ -15,9 +15,9 @@ const { build } = await import(
   ).href
 );
 const result = await build({
-  configFile: path.join(root, "apps/invoice/vite.config.ts"),
+  configFile: path.join(root, "apps/web/vite.config.ts"),
   plugins: [invoiceBundlePolicy()],
-  build: { write: false },
+  build: { write: false, rollupOptions: { input: path.join(root, "apps/web/src/modules/sso-invoice/main.tsx") } },
 });
 const modules = new Set();
 for (const output of Array.isArray(result) ? result : [result]) {

@@ -112,7 +112,7 @@ export function createFocusedGateway(
         proxy(
           req,
           res,
-          `http://127.0.0.1:${focusedSurfacePorts[surface.key]}`,
+          `http://127.0.0.1:${focusedSurfacePorts.login}`,
           gatewayHeaders(req, surface.origin)
         );
       }

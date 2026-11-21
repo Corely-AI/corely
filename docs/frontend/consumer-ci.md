@@ -1,11 +1,7 @@
 # Frontend consumer CI
 
 The `Frontend consumers` workflow runs on PRs and pushes to `development`.
-It discovers Vite workspaces from their package manifests, including HR. Every consumer runs on every change: app-only changes
-and shared-package changes use the same conservative fan-out. This costs more CI
-work than pruning by changed paths, but cannot omit an affected consumer because
-of an incomplete dependency graph. Existing web, freelancer, CRM and OpenBuk
-remain included alongside App Center, login and Invoice.
+It discovers Vite workspaces from their package manifests. Business modules and SSO consumers build with `apps/web`. The other Vite clients are the portal, landing and restaurant listing. All Vite workspaces run on each change.
 
 Each consumer generates Prisma, builds shared dependencies, then runs lint,
 typecheck and its own build independently. A failed lint/typecheck does not hide

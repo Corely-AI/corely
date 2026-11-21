@@ -180,6 +180,8 @@ General developer guides and references.
 - [Workflows](./workflows/)
 - [Trademarks](./TRADEMARKS.md)
 
+[Backoffice modules, routes and deployment](architecture/architect.md#back-office-deployment)
+
 ## Products
 
 - [OpenBuk](products/openbuk/README.md) — focused booking product and implementation roadmap.

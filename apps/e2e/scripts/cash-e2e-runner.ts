@@ -97,7 +97,8 @@ async function run() {
       E2E_AI_PROVIDER: "deterministic",
       TZ: "Europe/Berlin",
       PORT: process.env.E2E_API_PORT || "3101",
-      VITE_API_BASE_URL: process.env.E2E_API_URL || "http://localhost:3101",
+      VITE_API_BASE_URL: "/api",
+      CORELY_DEV_API_TARGET: process.env.E2E_API_URL || "http://127.0.0.1:3101",
     };
 
     // Spawn servers in background
@@ -111,7 +112,7 @@ async function run() {
       "pnpm",
       [
         "--filter",
-        "@corely/cash-management",
+        "@corely/web",
         "dev",
         "--host",
         "0.0.0.0",

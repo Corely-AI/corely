@@ -16,7 +16,7 @@ export function unrelatedInvoiceModules(bundle) {
       if (
         (feature && feature[1] !== "invoices") ||
         (screen && screen[1] !== "invoices") ||
-        (app && app[1] !== "invoice") ||
+        (app && !file.includes("/apps/web/src/modules/sso-invoice/")) ||
         /\/services\/[^/]+\/src\//.test(file)
       )
         modules.add(file);

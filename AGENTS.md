@@ -65,8 +65,7 @@ See [connected-app architecture](docs/architecture/connected-apps.md).
 ## Repository map (inspected 2026-11-07)
 
 - `apps/web`: Vite + React administration UI, including booking routes.
-- `apps/openbuk-web`: focused Vite booking client, reusing the Booking owner.
-- `apps/freelancer`, `apps/crm`, `apps/cash-management`: focused Vite clients.
+- `apps/web`: one Backoffice deployment hosts business modules, OpenBuk, the app directory and SSO screens.
 - `apps/portal`, `apps/restaurant-listing`, `apps/landing`: Vite entry points.
 - `apps/public-web`: Next.js public journeys, including booking and checkout.
 - `apps/website-runtime`: Next.js website runtime.

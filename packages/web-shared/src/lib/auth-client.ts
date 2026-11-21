@@ -3,6 +3,7 @@
  * Web platform wrapper around @corely/auth-client
  */
 
+import { ApiError } from "@corely/api-client";
 import { AuthClient } from "@corely/auth-client";
 import { setActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
 import { WebStorageAdapter } from "./storage-adapter";
@@ -60,7 +61,20 @@ class WebAuthClient {
   }
 
   async getCurrentUser() {
-    return this.client.getCurrentUser();
+    try {
+      return await this.client.getCurrentUser();
+    } catch (error) {
+      // Older web sessions could store a tenant ID in the workspace slot.
+      if (
+        !(error instanceof ApiError) ||
+        error.status !== 403 ||
+        !(await storage.getActiveWorkspaceId())
+      ) {
+        throw error;
+      }
+      setActiveWorkspaceId(null);
+      return this.client.getCurrentUser();
+    }
   }
 
   async refreshAccessToken(): Promise<void> {

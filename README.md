@@ -144,10 +144,7 @@ apps/
   e2e/                        # End-to-end suites
   pos/                        # Offline-first POS shell
   public-web/                 # Next.js public site (portfolios, rentals, CMS)
-  web/                        # Vite-based admin UI
-  openbuk-web/                # Focused Vite booking product
-  freelancer/, crm/           # Focused Vite clients
-  cash-management/            # Focused Vite cash client
+  web/                        # Backoffice, business modules, OpenBuk and SSO
   portal/, restaurant-listing/, landing/ # Other Vite entry points
   website-runtime/            # Next.js website runtime
   eric-wategay/               # .NET ERiC gateway (not a pnpm workspace)

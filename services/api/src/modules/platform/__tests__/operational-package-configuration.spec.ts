@@ -226,7 +226,7 @@ describe("Operational package configuration integration (in-memory persistence)"
         id: "schedule",
         label: "Schedule",
         appId: "booking",
-        availability: { status: "available", route: "/app" },
+        availability: { status: "available", route: "/openbuk/app" },
       },
       {
         id: "team",

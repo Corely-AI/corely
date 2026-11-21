@@ -24,6 +24,12 @@ import {
 import { appShellRoutes } from "./app-shell-routes";
 import { getDefaultRouteForSurface, useSurfaceId } from "@corely/web-shared/shared/surface";
 
+// OpenBuk owns its branded layout and stylesheet in the shared web build.
+function OpenBukEntry() {
+  React.useEffect(() => window.location.reload(), []);
+  return null;
+}
+
 const SurfaceRootRedirect = () => {
   const surfaceId = useSurfaceId();
   return <Navigate to={getDefaultRouteForSurface(surfaceId)} replace />;
@@ -38,6 +44,7 @@ export const Router = () => (
   >
     <LegacyInvoiceObservation />
     <Routes>
+      <Route path="/openbuk/*" element={<OpenBukEntry />} />
       {/* Root Route: Domain Mode Portfolio OR Dashboard Redirect */}
       <Route
         path="/"
@@ -71,6 +78,7 @@ export const Router = () => (
       </Route>
 
       <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/cash/signup" element={<SignupPage defaultPath="/cash/dashboard" />} />
       <Route path="/auth/signup" element={<SignupPage />} />
       <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />

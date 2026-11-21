@@ -54,6 +54,7 @@ export interface AppSidebarProps {
   workspaceSwitcherMode?: WorkspaceSwitcherMode;
   allowWorkspaceCreation?: boolean;
   notificationBell?: React.ReactNode;
+  directoryLink?: React.ReactNode;
   logo?: React.ReactNode;
   onNavigate?: () => void;
 }
@@ -100,6 +101,7 @@ export function AppSidebar({
   workspaceSwitcherMode = "always",
   allowWorkspaceCreation,
   notificationBell,
+  directoryLink,
   logo,
   onNavigate,
 }: AppSidebarProps) {
@@ -192,6 +194,7 @@ export function AppSidebar({
         className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin"
         data-testid={`sidebar-nav${variant === "mobile" ? "-mobile" : ""}`}
       >
+        {directoryLink}
         {resolvedLoading ? (
           <div className="space-y-2 animate-pulse">
             {[1, 2, 3, 4].map((i) => (

@@ -228,7 +228,7 @@ describe("cash management route guards", () => {
       },
     });
 
-    renderAt("/dashboard");
+    renderAt("/cash/dashboard");
 
     expect(screen.queryByTestId("permission-gate")).not.toBeInTheDocument();
     expect(await screen.findByText("Today's cash book is still open")).toBeInTheDocument();
@@ -345,7 +345,7 @@ describe("cash management route guards", () => {
       },
     });
 
-    renderAt("/billing");
+    renderAt("/cash/billing");
 
     expect(screen.queryByTestId("permission-gate")).not.toBeInTheDocument();
     expect(await screen.findByText("Plans and billing")).toBeInTheDocument();
@@ -441,7 +441,7 @@ describe("cash management route guards", () => {
       },
     });
 
-    renderAt("/billing");
+    renderAt("/cash/billing");
 
     expect((await screen.findAllByText("Full access trial ended")).length).toBeGreaterThan(0);
   });

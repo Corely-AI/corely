@@ -399,7 +399,7 @@ export class GetCashReportPreviewQueryUseCase extends BaseUseCase<
         calculatedCashSalesCents,
         customerCount: undefined,
         calculation: { operands },
-        status: status as any,
+        status,
         warnings,
         evidenceRequirements,
         generatedAt: new Date().toISOString(),

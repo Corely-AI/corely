@@ -69,7 +69,7 @@ const app = module.createNestApplication({
 configureSsoSessionTransport(app);
 configureSsoHttpTransport(app);
 const root = fileURLToPath(new URL("../../../../../../", import.meta.url));
-const assets = resolve(root, "apps/login/dist");
+const assets = resolve(root, "apps/web/dist");
 app.use("/session-assets", staticFiles(resolve(root, "packages/web-shared/testkit/browser/dist")));
 app.use("/assets", staticFiles(resolve(assets, "assets")));
 app.use(async (req: Request, res: Response, next: NextFunction) => {

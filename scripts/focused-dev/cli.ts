@@ -68,24 +68,15 @@ if (command === "init") {
       ? [...new Set<FocusedSurfaceKey>(["login", requested as FocusedSurfaceKey])]
       : [...focusedSurfaceKeys];
     const probes = args.includes("--probe");
-    const apps = { login: "login", "app-center": "app-center", invoice: "invoice", hr: "hr" };
-    const vitePackage = createRequire(resolve(root, "apps/login/package.json")).resolve(
+    const directory = resolve(root, "apps/web");
+    const vitePackage = createRequire(resolve(directory, "package.json")).resolve(
       "vite/package.json"
     );
     const viteEntry = resolve(dirname(vitePackage), "dist/node/index.js");
     const vite = (await import(pathToFileURL(viteEntry).href)) as typeof Vite;
     const servers: Array<{ close: () => Promise<void> }> = [];
     try {
-      for (const surface of selected) {
-        if (probes && surface !== "login") {
-          continue;
-        }
-        const directory = resolve(root, "apps", apps[surface]);
-        if (!existsSync(resolve(directory, "package.json"))) {
-          throw new Error(
-            `apps/${apps[surface]} is not implemented yet. Use --probe to check origins, or --surface=login. Product clients belong to #392/#394/#397.`
-          );
-        }
+      {
         const options = focusedViteOptions(config, [
           envFile,
           resolve(root, config.server.CORELY_DEV_TLS_KEY),
@@ -105,10 +96,10 @@ if (command === "init") {
             server: {
               ...options.server,
               host: "127.0.0.1",
-              port: focusedSurfacePorts[surface],
+              port: focusedSurfacePorts.login,
               strictPort: true,
               hmr: false,
-              allowedHosts: [new URL(config.origins[surface]).hostname],
+              allowedHosts: selected.map((surface) => new URL(config.origins[surface]).hostname),
             },
           });
           await server.listen();

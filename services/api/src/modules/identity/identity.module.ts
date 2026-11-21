@@ -24,7 +24,6 @@ import { DataModule, PrismaOutboxAdapter } from "@corely/data";
 import { EnvModule, EnvService } from "@corely/config";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
-import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { PlatformModule } from "../platform/platform.module";
 
 // Controllers

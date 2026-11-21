@@ -323,7 +323,9 @@ export function AppShell({
             className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
           >
             {topContent}
-            <Outlet />
+            <React.Suspense fallback={<p role="status">{t("common.loading")}</p>}>
+              <Outlet />
+            </React.Suspense>
           </div>
         </main>
       </div>

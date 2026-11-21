@@ -19,7 +19,7 @@ export const bookingAppManifest: AppManifest = {
   operationalExperiences: [
     {
       experienceId: "schedule",
-      route: "/app",
+      route: "/openbuk/app",
       allowedSurfaces: ["platform"],
       requiredCapabilities: ["booking.basic"],
       requiresWorkspaceAdmin: true,
