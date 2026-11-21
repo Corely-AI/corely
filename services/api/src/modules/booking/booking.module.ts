@@ -64,6 +64,9 @@ import { CancelBookingUseCase } from "./application/use-cases/cancel-booking.use
 import { UpsertAvailabilityRuleUseCase } from "./application/use-cases/upsert-availability-rule.usecase";
 import { GetAvailabilityUseCase } from "./application/use-cases/get-availability.usecase";
 
+import { BOOKING_POLICIES } from "./application/booking-policy";
+import { bookingPolicies } from "./booking-extensions";
+
 @Module({
   imports: [PeopleModule, WorkspacesModule, DataModule, KernelModule, IdentityModule, CrmModule],
   controllers: [
@@ -76,6 +79,7 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     PublicBookingController,
   ],
   providers: [
+    { provide: BOOKING_POLICIES, useValue: bookingPolicies },
     BookingStaffConstraintAdapter,
     OpenBukRateLimitGuard,
     OpenBukStudioUseCase,
@@ -187,7 +191,17 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     },
     {
       provide: CreateBookingUseCase,
-      useFactory: (bookingRepo, holdRepo, resourceRepo, audit, outbox, idempotency, idgen, clock) =>
+      useFactory: (
+        bookingRepo,
+        holdRepo,
+        resourceRepo,
+        audit,
+        outbox,
+        idempotency,
+        idgen,
+        clock,
+        policies
+      ) =>
         new CreateBookingUseCase(
           bookingRepo,
           holdRepo,
@@ -196,7 +210,8 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
           outbox,
           idempotency,
           idgen,
-          clock
+          clock,
+          policies
         ),
       inject: [
         BOOKING_REPOSITORY,
@@ -207,6 +222,7 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
+        BOOKING_POLICIES,
       ],
     },
     {

@@ -13,6 +13,8 @@ import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port
 import type { ClockPort } from "../../../../shared/ports/clock.port";
 import { BadRequestException, NotFoundException, ConflictException } from "@nestjs/common";
 import { randomBytes } from "crypto";
+import type { BookingPolicyRegistration } from "@corely/booking/extensions";
+import { enforceBookingPolicy } from "../booking-policy";
 
 export interface CreateBookingInput {
   holdId?: string | null;
@@ -38,7 +40,8 @@ export class CreateBookingUseCase {
     private readonly outbox: OutboxPort,
     private readonly idempotency: IdempotencyStoragePort,
     private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly policies: readonly BookingPolicyRegistration[] = []
   ) {}
 
   async execute(input: CreateBookingInput, ctx: UseCaseContext): Promise<BookingEntity> {
@@ -87,6 +90,14 @@ export class CreateBookingUseCase {
         throw new BadRequestException("startAt must be before endAt");
       }
     }
+
+    enforceBookingPolicy(
+      this.policies,
+      { tenantId, workspaceId: ctx.workspaceId },
+      startAt,
+      endAt,
+      now
+    );
 
     const bookingId = this.idGenerator.newId();
     const referenceNumber = "B-" + randomBytes(4).toString("hex").toUpperCase();

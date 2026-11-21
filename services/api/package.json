@@ -8,6 +8,7 @@
     "@ai-sdk/anthropic": "catalog:",
     "@ai-sdk/openai": "catalog:",
     "@ai-sdk/ui-utils": "catalog:",
+    "@corely/booking": "workspace:*",
     "@corely/config": "workspace:*",
     "@corely/contracts": "workspace:*",
     "@corely/core": "workspace:*",
@@ -77,6 +78,7 @@
     "quickjs-emscripten": "0.32.0"
   },
   "devDependencies": {
+    "@acme/booking-policy-fixture": "workspace:*",
     "@corely/testkit": "workspace:*",
     "@nestjs/testing": "catalog:",
     "@swc/cli": "^0.7.9",

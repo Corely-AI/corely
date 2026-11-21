@@ -100,6 +100,8 @@ an email was delivered. Public endpoints have a bounded per-process rate limit a
 public deployment. The initial browser and PostgreSQL acceptance checks below pass; wider accessibility,
 load and security review remain release gates.
 
+[Self-host upgrades and customer extensions](self-host-upgrades.md)
+
 ## Deployment
 
 Open `/openbuk/app` for Studio and `/openbuk/book/:studioSlug` for booking on the Backoffice host. Run `pnpm dev:openbuk` with the existing Corely API. Configure `VITE_API_URL` (default

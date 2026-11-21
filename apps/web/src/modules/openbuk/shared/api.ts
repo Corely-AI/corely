@@ -30,12 +30,22 @@ export const api = new ApiClient({
   authClient: auth,
   onAuthError: () => window.location.assign(`${openBukBase}/login`),
 });
+export class BookingPolicyError extends Error {}
+
 export async function publicApi<T>(slug: string, path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(
     `${brand.apiUrl}/w/${encodeURIComponent(slug)}/public/openbuk/${path}`,
     options
   );
   if (!response.ok) {
+    if (response.status === 400 && path === "bookings") {
+      const problem: { code?: unknown; detail?: unknown } | null = await response
+        .json()
+        .catch(() => null);
+      if (problem?.code === "Booking:PolicyRejected" && typeof problem.detail === "string") {
+        throw new BookingPolicyError(problem.detail);
+      }
+    }
     throw new Error(response.status === 409 ? "slotConflict" : "requestFailed");
   }
   return response.json() as Promise<T>;

@@ -1,3 +1,8 @@
+import { CreateBookingUseCase } from "../application/use-cases/create-booking.usecase";
+import { PrismaHoldRepoAdapter } from "../infrastructure/adapters/prisma-hold-repo.adapter";
+import { PrismaResourceRepoAdapter } from "../infrastructure/adapters/prisma-resource-repo.adapter";
+import { BookingHold } from "../domain/booking.entities";
+import { acmeBookingPolicy } from "@acme/booking-policy-fixture";
 import { ExtStaffAbsenceAdapter } from "../../people/infrastructure/ext-staff-absence.adapter";
 import { StaffAvailabilityConstraintService } from "../../people/public";
 import { ExtStaffRepositoryAdapter } from "../../people/infrastructure/ext-staff-repository.adapter";
@@ -94,6 +99,119 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
       consentAccepted: true as const,
     };
   }
+  it("preserves bookings, explicit studio notice and the policy across candidate composition", async () => {
+    const policyClock = { now: () => new Date("2026-10-03T08:00:00Z") };
+    const createBuild = () =>
+      new OpenBukStudioUseCase(
+        repo,
+        new PrismaUnitOfWork(prisma),
+        new PrismaAuditAdapter(prisma),
+        new PrismaOutboxAdapter(prisma),
+        policyClock,
+        { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
+        { publish: async () => {} },
+        staff,
+        [{ ...scope, validate: acmeBookingPolicy }]
+      );
+    const baseline = createBuild();
+    const { serviceId, staffId, slug, ...setup } = studioFixture({
+      durationMinutes: 120,
+      bufferAfterMinutes: 0,
+      minimumNoticeMinutes: 1440,
+      weeklyHours: [{ dayOfWeek: 1, startTime: "08:00", endTime: "18:00" }],
+    });
+    await baseline.configure(setup, ctx);
+    try {
+      const rejected = await input("2026-10-05T07:00:00Z");
+      const accepted = await input("2026-10-05T08:00:00Z");
+      const key = randomUUID();
+      const before = await prisma.outboxEvent.count({
+        where: { tenantId, eventType: "booking.created" },
+      });
+      await expect(baseline.book(rejected, randomUUID(), ctx)).rejects.toMatchObject({
+        response: { code: "Booking:PolicyRejected" },
+      });
+      expect(await prisma.booking.count({ where: scope })).toBe(0);
+      expect(
+        await prisma.outboxEvent.count({ where: { tenantId, eventType: "booking.created" } })
+      ).toBe(before);
+      const existing = await baseline.book(accepted, key, ctx);
+      const candidate = createBuild();
+      expect((await repo.studio(scope))?.minimumNoticeMinutes).toBe(1440);
+      expect(await candidate.book(accepted, key, ctx)).toEqual(existing);
+      expect(await prisma.booking.count({ where: scope })).toBe(1);
+      const remainingEarlierSlot = await input("2026-10-05T06:00:00Z");
+      await expect(candidate.book(remainingEarlierSlot, randomUUID(), ctx)).rejects.toMatchObject({
+        response: { code: "Booking:PolicyRejected" },
+      });
+    } finally {
+      await prisma.bookingAllocation.deleteMany({ where: { tenantId } });
+      await prisma.booking.deleteMany({ where: scope });
+      await prisma.outboxEvent.deleteMany({ where: { tenantId } });
+      await prisma.auditLog.deleteMany({ where: { tenantId } });
+      const { serviceId, staffId, slug, ...defaultSetup } = studioFixture();
+      await app.configure(defaultSetup, ctx);
+    }
+  });
+  it("rejects direct and held staff bookings before writing or consuming a hold", async () => {
+    const resource = await input();
+    const staffConstraint = new BookingStaffConstraintAdapter(prisma, staff);
+    const holds = new PrismaHoldRepoAdapter(prisma, staffConstraint);
+    const clock = { now: () => new Date("2026-10-03T08:00:00Z") };
+    const create = new CreateBookingUseCase(
+      new PrismaBookingRepoAdapter(prisma, staffConstraint),
+      holds,
+      new PrismaResourceRepoAdapter(prisma),
+      new PrismaAuditAdapter(prisma),
+      new PrismaOutboxAdapter(prisma),
+      { get: async () => null, store: async () => {} },
+      { newId: randomUUID },
+      clock,
+      [{ ...scope, validate: acmeBookingPolicy }]
+    );
+    const start = new Date(resource.startAt);
+    const end = new Date(start.getTime() + 120 * 60_000);
+    const booking = {
+      startAt: start,
+      endAt: end,
+      resourceIds: [resource.staffId],
+      serviceOfferingId: resource.serviceId,
+    };
+    const rejection = { response: { code: "Booking:PolicyRejected" } };
+    await expect(create.execute(booking, ctx)).rejects.toMatchObject(rejection);
+    const holdId = randomUUID();
+    await holds.create(
+      new BookingHold(
+        holdId,
+        tenantId,
+        workspaceId,
+        "ACTIVE",
+        start,
+        end,
+        resource.serviceId,
+        [resource.staffId],
+        new Date(Date.now() + 600_000),
+        null,
+        null,
+        null,
+        null,
+        null,
+        "owner",
+        clock.now()
+      )
+    );
+    try {
+      await expect(create.execute({ holdId }, ctx)).rejects.toMatchObject(rejection);
+      expect((await holds.findById(holdId, tenantId))?.status).toBe("ACTIVE");
+      expect(await prisma.booking.count({ where: scope })).toBe(0);
+      expect(await prisma.bookingAllocation.count({ where: { tenantId } })).toBe(0);
+      expect(
+        await prisma.outboxEvent.count({ where: { tenantId, eventType: "booking.created" } })
+      ).toBe(0);
+    } finally {
+      await prisma.bookingHold.deleteMany({ where: { id: holdId, tenantId } });
+    }
+  });
   it("allows exactly one of two simultaneous requests for the same staff/slot", async () => {
     const body = await input();
     const results = await Promise.allSettled([

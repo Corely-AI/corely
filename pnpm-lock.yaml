@@ -299,6 +299,9 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.7.4
+      semver:
+        specifier: 7.7.3
+        version: 7.7.3
       ts-node:
         specifier: 'catalog:'
         version: 10.9.2(@swc/core@1.15.7)(@types/node@22.19.3)(typescript@5.9.3)
@@ -730,6 +733,9 @@ importers:
       '@corely/auth-client':
         specifier: workspace:*
         version: link:../../packages/auth-client
+      '@corely/booking-ui':
+        specifier: workspace:*
+        version: link:../../packages/booking-ui
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -1146,6 +1152,32 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/booking:
+    dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/booking-ui:
+    dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
   packages/config:
     dependencies:
       '@nestjs/common':
@@ -1475,6 +1507,22 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(typescript@5.9.3)(vitest@2.1.9(@types/node@22.19.3)(jsdom@24.1.3)(lightningcss@1.30.2)(msw@2.12.4(@types/node@22.19.3)(typescript@5.9.3))(terser@5.46.0))
 
+  packages/tooling/acme-booking-policy-fixture:
+    devDependencies:
+      '@corely/booking':
+        specifier: workspace:*
+        version: link:../../booking
+
+  packages/tooling/acme-booking-ui-fixture:
+    dependencies:
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+    devDependencies:
+      '@corely/booking-ui':
+        specifier: workspace:*
+        version: link:../../booking-ui
+
   packages/tooling/eslint-config:
     devDependencies:
       '@eslint/js':
@@ -1768,6 +1816,9 @@ importers:
       '@ai-sdk/ui-utils':
         specifier: 'catalog:'
         version: 1.2.11(zod@3.25.76)
+      '@corely/booking':
+        specifier: workspace:*
+        version: link:../../packages/booking
       '@corely/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -1970,6 +2021,9 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
+      '@acme/booking-policy-fixture':
+        specifier: workspace:*
+        version: link:../../packages/tooling/acme-booking-policy-fixture
       '@corely/testkit':
         specifier: workspace:*
         version: link:../../packages/testkit
