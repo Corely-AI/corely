@@ -102,6 +102,7 @@ Frontend guidelines and specific docs.
 Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
+- [Deploy with Vercel and Supabase](./devops/vercel-supabase.md)
 - [Configuration](./devops/configuration.md)
 - [Background Runtime](./devops/background-runtime.md)
 - [Customization](./devops/customization.md)
