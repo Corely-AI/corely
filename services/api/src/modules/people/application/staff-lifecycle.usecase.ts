@@ -31,7 +31,7 @@ import {
   type StaffWorkspaceAccessPort,
   type StaffLifecycleRepository,
 } from "./ports/staff-lifecycle.port";
-import { directoryEntry } from "../domain/staff-rules";
+import { directoryEntry } from "@corely/people/staff-rules";
 @Injectable()
 export class StaffLifecycleUseCase {
   constructor(

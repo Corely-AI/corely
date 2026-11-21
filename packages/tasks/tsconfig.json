@@ -1,0 +1,1 @@
+{ "extends": "@corely/tsconfig/lib.json", "include": ["src"] }

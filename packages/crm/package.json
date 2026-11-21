@@ -1,0 +1,17 @@
+{
+  "name": "@corely/crm",
+  "private": true,
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./extensions": "./dist/extensions.mjs"
+  },
+  "scripts": {
+    "build": "tsdown src/extensions.ts --dts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*"
+  }
+}

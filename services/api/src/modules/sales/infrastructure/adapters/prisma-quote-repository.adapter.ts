@@ -5,8 +5,8 @@ import type {
   ListQuotesFilters,
   ListQuotesResult,
 } from "../../application/ports/quote-repository.port";
-import { QuoteAggregate } from "../../domain/quote.aggregate";
-import type { QuoteLineItem, QuoteStatus } from "../../domain/sales.types";
+import { QuoteAggregate } from "@corely/sales/quote";
+import type { QuoteLineItem, QuoteStatus } from "@corely/sales/types";
 import { toPrismaDate, fromPrismaDate } from "./date-mappers";
 
 @Injectable()

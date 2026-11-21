@@ -9,6 +9,7 @@ import {
 import { createHash, randomUUID } from "node:crypto";
 import {
   StaffIdentityLinkConflictCode,
+  StaffProfilePolicyRejectedCode,
   ArchiveStaffSchema,
   CreateStaffSchema,
   ListStaffSchema,
@@ -28,7 +29,7 @@ import {
 } from "@corely/kernel";
 import { TenantEntitlementService } from "../../platform/public";
 import { GetEffectivePermissionsUseCase } from "../../identity/public";
-import { directoryEntry, staffLinkConflict, validManager } from "../domain/staff-rules";
+import { directoryEntry, staffLinkConflict, validManager } from "@corely/people/staff-rules";
 import {
   STAFF_REPOSITORY,
   STAFF_ACCOUNT_LOOKUP,
@@ -40,6 +41,9 @@ import {
 } from "./ports/staff-repository.port";
 
 import { STAFF_BOOKING, type StaffBookingPort } from "./ports/staff-availability.port";
+
+import { staffProfileRejection } from "@corely/people/extensions";
+import { staffProfilePolicies } from "../staff-profile-extensions";
 
 type Command = "create" | "update" | "archive" | "private";
 @Injectable()
@@ -207,6 +211,14 @@ export class StaffDirectoryUseCase {
       } else {
         if (previous && "version" in input && input.version !== previous.version) {
           throw new ConflictException("Staff profile changed; reload before saving");
+        }
+        if (fields && (kind === "create" || kind === "update")) {
+          const message = staffProfileRejection(staffProfilePolicies, scope, {
+            operation: kind,
+            team: fields.team,
+          });
+          if (message)
+            {throw new BadRequestException({ code: StaffProfilePolicyRejectedCode, message });}
         }
         next =
           kind === "archive" && previous

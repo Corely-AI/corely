@@ -1,0 +1,8 @@
+{
+  "name": "@acme/staff-profile-policy",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@corely/people": "^1.0.0",
+    "@corely/people-ui": "^1.0.0"
+  }
+}

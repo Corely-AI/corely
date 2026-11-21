@@ -1,3 +1,4 @@
+import { expenseSubmissionPolicies } from "./expense-extensions";
 import { Module } from "@nestjs/common";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
 import type { OutboxPort } from "@corely/kernel";
@@ -135,7 +136,7 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
     {
       provide: TransitionExpenseUseCase,
       useFactory: (repo: PrismaExpenseRepository, audit: AuditPort, outbox: OutboxPort) =>
-        new TransitionExpenseUseCase(repo, audit, outbox),
+        new TransitionExpenseUseCase(repo, audit, outbox, expenseSubmissionPolicies),
       inject: [EXPENSE_REPOSITORY, AUDIT_PORT, OUTBOX_PORT],
     },
     {
