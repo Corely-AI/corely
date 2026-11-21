@@ -10,6 +10,7 @@
     "@corely/auth-client": "workspace:*",
     "@corely/booking-ui": "workspace:*",
     "@corely/contracts": "workspace:*",
+    "@corely/crm-ui": "workspace:*",
     "@corely/web-features": "workspace:*",
     "@corely/web-shared": "workspace:*",
     "@corely/ui": "workspace:*",
