@@ -106,6 +106,7 @@ Deployment, configuration, and infrastructure.
 - [Background Runtime](./devops/background-runtime.md)
 - [Customization](./devops/customization.md)
 - [Licensing](./devops/licensing.md)
+- [Supabase Storage for invoice PDFs](./tasks/448-supabase-pdf-storage.md)
 
 ### 🧪 Testing
 
