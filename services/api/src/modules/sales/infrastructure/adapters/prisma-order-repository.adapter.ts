@@ -6,7 +6,7 @@ import type {
   ListOrdersResult,
 } from "../../application/ports/order-repository.port";
 import { SalesOrderAggregate } from "../../domain/order.aggregate";
-import type { OrderLineItem, OrderStatus } from "../../domain/sales.types";
+import type { OrderLineItem, OrderStatus } from "@corely/sales/types";
 import { toPrismaDate, fromPrismaDate } from "./date-mappers";
 
 @Injectable()

@@ -739,6 +739,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@corely/sales-ui':
+        specifier: workspace:*
+        version: link:../../packages/sales-ui
       '@corely/tasks-ui':
         specifier: workspace:*
         version: link:../../packages/tasks-ui
@@ -1552,6 +1555,28 @@ importers:
 
   packages/public-urls: {}
 
+  packages/sales:
+    dependencies:
+      '@corely/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+
+  packages/sales-ui:
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+
   packages/storage:
     dependencies:
       '@corely/kernel':
@@ -2046,6 +2071,9 @@ importers:
       '@corely/public-urls':
         specifier: workspace:*
         version: link:../../packages/public-urls
+      '@corely/sales':
+        specifier: workspace:*
+        version: link:../../packages/sales
       '@corely/storage':
         specifier: workspace:*
         version: link:../../packages/storage

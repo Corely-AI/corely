@@ -6,7 +6,7 @@ import type {
   SalesSettingsDto,
   InvoiceDto,
 } from "@corely/contracts";
-import { type QuoteAggregate } from "../../domain/quote.aggregate";
+import { type QuoteAggregate } from "@corely/sales/quote";
 import { type SalesOrderAggregate } from "../../domain/order.aggregate";
 import { type SalesSettingsAggregate } from "../../domain/settings.aggregate";
 

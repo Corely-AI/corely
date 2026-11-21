@@ -12,6 +12,7 @@ COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY patches ./patches/
 COPY services/api/package.json ./services/api/
 COPY packages/booking/package.json ./packages/booking/
+COPY packages/sales/package.json ./packages/sales/
 COPY packages/tasks/package.json ./packages/tasks/
 COPY packages/people/package.json ./packages/people/
 COPY packages/data/package.json ./packages/data/
