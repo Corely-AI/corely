@@ -87,6 +87,26 @@ export class SsoSessionService {
       now: this.clock.now(),
     });
   }
+  async authenticateCli(handle: string) {
+    this.registrations.assertCliEnabled();
+    const now = this.clock.now();
+    const session = await this.store.useSession({
+      handleHash: this.crypto.hash(handle),
+      environment: this.registrations.environment,
+      appKey: "cli",
+      now,
+      idleExpiresAt: new Date(now.getTime() + SSO_IDLE_MS),
+    });
+    return session.userId;
+  }
+  async logoutCli(handle: string) {
+    this.registrations.assertCliEnabled();
+    await this.store.revokeCliSession({
+      handleHash: this.crypto.hash(handle),
+      environment: this.registrations.environment,
+      now: this.clock.now(),
+    });
+  }
   async profile(userId: string) {
     const user = await this.users.findById(userId);
     if (!user?.isActive()) {

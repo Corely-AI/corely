@@ -24,7 +24,11 @@ export const ssoTestOrigins = {
 export const ssoTestProxyKey = "synthetic-sso-test-proxy-key-384-only";
 export const ssoTestPassword = "Synthetic-SSO-384!";
 
-export async function createSsoTestContext(origins = ssoTestOrigins, realClock = false) {
+export async function createSsoTestContext(
+  origins = ssoTestOrigins,
+  realClock = false,
+  cliEnabled = false
+) {
   const database = process.env.SSO_TEST_DATABASE_URL;
   if (!database) {
     throw new Error("SSO_TEST_DATABASE_URL must select a disposable local corely_384_* database");
@@ -47,6 +51,7 @@ export async function createSsoTestContext(origins = ssoTestOrigins, realClock =
       APP_ENV: id,
       DATABASE_URL: database,
       CORELY_SSO_ENABLED: "true",
+      CORELY_CLI_AUTH_ENABLED: String(cliEnabled),
       CORELY_SSO_SECRET: "a1".repeat(32),
       CORELY_SSO_PROXY_KEY: ssoTestProxyKey,
       CORELY_SSO_REGISTRATIONS: JSON.stringify({

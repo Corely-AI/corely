@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const SsoAppKeySchema = z.enum(["app-center", "invoice", "hr"]);
 export type SsoAppKey = z.infer<typeof SsoAppKeySchema>;
+export const SsoClientKeySchema = z.enum([...SsoAppKeySchema.options, "cli"]);
+export type SsoClientKey = z.infer<typeof SsoClientKeySchema>;
 export const SsoHandleSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
 export const SsoStartInputSchema = z
   .object({
@@ -23,7 +25,7 @@ export const SsoEmailCodeVerifySchema = SsoEmailCodeRequestSchema.extend({
 }).strict();
 export const SsoEmailCodeEventSchema = z.object({ challengeId: SsoHandleSchema }).strict();
 export const SsoContextSchema = z.object({
-  appKey: SsoAppKeySchema,
+  appKey: SsoClientKeySchema,
   appOrigin: z.string().url(),
   accountOrigin: z.string().url().nullable(),
   csrfToken: SsoHandleSchema,
@@ -38,6 +40,38 @@ export const SsoSessionSchema = z
   })
   .strict();
 export type SsoSession = z.infer<typeof SsoSessionSchema>;
+export const CliSsoStartSchema = z
+  .object({
+    port: z.number().int().min(1024).max(65535),
+    challenge: SsoHandleSchema,
+    state: SsoHandleSchema,
+  })
+  .strict();
+export const CliSsoExchangeSchema = z
+  .object({
+    request: SsoHandleSchema,
+    code: SsoHandleSchema,
+    state: SsoHandleSchema,
+    verifier: SsoHandleSchema,
+    port: CliSsoStartSchema.shape.port,
+  })
+  .strict();
+export const CliSsoSessionSchema = z.object({ accessToken: SsoHandleSchema }).strict();
+export const CliSsoAccountSchema = z
+  .object({
+    userId: z.string().min(1),
+    name: z.string().nullable(),
+    email: z.string().email(),
+    workspaces: z.array(
+      z.object({
+        id: z.string().min(1),
+        tenantId: z.string().min(1),
+        name: z.string(),
+        slug: z.string().nullable(),
+      })
+    ),
+  })
+  .strict();
 export const SsoRedirectSchema = z.object({ redirectTo: z.string().url() });
 
 export function isSafeSsoReturnPath(path: string): boolean {

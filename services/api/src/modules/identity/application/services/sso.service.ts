@@ -7,7 +7,12 @@ import {
   HttpStatus,
   ConflictException,
 } from "@nestjs/common";
-import { isSafeSsoReturnPath } from "@corely/contracts";
+import {
+  isSafeSsoReturnPath,
+  type CliSsoExchangeSchema,
+  type CliSsoStartSchema,
+} from "@corely/contracts";
+import type { z } from "zod";
 import {
   SSO_STORE,
   type SsoStorePort,
@@ -98,6 +103,87 @@ export class SsoService {
     redirect.searchParams.set("request", id);
     return redirect.toString();
   }
+  async startCli(input: z.infer<typeof CliSsoStartSchema>, source: string) {
+    this.registrations.assertCliEnabled();
+    const now = this.clock.now();
+    await this.budget(`cli-start:${source}`, now, 100);
+    const id = this.crypto.secret();
+    await this.store.createTransaction({
+      id,
+      environment: this.registrations.environment,
+      appKey: "cli",
+      origin: `http://127.0.0.1:${input.port}`,
+      returnPath: "/",
+      browserHash: this.crypto.hash(this.crypto.secret()),
+      stateHash: this.crypto.hash(input.state),
+      stateCipher: this.crypto.encrypt(input.state, id),
+      verifierCipher: "",
+      challenge: input.challenge,
+      expiresAt: new Date(now.getTime() + 5 * MINUTE),
+      codeHash: null,
+      codeExpiresAt: null,
+      familyId: null,
+      consumedAt: null,
+    });
+    return { redirectTo: `${this.registrations.loginOrigin}/sso/authorize?request=${id}` };
+  }
+
+  cliConsent(requestId: string, centralHandle: string | undefined): Promise<{ csrfToken: string }>;
+  cliConsent(
+    requestId: string,
+    centralHandle: string | undefined,
+    csrfToken: string
+  ): Promise<{ redirectTo: string }>;
+  async cliConsent(requestId: string, centralHandle: string | undefined, csrfToken?: string) {
+    const transaction = await this.pending(requestId);
+    if (transaction.appKey !== "cli") {
+      throw new BadRequestException("Invalid CLI sign-in request");
+    }
+    const now = this.clock.now();
+    const family = await this.reusableFamily(centralHandle, now);
+    if (!family || !centralHandle) {
+      throw new UnauthorizedException("Restart CLI sign-in");
+    }
+    const binding = `${transaction.environment}:cli-consent:${requestId}`;
+    if (csrfToken === undefined) {
+      return { csrfToken: this.crypto.csrf(centralHandle, binding) };
+    }
+    this.checkCsrf(centralHandle, csrfToken, binding);
+    return { redirectTo: await this.issue(transaction, family, false, now) };
+  }
+
+  async exchangeCli(input: z.infer<typeof CliSsoExchangeSchema>) {
+    this.registrations.assertCliEnabled();
+    const now = this.clock.now();
+    const transaction = await this.store.getTransaction(input.request);
+    if (
+      transaction?.appKey !== "cli" ||
+      !transaction.familyId ||
+      transaction.origin !== `http://127.0.0.1:${input.port}`
+    ) {
+      throw new UnauthorizedException("Restart CLI sign-in");
+    }
+    const accessToken = this.crypto.secret();
+    await this.store.redeem({
+      transaction,
+      codeHash: this.crypto.hash(input.code),
+      browserHash: transaction.browserHash,
+      stateHash: this.crypto.hash(input.state),
+      challenge: this.crypto.challenge(input.verifier),
+      now,
+      session: {
+        id: this.crypto.secret(),
+        familyId: transaction.familyId,
+        environment: this.registrations.environment,
+        appKey: "cli",
+        handleHash: this.crypto.hash(accessToken),
+        expiresAt: new Date(now.getTime() + SSO_ABSOLUTE_MS),
+        idleExpiresAt: new Date(now.getTime() + SSO_IDLE_MS),
+        revokedAt: null,
+      },
+    });
+    return { accessToken };
+  }
   async context(requestId: string, centralBrowser: string | undefined) {
     const transaction = await this.pending(requestId);
     const handle =
@@ -116,7 +202,13 @@ export class SsoService {
     const transaction = await this.pending(requestId);
     const now = this.clock.now();
     const family = await this.reusableFamily(centralHandle, now);
-    return family ? this.issue(transaction, family, false, now) : null;
+    if (!family) {
+      return null;
+    }
+    if (transaction.appKey === "cli") {
+      return `${this.registrations.loginOrigin}/sso/cli/consent?request=${requestId}`;
+    }
+    return this.issue(transaction, family, false, now);
   }
 
   async login(
@@ -241,6 +333,10 @@ export class SsoService {
     const transaction = await this.pending(requestId);
     this.checkCsrf(centralBrowser, csrfToken, `${this.registrations.environment}:${requestId}`);
     await this.store.cancel(transaction.id, transaction.browserHash);
+    if (transaction.appKey === "cli") {
+      const state = this.crypto.decrypt(transaction.stateCipher, transaction.id);
+      return `${transaction.origin}/auth/logged-out?state=${state}`;
+    }
     return `${transaction.origin}/auth/logged-out`;
   }
   async pending(id: string): Promise<SsoTransaction> {
@@ -252,9 +348,11 @@ export class SsoService {
       transaction.expiresAt <= this.clock.now() ||
       transaction.consumedAt ||
       transaction.codeHash ||
-      !this.registrations.apps.some(
-        (a) => a.key === transaction.appKey && a.origin === transaction.origin
-      )
+      (transaction.appKey === "cli"
+        ? !this.registrations.cliEnabled
+        : !this.registrations.apps.some(
+            (a) => a.key === transaction.appKey && a.origin === transaction.origin
+          ))
     ) {
       throw new BadRequestException(
         "This sign-in request expired or was already used. Return to your app and start again."

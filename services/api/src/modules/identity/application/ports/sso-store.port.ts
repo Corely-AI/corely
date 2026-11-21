@@ -1,4 +1,4 @@
-import type { SsoAppKey } from "@corely/contracts";
+import type { SsoClientKey } from "@corely/contracts";
 
 export interface SsoFamily {
   id: string;
@@ -14,7 +14,7 @@ export interface SsoFamily {
 export interface SsoTransaction {
   id: string;
   environment: string;
-  appKey: SsoAppKey;
+  appKey: SsoClientKey;
   origin: string;
   returnPath: string;
   browserHash: string;
@@ -32,7 +32,7 @@ export interface SsoAppSession {
   id: string;
   familyId: string;
   environment: string;
-  appKey: SsoAppKey;
+  appKey: SsoClientKey;
   userId: string;
   handleHash: string;
   expiresAt: Date;
@@ -72,6 +72,7 @@ export interface SsoStorePort {
     appKey: string;
     now: Date;
   }): Promise<void>;
+  revokeCliSession(input: { handleHash: string; environment: string; now: Date }): Promise<void>;
   prepareEmailChallenge(challenge: SsoEmailChallenge): Promise<void>;
   findEmailChallenge(id: string): Promise<SsoEmailChallenge | null>;
   markEmailDelivered(id: string): Promise<void>;

@@ -94,7 +94,12 @@ async function request<T>(
     signal?.removeEventListener("abort", abort);
   }
 }
-const appNames = { "app-center": "App Center", invoice: "Invoice", hr: "HR" } as const;
+const appNames = {
+  "app-center": "App Center",
+  invoice: "Invoice",
+  hr: "HR",
+  cli: "Corely CLI",
+} as const;
 
 export function LoginPage() {
   const [locale, setLocale] = useState<LoginLocale>(() =>

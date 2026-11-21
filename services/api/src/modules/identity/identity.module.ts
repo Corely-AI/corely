@@ -3,6 +3,7 @@ import { PrismaTenantAdminSessionLock } from "./infrastructure/adapters/prisma-t
 import { SsoSessionService } from "./application/services/sso-session.service";
 import { randomBytes } from "node:crypto";
 import { AssociateInvitedAccountUseCase } from "./application/use-cases/associate-invited-account.usecase";
+import { CliSsoController } from "./adapters/http/cli-sso.controller";
 import { SsoController } from "./adapters/http/sso.controller";
 import { SsoHttpSecurity } from "./adapters/http/sso-http-security";
 import { SsoService } from "./application/services/sso.service";
@@ -110,6 +111,7 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     TenantsController,
     TenantAdminSessionController,
     SsoController,
+    CliSsoController,
   ],
   providers: [
     SsoRegistrationService,
