@@ -39,6 +39,7 @@ current readiness or authorize implementing the catalog.
 High-level design, boundaries, and core decisions.
 
 - [Upgradeable app customizations](./architecture/upgradeable-apps.md)
+- [Source release inventory](./tasks/457-export-app-release-inventory.md)
 - [Architecture Overview](./architecture/architect.md)
 - [Boundaries](./architecture/BOUNDARIES.md)
 - [Overall Structure](./architecture/overall-structure.md)
@@ -104,8 +105,10 @@ Deployment, configuration, and infrastructure.
 - [Deploy with Vercel and Supabase](./devops/vercel-supabase.md)
 - [Configuration](./devops/configuration.md)
 - [Background Runtime](./devops/background-runtime.md)
+- [Vercel Queues for workflows](./tasks/447-vercel-workflow-queues.md)
 - [Customization](./devops/customization.md)
 - [Licensing](./devops/licensing.md)
+- [Supabase Storage for invoice PDFs](./tasks/448-supabase-pdf-storage.md)
 
 ### 🧪 Testing
 

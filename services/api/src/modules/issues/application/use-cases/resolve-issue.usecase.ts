@@ -9,7 +9,7 @@ import type { ClockPort } from "@/shared/ports/clock.port";
 import type { IdGeneratorPort } from "@/shared/ports/id-generator.port";
 import type { IssueRepositoryPort } from "../ports/issue-repository.port";
 import type { IssueActivityRepositoryPort } from "../ports/issue-activity-repository.port";
-import { assertIssueStatusTransition } from "../../domain/issue.rules";
+import { assertIssueStatusTransition } from "@corely/issues/rules";
 import { assertReporterCanResolve } from "../../policies/issues.policies";
 import type { Issue } from "../../domain/issue.types";
 

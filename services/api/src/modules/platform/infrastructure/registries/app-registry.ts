@@ -28,7 +28,7 @@ import { importAppManifest } from "../../../import/import.manifest";
 import { directoryAppManifest } from "../../../directory/directory.manifest";
 import { bookingAppManifest } from "../../../booking/booking.manifest";
 import { formsAppManifest } from "../../../forms/forms.manifest";
-import { coachingEngagementsAppManifest } from "../../../coaching-engagements";
+import { coachingEngagementsAppManifest } from "../../../coaching-engagements/coaching-engagements.manifest";
 import { restaurantAppManifest } from "../../../restaurant/restaurant.manifest";
 import { posAdminAppManifest } from "../../../pos/pos.manifest";
 import { nailsPosAppManifest } from "../../vertical-packs/nails.manifest";

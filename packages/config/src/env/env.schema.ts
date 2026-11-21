@@ -21,7 +21,15 @@ export const envSchema = z.object({
   // REDIS CACHE & QUEUE
   // ============================================================================
   REDIS_URL: z.string().url("REDIS_URL must be a valid Redis connection string").optional(),
-  WORKFLOW_QUEUE_DRIVER: z.enum(["memory", "cloudtasks"]).optional(),
+  WORKFLOW_QUEUE_DRIVER: z.enum(["memory", "cloudtasks", "vercel"]).optional(),
+  VERCEL_WORKFLOW_QUEUE_REGION: z
+    .string()
+    .regex(/^[a-z]{3}[0-9]+$/)
+    .optional(),
+  VERCEL_WORKFLOW_QUEUE_NAMESPACE: z
+    .string()
+    .regex(/^[a-z0-9-]{1,48}$/)
+    .optional(),
   WORKFLOW_CLOUDTASKS_LOCATION: z.string().optional(),
   WORKFLOW_CLOUDTASKS_QUEUE_PREFIX: z.string().optional(),
   WORKFLOW_CLOUDTASKS_TARGET_BASE_URL: z.string().url().optional(),
@@ -194,6 +202,12 @@ export const envSchema = z.object({
   // ============================================================================
   STORAGE_PROVIDER: z.enum(["gcs", "s3", "local"]).default("gcs"),
   STORAGE_BUCKET: z.string().default("uploads"),
+  INVOICE_PDF_STORAGE_PROVIDER: z.enum(["gcs", "supabase"]).default("gcs"),
+  SUPABASE_STORAGE_S3_ENDPOINT: z.string().url().optional(),
+  SUPABASE_STORAGE_S3_REGION: z.string().min(1).optional(),
+  SUPABASE_STORAGE_S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+  SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  SUPABASE_STORAGE_INVOICE_BUCKET: z.string().min(1).optional(),
   STORAGE_KEY_PREFIX: z.string().optional(),
   SIGNED_URL_UPLOAD_TTL_SECONDS: z.coerce.number().int().positive().default(600),
   SIGNED_URL_DOWNLOAD_TTL_SECONDS: z.coerce.number().int().positive().default(600),
@@ -274,6 +288,8 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "CORELY_SSO_SECRET",
   "CORELY_SSO_PROXY_KEY",
   "GOOGLE_APPLICATION_CREDENTIALS",
+  "SUPABASE_STORAGE_S3_ACCESS_KEY_ID",
+  "SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY",
   "LANGFUSE_SECRET_KEY",
   "OTEL_EXPORTER_OTLP_HEADERS",
   "WORKFLOW_QUEUE_SECRET",

@@ -12,6 +12,10 @@ import {
   ok,
   RequireTenant,
 } from "@corely/kernel";
+import {
+  invoiceFinalizationRejection,
+  type InvoiceFinalizationRegistration,
+} from "@corely/invoices/extensions";
 import { type FinalizeInvoiceInput, type FinalizeInvoiceOutput } from "@corely/contracts";
 import type { PrismaService } from "@corely/data";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
@@ -32,6 +36,7 @@ type Deps = {
   taxEngine: TaxEngineService;
   prisma: PrismaService;
   cogsPostingService: CogsPostingService;
+  policies?: readonly InvoiceFinalizationRegistration[];
 };
 
 @RequireTenant()
@@ -54,6 +59,19 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
     const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId, input.invoiceId);
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
+    }
+
+    if (invoice.status === "DRAFT" && ctx.tenantId && this.useCaseDeps.policies?.length) {
+      const rejection = invoiceFinalizationRejection(
+        this.useCaseDeps.policies,
+        { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId },
+        { dueDate: invoice.dueDate }
+      );
+      if (rejection) {
+        return err(
+          new ValidationError(rejection, undefined, "Invoices:FinalizationPolicyRejected")
+        );
+      }
     }
 
     const customer = await this.useCaseDeps.customerQuery.getCustomerBillingSnapshot(

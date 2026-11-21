@@ -1,3 +1,4 @@
+import { customerCreationPolicies } from "./customer-extensions";
 import { Module, forwardRef } from "@nestjs/common";
 import {
   DataModule,
@@ -76,6 +77,7 @@ import { PlatformCustomAttributesModule } from "../platform-custom-attributes/pl
           clock,
           dimensionsWritePort,
           customFieldsWritePort,
+          policies: customerCreationPolicies,
         }),
       inject: [
         PrismaPartyRepoAdapter,

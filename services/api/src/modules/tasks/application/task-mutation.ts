@@ -1,5 +1,5 @@
 import type { AuditPort, OutboxPort, TransactionContext, UseCaseContext } from "@corely/kernel";
-import type { TaskRecord } from "../domain/task-rules";
+import type { TaskRecord } from "@corely/tasks/task-rules";
 import type { TaskRepositoryPort, TaskScope } from "./ports/task-repository.port";
 export async function persistTaskMutation(
   ports: { repo: TaskRepositoryPort; audit: AuditPort; outbox: OutboxPort },

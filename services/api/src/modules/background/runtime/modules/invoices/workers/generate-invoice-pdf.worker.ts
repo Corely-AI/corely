@@ -1,10 +1,6 @@
 import { Injectable, Logger, Inject } from "@nestjs/common";
-import {
-  type ObjectStoragePort,
-  OBJECT_STORAGE_PORT,
-  type DocumentRepoPort,
-  type FileRepoPort,
-} from "@corely/kernel";
+import { type DocumentRepoPort, type FileRepoPort } from "@corely/kernel";
+import { InvoicePdfStorage } from "@/shared/infrastructure/invoice-pdf-storage.module";
 import { PrismaDocumentRepoAdapter, PrismaFileRepoAdapter } from "@corely/data";
 import { type InvoicePdfModelPort } from "../application/ports/invoice-pdf-model.port";
 import { type InvoicePdfRendererPort } from "../application/ports/invoice-pdf-renderer.port";
@@ -24,7 +20,7 @@ export class GenerateInvoicePdfWorker {
   constructor(
     @Inject(PrismaDocumentRepoAdapter) private readonly documentRepo: PrismaDocumentRepoAdapter,
     @Inject(PrismaFileRepoAdapter) private readonly fileRepo: PrismaFileRepoAdapter,
-    @Inject(OBJECT_STORAGE_PORT) private readonly objectStorage: ObjectStoragePort,
+    @Inject(InvoicePdfStorage) private readonly storage: InvoicePdfStorage,
     @Inject(INVOICE_PDF_MODEL_PORT) private readonly invoicePdfModel: InvoicePdfModelPort,
     @Inject(INVOICE_PDF_RENDERER_PORT) private readonly pdfRenderer: InvoicePdfRendererPort
   ) {}
@@ -34,7 +30,7 @@ export class GenerateInvoicePdfWorker {
     const document = await this.documentRepo.findById(tenantId, documentId);
     const file = await this.fileRepo.findById(tenantId, fileId);
 
-    if (!document || !file || file.documentId !== document.id) {
+    if (!document || !file || file.tenantId !== tenantId || file.documentId !== document.id) {
       this.logger.error("generate_invoice_pdf.missing_document_or_file", {
         documentId,
         fileId,
@@ -65,7 +61,7 @@ export class GenerateInvoicePdfWorker {
         model,
       });
 
-      const upload = await this.objectStorage.putObject({
+      const upload = await this.storage.forFile(file).putObject({
         tenantId,
         objectKey: file.objectKey,
         contentType: "application/pdf",

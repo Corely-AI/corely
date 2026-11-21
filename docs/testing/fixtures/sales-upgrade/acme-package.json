@@ -1,0 +1,8 @@
+{
+  "name": "@acme/quote-send-policy",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@corely/sales": "^1.0.0",
+    "@corely/sales-ui": "^1.0.0"
+  }
+}

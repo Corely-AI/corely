@@ -1,0 +1,12 @@
+{
+  "fixture": true,
+  "productRelease": "1.0.0",
+  "runtime": {
+    "@corely/issues": "1.0.0",
+    "@corely/issues-ui": "1.0.0",
+    "@corely/contracts": "0.0.0"
+  },
+  "extensions": {
+    "@acme/issue-report-policy": "1.0.0"
+  }
+}

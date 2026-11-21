@@ -1,5 +1,5 @@
 import { type SalesOrderAggregate } from "../../domain/order.aggregate";
-import { type OrderStatus } from "../../domain/sales.types";
+import { type OrderStatus } from "@corely/sales/types";
 
 export type ListOrdersFilters = {
   status?: OrderStatus;

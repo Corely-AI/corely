@@ -1,0 +1,23 @@
+{
+  "name": "@corely/sales",
+  "private": true,
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./quote": "./dist/quote.aggregate.mjs",
+    "./totals": "./dist/totals.mjs",
+    "./types": "./dist/sales.types.mjs",
+    "./extensions": "./dist/extensions.mjs"
+  },
+  "scripts": {
+    "build": "tsdown src/quote.aggregate.ts src/totals.ts src/sales.types.ts src/extensions.ts --dts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@corely/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*"
+  }
+}

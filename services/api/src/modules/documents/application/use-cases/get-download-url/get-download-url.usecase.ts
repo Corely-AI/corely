@@ -20,6 +20,7 @@ type Deps = {
   documentRepo: DocumentRepoPort;
   fileRepo: FileRepoPort;
   objectStorage: ObjectStoragePort;
+  storageForFile?: (file: { storageProvider: string; bucket: string }) => ObjectStoragePort;
   downloadTtlSeconds: number;
 };
 
@@ -61,7 +62,8 @@ export class GetDownloadUrlUseCase extends BaseUseCase<GetDownloadUrlInput, GetD
       return err(new NotFoundError("File not found for document"));
     }
 
-    const signed = await this.useCaseDeps.objectStorage.createSignedDownloadUrl({
+    const storage = this.useCaseDeps.storageForFile?.(file) ?? this.useCaseDeps.objectStorage;
+    const signed = await storage.createSignedDownloadUrl({
       tenantId: ctx.tenantId,
       objectKey: file.objectKey,
       expiresInSeconds: this.useCaseDeps.downloadTtlSeconds,

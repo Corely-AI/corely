@@ -9,6 +9,7 @@
     "node": ">=22.19.0"
   },
   "scripts": {
+    "app:release-inventory": "tsx --tsconfig scripts/app-release-inventory/tsconfig.json scripts/app-release-inventory/index.ts",
     "focused:init": "tsx scripts/focused-dev/cli.ts init",
     "focused:check": "tsx scripts/focused-dev/cli.ts check",
     "dev:focused": "node scripts/build-deps-if-stale.mjs @corely/web && tsx scripts/focused-dev/cli.ts dev",
@@ -56,7 +57,8 @@
     "lint": "NODE_OPTIONS='--max-old-space-size=8192' eslint . --cache",
     "lint:fix": "NODE_OPTIONS='--max-old-space-size=8192' eslint . --fix --cache",
     "kill3000": "lsof -ti:3000 | xargs kill -9",
-    "booking:upgrade-preview": "node scripts/booking-upgrade-preview.mjs",
+    "app:upgrade-preview": "node scripts/app-upgrade-preview.mjs",
+    "booking:upgrade-preview": "node scripts/app-upgrade-preview.mjs",
     "arch:check": "node scripts/architecture-check.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm prompt:check",
     "prompt:check": "node scripts/check-prompts.mjs",

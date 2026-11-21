@@ -1,6 +1,6 @@
 import type { LocalDate } from "@corely/kernel";
-import { calculateQuoteTotals } from "./totals";
-import type { OrderLineItem, OrderProps, OrderStatus } from "./sales.types";
+import { calculateQuoteTotals } from "@corely/sales/totals";
+import type { OrderLineItem, OrderProps, OrderStatus } from "@corely/sales/types";
 
 export class SalesOrderAggregate {
   id: string;

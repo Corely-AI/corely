@@ -1,0 +1,9 @@
+{
+  "fixture": true,
+  "productRelease": "1.1.0",
+  "appId": "expenses",
+  "packageManifests": ["packages/expenses/package.json", "packages/expenses-ui/package.json"],
+  "extensionManifests": ["docs/testing/fixtures/expense-upgrade/acme-package.json"],
+  "migrations": [],
+  "localPatches": []
+}

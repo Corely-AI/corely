@@ -14,7 +14,7 @@ import {
   WorkflowInstanceRepository,
   WorkflowTaskRepository,
 } from "@corely/data";
-import type { QueueJob, QueuePort, QueueSubscription } from "@corely/kernel";
+import type { QueueJob, QueuePort, QueueSubscription, TransactionContext } from "@corely/kernel";
 import { WorkflowMetricsService } from "./workflow-metrics.service";
 import { TaskHandlerRegistry } from "./handlers/task-handler.registry";
 import type { WorkflowTaskPayload } from "./handlers/task-handler.interface";
@@ -23,6 +23,13 @@ import { SystemClock } from "./ports/system-clock";
 import { SystemHttpAdapter } from "./ports/system-http.adapter";
 import { ConsoleEmailAdapter } from "./ports/console-email.adapter";
 import { NoopLlmAdapter } from "./ports/noop-llm.adapter";
+import { z } from "zod";
+
+const FOLLOWUP_MARKER = "QUEUE_TASK_FOLLOWUP";
+const followupSchema = z.object({
+  taskId: z.string(),
+  events: z.array(z.object({ type: z.string(), payload: z.object({ taskId: z.string() }) })),
+});
 
 @Injectable()
 export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestroy {
@@ -51,7 +58,10 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
   ) {}
 
   async onModuleInit() {
-    if (this.env.WORKFLOW_QUEUE_DRIVER === "cloudtasks") {
+    if (
+      this.env.getValue("WORKFLOW_QUEUE_DRIVER") &&
+      this.env.getValue("WORKFLOW_QUEUE_DRIVER") !== "memory"
+    ) {
       return;
     }
     this.subscription = await this.taskQueue.subscribe(async (job) => this.handleJob(job), {
@@ -73,9 +83,19 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
 
     const { tenantId, taskId } = job.data;
     const now = new Date();
+    const durableDelivery = this.env.getValue("WORKFLOW_QUEUE_DRIVER") === "vercel";
 
-    const task = await this.tasks.claimTask(tenantId, taskId, this.workerId, now);
+    const task = await this.tasks.claimTask(
+      tenantId,
+      taskId,
+      this.workerId,
+      now,
+      durableDelivery ? new Date(now.getTime() - 240_000) : undefined
+    );
     if (!task) {
+      if (durableDelivery) {
+        await this.publishRecordedFollowup(tenantId, job.data.instanceId, taskId);
+      }
       return;
     }
 
@@ -117,6 +137,11 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
     try {
       const result = await handler.execute(payload, this.ports);
       if (result.status === "FAILED") {
+        if (durableDelivery) {
+          throw new Error(
+            typeof result.error?.message === "string" ? result.error.message : "Task failed"
+          );
+        }
         await this.handleFailure(task, tenantId, result.error ?? { message: "Failed" });
         throw new Error(`Task ${task.id} failed`);
       }
@@ -151,6 +176,17 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
           },
           tx as any
         );
+        if (durableDelivery) {
+          await this.events.append(
+            {
+              tenantId,
+              instanceId: task.instanceId,
+              type: FOLLOWUP_MARKER,
+              payload: JSON.stringify({ taskId, events: followupEvents }),
+            },
+            tx as unknown as TransactionContext
+          );
+        }
       });
 
       this.metrics.recordTaskResult({
@@ -160,25 +196,47 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
         status: "SUCCEEDED",
       });
 
-      await this.orchestratorQueue.enqueue(
-        {
-          tenantId,
-          instanceId: task.instanceId,
-          events: followupEvents,
-        },
-        {
-          jobName: `orchestrate:${task.instanceId}`,
-          jobId: `${task.instanceId}:${Date.now()}`,
-          attempts: 5,
-          backoff: { type: "exponential", delayMs: 2000 },
-        }
-      );
+      if (!durableDelivery) {
+        await this.orchestratorQueue.enqueue(
+          {
+            tenantId,
+            instanceId: task.instanceId,
+            events: followupEvents,
+          },
+          {
+            jobName: `orchestrate:${task.instanceId}`,
+            jobId: `${task.instanceId}:${Date.now()}`,
+            attempts: 5,
+            backoff: { type: "exponential", delayMs: 2000 },
+          }
+        );
+      }
     } catch (error) {
       await this.handleFailure(task, tenantId, {
         message: error instanceof Error ? error.message : "Task failed",
       });
       throw error;
     }
+    if (durableDelivery) {
+      await this.publishRecordedFollowup(tenantId, task.instanceId, taskId);
+    }
+  }
+
+  private async publishRecordedFollowup(tenantId: string, instanceId: string, taskId: string) {
+    const marker = await this.events.findDeliveryMarker(
+      tenantId,
+      instanceId,
+      FOLLOWUP_MARKER,
+      `{"taskId":${JSON.stringify(taskId)},`
+    );
+    if (!marker) {
+      return;
+    }
+    const { events } = followupSchema.parse(JSON.parse(marker.payload));
+    await this.orchestratorQueue.enqueue(
+      { tenantId, instanceId, events },
+      { jobId: `task-completed:${taskId}`, attempts: 5 }
+    );
   }
 
   private async handleFailure(

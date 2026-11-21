@@ -11,6 +11,7 @@ import {
 import { createHash, randomUUID } from "node:crypto";
 import {
   CreateEmployeeTaskSchema,
+  TaskCreationPolicyRejectedCode,
   UpdateEmployeeTaskSchema,
   TransitionEmployeeTaskSchema,
   ToggleChecklistStepSchema,
@@ -34,7 +35,10 @@ import {
   type TaskRepositoryPort,
   type TaskScope,
 } from "./ports/task-repository.port";
-import { transitionTask, type TaskRecord } from "../domain/task-rules";
+import { transitionTask, type TaskRecord } from "@corely/tasks/task-rules";
+
+import { taskCreationRejection } from "@corely/tasks/extensions";
+import { taskCreationPolicies } from "../task-creation-extensions";
 
 type Command = "create" | "update" | "complete" | "reopen" | "checklist";
 @Injectable()
@@ -183,6 +187,13 @@ export class EmployeeTasksUseCase {
         const unchangedOwner = previous?.ownerStaffId === fields.ownerStaffId;
         if (!owner || (owner.archivedAt && !unchangedOwner)) {
           throw new BadRequestException("Assignee must be active in this workspace");
+        }
+        if (kind === "create") {
+          const message = taskCreationRejection(taskCreationPolicies, auth.scope, {
+            dueAt: fields.dueAt,
+          });
+          if (message)
+            {throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });}
         }
         next = {
           ...fields,

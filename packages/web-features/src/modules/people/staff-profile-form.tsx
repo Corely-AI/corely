@@ -9,6 +9,7 @@ import { Button, Input, Label } from "@corely/ui";
 import {
   CreateStaffSchema,
   StaffIdentityLinkConflictCode,
+  StaffProfilePolicyRejectedCode,
   type StaffProfile,
 } from "@corely/contracts";
 import type { PeopleCopy } from "./people-copy";
@@ -71,6 +72,18 @@ export function StaffProfileForm({
       }
     } catch (error) {
       if (!mounted.current) {
+        return;
+      }
+      const body = error instanceof HttpError ? error.body : undefined;
+      if (
+        typeof body === "object" &&
+        body !== null &&
+        "code" in body &&
+        body.code === StaffProfilePolicyRejectedCode &&
+        "detail" in body &&
+        typeof body.detail === "string"
+      ) {
+        setError({ message: body.detail, reload: false });
         return;
       }
       const linkConflict =
