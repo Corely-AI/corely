@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import { KernelModule } from "../../shared/kernel/kernel.module";
 import { BookingModule } from "../booking";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
@@ -16,7 +17,7 @@ import { AppointmentDeliveryUseCase } from "./application/use-cases/appointment-
 import { PrismaAppointmentDeliveryStore } from "./infrastructure/prisma-appointment-delivery.store";
 
 @Module({
-  imports: [DataModule, IdentityModule, PlatformModule, WorkspacesModule, BookingModule],
+  imports: [DataModule, KernelModule, IdentityModule, PlatformModule, WorkspacesModule, BookingModule],
   controllers: [NotificationsController],
   providers: [
     ListNotificationsUseCase,
