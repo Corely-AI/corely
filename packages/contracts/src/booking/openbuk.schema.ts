@@ -144,6 +144,7 @@ export const OpenBukReplacementSchema = z
     reference: z.string(),
     version: z.string().datetime(),
     timezone: z.string(),
+    absenceImpact: z.boolean(),
     current: OpenBukReplacementTimeSchema,
     replacement: OpenBukReplacementTimeSchema,
   })

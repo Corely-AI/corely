@@ -9,6 +9,7 @@ import {
   PrismaUnitOfWork,
 } from "@corely/data";
 import type { UseCaseContext } from "@corely/kernel";
+import { StaffProfileSchema, type StaffAbsenceRevision } from "@corely/contracts";
 import { OpenBukAppointmentChangeUseCase } from "../application/use-cases/openbuk-appointment-change.usecase";
 import { OpenBukStudioUseCase } from "../application/use-cases/openbuk-studio.usecase";
 import { RescheduleBookingUseCase } from "../application/use-cases/reschedule-booking.usecase";
@@ -44,6 +45,9 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
   let appointment: { bookingId: string; startAt: string };
   let serviceId: string;
   let staffId: string;
+  let staffRepository: ExtStaffRepositoryAdapter;
+  let staffSchedules: ExtStaffAvailabilityAdapter;
+  let absences: ExtStaffAbsenceAdapter;
 
   async function book(startAt: string) {
     return studioApp.book(
@@ -67,11 +71,10 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
     const audit = new PrismaAuditAdapter(prisma);
     const outbox = new PrismaOutboxAdapter(prisma);
     const kv = new PrismaExtKvAdapter(prisma);
-    const staff = new StaffAvailabilityConstraintService(
-      new ExtStaffRepositoryAdapter(prisma, kv),
-      new ExtStaffAvailabilityAdapter(kv),
-      new ExtStaffAbsenceAdapter(prisma, kv)
-    );
+    staffRepository = new ExtStaffRepositoryAdapter(prisma, kv);
+    staffSchedules = new ExtStaffAvailabilityAdapter(kv);
+    absences = new ExtStaffAbsenceAdapter(prisma, kv);
+    const staff = new StaffAvailabilityConstraintService(staffRepository, staffSchedules, absences);
     const authorize = {
       execute: async (input: typeof scope & { userId: string }) => {
         if (
@@ -107,7 +110,8 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
       authorize,
       clock,
       [],
-      new RescheduleBookingUseCase(bookings, audit, outbox, { newId: randomUUID }, clock, uow, [])
+      new RescheduleBookingUseCase(bookings, audit, outbox, { newId: randomUUID }, clock, uow, []),
+      staff
     );
     const fixture = studioFixture();
     const { serviceId: unusedService, staffId: unusedStaff, slug, ...setup } = fixture;
@@ -175,5 +179,100 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
     expect(result.appointment).toEqual(newPlan.replacement);
     expect(result.version).not.toBe(newPlan.version);
     expect(await events()).toBe(1);
+  });
+
+  it("sources absence impact from latest People state and excludes private details", async () => {
+    const { receipt } = await book("2026-10-19T07:00:00Z");
+    const booking = await prisma.booking.findFirstOrThrow({
+      where: { ...scope, referenceNumber: receipt.reference },
+    });
+    const input = { bookingId: booking.id, startAt: "2026-10-19T09:00:00Z" };
+    await expect(changes.previewAbsenceReplacement(input, manager)).rejects.toThrow(
+      "Booking:NoApprovedAbsenceImpact"
+    );
+
+    const employee = randomUUID();
+    const changedAt = "2026-10-01T00:00:00.000Z";
+    const startAt = "2026-10-19T06:00:00.000Z";
+    const endAt = "2026-10-19T08:00:00.000Z";
+    const approved: StaffAbsenceRevision = {
+      range: { kind: "partial-day", timezone: "Europe/Berlin", startAt, endAt },
+      startAt,
+      endAt,
+      changedAt,
+      changedBy: "personnel-manager",
+      reason: "private-personnel-value",
+      notes: "another-private-value",
+      status: "approved",
+      version: 1,
+    };
+    const record = {
+      id: randomUUID(),
+      staffId: employee,
+      workspaceId: scope.workspaceId,
+      revisions: [approved],
+    };
+    await uow.withinTransaction(async (tx) => {
+      await staffRepository.save(
+        scope,
+        StaffProfileSchema.parse({
+          id: employee,
+          workspaceId: scope.workspaceId,
+          displayName: "Lena",
+          resourceId: staffId,
+          version: 1,
+          archivedAt: null,
+          createdAt: changedAt,
+          updatedAt: changedAt,
+        }),
+        tx
+      );
+      await staffSchedules.save(
+        scope,
+        employee,
+        {
+          version: 1,
+          plans: [
+            {
+              revision: 1,
+              startsAt: changedAt,
+              endsAt: null,
+              pattern: {
+                timezone: "Europe/Berlin",
+                effectiveFrom: "2026-10-01",
+                effectiveUntil: null,
+                weeklyHours: [{ dayOfWeek: 1, startTime: "09:00", endTime: "18:00" }],
+                exceptions: [],
+              },
+            },
+          ],
+        },
+        tx
+      );
+      await absences.save(scope, record, tx);
+    });
+    const preview = await changes.previewAbsenceReplacement(input, manager);
+    expect(preview.absenceImpact).toBe(true);
+    expect(JSON.stringify(preview)).not.toContain("private");
+    expect(JSON.stringify(preview)).not.toContain(record.id);
+
+    await uow.withinTransaction((tx) =>
+      absences.save(
+        scope,
+        {
+          ...record,
+          revisions: [
+            approved,
+            { ...approved, status: "cancelled", version: 2, changedAt: "2026-10-02T00:00:00.000Z" },
+          ],
+        },
+        tx
+      )
+    );
+    await expect(
+      uow.withinTransaction((tx) => changes.applyReviewed(preview, randomUUID(), manager, tx))
+    ).rejects.toThrow("Booking:ReviewStale");
+    const unchanged = await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } });
+    expect(unchanged.startAt).toEqual(booking.startAt);
   });
 });

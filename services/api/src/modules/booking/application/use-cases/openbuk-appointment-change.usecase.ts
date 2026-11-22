@@ -18,6 +18,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { AuthorizeWorkspaceUseCase } from "../../../workspaces/public";
+import { StaffAvailabilityConstraintService } from "../../../people/public";
 import { BOOKING_POLICIES, enforceBookingPolicy } from "../booking-policy";
 import type { BookingPolicyRegistration } from "@corely/booking/extensions";
 import { BOOKING_REPOSITORY, type BookingRepositoryPort } from "../ports/booking-repo.ports";
@@ -35,11 +36,21 @@ export class OpenBukAppointmentChangeUseCase {
     private readonly authorize: Pick<AuthorizeWorkspaceUseCase, "execute">,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
     @Inject(BOOKING_POLICIES) private readonly policies: readonly BookingPolicyRegistration[],
-    private readonly reschedule: RescheduleBookingUseCase
+    private readonly reschedule: RescheduleBookingUseCase,
+    @Inject(StaffAvailabilityConstraintService)
+    private readonly availability: Pick<StaffAvailabilityConstraintService, "hasApprovedAbsence">
   ) {}
 
   async preview(input: OpenBukReplacementInput, ctx: UseCaseContext) {
     return this.check(OpenBukReplacementInputSchema.parse(input), ctx);
+  }
+
+  async previewAbsenceReplacement(input: OpenBukReplacementInput, ctx: UseCaseContext) {
+    const preview = await this.preview(input, ctx);
+    if (!preview.absenceImpact) {
+      throw new ConflictException("Booking:NoApprovedAbsenceImpact");
+    }
+    return preview;
   }
 
   /** Called by the owning review workflow inside its apply transaction. */
@@ -136,12 +147,20 @@ export class OpenBukAppointmentChangeUseCase {
       tx
     );
     enforceBookingPolicy(this.policies, scope, start, new Date(slot.endAt), now);
+    const absenceImpact = await this.availability.hasApprovedAbsence(
+      scope,
+      studio.staffId,
+      allocation.startAt,
+      allocation.endAt,
+      tx
+    );
     const resource = { resourceId: studio.staffId, resourceName: studio.staffName };
     return OpenBukReplacementSchema.parse({
       bookingId: booking.id,
       reference: booking.referenceNumber ?? booking.id,
       version: booking.updatedAt.toISOString(),
       timezone: studio.timezone,
+      absenceImpact,
       current: {
         startAt: booking.startAt.toISOString(),
         endAt: booking.endAt.toISOString(),
