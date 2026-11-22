@@ -35,6 +35,8 @@ import {
   type ObjectStoragePort,
 } from "@corely/kernel";
 import { NotificationsModule } from "../notifications/notifications.module";
+import { NotificationsModule as NotificationApplicationModule } from "../../../../notifications/public/appointment-delivery";
+import { AppointmentDeliveryHandler } from "../booking/appointment-delivery.handler";
 import { OutboxPollerService } from "./outbox-poller.service";
 
 import { CashEntryCreatedHandler } from "../accounting/handlers/cash-entry-created.handler";
@@ -81,6 +83,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     ClassesWorkerModule,
     DirectoryWorkerModule,
     NotificationsModule,
+    NotificationApplicationModule,
     CoachingEngagementsModule,
     PartyModule,
     DocumentsModule,
@@ -89,6 +92,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     SignModule,
   ],
   providers: [
+    AppointmentDeliveryHandler,
     SsoEmailCodeRequestedHandler,
     SignVerifiedHandler,
     SignCollectedHandler,
@@ -164,10 +168,12 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         collected: SignCollectedHandler,
         invite: SignInvitationHandler,
         coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler,
-        ssoEmailHandler: SsoEmailCodeRequestedHandler
+        ssoEmailHandler: SsoEmailCodeRequestedHandler,
+        appointmentDeliveryHandler: AppointmentDeliveryHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           ssoEmailHandler,
+          appointmentDeliveryHandler,
           ...createSsoRecordedEventHandlers(),
           ...createEmployeeTaskEventHandlers(),
           ...createChecklistEventHandlers(),
@@ -223,6 +229,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         SignInvitationHandler,
         CoachingExportBundleRequestedHandler,
         SsoEmailCodeRequestedHandler,
+        AppointmentDeliveryHandler,
       ],
     },
   ],

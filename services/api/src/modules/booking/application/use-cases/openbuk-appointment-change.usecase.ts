@@ -22,7 +22,11 @@ import { StaffAvailabilityConstraintService } from "../../../people/public";
 import { BOOKING_POLICIES, enforceBookingPolicy } from "../booking-policy";
 import type { BookingPolicyRegistration } from "@corely/booking/extensions";
 import { BOOKING_REPOSITORY, type BookingRepositoryPort } from "../ports/booking-repo.ports";
-import { OPENBUK_REPOSITORY, type OpenBukRepositoryPort } from "../ports/openbuk-repository.port";
+import {
+  OPENBUK_REPOSITORY,
+  type OpenBukRepositoryPort,
+  type StudioScope,
+} from "../ports/openbuk-repository.port";
 import { OpenBukStudioUseCase } from "./openbuk-studio.usecase";
 import { RescheduleBookingUseCase } from "./reschedule-booking.usecase";
 
@@ -43,6 +47,36 @@ export class OpenBukAppointmentChangeUseCase {
 
   async preview(input: OpenBukReplacementInput, ctx: UseCaseContext) {
     return this.check(OpenBukReplacementInputSchema.parse(input), ctx);
+  }
+
+  /** Internal collaboration with the reviewed notification workflow. */
+  async customerMessageContext(scope: StudioScope, bookingId: string, tx?: TransactionContext) {
+    if (tx) {
+      await this.bookings.lockMutation(scope.tenantId, bookingId, tx);
+    }
+    const booking = await this.bookings.findById(bookingId, scope.tenantId, tx);
+    if (
+      !booking ||
+      booking.workspaceId !== scope.workspaceId ||
+      booking.status !== "CONFIRMED" ||
+      booking.startAt <= this.clock.now() ||
+      !booking.bookedByEmail
+    ) {
+      return null;
+    }
+    const studio = await this.studioRepository.studio(scope, tx);
+    if (!studio || booking.serviceOfferingId !== studio.serviceId) {
+      return null;
+    }
+    return {
+      bookingVersion: booking.updatedAt.toISOString(),
+      recipient: booking.bookedByEmail.trim(),
+      reference: booking.referenceNumber ?? booking.id,
+      startAt: booking.startAt.toISOString(),
+      endAt: booking.endAt.toISOString(),
+      timezone: studio.timezone,
+      locale: studio.locale,
+    };
   }
 
   async previewAbsenceReplacement(input: OpenBukReplacementInput, ctx: UseCaseContext) {
