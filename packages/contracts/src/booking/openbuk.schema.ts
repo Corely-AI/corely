@@ -125,3 +125,27 @@ export const OpenBukAppointmentSchema = OpenBukReceiptSchema.extend({
   status: z.string(),
 });
 export type OpenBukAppointment = z.infer<typeof OpenBukAppointmentSchema>;
+
+export const OpenBukReplacementInputSchema = z
+  .object({
+    bookingId: z.string().uuid(),
+    startAt: z.string().datetime({ offset: true }),
+  })
+  .strict();
+export type OpenBukReplacementInput = z.infer<typeof OpenBukReplacementInputSchema>;
+
+const OpenBukReplacementTimeSchema = OpenBukSlotSchema.extend({
+  resourceId: z.string(),
+  resourceName: z.string(),
+}).strict();
+export const OpenBukReplacementSchema = z
+  .object({
+    bookingId: z.string().uuid(),
+    reference: z.string(),
+    version: z.string().datetime(),
+    timezone: z.string(),
+    current: OpenBukReplacementTimeSchema,
+    replacement: OpenBukReplacementTimeSchema,
+  })
+  .strict();
+export type OpenBukReplacement = z.infer<typeof OpenBukReplacementSchema>;
