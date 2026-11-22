@@ -115,3 +115,29 @@ After an interrupted response, repeat the same request with the same key
 to recover the task ID. A changed payload with that key is rejected.
 Open the returned `sourcePath` on your Corely Backoffice host to see the
 task in Daily Work with the usual workspace and task permissions.
+
+## Reviewed appointment replacement
+
+Start with the booking ID from the daily brief or the studio. Choose a
+replacement time with a timezone offset. The current booking must overlap
+approved unavailability for its assigned staff member.
+
+```sh
+corely appointments propose --workspace <id-or-slug> --booking <booking-id> \
+  --start 2026-11-24T11:00:00+01:00 --idempotency-key replacement-2026-11-24 --json
+corely appointments status --workspace <id-or-slug> --review <review-id> --json
+corely appointments apply --workspace <id-or-slug> --review <review-id> --json
+```
+
+Share the returned Backoffice review path with a manager who can sign in
+separately and approve the exact time and resource. The approval expires
+after 20 minutes from proposal creation. Apply checks the current booking,
+staff availability and replacement slot again. A stale result requires a
+new proposal and decision. Repeating apply after an interrupted response
+returns the recorded result.
+
+Grant agents `appointments.propose`, `appointments.status` and
+`appointments.apply` separately according to the work they perform.
+Agent commands take `--tenant <tenant-id> --workspace <workspace-id>
+--agent <agent-id>`. JSON results expose the workflow state, review link
+and booking version when the change is applied.

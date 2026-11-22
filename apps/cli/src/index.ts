@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { parseArgs, stripVTControlCharacters } from "node:util";
+import { parseArgs } from "node:util";
 import { HttpError, request } from "@corely/api-client";
 import {
   CliDayBriefDateSchema,
@@ -15,8 +15,10 @@ import {
 } from "@corely/contracts/identity/sso";
 import metadata from "../package.json";
 import { agentAccessToken, runAgentCommand } from "./agent-commands";
+import { appointmentCommand, runAppointmentCommand } from "./appointment-commands";
 import { authorizeInBrowser } from "./browser-login";
 import { CliError } from "./errors";
+import { terminalLabel } from "./terminal";
 
 const help = `Corely CLI
 
@@ -29,6 +31,9 @@ Commands
   corely tasks create --workspace <id-or-slug> --owner <staff-id>
     --title <title> --due <timestamp> --idempotency-key <key> [--json]
   corely day brief --workspace <id-or-slug> [--date today|YYYY-MM-DD] [--json]
+  corely appointments propose --workspace <id-or-slug> --booking <id>
+    --start <timestamp> --idempotency-key <key> [--json]
+  corely appointments status|apply --workspace <id-or-slug> --review <id> [--json]
 
 Agent access
   corely agent prepare --tenant <id> --workspace <id>
@@ -114,10 +119,6 @@ async function credentialEntry(account: string, service = "Corely CLI") {
       "Unlock your OS credential store and try again."
     );
   }
-}
-
-function terminalLabel(value: string): string {
-  return stripVTControlCharacters(value).replace(/\s+/g, " ").trim();
 }
 
 function selectWorkspace(workspaces: Account["workspaces"], target?: string) {
@@ -223,6 +224,9 @@ async function run() {
       owner: { type: "string" },
       title: { type: "string" },
       due: { type: "string" },
+      booking: { type: "string" },
+      start: { type: "string" },
+      review: { type: "string" },
       "idempotency-key": { type: "string" },
     },
   });
@@ -239,10 +243,12 @@ async function run() {
   const taskAssignees =
     command === "tasks assignees" || command === "operations run tasks.assignees";
   const taskCreate = command === "tasks create" || command === "operations run tasks.create";
+  const appointment = appointmentCommand(command);
   if (
     !genericBrief &&
     !taskAssignees &&
     !taskCreate &&
+    !appointment &&
     ["agent", "grants", "capabilities", "operations"].includes(positionals[0])
   ) {
     const origin = getOrigin();
@@ -262,7 +268,7 @@ async function run() {
     emit(result, JSON.stringify(result, null, 2));
     return;
   }
-  if (command === "day brief" || genericBrief || taskAssignees || taskCreate) {
+  if (command === "day brief" || genericBrief || taskAssignees || taskCreate || appointment) {
     if (positionals[0] === "operations" && !values.agent) {
       throw new CliError("USAGE", "Specify the prepared agent ID with --agent.");
     }
@@ -289,6 +295,16 @@ async function run() {
       const account = CliSsoAccountSchema.parse(await api(origin, "account", { accessToken }));
       const workspace = selectWorkspace(account.workspaces, values.workspace);
       scope = { tenantId: workspace.tenantId, workspaceId: workspace.id };
+    }
+    if (appointment) {
+      const { review, display } = await runAppointmentCommand(
+        appointment,
+        values,
+        scope,
+        (path, body) => api(origin, path, { accessToken, method: "POST", body })
+      );
+      emit(review, display);
+      return;
     }
     if (taskAssignees) {
       const people = TaskAssigneeSchema.array().parse(

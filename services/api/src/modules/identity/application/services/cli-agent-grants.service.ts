@@ -13,6 +13,7 @@ import { type ExtKvPort, EXT_KV_PORT } from "@corely/data";
 import { UNIT_OF_WORK, type TransactionContext, type UnitOfWorkPort } from "@corely/kernel";
 import {
   CliDayBriefOperation,
+  CliAppointmentOperations,
   CliTaskAssigneesOperation,
   CliTaskCreateOperation,
   CliGrantSchema,
@@ -46,6 +47,7 @@ const operations = [
   CliDayBriefOperation,
   CliTaskAssigneesOperation,
   CliTaskCreateOperation,
+  ...Object.values(CliAppointmentOperations),
 ];
 
 function publicGrant({ fingerprint: _fingerprint, ...grant }: GrantRecord): CliGrant {
@@ -128,13 +130,15 @@ export class CliAgentGrantsService {
     return this.withAuthorizedGrant(scope, credential, async (grant, _workspace, tx) => {
       await this.record(grant, grant.delegatorId, "discovered", tx);
       const granted = operations.filter(({ id }) => grant.operations.includes(id));
-      if (
-        granted.some(({ id }) => isTaskOperation(id)) &&
-        !(await this.canUseTasks(scope, grant.delegatorId, tx))
-      ) {
-        return granted.filter(({ id }) => !isTaskOperation(id));
-      }
-      return granted;
+      const tasks =
+        !granted.some(({ id }) => isTaskOperation(id)) ||
+        (await this.canUseTasks(scope, grant.delegatorId, tx));
+      const appointments =
+        !granted.some(({ id }) => isAppointmentOperation(id)) ||
+        (await this.canUseAppointments(scope, tx));
+      return granted.filter(
+        ({ id }) => (tasks || !isTaskOperation(id)) && (appointments || !isAppointmentOperation(id))
+      );
     });
   }
 
@@ -171,7 +175,8 @@ export class CliAgentGrantsService {
     return this.withAuthorizedGrant(scope, credential, async (grant, workspace, tx) => {
       if (
         !grant.operations.includes(operation) ||
-        (isTaskOperation(operation) && !(await this.canUseTasks(scope, grant.delegatorId, tx)))
+        (isTaskOperation(operation) && !(await this.canUseTasks(scope, grant.delegatorId, tx))) ||
+        (isAppointmentOperation(operation) && !(await this.canUseAppointments(scope, tx)))
       ) {
         throw new ForbiddenException("Operation not granted");
       }
@@ -182,6 +187,13 @@ export class CliAgentGrantsService {
       await this.record(grant, grant.delegatorId, "executed", tx, operation);
       return result;
     });
+  }
+
+  private async canUseAppointments(scope: CliGrantScope, tx: TransactionContext) {
+    return (
+      (await this.entitlements.isAppEnabled(scope.tenantId, "booking", tx)) &&
+      (await this.entitlements.isAppEnabled(scope.tenantId, "people", tx))
+    );
   }
 
   private async withAuthorizedGrant<T>(
@@ -292,4 +304,8 @@ function inputScope({ tenantId, workspaceId }: CliGrantScope) {
 
 function isTaskOperation(id: string) {
   return id === CliTaskAssigneesOperation.id || id === CliTaskCreateOperation.id;
+}
+
+function isAppointmentOperation(id: string) {
+  return Object.values(CliAppointmentOperations).some((operation) => operation.id === id);
 }

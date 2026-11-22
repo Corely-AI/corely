@@ -127,3 +127,4 @@ export * from "./focused-observation.schema";
 export * from "./cli-agent.schema";
 export * from "./cli-day-brief.schema";
 export * from "./cli-task.schema";
+export * from "./cli-appointment.schema";

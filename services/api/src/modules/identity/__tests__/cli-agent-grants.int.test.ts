@@ -16,6 +16,8 @@ import { TenantEntitlementService } from "../../platform/public";
 import { EmployeeTasksUseCase } from "../../tasks/public";
 import { ExtTaskRepositoryAdapter } from "../../tasks/infrastructure/ext-task-repository.adapter";
 import { CliTaskController } from "../../tasks/adapters/http/cli-task.controller";
+import { CliAppointmentController } from "../../approvals/adapters/http/cli-appointment.controller";
+import { AppointmentReviewUseCase } from "../../approvals/public/appointment-review";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -95,8 +97,15 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
         date,
       })),
     };
+    const reviews = mockDeep<AppointmentReviewUseCase>();
     const module = await Test.createTestingModule({
-      controllers: [CliAgentController, CliSsoController, CliDayBriefController, CliTaskController],
+      controllers: [
+        CliAgentController,
+        CliSsoController,
+        CliDayBriefController,
+        CliTaskController,
+        CliAppointmentController,
+      ],
       providers: [
         { provide: CliAgentGrantsService, useValue: grants },
         {
@@ -104,6 +113,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
           useValue: new CliOperationAccess(grants, sessions, security, workspaceAuth),
         },
         { provide: EmployeeTasksUseCase, useValue: tasks },
+        { provide: AppointmentReviewUseCase, useValue: reviews },
         { provide: DailyOperationsBrief, useValue: brief },
         { provide: AuthorizeWorkspaceUseCase, useValue: workspaceAuth },
         { provide: SsoService, useValue: fixture.service },
@@ -191,6 +201,36 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
           .set("Authorization", `Bearer ${manager.accessToken}`)
           .send(body);
       const agent = prepare();
+      const replacement = prepare();
+      const proposal = {
+        bookingId: randomUUID(),
+        startAt: "2026-12-10T10:00:00+01:00",
+        key: randomUUID(),
+      };
+      const requestReview = (action: string, body: Record<string, unknown>) =>
+        client
+          .post(`/sso/cli/appointments/${action}`)
+          .set(ingress)
+          .set("Authorization", replacement.credential)
+          .send(body);
+      await issue({ ...replacement.grant, operations: ["appointments.propose"] }).expect(201);
+      await requestReview("apply", { ...scope, reviewId: "1".repeat(64) }).expect(403);
+      await requestReview("decision", { ...scope, reviewId: "1".repeat(64) }).expect(404);
+      await requestReview("propose", { ...scope, proposal }).expect(200);
+      expect(reviews.proposeReplacement).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...scope,
+          userId: fixture.userId,
+          agentId: replacement.grant.agentId,
+        }),
+        { bookingId: proposal.bookingId, startAt: proposal.startAt },
+        proposal.key,
+        expect.any(Object)
+      );
+      await requestReview("propose", { ...scope, workspaceId: neighbor.id, proposal }).expect(401);
+      entitlements.isAppEnabled.mockImplementation(async (_tenant, appId) => appId !== "booking");
+      await requestReview("propose", { ...scope, proposal }).expect(403);
+      entitlements.isAppEnabled.mockResolvedValue(true);
       const discovery = (credential: string, target = scope) =>
         client
           .get("/sso/cli/capabilities")
