@@ -1,7 +1,7 @@
 import type { TransactionContext } from "@corely/kernel";
 import { BookingStaffConstraintAdapter } from "./booking-staff-constraint.adapter";
 import { Injectable, ConflictException } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { getPrismaClient, PrismaService } from "@corely/data";
 import type {
   BookingRepositoryPort,
   BookingFilters,
@@ -94,123 +94,167 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
     return !!overlapping;
   }
 
-  async create(booking: BookingEntity, allocations: BookingAllocation[]): Promise<BookingEntity> {
-    // Create using a nested transaction
-    const created = await this.prisma.$transaction(
-      async (tx) => {
-        for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
-          await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${booking.tenantId}:${resourceId}`}, 0))::text`;
-        }
-        if (booking.holdId) {
-          const hold = await tx.bookingHold.findFirst({
-            where: {
-              id: booking.holdId,
-              tenantId: booking.tenantId,
-              workspaceId: booking.workspaceId,
-              status: "ACTIVE",
-              expiresAt: { gt: new Date() },
-            },
-          });
-          if (
-            !hold ||
-            hold.startAt.getTime() !== booking.startAt.getTime() ||
-            hold.endAt.getTime() !== booking.endAt.getTime() ||
-            JSON.stringify([...new Set(hold.resourceIds)].sort()) !==
-              JSON.stringify([...new Set(allocations.map((a) => a.resourceId))].sort())
-          ) {
-            throw new ConflictException("Booking:HoldUnavailable");
-          }
-        }
-        // 1. Conflict check inside TX to guarantee no race double bookings
-        for (const alloc of allocations) {
-          await this.staff.assertAvailable(
-            booking.tenantId,
-            booking.workspaceId,
-            alloc.resourceId,
-            alloc.startAt,
-            alloc.endAt,
-            tx as unknown as TransactionContext
-          );
-          // Explicitly check inside TX
-          const overlapping = await tx.bookingAllocation.findFirst({
-            where: {
-              tenantId: booking.tenantId,
-              resourceId: alloc.resourceId,
-              startAt: { lt: alloc.endAt },
-              endAt: { gt: alloc.startAt },
-              booking: { status: { in: ["CONFIRMED", "HOLD"] } },
-            },
-          });
-          if (overlapping) {
-            throw new ConflictException(`Resource ${alloc.resourceId} is no longer available.`);
-          }
-        }
-
-        // 2. Insert booking with nested allocations
-        const created = await tx.booking.create({
-          data: {
-            id: booking.id,
+  async create(
+    booking: BookingEntity,
+    allocations: BookingAllocation[],
+    transaction?: TransactionContext
+  ): Promise<BookingEntity> {
+    const write = async (tx: Prisma.TransactionClient) => {
+      for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${booking.tenantId}:${resourceId}`}, 0))::text`;
+      }
+      if (booking.holdId) {
+        const hold = await tx.bookingHold.findFirst({
+          where: {
+            id: booking.holdId,
             tenantId: booking.tenantId,
             workspaceId: booking.workspaceId,
-            status: booking.status as BookingStatus,
-            startAt: booking.startAt,
-            endAt: booking.endAt,
-            referenceNumber: booking.referenceNumber,
-            serviceOfferingId: booking.serviceOfferingId,
-            bookedByPartyId: booking.bookedByPartyId,
-            bookedByName: booking.bookedByName,
-            bookedByEmail: booking.bookedByEmail,
-            notes: booking.notes,
-            holdId: booking.holdId,
-            cancelledAt: booking.cancelledAt,
-            cancelledReason: booking.cancelledReason,
-            createdByUserId: booking.createdByUserId,
-            createdAt: booking.createdAt,
-            updatedAt: booking.updatedAt,
-            allocations: {
-              createMany: {
-                data: allocations.map((a) => ({
-                  id: a.id,
-                  tenantId: a.tenantId,
-                  resourceId: a.resourceId,
-                  role: a.role as BookingAllocationRole,
-                  startAt: a.startAt,
-                  endAt: a.endAt,
-                  createdAt: a.createdAt,
-                })),
-              },
+            status: "ACTIVE",
+            expiresAt: { gt: new Date() },
+          },
+        });
+        if (
+          !hold ||
+          hold.startAt.getTime() !== booking.startAt.getTime() ||
+          hold.endAt.getTime() !== booking.endAt.getTime() ||
+          JSON.stringify([...new Set(hold.resourceIds)].sort()) !==
+            JSON.stringify([...new Set(allocations.map((a) => a.resourceId))].sort())
+        ) {
+          throw new ConflictException("Booking:HoldUnavailable");
+        }
+      }
+      // 1. Conflict check inside TX to guarantee no race double bookings
+      for (const alloc of allocations) {
+        await this.staff.assertAvailable(
+          booking.tenantId,
+          booking.workspaceId,
+          alloc.resourceId,
+          alloc.startAt,
+          alloc.endAt,
+          tx as unknown as TransactionContext
+        );
+        await this.assertFree(tx, alloc, undefined, booking.holdId);
+      }
+
+      // 2. Insert booking with nested allocations
+      const created = await tx.booking.create({
+        data: {
+          id: booking.id,
+          tenantId: booking.tenantId,
+          workspaceId: booking.workspaceId,
+          status: booking.status as BookingStatus,
+          startAt: booking.startAt,
+          endAt: booking.endAt,
+          referenceNumber: booking.referenceNumber,
+          serviceOfferingId: booking.serviceOfferingId,
+          bookedByPartyId: booking.bookedByPartyId,
+          bookedByName: booking.bookedByName,
+          bookedByEmail: booking.bookedByEmail,
+          notes: booking.notes,
+          holdId: booking.holdId,
+          cancelledAt: booking.cancelledAt,
+          cancelledReason: booking.cancelledReason,
+          createdByUserId: booking.createdByUserId,
+          createdAt: booking.createdAt,
+          updatedAt: booking.updatedAt,
+          allocations: {
+            createMany: {
+              data: allocations.map((a) => ({
+                id: a.id,
+                tenantId: a.tenantId,
+                resourceId: a.resourceId,
+                role: a.role as BookingAllocationRole,
+                startAt: a.startAt,
+                endAt: a.endAt,
+                createdAt: a.createdAt,
+              })),
             },
           },
-          include: { allocations: true },
+        },
+        include: { allocations: true },
+      });
+      if (booking.holdId) {
+        const result = await tx.bookingHold.updateMany({
+          where: {
+            id: booking.holdId,
+            tenantId: booking.tenantId,
+            status: "ACTIVE",
+            expiresAt: { gt: new Date() },
+          },
+          data: { status: "CONFIRMED", confirmedBookingId: booking.id },
         });
-        if (booking.holdId) {
-          const result = await tx.bookingHold.updateMany({
-            where: {
-              id: booking.holdId,
-              tenantId: booking.tenantId,
-              status: "ACTIVE",
-              expiresAt: { gt: new Date() },
-            },
-            data: { status: "CONFIRMED", confirmedBookingId: booking.id },
-          });
-          if (result.count !== 1) {
-            throw new ConflictException("Booking:HoldUnavailable");
-          }
+        if (result.count !== 1) {
+          throw new ConflictException("Booking:HoldUnavailable");
         }
-        return created;
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
-    ); // Re-read after resource lock acquisition
-
+      }
+      return created;
+    };
+    const created = transaction
+      ? await write(getPrismaClient(this.prisma, transaction))
+      : await this.prisma.$transaction(write, {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        });
     return this.mapToDomain(created);
   }
 
-  async findById(id: string, tenantId: string): Promise<BookingEntity | null> {
-    const row = await this.prisma.booking.findUnique({
+  async findById(
+    id: string,
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<BookingEntity | null> {
+    const row = await getPrismaClient(this.prisma, tx).booking.findUnique({
       where: { id, tenantId },
       include: { allocations: true },
     });
     return row ? this.mapToDomain(row) : null;
+  }
+
+  async lockMutation(tenantId: string, key: string, tx: TransactionContext) {
+    await getPrismaClient(this.prisma, tx)
+      .$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${tenantId}:booking-mutation:${key}`}, 0))::text`;
+  }
+
+  async mutationReceipt(
+    tenantId: string,
+    actionKey: string,
+    key: string,
+    fingerprint: string,
+    tx: TransactionContext
+  ) {
+    const record = await getPrismaClient(this.prisma, tx).idempotencyKey.findUnique({
+      where: { tenantId_actionKey_key: { tenantId, actionKey, key } },
+    });
+    if (!record) {
+      return null;
+    }
+    if (record.requestHash !== fingerprint || !record.responseJson) {
+      throw new ConflictException("Booking:IdempotencyMismatch");
+    }
+    const dateFields = new Set(["startAt", "endAt", "updatedAt", "createdAt", "cancelledAt"]);
+    return this.mapToDomain(
+      JSON.parse(record.responseJson, (field, value: unknown) =>
+        dateFields.has(field) && typeof value === "string" ? new Date(value) : value
+      )
+    );
+  }
+
+  async saveMutationReceipt(
+    booking: BookingEntity,
+    actionKey: string,
+    key: string,
+    fingerprint: string,
+    tx: TransactionContext
+  ) {
+    await getPrismaClient(this.prisma, tx).idempotencyKey.create({
+      data: {
+        tenantId: booking.tenantId,
+        actionKey,
+        key,
+        requestHash: fingerprint,
+        status: "COMPLETED",
+        responseJson: JSON.stringify(booking),
+      },
+    });
   }
 
   async findMany(
@@ -262,8 +306,8 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
     };
   }
 
-  async update(booking: BookingEntity): Promise<BookingEntity> {
-    const updated = await this.prisma.booking.update({
+  async update(booking: BookingEntity, tx: TransactionContext): Promise<BookingEntity> {
+    const updated = await getPrismaClient(this.prisma, tx).booking.update({
       where: { id: booking.id, tenantId: booking.tenantId },
       data: {
         status: booking.status as PrismaBookingStatus,
@@ -285,66 +329,82 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
   async replaceAllocations(
     bookingId: string,
     tenantId: string,
-    allocations: BookingAllocation[]
+    allocations: BookingAllocation[],
+    tx: TransactionContext
   ): Promise<void> {
-    await this.prisma.$transaction(
-      async (tx) => {
-        for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
-          await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${tenantId}:${resourceId}`}, 0))::text`;
-        }
-        const booking = await tx.booking.findFirstOrThrow({
-          where: { id: bookingId, tenantId },
-          select: { workspaceId: true },
-        });
-        for (const alloc of allocations) {
-          await this.staff.assertAvailable(
-            tenantId,
-            booking.workspaceId,
-            alloc.resourceId,
-            alloc.startAt,
-            alloc.endAt,
-            tx as unknown as TransactionContext
-          );
-        }
-        // Delete old
-        await tx.bookingAllocation.deleteMany({
-          where: { bookingId, tenantId },
-        });
+    const client = getPrismaClient(this.prisma, tx);
+    for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
+      await client.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${tenantId}:${resourceId}`}, 0))::text`;
+    }
+    const booking = await client.booking.findFirstOrThrow({
+      where: { id: bookingId, tenantId },
+      select: { workspaceId: true },
+    });
+    for (const alloc of allocations) {
+      await this.staff.assertAvailable(
+        tenantId,
+        booking.workspaceId,
+        alloc.resourceId,
+        alloc.startAt,
+        alloc.endAt,
+        tx
+      );
+    }
 
-        // Insert new with overlap check
-        for (const alloc of allocations) {
-          const overlapping = await tx.bookingAllocation.findFirst({
-            where: {
-              tenantId,
-              resourceId: alloc.resourceId,
-              startAt: { lt: alloc.endAt },
-              endAt: { gt: alloc.startAt },
-              booking: { status: { in: ["CONFIRMED", "HOLD"] } },
-            },
-          });
-          if (overlapping) {
-            throw new ConflictException(
-              `Resource ${alloc.resourceId} is no longer available for new time.`
-            );
-          }
-        }
+    for (const alloc of allocations) {
+      await this.assertFree(client, alloc, bookingId);
+    }
+    await client.bookingAllocation.deleteMany({ where: { bookingId, tenantId } });
 
-        if (allocations.length > 0) {
-          await tx.bookingAllocation.createMany({
-            data: allocations.map((a) => ({
-              id: a.id,
-              tenantId: a.tenantId,
-              bookingId: a.bookingId,
-              resourceId: a.resourceId,
-              role: a.role as BookingAllocationRole,
-              startAt: a.startAt,
-              endAt: a.endAt,
-              createdAt: a.createdAt,
-            })),
-          });
-        }
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
-    );
+    if (allocations.length > 0) {
+      await client.bookingAllocation.createMany({
+        data: allocations.map((a) => ({
+          id: a.id,
+          tenantId: a.tenantId,
+          bookingId: a.bookingId,
+          resourceId: a.resourceId,
+          role: a.role as BookingAllocationRole,
+          startAt: a.startAt,
+          endAt: a.endAt,
+          createdAt: a.createdAt,
+        })),
+      });
+    }
+  }
+
+  private async assertFree(
+    client: Prisma.TransactionClient,
+    allocation: BookingAllocation,
+    excludeBookingId?: string,
+    excludeHoldId?: string | null
+  ) {
+    const { tenantId, resourceId, startAt, endAt } = allocation;
+    const interval = { startAt: { lt: endAt }, endAt: { gt: startAt } };
+    const [booking, hold] = await Promise.all([
+      client.bookingAllocation.findFirst({
+        where: {
+          tenantId,
+          resourceId,
+          ...interval,
+          ...(excludeBookingId ? { bookingId: { not: excludeBookingId } } : {}),
+          booking: { status: { in: ["CONFIRMED", "HOLD"] } },
+        },
+        select: { id: true },
+      }),
+      client.bookingHold.findFirst({
+        where: {
+          tenantId,
+          ...interval,
+          resourceIds: { has: resourceId },
+          ...(excludeHoldId ? { id: { not: excludeHoldId } } : {}),
+          status: "ACTIVE",
+          expiresAt: { gt: new Date() },
+        },
+        select: { id: true },
+      }),
+    ]);
+    if (booking || hold) {
+      throw new ConflictException("Booking:SlotUnavailable");
+    }
   }
 }

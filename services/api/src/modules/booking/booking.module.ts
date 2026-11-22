@@ -40,6 +40,7 @@ import {
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
   ID_GENERATOR_TOKEN,
   CLOCK_PORT_TOKEN,
+  UNIT_OF_WORK,
 } from "@corely/kernel";
 
 import { CreateResourceUseCase } from "./application/use-cases/create-resource.usecase";
@@ -194,48 +195,56 @@ import { bookingPolicies } from "./booking-extensions";
       useFactory: (
         bookingRepo,
         holdRepo,
-        resourceRepo,
         audit,
         outbox,
         idempotency,
         idgen,
         clock,
+        uow,
         policies
       ) =>
         new CreateBookingUseCase(
           bookingRepo,
           holdRepo,
-          resourceRepo,
           audit,
           outbox,
           idempotency,
           idgen,
           clock,
+          uow,
           policies
         ),
       inject: [
         BOOKING_REPOSITORY,
         HOLD_REPOSITORY,
-        RESOURCE_REPOSITORY,
         AUDIT_PORT,
         OUTBOX_PORT,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
         BOOKING_POLICIES,
       ],
     },
     {
       provide: RescheduleBookingUseCase,
-      useFactory: (bookingRepo, audit, outbox, idgen, clock) =>
-        new RescheduleBookingUseCase(bookingRepo, audit, outbox, idgen, clock),
-      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+      useFactory: (bookingRepo, audit, outbox, idgen, clock, uow, policies) =>
+        new RescheduleBookingUseCase(bookingRepo, audit, outbox, idgen, clock, uow, policies),
+      inject: [
+        BOOKING_REPOSITORY,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
+        BOOKING_POLICIES,
+      ],
     },
     {
       provide: CancelBookingUseCase,
-      useFactory: (bookingRepo, audit, outbox) =>
-        new CancelBookingUseCase(bookingRepo, audit, outbox),
-      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT],
+      useFactory: (bookingRepo, audit, outbox, uow) =>
+        new CancelBookingUseCase(bookingRepo, audit, outbox, uow),
+      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT, UNIT_OF_WORK],
     },
     {
       provide: ListBookingsUseCase,

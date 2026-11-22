@@ -6,6 +6,7 @@ import type {
   ServiceOffering,
   AvailabilityRule,
 } from "../../domain/booking.entities";
+import type { TransactionContext } from "@corely/kernel";
 
 // ─── Resource Repository ──────────────────────────────────────────────────────
 
@@ -90,20 +91,40 @@ export interface BookingPage {
 
 export interface BookingRepositoryPort {
   /** Recheck availability and, when holdId is set, consume the active hold atomically. */
-  create(booking: BookingEntity, allocations: BookingAllocation[]): Promise<BookingEntity>;
-  findById(id: string, tenantId: string): Promise<BookingEntity | null>;
+  create(
+    booking: BookingEntity,
+    allocations: BookingAllocation[],
+    tx?: TransactionContext
+  ): Promise<BookingEntity>;
+  findById(id: string, tenantId: string, tx?: TransactionContext): Promise<BookingEntity | null>;
+  lockMutation(tenantId: string, key: string, tx: TransactionContext): Promise<void>;
+  mutationReceipt(
+    tenantId: string,
+    action: string,
+    key: string,
+    fingerprint: string,
+    tx: TransactionContext
+  ): Promise<BookingEntity | null>;
+  saveMutationReceipt(
+    booking: BookingEntity,
+    action: string,
+    key: string,
+    fingerprint: string,
+    tx: TransactionContext
+  ): Promise<void>;
   findMany(
     tenantId: string,
     filters: BookingFilters,
     page: number,
     pageSize: number
   ): Promise<BookingPage>;
-  update(booking: BookingEntity): Promise<BookingEntity>;
+  update(booking: BookingEntity, tx: TransactionContext): Promise<BookingEntity>;
   /** Replace all allocations for a booking inside the same tx */
   replaceAllocations(
     bookingId: string,
     tenantId: string,
-    allocations: BookingAllocation[]
+    allocations: BookingAllocation[],
+    tx: TransactionContext
   ): Promise<void>;
   /**
    * Returns true if any CONFIRMED/HOLD booking already has an allocation for
