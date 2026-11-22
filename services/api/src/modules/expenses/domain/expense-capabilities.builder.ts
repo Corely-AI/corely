@@ -8,13 +8,7 @@ import {
 } from "@corely/contracts";
 
 export class ExpenseCapabilitiesBuilder {
-  private readonly expense: ExpenseDto;
-  private readonly approvalsEnabled: boolean;
-
-  constructor(expense: ExpenseDto, approvalsEnabled = true) {
-    this.expense = expense;
-    this.approvalsEnabled = approvalsEnabled;
-  }
+  constructor(private readonly expense: ExpenseDto) {}
 
   public build(): ExpenseCapabilities {
     return {
@@ -65,11 +59,6 @@ export class ExpenseCapabilitiesBuilder {
   }
 
   private buildTransitions(): ExpenseTransition[] {
-    // In freelancer mode (approvals disabled), no transitions are needed
-    if (!this.approvalsEnabled) {
-      return [];
-    }
-
     const transitions: ExpenseTransition[] = [];
     const s = this.expense.status;
 

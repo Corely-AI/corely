@@ -34,7 +34,6 @@ import {
   resolveNavigationGroupLabelKey,
   resolveNavigationItemLabelKey,
 } from "@corely/web-shared/shared/workspaces/navigation-labels";
-import { WorkspaceTypeBadge } from "@corely/web-shared/shared/workspaces/WorkspaceTypeBadge";
 import { useCanManageTenants, useCanReadTenants } from "@corely/web-shared/shared/lib/permissions";
 import { getDocsBaseUrl } from "@corely/web-shared/shared/lib/docs-url";
 import { useSurfaceId } from "@corely/web-shared/shared/surface";
@@ -50,7 +49,6 @@ export interface AppSidebarProps {
   configError?: Error | null;
   hiddenItemIds?: readonly string[];
   showPlatformAdminNav?: boolean;
-  showWorkspaceTypeBadge?: boolean;
   workspaceSwitcherMode?: WorkspaceSwitcherMode;
   allowWorkspaceCreation?: boolean;
   notificationBell?: React.ReactNode;
@@ -97,7 +95,6 @@ export function AppSidebar({
   configError,
   hiddenItemIds,
   showPlatformAdminNav = true,
-  showWorkspaceTypeBadge = true,
   workspaceSwitcherMode = "always",
   allowWorkspaceCreation,
   notificationBell,
@@ -302,8 +299,6 @@ export function AppSidebar({
                 )}
               </div>
             )}
-
-            {!collapsed && showWorkspaceTypeBadge ? <WorkspaceTypeBadge /> : null}
           </>
         ) : null}
       </nav>

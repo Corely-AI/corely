@@ -1,8 +1,7 @@
 export const siteConfig = {
   name: "Corely",
   tagline: "Run your business, clearly.",
-  description:
-    "Corely is an AI-native ERP kernel that starts in freelancer mode and scales to company workflows without rewrites.",
+  description: "Corely connects solo and team operations in one workspace with the apps you need.",
   siteUrl: import.meta.env.VITE_SITE_URL || "https://corely.one",
   social: {
     github: "https://github.com/Corely-AI/corely",

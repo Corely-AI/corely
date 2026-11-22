@@ -6,7 +6,7 @@ import { TenantEntitlement } from "../domain/entitlement.aggregate";
 import type { WorkspaceRepositoryPort } from "../../workspaces/application/ports/workspace-repository.port";
 
 describe("WorkspaceExperienceResolverService", () => {
-  it("resolves POS vertical from workspace configuration", async () => {
+  it.each(["PERSONAL", "COMPANY"] as const)("resolves shared controls for %s", async (kind) => {
     const entitlementService = {
       getTenantEntitlement: vi.fn(
         async () => new TenantEntitlement("tenant-1", new Set(), new Set())
@@ -31,7 +31,7 @@ describe("WorkspaceExperienceResolverService", () => {
         legalEntity: {
           id: "le-1",
           tenantId: "tenant-1",
-          kind: "COMPANY",
+          kind,
           legalName: "Restaurant Workspace GmbH",
           countryCode: "DE",
           currency: "EUR",
@@ -68,7 +68,9 @@ describe("WorkspaceExperienceResolverService", () => {
 
     expect(result.surfaceId).toBe("pos");
     expect(result.verticalId).toBe("restaurant");
-    expect(result.workspaceKind).toBe("COMPANY");
+    expect(result.workspaceKind).toBe(kind);
+    expect(result.capabilities["workspace.rbac"]).toBe(true);
+    expect(result.capabilities.approvals).toBe(true);
     expect(result.permissions.has("cash.read")).toBe(true);
   });
 });

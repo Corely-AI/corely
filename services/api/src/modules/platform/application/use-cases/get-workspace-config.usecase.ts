@@ -172,7 +172,7 @@ export class GetWorkspaceConfigUseCase {
     const installedDefaults =
       !input.packageId &&
       !input.launchId &&
-      (await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind));
+      (await this.ensureDefaultAppsInstalled(input.tenantId, input.userId));
     if (installedDefaults) {
       experience = await this.experienceResolver.resolve({
         tenantId: input.tenantId,
@@ -217,15 +217,13 @@ export class GetWorkspaceConfigUseCase {
       verticalId: experience.verticalId,
       kind: workspaceKind,
       capabilities,
-      terminology: this.templateService.getDefaultTerminology(workspaceKind),
+      terminology: this.templateService.getDefaultTerminology(),
       navigation: {
         groups: this.buildNavigationGroups(menu.groups),
       },
       home: {
         widgets:
-          input.packageId || input.launchId
-            ? []
-            : this.templateService.getDefaultHomeWidgets(workspaceKind),
+          input.packageId || input.launchId ? [] : this.templateService.getDefaultHomeWidgets(),
       },
       currentUser: {
         membershipRole,
@@ -246,15 +244,11 @@ export class GetWorkspaceConfigUseCase {
     }));
   }
 
-  private async ensureDefaultAppsInstalled(
-    tenantId: string,
-    userId: string,
-    workspaceKind: "PERSONAL" | "COMPANY"
-  ): Promise<boolean> {
+  private async ensureDefaultAppsInstalled(tenantId: string, userId: string): Promise<boolean> {
     // Existing disabled installs are explicit choices, not missing defaults.
     const currentInstalls = await this.appInstallRepo.listByTenant(tenantId);
     const installed = new Set(currentInstalls.map((i) => i.appId));
-    const defaultApps = this.templateService.getDefaultEnabledApps(workspaceKind);
+    const defaultApps = this.templateService.getDefaultEnabledApps();
     let installedAny = false;
 
     for (const appId of defaultApps) {

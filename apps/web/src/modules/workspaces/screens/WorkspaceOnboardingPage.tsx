@@ -1,7 +1,9 @@
 import { getReturnPath } from "@/app/router/return-path";
 import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Building2, CheckCircle2, User, ArrowRight } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { WorkspaceKindSchema, type WorkspaceKind } from "@corely/contracts";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -18,12 +20,13 @@ export const WorkspaceOnboardingPage: React.FC = () => {
   const { state } = useLocation();
   const { setWorkspace, refresh } = useWorkspace();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [legalEntityKind, setLegalEntityKind] = useState<WorkspaceKind>("PERSONAL");
   const [form, setForm] = useState({
     name: "",
-    kind: "PERSONAL",
     legalName: "",
     countryCode: "DE",
     currency: "EUR",
@@ -87,7 +90,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
     try {
       const payload = {
         name: form.name.trim(),
-        kind: form.kind as "PERSONAL" | "COMPANY",
+        kind: legalEntityKind,
         legalName: form.legalName.trim(),
         countryCode: form.countryCode,
         currency: form.currency,
@@ -127,12 +130,8 @@ export const WorkspaceOnboardingPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40">
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground uppercase tracking-wide">Workspace Setup</p>
           <h1 className="text-3xl font-bold">Create your workspace</h1>
-          <p className="text-muted-foreground">
-            Workspaces are the home for your company data. You can create more later or join
-            invitations from teammates.
-          </p>
+          <p className="text-muted-foreground">{t("workspace.setupDescription")}</p>
         </div>
 
         <Card>
@@ -169,30 +168,6 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Kind</Label>
-                  <Select
-                    value={form.kind}
-                    onValueChange={(v) => setForm((f) => ({ ...f, kind: v }))}
-                    data-testid="onboarding-kind"
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PERSONAL">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" /> Personal / freelancer
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="COMPANY">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4" /> Company
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
                   <Label>Display currency</Label>
                   <Input
                     value={form.currency}
@@ -219,6 +194,28 @@ export const WorkspaceOnboardingPage: React.FC = () => {
 
             {currentStep === 1 && (
               <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="onboarding-entity-type">{t("workspace.legalEntityType")}</Label>
+                  <Select
+                    value={legalEntityKind}
+                    onValueChange={(value) => setLegalEntityKind(WorkspaceKindSchema.parse(value))}
+                  >
+                    <SelectTrigger
+                      id="onboarding-entity-type"
+                      aria-describedby="onboarding-entity-type-help"
+                      data-testid="onboarding-kind"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PERSONAL">{t("workspace.legalEntityPersonal")}</SelectItem>
+                      <SelectItem value="COMPANY">{t("workspace.legalEntityCompany")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p id="onboarding-entity-type-help" className="text-sm text-muted-foreground">
+                    {t("workspace.legalEntityHelp")}
+                  </p>
+                </div>
                 <div className="space-y-2">
                   <Label>
                     Legal name <span className="text-destructive">*</span>

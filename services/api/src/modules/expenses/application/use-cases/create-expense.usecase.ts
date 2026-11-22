@@ -18,11 +18,6 @@ import type { GiftThresholdQueryPort } from "../ports/gift-threshold-query.port"
 import { GIFT_THRESHOLD_QUERY_PORT } from "../ports/gift-threshold-query.port";
 import { computeDeDeductibility } from "../../domain/de-deductibility.service";
 
-import {
-  WORKSPACE_REPOSITORY_PORT,
-  type WorkspaceRepositoryPort,
-} from "../../../workspaces/application/ports/workspace-repository.port";
-import { WorkspaceTemplateService } from "../../../platform/application/services/workspace-template.service";
 import { PrismaService } from "@corely/data";
 import type {
   CustomFieldsWritePort,
@@ -61,9 +56,6 @@ export class CreateExpenseUseCase {
     private readonly customFieldIndexes: CustomFieldIndexPort,
     private readonly dimensionsWritePort: DimensionsWritePort,
     private readonly customFieldsWritePort: CustomFieldsWritePort,
-    @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort,
-    private readonly templateService: WorkspaceTemplateService,
     private readonly prisma: PrismaService,
     @Inject(GIFT_THRESHOLD_QUERY_PORT)
     private readonly giftThresholdQuery: GiftThresholdQueryPort
@@ -98,9 +90,7 @@ export class CreateExpenseUseCase {
     }
 
     // Allow specific flows (e.g., copilot draft creation) to force initial status.
-    const initialStatus =
-      input.initialStatusOverride ??
-      (await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId));
+    const initialStatus = input.initialStatusOverride ?? "DRAFT";
 
     const definitions = await this.customFieldDefinitions.listActiveByEntityType(
       input.tenantId,
@@ -265,43 +255,5 @@ export class CreateExpenseUseCase {
       createdAt: expense.createdAt.toISOString(),
       custom: expense.custom,
     };
-  }
-
-  /**
-   * Determine initial expense status based on workspace type
-   * - Freelancer mode (PERSONAL): No approval workflow needed -> APPROVED
-   * - Company mode: Requires approval workflow -> DRAFT
-   */
-  private async determineInitialStatus(
-    tenantId: string,
-    workspaceId?: string
-  ): Promise<"DRAFT" | "APPROVED"> {
-    if (!workspaceId) {
-      // Fallback to DRAFT if no workspace context
-      return "DRAFT";
-    }
-
-    try {
-      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
-        tenantId,
-        workspaceId
-      );
-
-      if (!workspace || !workspace.legalEntity) {
-        return "DRAFT";
-      }
-
-      // Determine workspace kind based on legal entity
-      const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-
-      // Get capabilities for this workspace type
-      const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
-
-      // If approvals are disabled (freelancer mode), auto-approve
-      return capabilities.approvals === false ? "APPROVED" : "DRAFT";
-    } catch (error) {
-      // On error, default to DRAFT (safer)
-      return "DRAFT";
-    }
   }
 }

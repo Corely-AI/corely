@@ -62,11 +62,11 @@ An item is treated as settings when one of the following is true:
 | `website`         | Website             | `website-sites -> /website/sites`                                                                                                                                                                                     |
 | `workspaces`      | Workspaces          | `workspace-settings -> /settings/workspace`; `payment-methods-settings -> /settings/payment-methods`; `profile-settings -> /settings`; `workspace-members -> /settings/members`; `workspace-roles -> /settings/roles` |
 
-## Freelancer Mode Defaults
+## Shared Workspace Defaults
 
-Freelancer mode maps to workspace kind `PERSONAL`.
+Both legal entity kinds use the same workspace defaults.
 
-Default enabled apps are defined in `WorkspaceTemplateService.getFreelancerEnabledApps()`:
+Default enabled apps are defined in `WorkspaceTemplateService.getDefaultEnabledApps()`:
 
 - `core`
 - `platform`
@@ -74,7 +74,6 @@ Default enabled apps are defined in `WorkspaceTemplateService.getFreelancerEnabl
 - `invoices`
 - `expenses`
 - `parties`
-- `crm`
 - `tax`
 - `portfolio`
 - `website`
@@ -82,9 +81,9 @@ Default enabled apps are defined in `WorkspaceTemplateService.getFreelancerEnabl
 - `ai-copilot`
 - `classes`
 
-## Entitlement Defaults for Freelancer Financial Apps
+## Entitlement Defaults for Financial Apps
 
-To ensure freelancer defaults include finance menus, these app manifests explicitly default to enabled entitlement:
+To ensure workspace defaults include finance menus, these app manifests explicitly default to enabled entitlement:
 
 - `invoices`: `entitlement.defaultEnabled = true` (`app.invoices.enabled`)
 - `expenses`: `entitlement.defaultEnabled = true` (`app.expenses.enabled`)

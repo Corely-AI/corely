@@ -3409,7 +3409,12 @@
     }
   },
   "workspace": {
-    "create": "Tạo không gian làm việc"
+    "create": "Tạo không gian làm việc",
+    "setupDescription": "Bắt đầu một mình và mời thêm thành viên khi cần.",
+    "legalEntityType": "Loại chủ thể pháp lý",
+    "legalEntityPersonal": "Cá nhân hoặc hộ kinh doanh",
+    "legalEntityCompany": "Công ty",
+    "legalEntityHelp": "Thông tin này xác định nội dung về thuế mà Corely hiển thị cho doanh nghiệp của bạn."
   },
   "tenants": {
     "openAdminSession": "Mở với quyền quản trị tenant",

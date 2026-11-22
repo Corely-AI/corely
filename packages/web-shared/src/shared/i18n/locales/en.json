@@ -3451,7 +3451,12 @@
     }
   },
   "workspace": {
-    "create": "Create Workspace"
+    "create": "Create Workspace",
+    "setupDescription": "Start on your own and invite teammates whenever you need them.",
+    "legalEntityType": "Legal entity type",
+    "legalEntityPersonal": "Individual or sole proprietor",
+    "legalEntityCompany": "Company",
+    "legalEntityHelp": "This determines which tax information Corely shows for your business."
   },
   "tenants": {
     "openAdminSession": "Open as tenant admin",

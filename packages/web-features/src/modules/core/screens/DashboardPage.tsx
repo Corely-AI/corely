@@ -52,12 +52,15 @@ export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
 
-  const { config, hasCapability } = useWorkspaceConfig();
+  const { config, hasCapability, navigationGroups } = useWorkspaceConfig();
+  const canOpenQuotes = navigationGroups.some((group) =>
+    group.items.some((item) => item.route === "/sales/quotes")
+  );
   const { activeWorkspace } = useWorkspace();
   const portalUrl = getPortalUrl(activeWorkspace?.slug);
   const terminology = config?.terminology ?? {
-    partyLabel: "Client",
-    partyLabelPlural: "Clients",
+    partyLabel: "Customer",
+    partyLabelPlural: "Customers",
     invoiceLabel: "Invoice",
     invoiceLabelPlural: "Invoices",
     quoteLabel: "Quote",
@@ -305,8 +308,7 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
-          {/* Conditional: Show quotes for company mode, assistant for freelancer */}
-          {hasCapability("sales.quotes") ? (
+          {canOpenQuotes ? (
             <Link to="/sales/quotes">
               <Card variant="interactive" className="group">
                 <CardContent className="p-6 flex items-center gap-4">
@@ -346,7 +348,6 @@ export default function DashboardPage() {
             )
           )}
 
-          {/* Conditional: Team management for multi-user companies */}
           {hasCapability("workspace.multiUser") && (
             <Link to="/settings/members">
               <Card variant="interactive" className="group">

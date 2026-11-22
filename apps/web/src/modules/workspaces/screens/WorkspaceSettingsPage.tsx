@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -8,8 +9,6 @@ import { Separator } from "@corely/ui";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 import { useToast } from "@corely/ui";
-import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
-import { Badge } from "@corely/ui";
 import { Switch } from "@corely/ui";
 import {
   AlertDialog,
@@ -27,7 +26,7 @@ import { useAuth } from "@/lib/auth-provider";
 export const WorkspaceSettingsPage: React.FC = () => {
   const { activeWorkspace, activeWorkspaceId, refresh } = useWorkspace();
   const { user } = useAuth();
-  const { config, refresh: refreshConfig } = useWorkspaceConfig();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -43,7 +42,6 @@ export const WorkspaceSettingsPage: React.FC = () => {
     publicEnabled: false,
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [isUpgrading, setIsUpgrading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const tenantName = useMemo(() => {
     if (!user) {
@@ -128,30 +126,6 @@ export const WorkspaceSettingsPage: React.FC = () => {
     }
   };
 
-  const handleUpgrade = async () => {
-    if (!activeWorkspaceId) {
-      return;
-    }
-    setIsUpgrading(true);
-    try {
-      await workspacesApi.upgradeWorkspace(activeWorkspaceId);
-      await refresh();
-      await refreshConfig();
-      toast({
-        title: "Workspace upgraded",
-        description: "Your workspace now uses company defaults.",
-      });
-    } catch (error) {
-      toast({
-        title: "Upgrade failed",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpgrading(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!activeWorkspaceId) {
       return;
@@ -176,9 +150,6 @@ export const WorkspaceSettingsPage: React.FC = () => {
       setIsDeleting(false);
     }
   };
-
-  const workspaceKind = config?.kind ?? activeWorkspace?.kind ?? "PERSONAL";
-  const canUpgrade = workspaceKind === "PERSONAL" && config?.currentUser.isWorkspaceAdmin;
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
@@ -216,6 +187,20 @@ export const WorkspaceSettingsPage: React.FC = () => {
               placeholder="Registered name for invoices"
             />
           </div>
+          {activeWorkspace && (
+            <div className="space-y-2">
+              <Label htmlFor="workspace-legal-entity-type">{t("workspace.legalEntityType")}</Label>
+              <Input
+                id="workspace-legal-entity-type"
+                value={
+                  activeWorkspace.kind === "COMPANY"
+                    ? t("workspace.legalEntityCompany")
+                    : t("workspace.legalEntityPersonal")
+                }
+                readOnly
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label>Currency</Label>
             <Input
@@ -320,42 +305,6 @@ export const WorkspaceSettingsPage: React.FC = () => {
             <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-800 dark:text-yellow-200">
               ⚠️ You need to set a workspace slug to use the public site features.
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Workspace type</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Current kind:</span>
-            <Badge variant="secondary">
-              {workspaceKind === "PERSONAL" ? "Freelancer" : "Company"}
-            </Badge>
-          </div>
-          {workspaceKind === "PERSONAL" ? (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Freelancer workspaces use minimal defaults. Upgrading keeps all data and unlocks
-                company capabilities.
-              </p>
-              <div>
-                <Button onClick={handleUpgrade} disabled={!canUpgrade || isUpgrading}>
-                  {isUpgrading ? "Upgrading..." : "Upgrade to Company"}
-                </Button>
-                {!config?.currentUser.isWorkspaceAdmin && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Only workspace admins can upgrade.
-                  </p>
-                )}
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Your workspace is already using company features and capabilities.
-            </p>
           )}
         </CardContent>
       </Card>

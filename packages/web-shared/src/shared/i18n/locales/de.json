@@ -3398,7 +3398,12 @@
     }
   },
   "workspace": {
-    "create": "Arbeitsbereich erstellen"
+    "create": "Arbeitsbereich erstellen",
+    "setupDescription": "Starte allein und lade bei Bedarf Teammitglieder ein.",
+    "legalEntityType": "Art des Rechtsträgers",
+    "legalEntityPersonal": "Einzelperson oder Einzelunternehmen",
+    "legalEntityCompany": "Gesellschaft",
+    "legalEntityHelp": "Diese Angabe bestimmt, welche Steuerinformationen Corely für dein Unternehmen anzeigt."
   },
   "tenants": {
     "openAdminSession": "Als Tenant Admin öffnen",

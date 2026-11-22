@@ -180,7 +180,15 @@ export function AppShell({
     );
     const quickActions = parseQuickActionConfig(quickActionWidget?.config);
     const createCommands: Command[] = quickActions
-      .filter((action) => Boolean(action.route))
+      .filter(
+        ({ route }) =>
+          route &&
+          resolvedNavigationGroups.some((group) =>
+            group.items.some(
+              (item) => item.route && (route === item.route || route.startsWith(`${item.route}/`))
+            )
+          )
+      )
       .map((action) => {
         const Icon = getIconByName(action.icon ?? "HelpCircle");
         const translatedLabel = action.labelKey ? t(action.labelKey) : "";
