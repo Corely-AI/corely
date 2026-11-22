@@ -268,6 +268,17 @@ export class OpenBukStudioUseCase {
       return { receipt };
     });
   }
+  async operationalTimezone(ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    const studio = await this.repo.studio(scope);
+    return studio?.timezone ?? (await this.repo.draft(scope))?.timezone ?? null;
+  }
+
+  async operationalAppointments(day: string, timezone: string, ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    return this.repo.operationalAppointments(scope, day, timezone);
+  }
+
   async appointments(day: string, ctx: UseCaseContext) {
     // Customer contact snapshots are operational data; initial roles are owner/admin.
     const { scope } = await this.admin(ctx, true);

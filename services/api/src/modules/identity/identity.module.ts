@@ -275,6 +275,9 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     PermissionCatalogRegistry,
   ],
   exports: [
+    CliAgentGrantsService,
+    SsoSessionService,
+    SsoHttpSecurity,
     TenantAdminSessions,
     DeliverSsoEmailCodeUseCase,
     AssociateInvitedAccountUseCase,

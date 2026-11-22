@@ -11,6 +11,13 @@ import type { OccupiedInterval } from "../../domain/openbuk-availability";
 
 export type StudioScope = { tenantId: string; workspaceId: string };
 export type BookingReceiptRecord = { fingerprint: string; receipt: OpenBukReceipt };
+export interface OperationalAppointment {
+  id: string;
+  status: string;
+  startAt: Date;
+  endAt: Date;
+  allocations: { resourceId: string; startAt: Date; endAt: Date }[];
+}
 export const OPENBUK_REPOSITORY = Symbol("OPENBUK_REPOSITORY");
 export interface OpenBukRepositoryPort {
   lock(scope: StudioScope, key: string, tx: TransactionContext): Promise<void>;
@@ -50,5 +57,10 @@ export interface OpenBukRepositoryPort {
     receipt: OpenBukReceipt,
     tx: TransactionContext
   ): Promise<string>;
+  operationalAppointments(
+    scope: StudioScope,
+    day: string,
+    timezone: string
+  ): Promise<OperationalAppointment[]>;
   appointments(scope: StudioScope, day: string): Promise<OpenBukAppointment[]>;
 }

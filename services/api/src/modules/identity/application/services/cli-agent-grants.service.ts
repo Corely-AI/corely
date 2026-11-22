@@ -11,6 +11,7 @@ import {
 import { type ExtKvPort, EXT_KV_PORT } from "@corely/data";
 import { UNIT_OF_WORK, type TransactionContext, type UnitOfWorkPort } from "@corely/kernel";
 import {
+  CliDayBriefOperation,
   CliGrantSchema,
   CliAgentFingerprintSchema,
   cliAgentProof,
@@ -35,6 +36,8 @@ const workspaceDescribe = {
   inputSchema: { type: "object", additionalProperties: false, properties: {} },
 } as const;
 
+const operations = [workspaceDescribe, CliDayBriefOperation];
+
 function publicGrant({ fingerprint: _fingerprint, ...grant }: GrantRecord): CliGrant {
   return grant;
 }
@@ -55,7 +58,7 @@ export class CliAgentGrantsService {
 
   async create(userId: string, input: CliGrantInput) {
     this.assertEnabled();
-    if (input.operations.some((operation) => operation !== workspaceDescribe.id)) {
+    if (input.operations.some((id) => !operations.some((operation) => operation.id === id))) {
       throw new BadRequestException("Operation is not available for delegation");
     }
     return this.withLock(input, input.agentId, async (tx) => {
@@ -110,7 +113,7 @@ export class CliAgentGrantsService {
   async capabilities(scope: CliGrantScope, credential: { agentId: string; secret: string }) {
     return this.withAuthorizedGrant(scope, credential, async (grant, _workspace, tx) => {
       await this.record(grant, grant.delegatorId, "discovered", tx);
-      return grant.operations.includes(workspaceDescribe.id) ? [workspaceDescribe] : [];
+      return operations.filter(({ id }) => grant.operations.includes(id));
     });
   }
 
@@ -126,12 +129,34 @@ export class CliAgentGrantsService {
     if (!z.object({}).strict().safeParse(input).success) {
       throw new BadRequestException("Invalid workspace.describe input");
     }
+    return this.useOperation(scope, credential, operation, async ({ workspaceName }) => ({
+      ...inputScope(scope),
+      name: workspaceName,
+    }));
+  }
+
+  async useOperation<T>(
+    scope: CliGrantScope,
+    credential: { agentId: string; secret: string },
+    operation: string,
+    run: (
+      actor: { userId: string; workspaceName: string; agentId: string },
+      tx: TransactionContext
+    ) => Promise<T>
+  ) {
+    if (!operations.some(({ id }) => id === operation)) {
+      throw new ForbiddenException("Operation not available to this agent");
+    }
     return this.withAuthorizedGrant(scope, credential, async (grant, workspace, tx) => {
       if (!grant.operations.includes(operation)) {
         throw new ForbiddenException("Operation not granted");
       }
+      const result = await run(
+        { userId: grant.delegatorId, workspaceName: workspace.name, agentId: grant.agentId },
+        tx
+      );
       await this.record(grant, grant.delegatorId, "executed", tx, operation);
-      return { ...inputScope(grant), name: workspace.name };
+      return result;
     });
   }
 

@@ -2,13 +2,16 @@
 import { parseArgs, stripVTControlCharacters } from "node:util";
 import { HttpError, request } from "@corely/api-client";
 import {
+  CliDayBriefDateSchema,
+  CliDayBriefSchema,
+  CliGrantScopeSchema,
   CliSsoAccountSchema,
   CliSsoSessionSchema,
   SsoHandleSchema,
   SsoRedirectSchema,
 } from "@corely/contracts/identity/sso";
 import metadata from "../package.json";
-import { runAgentCommand } from "./agent-commands";
+import { agentAccessToken, runAgentCommand } from "./agent-commands";
 import { authorizeInBrowser } from "./browser-login";
 import { CliError } from "./errors";
 
@@ -19,6 +22,7 @@ Commands
   corely auth logout [--json]
   corely workspaces list [--json]
   corely whoami [--workspace <id-or-slug>] [--json]
+  corely day brief --workspace <id-or-slug> [--date today|YYYY-MM-DD] [--json]
 
 Agent access
   corely agent prepare --tenant <id> --workspace <id>
@@ -135,6 +139,58 @@ function selectWorkspace(workspaces: Account["workspaces"], target?: string) {
   );
 }
 
+function displayBrief(brief: ReturnType<typeof CliDayBriefSchema.parse>) {
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: brief.timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "shortOffset",
+  });
+  const localTime = (iso: string) => time.format(new Date(iso));
+  const lines = [
+    `${terminalLabel(brief.workspaceName)} · ${brief.date} · ${brief.timezone}${brief.timezoneSource === "utc-default" ? " (default)" : ""}`,
+  ];
+  const sections = [
+    [
+      "Appointments",
+      brief.appointments,
+      brief.appointments.items.map(
+        (item) =>
+          `${localTime(item.startAt)} ${item.status} ${terminalLabel(item.id)} · ${item.sourcePath}`
+      ),
+    ],
+    [
+      "Coverage conflicts",
+      brief.coverage,
+      brief.coverage.items.map(
+        (item) =>
+          `${localTime(item.startAt)} ${terminalLabel(item.appointmentId)} · ${item.sourcePath}`
+      ),
+    ],
+    [
+      "Outstanding tasks",
+      brief.tasks,
+      brief.tasks.items.map(
+        (item) =>
+          `${terminalLabel(item.title)}${item.dueAt ? ` · due ${localTime(item.dueAt)}` : ""}${item.checklist ? ` · ${item.checklist.done}/${item.checklist.total} steps` : ""} · ${item.sourcePath}`
+      ),
+    ],
+  ] as const;
+  for (const [label, section, items] of sections) {
+    lines.push(
+      `${label} · ${section.status}${section.total === null ? "" : ` · ${section.total}`}${section.observedAt ? ` · as of ${section.observedAt}` : ""}`
+    );
+    lines.push(...items.map((item) => `  ${item}`));
+    if (section.total !== null && section.total > items.length) {
+      lines.push(`  Showing ${items.length} of ${section.total}.`);
+    }
+  }
+  return lines.join("\n");
+}
+
 const args = process.argv.slice(2);
 const json = args.includes("--json");
 
@@ -157,6 +213,7 @@ async function run() {
       fingerprint: { type: "string" },
       operation: { type: "string", multiple: true },
       minutes: { type: "string" },
+      date: { type: "string" },
     },
   });
   const command = positionals.join(" ");
@@ -168,7 +225,8 @@ async function run() {
     emit({ help }, help);
     return;
   }
-  if (["agent", "grants", "capabilities", "operations"].includes(positionals[0])) {
+  const genericBrief = command === "operations run day.brief";
+  if (!genericBrief && ["agent", "grants", "capabilities", "operations"].includes(positionals[0])) {
     const origin = getOrigin();
     const result = await runAgentCommand(
       positionals,
@@ -186,6 +244,49 @@ async function run() {
     emit(result, JSON.stringify(result, null, 2));
     return;
   }
+  if (command === "day brief" || genericBrief) {
+    if (genericBrief && !values.agent) {
+      throw new CliError("USAGE", "Specify the prepared agent ID with --agent.");
+    }
+    const origin = getOrigin();
+    const date = CliDayBriefDateSchema.safeParse(values.date ?? "today");
+    if (!date.success) {
+      throw new CliError("USAGE", "Use --date today or a valid YYYY-MM-DD date.");
+    }
+    let scope;
+    let accessToken;
+    if (values.agent) {
+      const parsed = CliGrantScopeSchema.safeParse({
+        tenantId: values.tenant,
+        workspaceId: values.workspace,
+      });
+      if (!parsed.success) {
+        throw new CliError("USAGE", "Agent commands require --tenant and --workspace IDs.");
+      }
+      scope = parsed.data;
+      accessToken = await agentAccessToken(scope, values.agent, (account) =>
+        credentialEntry(JSON.stringify([origin, account]), "Corely CLI Agent")
+      );
+    } else {
+      accessToken = (await credentialEntry(origin)).get();
+      if (!accessToken) {
+        throw new CliError("AUTH_REQUIRED", "Sign in first with corely auth login.");
+      }
+      const account = CliSsoAccountSchema.parse(await api(origin, "account", { accessToken }));
+      const workspace = selectWorkspace(account.workspaces, values.workspace);
+      scope = { tenantId: workspace.tenantId, workspaceId: workspace.id };
+    }
+    const brief = CliDayBriefSchema.parse(
+      await api(origin, "day-brief", {
+        accessToken,
+        method: "POST",
+        body: { ...scope, date: date.data },
+      })
+    );
+    emit(brief, displayBrief(brief));
+    return;
+  }
+
   if (!["auth login", "auth logout", "whoami", "workspaces list"].includes(command)) {
     throw new CliError("USAGE", "Unknown command. Run corely --help.");
   }
@@ -265,7 +366,8 @@ try {
   if (error instanceof HttpError) {
     failure =
       error.status === 401
-        ? ["capabilities", "operations"].includes(args.find((arg) => !arg.startsWith("-")) ?? "")
+        ? (args.includes("--agent") && args.includes("brief")) ||
+          ["capabilities", "operations"].includes(args.find((arg) => !arg.startsWith("-")) ?? "")
           ? new CliError(
               "AGENT_ACCESS_REQUIRED",
               "The agent grant is unavailable. Ask your workspace manager to verify access."

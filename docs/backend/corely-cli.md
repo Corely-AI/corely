@@ -77,3 +77,21 @@ obsolete local entries under Corely CLI Agent using the OS credential store.
 For rollback, disable the agent grant flag to stop issuance, discovery, and
 execution. Managers can still inspect and revoke existing grants while CLI
 sign-in is available. Revoke outstanding grants before enabling the flag again.
+
+## Daily operations brief
+
+A signed-in manager can run `corely day brief --workspace <id-or-slug>
+--date today --json`. For an agent, grant `day.brief` and add
+`--tenant <tenant-id> --workspace <workspace-id> --agent <agent-id>`.
+For another date, pass `YYYY-MM-DD`.
+
+The brief uses the OpenBuk studio timezone. It reports a UTC default when
+there is no accessible studio timezone. Appointments are selected by their
+local start date. People supplies neutral coverage checks for confirmed
+appointments. Tasks counts all visible outstanding tasks and displays up
+to 100 records, including checklist progress.
+
+Each section reports when it began its source read. Sections more than a
+minute old at completion are marked stale. Disabled, restricted, and
+unavailable sections use an unknown total. A successful empty read returns
+zero. Source paths open the owning views in the selected workspace.

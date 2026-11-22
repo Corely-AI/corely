@@ -34,12 +34,12 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   return result.data;
 }
 
-function authorization(req: Request): string {
+export function cliBearer(req: Request): string {
   return /^Bearer (\S+)$/i.exec(req.headers.authorization ?? "")?.[1] ?? "";
 }
 
-function agentCredential(req: Request) {
-  const match = /^corely-agent\.([a-f0-9-]{36})\.([A-Za-z0-9_-]{43})$/.exec(authorization(req));
+export function cliAgentCredential(req: Request) {
+  const match = /^corely-agent\.([a-f0-9-]{36})\.([A-Za-z0-9_-]{43})$/.exec(cliBearer(req));
   if (!match || !CliAgentIdSchema.safeParse(match[1]).success) {
     throw new UnauthorizedException("Agent credential required");
   }
@@ -78,7 +78,7 @@ export class CliAgentController {
   @Get("capabilities")
   capabilities(@Req() req: Request, @Query() query: unknown) {
     this.security.origin(req, true);
-    return this.grants.capabilities(parse(CliGrantScopeSchema, query), agentCredential(req));
+    return this.grants.capabilities(parse(CliGrantScopeSchema, query), cliAgentCredential(req));
   }
 
   @Post("operations/:operation")
@@ -88,7 +88,7 @@ export class CliAgentController {
     const request = parse(CliGrantScopeSchema.extend({ input: z.record(z.unknown()) }), body);
     return this.grants.execute(
       request,
-      agentCredential(req),
+      cliAgentCredential(req),
       parse(CliOperationIdSchema, op),
       request.input
     );
@@ -96,7 +96,7 @@ export class CliAgentController {
 
   private manager(req: Request) {
     this.security.origin(req, true);
-    const token = SsoHandleSchema.safeParse(authorization(req));
+    const token = SsoHandleSchema.safeParse(cliBearer(req));
     if (!token.success) {
       throw new UnauthorizedException("Manager CLI credential required");
     }
