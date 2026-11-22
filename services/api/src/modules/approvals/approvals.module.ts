@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import { KernelModule } from "../../shared/kernel/kernel.module";
 import { BookingModule } from "../booking";
 import { NotificationsModule } from "../notifications/public/appointment-delivery";
 import { WorkspacesModule } from "../workspaces";
@@ -29,6 +30,7 @@ import { PrismaAppointmentReviewStore } from "./infrastructure/repositories/pris
 @Module({
   imports: [
     DataModule,
+    KernelModule,
     WorkflowModule,
     IdentityModule,
     BookingModule,
