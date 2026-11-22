@@ -124,3 +124,4 @@ export const SsoSessionUserSchema = SsoSessionSchema.extend({
 export type SsoSessionUser = z.infer<typeof SsoSessionUserSchema>;
 
 export * from "./focused-observation.schema";
+export * from "./cli-agent.schema";

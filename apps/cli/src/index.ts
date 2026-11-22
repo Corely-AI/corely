@@ -8,6 +8,7 @@ import {
   SsoRedirectSchema,
 } from "@corely/contracts/identity/sso";
 import metadata from "../package.json";
+import { runAgentCommand } from "./agent-commands";
 import { authorizeInBrowser } from "./browser-login";
 import { CliError } from "./errors";
 
@@ -18,6 +19,16 @@ Commands
   corely auth logout [--json]
   corely workspaces list [--json]
   corely whoami [--workspace <id-or-slug>] [--json]
+
+Agent access
+  corely agent prepare --tenant <id> --workspace <id>
+  corely grants create --tenant <id> --workspace <id> --agent <id> --name <name>
+    --fingerprint <hash> --operation <operation-id> [--minutes <1-60>]
+  corely grants list --tenant <id> --workspace <id>
+  corely grants revoke --tenant <id> --workspace <id> --agent <id>
+  corely capabilities list --tenant <id> --workspace <id> --agent <id>
+  corely capabilities describe <operation-id> --tenant <id> --workspace <id> --agent <id>
+  corely operations run <operation-id> --tenant <id> --workspace <id> --agent <id>
 
 Set CORELY_URL to the HTTPS origin of your Corely sign-in page.
 Use --help for usage and --version for the installed version.`;
@@ -50,10 +61,10 @@ function api(
   });
 }
 
-async function credentialEntry(origin: string) {
+async function credentialEntry(account: string, service = "Corely CLI") {
   try {
     const { Entry } = await import("@napi-rs/keyring");
-    const entry = new Entry("Corely CLI", origin);
+    const entry = new Entry(service, account);
     return {
       get() {
         try {
@@ -140,6 +151,12 @@ async function run() {
       help: { type: "boolean", short: "h" },
       version: { type: "boolean", short: "v" },
       workspace: { type: "string" },
+      tenant: { type: "string" },
+      agent: { type: "string" },
+      name: { type: "string" },
+      fingerprint: { type: "string" },
+      operation: { type: "string", multiple: true },
+      minutes: { type: "string" },
     },
   });
   const command = positionals.join(" ");
@@ -149,6 +166,24 @@ async function run() {
   }
   if (values.help || !command) {
     emit({ help }, help);
+    return;
+  }
+  if (["agent", "grants", "capabilities", "operations"].includes(positionals[0])) {
+    const origin = getOrigin();
+    const result = await runAgentCommand(
+      positionals,
+      values,
+      (path, options) => api(origin, path, options),
+      (account) => credentialEntry(JSON.stringify([origin, account]), "Corely CLI Agent"),
+      async () => {
+        const token = (await credentialEntry(origin)).get();
+        if (!token) {
+          throw new CliError("AUTH_REQUIRED", "Sign in first with corely auth login.");
+        }
+        return token;
+      }
+    );
+    emit(result, JSON.stringify(result, null, 2));
     return;
   }
   if (!["auth login", "auth logout", "whoami", "workspaces list"].includes(command)) {
@@ -230,7 +265,12 @@ try {
   if (error instanceof HttpError) {
     failure =
       error.status === 401
-        ? new CliError("AUTH_REQUIRED", "Sign-in expired. Run corely auth login again.")
+        ? ["capabilities", "operations"].includes(args.find((arg) => !arg.startsWith("-")) ?? "")
+          ? new CliError(
+              "AGENT_ACCESS_REQUIRED",
+              "The agent grant is unavailable. Ask your workspace manager to verify access."
+            )
+          : new CliError("AUTH_REQUIRED", "Sign-in expired. Run corely auth login again.")
         : error.status === 403
           ? new CliError("ACCESS_DENIED", "Corely denied access to this account or workspace.")
           : new CliError(
