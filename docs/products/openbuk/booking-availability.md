@@ -35,3 +35,9 @@ the resource, timezone and the booking's version. The preview does not
 reserve the time. The internal apply operation checks the exact preview
 again under the workspace, booking and resource locks before it writes.
 The shared review workflow owns the human decision and replay record.
+
+The absence-driven path requires the existing appointment's allocation to
+overlap a current approved absence for its linked staff member. It looks up
+People's authoritative records each time and returns a neutral flag. A
+correction or cancellation that removes the impact invalidates the pending
+replacement at apply time. This check does not copy absences into Booking.
