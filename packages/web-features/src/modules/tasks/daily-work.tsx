@@ -28,11 +28,15 @@ export function DailyWork({
   locale = "en",
   templatesHref = "/tasks/templates",
   creationGuidance,
+  focusTaskId,
+  allTasksHref,
 }: {
   client: TasksClient;
   locale?: string;
   templatesHref?: string;
   creationGuidance?: TaskCreationGuidance;
+  focusTaskId?: string;
+  allTasksHref?: string;
 }) {
   const c = checklistsCopy[locale === "de" || locale === "vi" ? locale : "en"];
   const t = tasksCopy[locale === "de" || locale === "vi" ? locale : "en"];
@@ -75,7 +79,12 @@ export function DailyWork({
     setAssignees([]);
     void client
       .list(
-        new URLSearchParams({ status: filter, page: String(page), pageSize: "20" }).toString(),
+        new URLSearchParams({
+          status: focusTaskId ? "all" : filter,
+          page: focusTaskId ? "1" : String(page),
+          pageSize: "20",
+          ...(focusTaskId ? { taskId: focusTaskId } : {}),
+        }).toString(),
         controller.signal
       )
       .then(async (result) => {
@@ -96,7 +105,7 @@ export function DailyWork({
         }
       });
     return () => controller.abort();
-  }, [client, filter, page, revision, t]);
+  }, [client, filter, focusTaskId, page, revision, t]);
   function begin(task: EmployeeTask | "new") {
     setPolicyError(undefined);
     setEditing(task);
@@ -199,6 +208,7 @@ export function DailyWork({
           <p className="task-eyebrow">{data?.capabilities.manage ? t.team : t.mine}</p>
           <h1>{t.title}</h1>
           <p>{t.intro}</p>
+          {focusTaskId && allTasksHref && <Link to={allTasksHref}>{t.all}</Link>}
         </div>
         {data?.capabilities.manage && (
           <div className="task-actions">
@@ -311,22 +321,24 @@ export function DailyWork({
         </form>
       )}
       <div className="task-toolbar">
-        <label>
-          {t.filter}
-          <select
-            aria-label={t.filter}
-            value={filter}
-            disabled={busy}
-            onChange={(e) => {
-              setFilter(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="all">{t.all}</option>
-            <option value="OPEN">{t.open}</option>
-            <option value="COMPLETED">{t.completed}</option>
-          </select>
-        </label>
+        {!focusTaskId && (
+          <label>
+            {t.filter}
+            <select
+              aria-label={t.filter}
+              value={filter}
+              disabled={busy}
+              onChange={(e) => {
+                setFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">{t.all}</option>
+              <option value="OPEN">{t.open}</option>
+              <option value="COMPLETED">{t.completed}</option>
+            </select>
+          </label>
+        )}
         <span>
           {t.zone} {zone}
         </span>

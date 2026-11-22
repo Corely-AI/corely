@@ -23,14 +23,21 @@ export class ExtTaskRepositoryAdapter implements TaskRepositoryPort {
     private readonly prisma: PrismaService,
     private readonly kv: PrismaExtKvAdapter
   ) {}
-  transaction<T>(scope: TaskScope, work: (tx: TransactionContext) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction(
-      async (client) => {
-        await client.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify(["tasks", scope.tenantId, scope.workspaceId])}, 0))::text`;
-        return work(client as unknown as TransactionContext);
-      },
-      { timeout: 15000 }
-    );
+  transaction<T>(
+    scope: TaskScope,
+    work: (tx: TransactionContext) => Promise<T>,
+    tx?: TransactionContext
+  ): Promise<T> {
+    const locked = async (transaction: TransactionContext) => {
+      await getPrismaClient(this.prisma, transaction)
+        .$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify(["tasks", scope.tenantId, scope.workspaceId])}, 0))::text`;
+      return work(transaction);
+    };
+    return tx
+      ? locked(tx)
+      : this.prisma.$transaction((client) => locked(client as unknown as TransactionContext), {
+          timeout: 15000,
+        });
   }
   async list(scope: TaskScope, tx?: TransactionContext): Promise<TaskRecord[]> {
     const { tenantId, moduleId, scope: namespace } = keyFor(scope, "records", "");

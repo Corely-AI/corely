@@ -60,6 +60,7 @@ export const EmployeeTaskSchema = z
   .strict();
 export const ListEmployeeTasksSchema = z
   .object({
+    taskId: z.string().uuid().optional(),
     status: z.enum(["all", "OPEN", "COMPLETED"]).default("all"),
     page: z.coerce.number().int().min(1).default(1),
     pageSize: z.coerce.number().int().min(1).max(100).default(30),

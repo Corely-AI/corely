@@ -7,7 +7,8 @@ export async function persistTaskMutation(
   task: TaskRecord,
   kind: "create" | "update" | "complete" | "reopen" | "checklist",
   ctx: UseCaseContext,
-  tx: TransactionContext
+  tx: TransactionContext,
+  agentId?: string
 ) {
   await ports.repo.save(scope, task, tx);
   await ports.audit.log(
@@ -21,6 +22,7 @@ export async function persistTaskMutation(
         workspaceId: scope.workspaceId,
         version: task.version,
         ownerStaffId: task.ownerStaffId,
+        ...(agentId ? { agentId, delegatorId: ctx.userId } : {}),
         ...(task.recurrence
           ? { templateId: task.recurrence.templateId, localDate: task.recurrence.localDate }
           : {}),

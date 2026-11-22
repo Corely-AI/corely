@@ -95,3 +95,23 @@ Each section reports when it began its source read. Sections more than a
 minute old at completion are marked stale. Disabled, restricted, and
 unavailable sections use an unknown total. A successful empty read returns
 zero. Source paths open the owning views in the selected workspace.
+
+## Internal task follow-up
+
+List active staff who can receive a task, then use the returned staff ID as
+the owner. Supply an ISO 8601 timestamp with a timezone offset and an
+idempotency key unique to the intended follow-up.
+
+```sh
+corely tasks assignees --workspace <id-or-slug> --json
+corely tasks create --workspace <id-or-slug> --owner <staff-id> \
+  --title "Confirm tomorrow's opening coverage" --due 2026-11-23T10:00:00+01:00 \
+  --idempotency-key opening-coverage-2026-11-23 --json
+```
+
+For agents, grant `tasks.assignees` and `tasks.create` separately and add
+`--tenant <tenant-id> --workspace <workspace-id> --agent <agent-id>`.
+After an interrupted response, repeat the same request with the same key
+to recover the task ID. A changed payload with that key is rejected.
+Open the returned `sourcePath` on your Corely Backoffice host to see the
+task in Daily Work with the usual workspace and task permissions.
