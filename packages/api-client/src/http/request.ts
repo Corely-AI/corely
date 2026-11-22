@@ -83,7 +83,7 @@ export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
     method,
     headers,
     credentials: "include",
-    redirect: opts.redirect,
+    ...(opts.redirect === undefined ? {} : { redirect: opts.redirect }),
   };
   if (opts.signal) {
     init.signal = opts.signal;
