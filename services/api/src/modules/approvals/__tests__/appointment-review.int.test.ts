@@ -46,6 +46,7 @@ describe.skipIf(!enabled)("Exact appointment decisions", () => {
   let writes = 0;
   let prisma: PrismaService;
   let reviews: AppointmentReviewUseCase;
+  let delivery: AppointmentDeliveryUseCase;
 
   beforeAll(async () => {
     process.env.DATABASE_URL = url!;
@@ -90,7 +91,7 @@ describe.skipIf(!enabled)("Exact appointment decisions", () => {
       },
       customerMessageContext: async () => customer,
     };
-    const delivery = new AppointmentDeliveryUseCase(
+    delivery = new AppointmentDeliveryUseCase(
       new PrismaAppointmentDeliveryStore(prisma, kv),
       bookings,
       uow,
@@ -209,6 +210,38 @@ describe.skipIf(!enabled)("Exact appointment decisions", () => {
     expect((await reviews.apply(agent, draft.id, "message")).delivery?.deliveryId).toBe(
       queued.delivery?.deliveryId
     );
+    const deliveryId = queued.delivery!.deliveryId;
+    await expect(
+      delivery.dispatch(scope, deliveryId, {
+        sendEmail: async () => {
+          throw new Error("synthetic provider failure");
+        },
+      })
+    ).rejects.toThrow("Appointment update sender unavailable");
+    expect(await reviews.get(agent, draft.id, "message")).toMatchObject({
+      state: "applied",
+      result: { bookingVersion: changed },
+      delivery: { state: "failed", deliveryId, retryable: true },
+    });
+    expect(await moves()).toBe(1);
+
+    expect(await reviews.retryDelivery(agent, draft.id)).toMatchObject({
+      delivery: { state: "pending", deliveryId },
+    });
+    const delivered: string[] = [];
+    const sink = {
+      sendEmail: async (message: { idempotencyKey?: string | undefined }) => {
+        delivered.push(message.idempotencyKey ?? "");
+        return { provider: "test", providerMessageId: "first" };
+      },
+    };
+    await delivery.dispatch(scope, deliveryId, sink);
+    await delivery.dispatch(scope, deliveryId, sink);
+    expect(delivered).toEqual([`appointment-update/${deliveryId}`]);
+    expect(await reviews.get(agent, draft.id, "message")).toMatchObject({
+      result: { bookingVersion: changed },
+      delivery: { state: "accepted", deliveryId, attempts: 2 },
+    });
     expect(await moves()).toBe(1);
   });
 

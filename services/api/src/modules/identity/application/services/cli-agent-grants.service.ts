@@ -14,6 +14,7 @@ import { UNIT_OF_WORK, type TransactionContext, type UnitOfWorkPort } from "@cor
 import {
   CliDayBriefOperation,
   CliAppointmentOperations,
+  CliAppointmentMessageOperations,
   CliTaskAssigneesOperation,
   CliTaskCreateOperation,
   CliGrantSchema,
@@ -48,6 +49,7 @@ const operations = [
   CliTaskAssigneesOperation,
   CliTaskCreateOperation,
   ...Object.values(CliAppointmentOperations),
+  ...Object.values(CliAppointmentMessageOperations),
 ];
 
 function publicGrant({ fingerprint: _fingerprint, ...grant }: GrantRecord): CliGrant {
@@ -307,5 +309,5 @@ function isTaskOperation(id: string) {
 }
 
 function isAppointmentOperation(id: string) {
-  return Object.values(CliAppointmentOperations).some((operation) => operation.id === id);
+  return id.startsWith("appointments.");
 }

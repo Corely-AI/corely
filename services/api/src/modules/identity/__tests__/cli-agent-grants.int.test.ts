@@ -17,6 +17,7 @@ import { EmployeeTasksUseCase } from "../../tasks/public";
 import { ExtTaskRepositoryAdapter } from "../../tasks/infrastructure/ext-task-repository.adapter";
 import { CliTaskController } from "../../tasks/adapters/http/cli-task.controller";
 import { CliAppointmentController } from "../../approvals/adapters/http/cli-appointment.controller";
+import { CliAppointmentMessageController } from "../../approvals/adapters/http/cli-appointment-message.controller";
 import { AppointmentReviewUseCase } from "../../approvals/public/appointment-review";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
@@ -105,6 +106,7 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
         CliDayBriefController,
         CliTaskController,
         CliAppointmentController,
+        CliAppointmentMessageController,
       ],
       providers: [
         { provide: CliAgentGrantsService, useValue: grants },
@@ -231,6 +233,35 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
       entitlements.isAppEnabled.mockImplementation(async (_tenant, appId) => appId !== "booking");
       await requestReview("propose", { ...scope, proposal }).expect(403);
       entitlements.isAppEnabled.mockResolvedValue(true);
+      const mail = prepare();
+      await issue({
+        ...mail.grant,
+        operations: ["appointments.message.draft", "appointments.message.retry"],
+      }).expect(201);
+      const mailReview = { ...scope, reviewId: "2".repeat(64) };
+      const mailCommand = (verb: string, body: Record<string, unknown>) =>
+        client
+          .post(`/sso/cli/appointments/messages/${verb}`)
+          .set(ingress)
+          .set("Authorization", mail.credential)
+          .send(body);
+      await mailCommand("draft", { ...mailReview, key: proposal.key }).expect(200);
+      expect(reviews.proposeMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ ...scope, agentId: mail.grant.agentId }),
+        mailReview.reviewId,
+        "",
+        proposal.key,
+        expect.any(Object)
+      );
+      await mailCommand("queue", mailReview).expect(403);
+      await mailCommand("status", mailReview).expect(403);
+      await mailCommand("retry", mailReview).expect(200);
+      expect(reviews.retryDelivery).toHaveBeenCalledWith(
+        expect.objectContaining({ ...scope, agentId: mail.grant.agentId }),
+        mailReview.reviewId,
+        expect.any(Object)
+      );
+      await mailCommand("retry", { ...mailReview, workspaceId: neighbor.id }).expect(401);
       const discovery = (credential: string, target = scope) =>
         client
           .get("/sso/cli/capabilities")
