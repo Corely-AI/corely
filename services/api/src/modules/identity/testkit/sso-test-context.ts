@@ -27,7 +27,8 @@ export const ssoTestPassword = "Synthetic-SSO-384!";
 export async function createSsoTestContext(
   origins = ssoTestOrigins,
   realClock = false,
-  cliEnabled = false
+  cliEnabled = false,
+  agentGrantsEnabled = false
 ) {
   const database = process.env.SSO_TEST_DATABASE_URL;
   if (!database) {
@@ -52,6 +53,7 @@ export async function createSsoTestContext(
       DATABASE_URL: database,
       CORELY_SSO_ENABLED: "true",
       CORELY_CLI_AUTH_ENABLED: String(cliEnabled),
+      CORELY_CLI_AGENT_GRANTS_ENABLED: String(agentGrantsEnabled),
       CORELY_SSO_SECRET: "a1".repeat(32),
       CORELY_SSO_PROXY_KEY: ssoTestProxyKey,
       CORELY_SSO_REGISTRATIONS: JSON.stringify({
@@ -201,6 +203,7 @@ export async function createSsoTestContext(
     store,
     registrations,
     crypto,
+    clock,
     audit,
     userId,
     tenantId,

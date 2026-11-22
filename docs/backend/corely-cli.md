@@ -38,3 +38,42 @@ The CLI selects the sole accessible workspace automatically. For multiple
 workspaces, pass an ID or an unambiguous slug. Commands with `--json` emit one
 result and return a nonzero exit code on failure. An expired session requires
 another interactive sign-in.
+
+## Agent grants
+
+Enable `CORELY_CLI_AGENT_GRANTS_ENABLED=true` together with CLI sign-in to
+activate agent issuance and execution. The first operation, `workspace.describe`,
+returns the authorized workspace name and IDs. The API rechecks the delegating
+account and its current workspace manager role for each discovery and execution.
+
+On the agent machine, using a dedicated OS account, run
+`corely agent prepare --tenant <tenant-id> --workspace <workspace-id> --json`.
+It returns the agent ID and a workspace-bound fingerprint. The secret remains
+in that account's OS credential store. Give the manager the agent ID and
+fingerprint through a trusted channel. The manager signs in separately and runs:
+
+```sh
+corely grants create --tenant <tenant-id> --workspace <workspace-id> \
+  --agent <agent-id> --name "Studio assistant" --fingerprint <fingerprint> \
+  --operation workspace.describe --minutes 30
+corely grants list --tenant <tenant-id> --workspace <workspace-id>
+corely grants revoke --tenant <tenant-id> --workspace <workspace-id> --agent <agent-id>
+```
+
+The agent uses its own account and prepared agent ID:
+
+```sh
+corely capabilities list --tenant <tenant-id> --workspace <workspace-id> --agent <agent-id>
+corely capabilities describe workspace.describe --tenant <tenant-id> --workspace <workspace-id> --agent <agent-id>
+corely operations run workspace.describe --tenant <tenant-id> --workspace <workspace-id> --agent <agent-id>
+```
+
+Grants last up to 60 minutes. To issue access again after expiry or revocation,
+prepare a new agent identity. The API stores the fingerprint and grant metadata
+in Identity's workspace-scoped extension storage. Revocation retains a record
+so an old credential cannot be reauthorized by replaying grant issuance. Remove
+obsolete local entries under Corely CLI Agent using the OS credential store.
+
+For rollback, disable the agent grant flag to stop issuance, discovery, and
+execution. Managers can still inspect and revoke existing grants while CLI
+sign-in is available. Revoke outstanding grants before enabling the flag again.
