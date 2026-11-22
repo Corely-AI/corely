@@ -17,16 +17,21 @@ import {
   OpenBukSetupDraftSchema,
   OpenBukBookSchema,
   OpenBukAvailabilityQuerySchema,
+  OpenBukReplacementInputSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "../../identity/adapters/http/auth.guard";
 import { buildUseCaseContext } from "../../../shared/http/usecase-mappers";
 import { PublicWorkspaceRoute } from "../../../shared/public";
 import { OpenBukStudioUseCase } from "../application/use-cases/openbuk-studio.usecase";
+import { OpenBukAppointmentChangeUseCase } from "../application/use-cases/openbuk-appointment-change.usecase";
 
 @Controller("openbuk")
 @UseGuards(AuthGuard)
 export class OpenBukAdminController {
-  constructor(private readonly app: OpenBukStudioUseCase) {}
+  constructor(
+    private readonly app: OpenBukStudioUseCase,
+    private readonly changes: OpenBukAppointmentChangeUseCase
+  ) {}
   @Get("studio")
   @Header("Cache-Control", "no-store")
   studio(@Req() req: Request) {
@@ -54,6 +59,14 @@ export class OpenBukAdminController {
   bookings(@Query() query: Record<string, unknown>, @Req() req: Request) {
     return this.app.appointments(
       OpenBukAvailabilityQuerySchema.parse(query).day,
+      buildUseCaseContext(req)
+    );
+  }
+  @Post("booking-changes/preview")
+  @Header("Cache-Control", "no-store")
+  previewChange(@Body() body: unknown, @Req() req: Request) {
+    return this.changes.preview(
+      OpenBukReplacementInputSchema.parse(body),
       buildUseCaseContext(req)
     );
   }

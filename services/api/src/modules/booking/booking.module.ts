@@ -3,6 +3,7 @@ import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking
 import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
 import { WorkspacesModule } from "../workspaces";
 import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
+import { OpenBukAppointmentChangeUseCase } from "./application/use-cases/openbuk-appointment-change.usecase";
 import { OpenBukAdminController, OpenBukPublicController } from "./http/openbuk.controller";
 import { OPENBUK_REPOSITORY } from "./application/ports/openbuk-repository.port";
 import { PrismaOpenBukRepositoryAdapter } from "./infrastructure/adapters/prisma-openbuk-repository.adapter";
@@ -84,6 +85,7 @@ import { bookingPolicies } from "./booking-extensions";
     BookingStaffConstraintAdapter,
     OpenBukRateLimitGuard,
     OpenBukStudioUseCase,
+    OpenBukAppointmentChangeUseCase,
     { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },
@@ -277,6 +279,6 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [AVAILABILITY_RULE_REPOSITORY, BOOKING_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [],
+  exports: [OpenBukAppointmentChangeUseCase],
 })
 export class BookingModule {}

@@ -163,7 +163,8 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     from: Date,
     to: Date,
     now: Date,
-    tx?: TransactionContext
+    tx?: TransactionContext,
+    excludeBookingId?: string
   ) {
     const client = getPrismaClient(this.prisma, tx);
     const [allocations, holds] = await Promise.all([
@@ -171,6 +172,7 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
         where: {
           tenantId: scope.tenantId,
           resourceId: staffId,
+          ...(excludeBookingId ? { bookingId: { not: excludeBookingId } } : {}),
           startAt: { lt: to },
           endAt: { gt: from },
           booking: { status: { in: ["HOLD", "CONFIRMED"] } },

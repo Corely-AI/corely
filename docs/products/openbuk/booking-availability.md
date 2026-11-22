@@ -26,6 +26,12 @@ format contains no request fingerprint.
 The OpenBuk public slot calculation and internal reservation intake have
 different rules. The internal intake continues to accept explicit intervals
 through the booking API. It checks resource scope, linked staff availability
-and conflicts. Reviewed appointment management uses the studio's slot rules
-for a customer replacement and has separate acceptance under
-[#318](https://github.com/Corely-AI/corely/issues/318).
+and conflicts.
+
+For a single-staff OpenBuk appointment, the manager's replacement preview
+uses the same studio slot rules and excludes the appointment's own
+allocation from the occupancy check. It returns the old and proposed times,
+the resource, timezone and the booking's version. The preview does not
+reserve the time. The internal apply operation checks the exact preview
+again under the workspace, booking and resource locks before it writes.
+The shared review workflow owns the human decision and replay record.

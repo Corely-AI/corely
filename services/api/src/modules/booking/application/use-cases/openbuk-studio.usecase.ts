@@ -154,7 +154,12 @@ export class OpenBukStudioUseCase {
     }
     return { studio: OpenBukPublicStudioSchema.parse(studio) };
   }
-  private async slots(scope: StudioScope, day: string, tx?: TransactionContext) {
+  private async slots(
+    scope: StudioScope,
+    day: string,
+    tx?: TransactionContext,
+    excludeBookingId?: string
+  ) {
     const studio = await this.repo.studio(scope, tx);
     if (!studio) {
       throw new NotFoundException({
@@ -170,7 +175,8 @@ export class OpenBukStudioUseCase {
       new Date(midnight - 14 * 3600000),
       new Date(midnight + 38 * 3600000),
       now,
-      tx
+      tx,
+      excludeBookingId
     );
     const staffWindows = await this.staffAvailability.windows(
       scope,
@@ -180,6 +186,20 @@ export class OpenBukStudioUseCase {
       tx
     );
     return { studio, slots: openBukAvailability(studio, day, now, busy, staffWindows) };
+  }
+  async replacementSlot(
+    scope: StudioScope,
+    timezone: string,
+    bookingId: string,
+    startAt: Date,
+    tx?: TransactionContext
+  ) {
+    const { slots } = await this.slots(scope, studioDate(startAt, timezone), tx, bookingId);
+    const slot = slots.find((candidate) => candidate.startAt === startAt.toISOString());
+    if (!slot) {
+      throw new ConflictException("Booking:SlotUnavailable");
+    }
+    return slot;
   }
   async availability(day: string, ctx: UseCaseContext) {
     const result = await this.slots(this.publicScope(ctx), day);
