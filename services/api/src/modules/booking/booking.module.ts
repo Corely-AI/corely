@@ -279,6 +279,6 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [AVAILABILITY_RULE_REPOSITORY, BOOKING_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [OpenBukAppointmentChangeUseCase],
+  exports: [OpenBukStudioUseCase, OpenBukAppointmentChangeUseCase],
 })
 export class BookingModule {}

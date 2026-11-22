@@ -3,6 +3,11 @@ import { PrismaTenantAdminSessionLock } from "./infrastructure/adapters/prisma-t
 import { SsoSessionService } from "./application/services/sso-session.service";
 import { randomBytes } from "node:crypto";
 import { AssociateInvitedAccountUseCase } from "./application/use-cases/associate-invited-account.usecase";
+import { CliOperationAccess } from "./adapters/http/cli-operation-access";
+import { CliAgentController } from "./adapters/http/cli-agent.controller";
+import { CliAgentGrantsService } from "./application/services/cli-agent-grants.service";
+import { CLI_GRANT_LOCK } from "./application/ports/cli-grant-lock.port";
+import { PrismaCliGrantLock } from "./infrastructure/adapters/prisma-cli-grant-lock.adapter";
 import { CliSsoController } from "./adapters/http/cli-sso.controller";
 import { SsoController } from "./adapters/http/sso.controller";
 import { SsoHttpSecurity } from "./adapters/http/sso-http-security";
@@ -112,9 +117,13 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     TenantAdminSessionController,
     SsoController,
     CliSsoController,
+    CliAgentController,
   ],
   providers: [
     SsoRegistrationService,
+    CliAgentGrantsService,
+    CliOperationAccess,
+    { provide: CLI_GRANT_LOCK, useClass: PrismaCliGrantLock },
     SsoService,
     SsoSessionService,
     SsoEmailCodeService,
@@ -268,6 +277,10 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     PermissionCatalogRegistry,
   ],
   exports: [
+    CliOperationAccess,
+    CliAgentGrantsService,
+    SsoSessionService,
+    SsoHttpSecurity,
     TenantAdminSessions,
     DeliverSsoEmailCodeUseCase,
     AssociateInvitedAccountUseCase,

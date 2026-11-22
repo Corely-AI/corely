@@ -258,17 +258,35 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     return id;
   }
 
+  async operationalAppointments(scope: StudioScope, day: string, timezone: string) {
+    const rows = await this.prisma.booking.findMany({
+      where: {
+        ...scope,
+        startAt: operationalDateRange(day),
+        status: { in: ["CONFIRMED", "COMPLETED", "NO_SHOW"] },
+      },
+      select: {
+        id: true,
+        status: true,
+        startAt: true,
+        endAt: true,
+        allocations: {
+          orderBy: { resourceId: "asc" },
+          select: { resourceId: true, startAt: true, endAt: true },
+        },
+      },
+      orderBy: [{ startAt: "asc" }, { id: "asc" }],
+    });
+    return rows.filter((row) => studioDate(row.startAt, timezone) === day);
+  }
+
   async appointments(scope: StudioScope, day: string) {
     const studio = await this.studio(scope);
     if (!studio) {
       return [];
     }
-    const midnight = Date.parse(`${day}T00:00:00Z`);
     const rows = await this.prisma.booking.findMany({
-      where: {
-        ...scope,
-        startAt: { gte: new Date(midnight - 14 * 3600000), lt: new Date(midnight + 38 * 3600000) },
-      },
+      where: { ...scope, startAt: operationalDateRange(day) },
       include: { serviceOffering: true, allocations: { include: { resource: true } } },
       orderBy: { startAt: "asc" },
     });
@@ -288,4 +306,9 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
         timezone: studio.timezone,
       }));
   }
+}
+
+function operationalDateRange(day: string) {
+  const utcMidnight = Date.parse(`${day}T00:00:00Z`);
+  return { gte: new Date(utcMidnight - 14 * 3600000), lt: new Date(utcMidnight + 38 * 3600000) };
 }

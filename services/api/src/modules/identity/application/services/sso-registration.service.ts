@@ -37,6 +37,7 @@ export class SsoRegistrationService {
   readonly environment: string;
   readonly enabled: boolean;
   readonly cliEnabled: boolean;
+  readonly agentGrantsEnabled: boolean;
   readonly loginOrigin: string;
   readonly apps: ReadonlyArray<{ key: SsoAppKey; origin: string }>;
   readonly encryptionKey: string;
@@ -45,6 +46,7 @@ export class SsoRegistrationService {
     this.environment = env.APP_ENV;
     this.enabled = env.getValue("CORELY_SSO_ENABLED");
     this.cliEnabled = this.enabled && env.getValue("CORELY_CLI_AUTH_ENABLED");
+    this.agentGrantsEnabled = this.cliEnabled && env.getValue("CORELY_CLI_AGENT_GRANTS_ENABLED");
     this.encryptionKey = env.getValue("CORELY_SSO_SECRET") ?? "";
     this.proxyKey = env.getValue("CORELY_SSO_PROXY_KEY");
     const settings = this.enabled

@@ -249,6 +249,10 @@ export const envSchema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((value) => value === "true"),
+  CORELY_CLI_AGENT_GRANTS_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   CORELY_SSO_REGISTRATIONS: z.string().optional(),
   CORELY_SSO_SECRET: z
     .string()

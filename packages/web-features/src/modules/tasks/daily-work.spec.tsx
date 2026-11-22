@@ -125,3 +125,21 @@ describe("Checklist progress in Daily Work", () => {
     expect(client.list).toHaveBeenCalledTimes(1);
   });
 });
+
+it("loads the linked task as an authorized filtered Daily Work view", async () => {
+  const client = fixture(200);
+  render(
+    <MemoryRouter>
+      <DailyWork client={client} focusTaskId={task.id} allTasksHref="/openbuk/app/tasks" />
+    </MemoryRouter>
+  );
+  expect(await screen.findByRole("article")).toHaveTextContent(task.title);
+  expect(client.list).toHaveBeenCalledWith(
+    `status=all&page=1&pageSize=20&taskId=${task.id}`,
+    expect.any(AbortSignal)
+  );
+  expect(screen.getByRole("link", { name: "All tasks" })).toHaveAttribute(
+    "href",
+    "/openbuk/app/tasks"
+  );
+});

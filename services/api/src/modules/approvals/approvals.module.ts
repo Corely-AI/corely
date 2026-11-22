@@ -24,6 +24,7 @@ import { PrismaApprovalsDomainEventRepository } from "./infrastructure/repositor
 import { APPOINTMENT_REVIEW_STORE } from "./application/ports/appointment-review.port";
 import { AppointmentReviewUseCase } from "./application/appointment-review.usecase";
 import { AppointmentReviewController } from "./adapters/http/appointment-review.controller";
+import { CliAppointmentController } from "./adapters/http/cli-appointment.controller";
 import { PrismaAppointmentReviewStore } from "./infrastructure/repositories/prisma-appointment-review.store";
 
 @Module({
@@ -40,6 +41,7 @@ import { PrismaAppointmentReviewStore } from "./infrastructure/repositories/pris
     ApprovalsPolicyController,
     ApprovalsRequestsController,
     AppointmentReviewController,
+    CliAppointmentController,
   ],
   providers: [
     ApprovalPolicyService,

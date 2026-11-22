@@ -229,6 +229,16 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
     ).toBe(1);
     expect(await prisma.auditLog.count({ where: { tenantId, action: "booking.created" } })).toBe(1);
     expect((await app.appointments("2026-10-05", ctx)).appointments[0]?.customerName).toBe("Guest");
+    const projection = await app.operationalAppointments("2026-10-05", "Europe/Berlin", ctx);
+    expect(projection).toHaveLength(1);
+    expect(Object.keys(projection[0]).sort()).toEqual([
+      "allocations",
+      "endAt",
+      "id",
+      "startAt",
+      "status",
+    ]);
+    expect(JSON.stringify(projection)).not.toContain("Guest");
   });
   it("replays concurrent retries, rejects changed payloads and does not duplicate events", async () => {
     const body = await input("2026-10-05T09:00:00Z");
