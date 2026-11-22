@@ -3,7 +3,7 @@ import { Inject, Injectable, BadRequestException, UnauthorizedException } from "
 import { PrismaService } from "@corely/data";
 import type { Prisma } from "@prisma/client";
 import { OUTBOX_PORT, type OutboxPort, type TransactionContext } from "@corely/kernel";
-import { SsoAppKeySchema } from "@corely/contracts";
+import { SsoClientKeySchema } from "@corely/contracts";
 import type {
   SsoStorePort,
   SsoTransaction,
@@ -75,7 +75,7 @@ export class PrismaSsoStore implements SsoStorePort {
       if (input.replacementHash) {
         await this.record(tx, "identity.sso.app_session_rotated", session.userId, session.id);
       }
-      return { ...updated, appKey: SsoAppKeySchema.parse(updated.appKey) };
+      return { ...updated, appKey: SsoClientKeySchema.parse(updated.appKey) };
     });
   }
   async revokeFamily(input: Parameters<SsoStorePort["revokeFamily"]>[0]) {
@@ -116,12 +116,35 @@ export class PrismaSsoStore implements SsoStorePort {
       await this.record(tx, "identity.sso.signed_out", family.userId, family.id);
     });
   }
+  async revokeCliSession(input: Parameters<SsoStorePort["revokeCliSession"]>[0]) {
+    await this.prisma.$transaction(async (tx) => {
+      const session = await tx.ssoAppSession.findUnique({
+        where: { handleHash: input.handleHash },
+      });
+      if (!session) {
+        return;
+      }
+      const updated = await tx.ssoAppSession.updateMany({
+        where: {
+          id: session.id,
+          handleHash: input.handleHash,
+          environment: input.environment,
+          appKey: "cli",
+          revokedAt: null,
+        },
+        data: { revokedAt: input.now },
+      });
+      if (updated.count) {
+        await this.record(tx, "identity.sso.cli_signed_out", session.userId, session.id);
+      }
+    });
+  }
   async createTransaction(transaction: SsoTransaction) {
     await this.prisma.ssoLoginTransaction.create({ data: transaction });
   }
   async getTransaction(id: string) {
     const row = await this.prisma.ssoLoginTransaction.findUnique({ where: { id } });
-    return row ? { ...row, appKey: SsoAppKeySchema.parse(row.appKey) } : null;
+    return row ? { ...row, appKey: SsoClientKeySchema.parse(row.appKey) } : null;
   }
   async findFamily(handleHash: string, environment: string) {
     return this.prisma.ssoCentralSession.findFirst({ where: { handleHash, environment } });

@@ -16,7 +16,7 @@ import { ssoTestProxyKey } from "../testkit/sso-test-context";
 describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("Corely SSO with isolated PostgreSQL", () => {
   let fixture: Awaited<ReturnType<typeof createSsoTestContext>>;
   beforeEach(async () => {
-    fixture = await createSsoTestContext();
+    fixture = await createSsoTestContext(origins, false, true);
   });
   afterEach(async () => {
     vi.restoreAllMocks();
@@ -46,6 +46,63 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("Corely SSO with isolated Po
     expect(transaction?.verifierCipher).toBe("");
     expect(transaction?.stateCipher).toBe("");
   });
+  it("binds one CLI exchange to the loopback port, state and verifier and only revokes the CLI session", async () => {
+    const browser = await fixture.login();
+    const browserSession = await fixture.service.callback(
+      origins.app,
+      browser.callback,
+      browser.handle
+    );
+    const verifier = fixture.crypto.secret();
+    const state = fixture.crypto.secret();
+    const port = 43123;
+    const { redirectTo } = await fixture.service.startCli(
+      { port, state, challenge: fixture.crypto.challenge(verifier) },
+      "synthetic-cli"
+    );
+    const id = new URL(redirectTo).searchParams.get("request")!;
+    const consentUrl = await fixture.service.authorize(id, browser.centralHandle);
+    expect(new URL(consentUrl!).pathname).toBe("/sso/cli/consent");
+    expect((await fixture.store.getTransaction(id))?.codeHash).toBeNull();
+    const { csrfToken } = await fixture.service.cliConsent(id, browser.centralHandle);
+    await expect(
+      fixture.service.cliConsent(id, browser.centralHandle, fixture.crypto.secret())
+    ).rejects.toThrow();
+    const callback = new URL(
+      (await fixture.service.cliConsent(id, browser.centralHandle, csrfToken)).redirectTo
+    );
+    expect(callback.origin).toBe(`http://127.0.0.1:${port}`);
+    const proof = { request: id, code: callback.searchParams.get("code")!, state, verifier, port };
+    await expect(
+      fixture.service.exchangeCli({ ...proof, verifier: fixture.crypto.secret() })
+    ).rejects.toThrow();
+    await expect(
+      fixture.service.exchangeCli({ ...proof, state: fixture.crypto.secret() })
+    ).rejects.toThrow();
+    await expect(fixture.service.exchangeCli({ ...proof, port: port + 1 })).rejects.toThrow();
+    const { accessToken } = await fixture.service.exchangeCli(proof);
+    await expect(fixture.service.exchangeCli(proof)).rejects.toThrow();
+
+    const context = {
+      handleHash: fixture.crypto.hash(accessToken),
+      environment: fixture.registrations.environment,
+      now: new Date(),
+    };
+    await expect(fixture.store.useSession({ ...context, appKey: "app-center" })).rejects.toThrow();
+    await expect(fixture.store.useSession({ ...context, appKey: "cli" })).resolves.toMatchObject({
+      userId: fixture.userId,
+    });
+    await fixture.store.revokeCliSession(context);
+    await expect(fixture.store.useSession({ ...context, appKey: "cli" })).rejects.toThrow();
+    await expect(
+      fixture.store.useSession({
+        ...context,
+        handleHash: fixture.crypto.hash(browserSession.handle),
+        appKey: "app-center",
+      })
+    ).resolves.toMatchObject({ userId: fixture.userId });
+  });
+
   it("reuses the central session in a second app without credentials", async () => {
     const login = await fixture.login();
     await fixture.service.callback(origins.app, login.callback, login.handle);
