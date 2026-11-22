@@ -3,8 +3,10 @@ import { cliAgentProof } from "@corely/contracts";
 import { PrismaExtKvAdapter, PrismaUnitOfWork } from "@corely/data";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AuthorizeWorkspaceUseCase, ListWorkspacesUseCase } from "../../workspaces/public";
+import { DailyOperationsBrief } from "../../operations-brief/application/daily-operations-brief";
+import { CliDayBriefController } from "../../operations-brief/http/cli-day-brief.controller";
 import { PrismaWorkspaceRepository } from "../../workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
 import { CliAgentController } from "../adapters/http/cli-agent.controller";
 import { CliSsoController } from "../adapters/http/cli-sso.controller";
@@ -51,10 +53,18 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
       fixture.audit,
       fixture.clock
     );
+    const brief = {
+      execute: vi.fn(async (scope: { workspaceId: string }, date: string) => ({
+        workspaceId: scope.workspaceId,
+        date,
+      })),
+    };
     const module = await Test.createTestingModule({
-      controllers: [CliAgentController, CliSsoController],
+      controllers: [CliAgentController, CliSsoController, CliDayBriefController],
       providers: [
         { provide: CliAgentGrantsService, useValue: grants },
+        { provide: DailyOperationsBrief, useValue: brief },
+        { provide: AuthorizeWorkspaceUseCase, useValue: workspaceAuth },
         { provide: SsoService, useValue: fixture.service },
         { provide: SsoSessionService, useValue: sessions },
         {
@@ -202,6 +212,20 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
       expect(revoked.body.revokedAt).toEqual(expect.any(String));
       await discovery(agent.credential).expect(401);
       await issue(agent.grant).expect(409);
+      const briefing = prepare();
+      await issue({ ...briefing.grant, operations: ["day.brief"] }).expect(201);
+      const day = (credential: string, target = scope) =>
+        client
+          .post("/sso/cli/day-brief")
+          .set(ingress)
+          .set("Authorization", credential)
+          .send({ ...target, date: "today" });
+      await day(agent.credential).expect(401);
+      await day(briefing.credential, { ...scope, workspaceId: neighbor.id }).expect(401);
+      const response = await day(briefing.credential).expect(200);
+      expect(response.body).toEqual({ workspaceId: scope.workspaceId, date: "today" });
+      await day(`Bearer ${manager.accessToken}`).expect(200);
+      expect(brief.execute).toHaveBeenCalledTimes(2);
       const expiring = prepare();
       await issue(expiring.grant).expect(201);
       await discovery(expiring.credential).expect(200);

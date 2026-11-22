@@ -36,6 +36,7 @@ import { IssuesModule } from "./modules/issues";
 import { AiRichTextModule } from "./modules/ai-richtext";
 import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
+import { OperationsBriefModule } from "./modules/operations-brief/operations-brief.module";
 import { BookingModule } from "./modules/booking";
 import { TasksModule } from "./modules/tasks/tasks.module";
 import { PeopleModule } from "./modules/people/people.module";
@@ -110,6 +111,7 @@ import { SignModule } from "./modules/sign/sign.module";
     CrmMailModule,
     ClassesModule,
     BookingModule,
+    OperationsBriefModule,
     PeopleModule,
     TasksModule,
     CoachingEngagementsModule,

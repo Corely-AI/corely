@@ -8,6 +8,7 @@ import {
   CliGrantScopeSchema,
   CliGrantSchema,
   CliOperationIdSchema,
+  type CliGrantScope,
 } from "@corely/contracts/identity/sso";
 import { CliError } from "./errors";
 
@@ -21,13 +22,15 @@ type AgentOptions = {
   minutes?: string;
 };
 type Api = (path: string, options: Omit<Parameters<typeof request>[0], "url">) => Promise<unknown>;
-type Keyring = (account: string) => Promise<{ get(): string | null; save(secret: string): void }>;
+export type AgentKeyring = (
+  account: string
+) => Promise<{ get(): string | null; save(secret: string): void }>;
 
 export async function runAgentCommand(
   commands: string[],
   options: AgentOptions,
   api: Api,
-  keyring: Keyring,
+  keyring: AgentKeyring,
   managerToken: () => Promise<string>
 ) {
   const scope = CliGrantScopeSchema.safeParse({
@@ -47,7 +50,7 @@ export async function runAgentCommand(
   if (group === "agent" && command === "prepare" && commands.length === 2) {
     const agentId = randomUUID();
     const secret = randomBytes(32).toString("base64url");
-    const entry = await keyring(scopeKey(agentId));
+    const entry = await keyring(agentKey(scope.data, agentId));
     entry.save(secret);
     return {
       ...scope.data,
@@ -106,15 +109,7 @@ export async function runAgentCommand(
   if (!list && !requested.success) {
     throw new CliError("USAGE", "Specify a valid operation ID.");
   }
-  const agentId = requireAgent(options.agent);
-  const secret = (await keyring(scopeKey(agentId))).get();
-  if (!secret) {
-    throw new CliError(
-      "AGENT_CREDENTIAL_REQUIRED",
-      "Prepare the agent on this account before running an operation."
-    );
-  }
-  const accessToken = `corely-agent.${agentId}.${secret}`;
+  const accessToken = await agentAccessToken(scope.data, options.agent, keyring);
   if (execute && requested.success) {
     return api(`operations/${requested.data}`, {
       accessToken,
@@ -133,6 +128,26 @@ export async function runAgentCommand(
     throw new CliError("OPERATION_UNAVAILABLE", "This operation is not available to the agent.");
   }
   return capability;
+}
+
+function agentKey(scope: CliGrantScope, agentId: string) {
+  return JSON.stringify([scope.tenantId, scope.workspaceId, agentId]);
+}
+
+export async function agentAccessToken(
+  scope: CliGrantScope,
+  id: string | undefined,
+  keyring: AgentKeyring
+) {
+  const agentId = requireAgent(id);
+  const secret = (await keyring(agentKey(scope, agentId))).get();
+  if (!secret) {
+    throw new CliError(
+      "AGENT_CREDENTIAL_REQUIRED",
+      "Prepare the agent on this account before running an operation."
+    );
+  }
+  return `corely-agent.${agentId}.${secret}`;
 }
 
 function requireAgent(value?: string) {
