@@ -10,7 +10,7 @@ export function FreelancerPage() {
     <>
       <Seo
         title="Corely for freelancers - invoices, expenses, taxes"
-        description="Corely gives freelancers a calm, AI-native ERP: invoices, expenses, tax visibility, and client management. Start in minutes and scale to company mode when you grow."
+        description="Corely gives freelancers a calm, AI-native ERP: invoices, expenses, tax visibility, and client management. Invite teammates and add apps in the same workspace as you grow."
         canonicalPath="/freelancer"
       />
 
@@ -18,7 +18,7 @@ export function FreelancerPage() {
         <Container>
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="space-y-6">
-              <Badge variant="accent">Freelancer mode</Badge>
+              <Badge variant="accent">For freelancers</Badge>
               <div className="space-y-4">
                 <h1 className="text-display">Freelance finance, without the patchwork.</h1>
                 <p className="text-body text-muted-foreground">
@@ -126,7 +126,7 @@ export function FreelancerPage() {
             </Card>
             <Card className="card-interactive">
               <CardHeader>
-                <CardTitle>Corely freelancer mode</CardTitle>
+                <CardTitle>Corely for freelancers</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm text-muted-foreground">

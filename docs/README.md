@@ -7,6 +7,8 @@ into finance and specialist operations as their work demands.
 Finance is optional; accounting is not a prerequisite for operational apps.
 Implementation evidence, target design and unvalidated hypotheses are kept separate.
 
+- [Shared workspace experience](./menu/FREELANCER_COMPANY_MODE.md) — solo and team configuration
+
 ## Engineering workflow
 
 - [Corely Engineering Guide](./engineering-guide.md) — ticket delivery, verification, PRs and UI/UX review

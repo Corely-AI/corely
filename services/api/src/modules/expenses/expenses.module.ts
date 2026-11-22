@@ -27,9 +27,6 @@ import { TransitionExpenseUseCase } from "./application/use-cases/transition-exp
 import { PrismaExpenseRepository } from "./infrastructure/adapters/prisma-expense-repository.adapter";
 import { PrismaGiftThresholdQueryAdapter } from "./infrastructure/adapters/prisma-gift-threshold-query.adapter";
 import { KernelModule } from "../../shared/kernel/kernel.module";
-import { PlatformModule } from "../platform/platform.module";
-import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
-import { WorkspaceTemplateService } from "../platform/application/services/workspace-template.service";
 import {
   CUSTOM_FIELDS_WRITE_PORT,
   DIMENSIONS_WRITE_PORT,
@@ -39,12 +36,11 @@ import {
   ResolveEntityIdsByCustomFieldFiltersUseCase,
   ResolveEntityIdsByDimensionFiltersUseCase,
 } from "../platform-custom-attributes";
-import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/workspace-repository.port";
 import { GIFT_THRESHOLD_QUERY_PORT } from "./application/ports/gift-threshold-query.port";
 import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-query.port";
 
 @Module({
-  imports: [DataModule, KernelModule, PlatformModule, PlatformCustomAttributesModule],
+  imports: [DataModule, KernelModule, PlatformCustomAttributesModule],
   controllers: [ExpensesController],
   providers: [
     // Repository
@@ -69,8 +65,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
         customIndexes: CustomFieldIndexRepository,
         dimensionsWritePort: DimensionsWritePort,
         customFieldsWritePort: CustomFieldsWritePort,
-        workspaceRepo: WorkspaceRepositoryPort,
-        templateService: WorkspaceTemplateService,
         prisma: PrismaService,
         giftThresholdQuery: GiftThresholdQueryPort
       ) =>
@@ -85,8 +79,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
           customIndexes,
           dimensionsWritePort,
           customFieldsWritePort,
-          workspaceRepo,
-          templateService,
           prisma,
           giftThresholdQuery
         ),
@@ -102,8 +94,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
         CustomFieldIndexRepository,
         DIMENSIONS_WRITE_PORT,
         CUSTOM_FIELDS_WRITE_PORT,
-        WORKSPACE_REPOSITORY_PORT,
-        WorkspaceTemplateService,
         PrismaService,
         GIFT_THRESHOLD_QUERY_PORT,
       ],

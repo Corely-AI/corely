@@ -70,10 +70,6 @@ vi.mock("@/shared/components/Logo", () => ({
   Logo: () => <div data-testid="logo" />,
 }));
 
-vi.mock("@/shared/workspaces/WorkspaceTypeBadge", () => ({
-  WorkspaceTypeBadge: () => <div data-testid="workspace-type" />,
-}));
-
 vi.mock("@/modules/notifications/components/notification-bell", () => ({
   NotificationBell: () => <div data-testid="notification-bell" />,
 }));

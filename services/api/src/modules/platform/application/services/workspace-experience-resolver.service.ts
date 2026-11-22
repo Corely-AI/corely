@@ -54,7 +54,7 @@ export class WorkspaceExperienceResolverService {
     const workspace = await this.resolveWorkspace(input.tenantId, input.workspaceId);
     const workspaceKind = workspace?.legalEntity?.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
     const defaults = {
-      ...this.templateService.getDefaultCapabilities(workspaceKind),
+      ...this.templateService.getDefaultCapabilities(),
       "sign.templates": entitlement.hasCapability("sign.templates"),
     };
     const capabilities = input.packageId ? operationalCapabilities(defaults) : defaults;

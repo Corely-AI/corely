@@ -3,30 +3,21 @@ import { WorkspaceTemplateService } from "../application/services/workspace-temp
 
 describe("WorkspaceTemplateService", () => {
   const service = new WorkspaceTemplateService();
-
-  it("returns freelancer defaults for PERSONAL", () => {
-    const capabilities = service.getDefaultCapabilities("PERSONAL");
-    const navigation = service.getNavigationGroupsStructure("PERSONAL");
-    const defaultApps = service.getDefaultEnabledApps("PERSONAL");
-
+  it("provides shared collaboration and approval controls", () => {
+    const capabilities = service.getDefaultCapabilities();
     expect(capabilities["workspace.multiUser"]).toBe(true);
-    expect(capabilities["sales.quotes"]).toBe(false);
-    expect(capabilities["ai.copilot"]).toBe(true);
-    expect(capabilities["booking.basic"]).toBe(true);
-    expect(navigation.length).toBeGreaterThan(0);
-    expect(defaultApps).toContain("booking");
-  });
-
-  it("returns company defaults for COMPANY", () => {
-    const capabilities = service.getDefaultCapabilities("COMPANY");
-    const navigation = service.getNavigationGroupsStructure("COMPANY");
-    const defaultApps = service.getDefaultEnabledApps("COMPANY");
-
-    expect(capabilities["workspace.multiUser"]).toBe(true);
+    expect(capabilities["workspace.rbac"]).toBe(true);
+    expect(capabilities.approvals).toBe(true);
     expect(capabilities["sales.quotes"]).toBe(true);
-    expect(capabilities["ai.copilot"]).toBe(true);
     expect(capabilities["booking.basic"]).toBe(true);
-    expect(navigation.some((group) => group.id === "sales")).toBe(true);
-    expect(defaultApps).toContain("booking");
+  });
+  it("keeps optional apps outside the shared baseline", () => {
+    const apps = service.getDefaultEnabledApps();
+    expect(apps).toContain("booking");
+    expect(apps).toContain("workspaces");
+    expect(apps).not.toContain("sales");
+    expect(apps).not.toContain("import");
+    expect(service.getDefaultHomeWidgets()[0].widgetType).toBe("quick-actions");
+    expect(service.getDefaultTerminology().partyLabel).toBe("Customer");
   });
 });

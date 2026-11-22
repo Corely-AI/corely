@@ -4,7 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   Patch,
   Post,
@@ -30,12 +29,6 @@ import { UpdateExpenseUseCase } from "../application/use-cases/update-expense.us
 import { TransitionExpenseUseCase } from "../application/use-cases/transition-expense.usecase";
 import type { Expense } from "../domain/expense.entity";
 import { ExpenseCapabilitiesBuilder } from "../domain/expense-capabilities.builder";
-import {
-  WORKSPACE_REPOSITORY_PORT,
-  type WorkspaceRepositoryPort,
-} from "../../workspaces/application/ports/workspace-repository.port";
-import { WorkspaceTemplateService } from "../../platform/application/services/workspace-template.service";
-
 const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
   tenantId: z.string().optional(),
   merchant: z.string().optional(),
@@ -73,10 +66,7 @@ export class ExpensesController {
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly getExpenseUseCase: GetExpenseUseCase,
     private readonly updateExpenseUseCase: UpdateExpenseUseCase,
-    private readonly transitionExpenseUseCase: TransitionExpenseUseCase,
-    @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort,
-    private readonly templateService: WorkspaceTemplateService
+    private readonly transitionExpenseUseCase: TransitionExpenseUseCase
   ) {}
 
   @Post()
@@ -184,9 +174,7 @@ export class ExpensesController {
     const expense = await this.getExpenseUseCase.execute({ expenseId, includeArchived }, ctx);
     const dto = this.mapExpenseDto(expense);
 
-    // Determine if approvals are enabled for this workspace
-    const approvalsEnabled = await this.isApprovalsEnabled(ctx.tenantId, ctx.workspaceId);
-    const capabilities = new ExpenseCapabilitiesBuilder(dto, approvalsEnabled).build();
+    const capabilities = new ExpenseCapabilitiesBuilder(dto).build();
 
     return { expense: dto, capabilities };
   }
@@ -286,32 +274,5 @@ export class ExpensesController {
       custom: expense.custom ?? undefined,
       deductibility: expense.toDeductibilityResult(),
     };
-  }
-
-  /**
-   * Check if approval workflow is enabled for the workspace
-   */
-  private async isApprovalsEnabled(tenantId: string, workspaceId?: string): Promise<boolean> {
-    if (!workspaceId) {
-      return true; // Default to approvals enabled for safety
-    }
-
-    try {
-      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
-        tenantId,
-        workspaceId
-      );
-
-      if (!workspace || !workspace.legalEntity) {
-        return true;
-      }
-
-      const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-      const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
-
-      return capabilities.approvals !== false;
-    } catch (error) {
-      return true; // Default to approvals enabled on error
-    }
   }
 }

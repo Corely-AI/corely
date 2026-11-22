@@ -141,13 +141,11 @@ export class ComposeMenuUseCase {
       })
     );
 
-    // Ensure tenant has default apps installed; fall back to PERSONAL defaults if kind unknown
     const workspace = experience.workspace;
     const workspaceKind = experience.workspaceKind;
 
     const installedDefaults =
-      !input.launchId &&
-      (await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind));
+      !input.launchId && (await this.ensureDefaultAppsInstalled(input.tenantId, input.userId));
     if (installedDefaults) {
       experience = await this.experienceResolver.resolve({
         tenantId: input.tenantId,
@@ -175,7 +173,7 @@ export class ComposeMenuUseCase {
     let workspaceMetadata: ComposeMenuOutput["workspace"] | undefined;
 
     if (workspace && workspace.legalEntity) {
-      const defaultTerminology = this.templateService.getDefaultTerminology(workspaceKind);
+      const defaultTerminology = this.templateService.getDefaultTerminology();
       const defaultCapabilities = experience.capabilities;
 
       workspaceMetadata = {
@@ -205,17 +203,13 @@ export class ComposeMenuUseCase {
   }
 
   /**
-   * Ensure default apps for the workspace kind are enabled for the tenant.
+   * Install any missing baseline apps for the tenant.
    * Runs on every menu request but upserts are idempotent.
    */
-  private async ensureDefaultAppsInstalled(
-    tenantId: string,
-    userId: string,
-    workspaceKind: "PERSONAL" | "COMPANY"
-  ): Promise<boolean> {
+  private async ensureDefaultAppsInstalled(tenantId: string, userId: string): Promise<boolean> {
     const currentInstalls = await this.appInstallRepo.listByTenant(tenantId);
     const installed = new Set(currentInstalls.map((i) => i.appId));
-    const defaultApps = this.templateService.getDefaultEnabledApps(workspaceKind);
+    const defaultApps = this.templateService.getDefaultEnabledApps();
     let installedAny = false;
 
     for (const appId of defaultApps) {
