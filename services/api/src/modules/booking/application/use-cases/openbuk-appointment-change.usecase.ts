@@ -92,7 +92,8 @@ export class OpenBukAppointmentChangeUseCase {
     approved: OpenBukReplacement,
     idempotencyKey: string,
     ctx: UseCaseContext,
-    tx: TransactionContext
+    tx: TransactionContext,
+    expiresAt?: string
   ) {
     const expected = OpenBukReplacementSchema.parse(approved);
     const actual = await this.check(
@@ -102,6 +103,9 @@ export class OpenBukAppointmentChangeUseCase {
     );
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {
       throw new ConflictException("Booking:ReviewStale");
+    }
+    if (expiresAt && Date.parse(expiresAt) <= this.clock.now().getTime()) {
+      throw new ConflictException("Booking:ReviewExpired");
     }
     const changed = await this.reschedule.executeInTransaction(
       {
