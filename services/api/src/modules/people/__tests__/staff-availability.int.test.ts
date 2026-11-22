@@ -17,7 +17,6 @@ import {
 } from "../../booking/domain/booking.entities";
 import { studioFixture } from "../../booking/__tests__/openbuk-fixtures";
 import { CreateBookingUseCase } from "../../booking/application/use-cases/create-booking.usecase";
-import { PrismaResourceRepoAdapter } from "../../booking/infrastructure/adapters/prisma-resource-repo.adapter";
 const url = process.env.PEOPLE_TEST_DATABASE_URL;
 const enabled = !!url && /^postgres(?:ql)?:\/\/[^/]+\/people_test_[a-z0-9_]+(?:\?.*)?$/.test(url);
 describe.skipIf(!enabled)("People patterns constrain authoritative Booking", () => {
@@ -364,19 +363,27 @@ describe.skipIf(!enabled)("People patterns constrain authoritative Booking", () 
     const create = new CreateBookingUseCase(
       new PrismaBookingRepoAdapter(prisma, constraint),
       holds,
-      new PrismaResourceRepoAdapter(prisma),
       f.audit,
       f.outbox,
       { get: async () => null, store: async () => undefined },
       { newId: randomUUID },
       clock,
-      f.absences
+      new PrismaUnitOfWork(prisma)
     );
     await expect(create.execute({ holdId: hold.id }, f.ctx)).rejects.toThrow("StaffUnavailable");
     expect((await holds.findById(hold.id, f.tenantA))?.status).toBe("ACTIVE");
     expect(await prisma.booking.count({ where: { holdId: hold.id } })).toBe(0);
     await save(pattern({ effectiveFrom: "2026-12-07" }));
-    const booking = await create.execute({ holdId: hold.id }, f.ctx);
+    const idempotencyKey = randomUUID();
+    const [booking, replay] = await Promise.all([
+      create.execute({ holdId: hold.id, idempotencyKey }, f.ctx),
+      create.execute({ holdId: hold.id, idempotencyKey }, f.ctx),
+    ]);
+    expect(replay).toEqual(booking);
+    expect(await prisma.booking.count({ where: { holdId: hold.id } })).toBe(1);
+    await expect(
+      create.execute({ holdId: hold.id, idempotencyKey, notes: "different" }, f.ctx)
+    ).rejects.toThrow("Booking:IdempotencyMismatch");
     expect((await holds.findById(hold.id, f.tenantA))?.confirmedBookingId).toBe(booking.id);
     await expect(create.execute({ holdId: hold.id }, f.ctx)).rejects.toThrow("no longer active");
   });

@@ -1,6 +1,6 @@
 import { CreateBookingUseCase } from "../application/use-cases/create-booking.usecase";
+import { RescheduleBookingUseCase } from "../application/use-cases/reschedule-booking.usecase";
 import { PrismaHoldRepoAdapter } from "../infrastructure/adapters/prisma-hold-repo.adapter";
-import { PrismaResourceRepoAdapter } from "../infrastructure/adapters/prisma-resource-repo.adapter";
 import { BookingHold } from "../domain/booking.entities";
 import { acmeBookingPolicy } from "@acme/booking-policy-fixture";
 import { ExtStaffAbsenceAdapter } from "../../people/infrastructure/ext-staff-absence.adapter";
@@ -161,12 +161,12 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
     const create = new CreateBookingUseCase(
       new PrismaBookingRepoAdapter(prisma, staffConstraint),
       holds,
-      new PrismaResourceRepoAdapter(prisma),
       new PrismaAuditAdapter(prisma),
       new PrismaOutboxAdapter(prisma),
       { get: async () => null, store: async () => {} },
       { newId: randomUUID },
       clock,
+      new PrismaUnitOfWork(prisma),
       [{ ...scope, validate: acmeBookingPolicy }]
     );
     const start = new Date(resource.startAt);
@@ -241,6 +241,107 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
       app.book({ ...body, customer: { ...body.customer, name: "Changed" } }, key, ctx)
     ).rejects.toThrow("Booking:IdempotencyMismatch");
     expect(await prisma.booking.count({ where: scope })).toBe(2);
+  });
+  it("moves a booking atomically, preserving allocation buffers and the original retry response", async () => {
+    const body = await input("2026-10-12T07:00:00Z");
+    const { receipt } = await app.book(body, randomUUID(), ctx);
+    const original = await prisma.booking.findFirstOrThrow({
+      where: { ...scope, referenceNumber: receipt.reference },
+    });
+    const constraint = new BookingStaffConstraintAdapter(prisma, staff);
+    const bookings = new PrismaBookingRepoAdapter(prisma, constraint);
+    const holds = new PrismaHoldRepoAdapter(prisma, constraint);
+    const audit = new PrismaAuditAdapter(prisma);
+    const uow = new PrismaUnitOfWork(prisma);
+    const clock = { now: () => now };
+    const ids = { newId: randomUUID };
+    const change = new RescheduleBookingUseCase(
+      bookings,
+      audit,
+      new PrismaOutboxAdapter(prisma),
+      ids,
+      clock,
+      uow,
+      []
+    );
+    const failing = new RescheduleBookingUseCase(
+      bookings,
+      audit,
+      {
+        enqueue: async () => {
+          throw new Error("outbox unavailable");
+        },
+      },
+      ids,
+      clock,
+      uow,
+      []
+    );
+    const command = {
+      bookingId: original.id,
+      startAt: new Date("2026-10-12T09:00:00Z"),
+      endAt: new Date("2026-10-12T09:45:00Z"),
+      idempotencyKey: randomUUID(),
+    };
+    const holdId = randomUUID();
+    await holds.create(
+      new BookingHold(
+        holdId,
+        tenantId,
+        workspaceId,
+        "ACTIVE",
+        command.endAt,
+        new Date("2026-10-12T10:00:00Z"),
+        body.serviceId,
+        [body.staffId],
+        new Date(Date.now() + 600_000),
+        null,
+        null,
+        null,
+        null,
+        null,
+        "owner",
+        now
+      )
+    );
+    try {
+      await expect(change.execute(command, ctx)).rejects.toThrow("Booking:SlotUnavailable");
+      await prisma.bookingHold.update({
+        where: { id: holdId },
+        data: { expiresAt: new Date(Date.now() - 1) },
+      });
+      await expect(change.execute(command, { ...ctx, workspaceId: randomUUID() })).rejects.toThrow(
+        "Booking not found"
+      );
+      await expect(failing.execute(command, ctx)).rejects.toThrow("outbox unavailable");
+      const unchanged = await bookings.findById(original.id, tenantId);
+      expect(unchanged?.startAt).toEqual(original.startAt);
+      expect(unchanged?.allocations[0]?.startAt).toEqual(original.startAt);
+      const [moved, replay] = await Promise.all([
+        change.execute(command, ctx),
+        change.execute(command, ctx),
+      ]);
+      expect(moved.startAt).toEqual(command.startAt);
+      expect(moved.allocations[0]?.endAt.toISOString()).toBe("2026-10-12T10:00:00.000Z");
+      expect(replay).toEqual(moved);
+      await expect(change.execute({ ...command, notes: "changed" }, ctx)).rejects.toThrow(
+        "Booking:IdempotencyMismatch"
+      );
+      expect(
+        await prisma.auditLog.count({
+          where: { tenantId, entityId: original.id, action: "booking.rescheduled" },
+        })
+      ).toBe(1);
+      expect(
+        await prisma.outboxEvent.count({
+          where: { tenantId, eventType: "booking.rescheduled" },
+        })
+      ).toBe(1);
+    } finally {
+      await prisma.bookingHold.deleteMany({ where: { id: holdId, tenantId } });
+      await prisma.bookingAllocation.deleteMany({ where: { bookingId: original.id, tenantId } });
+      await prisma.booking.delete({ where: { id: original.id } });
+    }
   });
   it("does not resolve another workspace or tenant's configuration", async () => {
     expect(await repo.studio({ ...scope, workspaceId: randomUUID() })).toBeNull();
