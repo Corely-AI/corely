@@ -141,3 +141,28 @@ Grant agents `appointments.propose`, `appointments.status` and
 Agent commands take `--tenant <tenant-id> --workspace <workspace-id>
 --agent <agent-id>`. JSON results expose the workflow state, review link
 and booking version when the change is applied.
+
+## Reviewed customer email
+
+Use the applied appointment review ID to draft an email. Corely uses the
+confirmed booking time, studio locale and current guest email. An optional
+note becomes part of the content shown to the manager.
+
+```sh
+corely appointments message draft --workspace <id-or-slug> --review <appointment-review-id> \
+  --idempotency-key notify-2026-11-24 --note "Please confirm the new time." --json
+corely appointments message queue --workspace <id-or-slug> --review <email-review-id> --json
+corely appointments message status --workspace <id-or-slug> --review <email-review-id> --json
+corely appointments message retry --workspace <id-or-slug> --review <email-review-id> --json
+```
+
+Have a manager open the new Backoffice review link and approve its exact
+recipient, subject and body. Queue then records the send for the background
+worker. A different note needs a new review. A changed booking version or
+recipient invalidates the approved send.
+
+Agents need the corresponding `appointments.message.draft`,
+`appointments.message.status`, `appointments.message.queue` or
+`appointments.message.retry` grant. The CLI keeps appointment and email
+status separate. `accepted` records provider acceptance. An eligible
+failed delivery can be retried using its original delivery identifier.

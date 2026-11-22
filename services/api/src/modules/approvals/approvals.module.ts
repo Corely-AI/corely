@@ -25,6 +25,7 @@ import { APPOINTMENT_REVIEW_STORE } from "./application/ports/appointment-review
 import { AppointmentReviewUseCase } from "./application/appointment-review.usecase";
 import { AppointmentReviewController } from "./adapters/http/appointment-review.controller";
 import { CliAppointmentController } from "./adapters/http/cli-appointment.controller";
+import { CliAppointmentMessageController } from "./adapters/http/cli-appointment-message.controller";
 import { PrismaAppointmentReviewStore } from "./infrastructure/repositories/prisma-appointment-review.store";
 
 @Module({
@@ -42,6 +43,7 @@ import { PrismaAppointmentReviewStore } from "./infrastructure/repositories/pris
     ApprovalsRequestsController,
     AppointmentReviewController,
     CliAppointmentController,
+    CliAppointmentMessageController,
   ],
   providers: [
     ApprovalPolicyService,

@@ -34,6 +34,9 @@ Commands
   corely appointments propose --workspace <id-or-slug> --booking <id>
     --start <timestamp> --idempotency-key <key> [--json]
   corely appointments status|apply --workspace <id-or-slug> --review <id> [--json]
+  corely appointments message draft --workspace <id-or-slug> --review <appointment-review-id>
+    --idempotency-key <key> [--note <text>] [--json]
+  corely appointments message status|queue|retry --workspace <id-or-slug> --review <message-review-id>
 
 Agent access
   corely agent prepare --tenant <id> --workspace <id>
@@ -227,6 +230,7 @@ async function run() {
       booking: { type: "string" },
       start: { type: "string" },
       review: { type: "string" },
+      note: { type: "string" },
       "idempotency-key": { type: "string" },
     },
   });

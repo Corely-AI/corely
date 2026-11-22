@@ -18,6 +18,10 @@ export const CliAppointmentProposalRequestSchema = CliGrantScopeSchema.extend({
 export const CliAppointmentReviewSelectorSchema = CliGrantScopeSchema.extend({
   reviewId: AppointmentReviewIdSchema,
 }).strict();
+export const CliAppointmentMessageDraftRequestSchema = CliAppointmentReviewSelectorSchema.extend({
+  key: AppointmentReviewKeySchema,
+  note: z.string().trim().max(1_000).default(""),
+}).strict();
 
 const selector = {
   type: "object",
@@ -49,6 +53,37 @@ export const CliAppointmentOperations = {
     id: "appointments.apply",
     description:
       "Apply the exact human-approved appointment replacement, or read the recorded result.",
+    inputSchema: selector,
+  },
+} as const;
+import { z } from "zod";
+export const CliAppointmentMessageOperations = {
+  draft: {
+    id: "appointments.message.draft",
+    description: "Draft a customer email for an applied appointment replacement.",
+    inputSchema: {
+      ...selector,
+      required: ["reviewId", "key"],
+      properties: {
+        ...selector.properties,
+        key: { type: "string" },
+        note: { type: "string", maxLength: 1_000 },
+      },
+    },
+  },
+  status: {
+    id: "appointments.message.status",
+    description: "Read the separate email review and provider delivery status.",
+    inputSchema: selector,
+  },
+  queue: {
+    id: "appointments.message.queue",
+    description: "Queue the exact approved email for background delivery.",
+    inputSchema: selector,
+  },
+  retry: {
+    id: "appointments.message.retry",
+    description: "Retry an eligible failed delivery with the same provider idempotency key.",
     inputSchema: selector,
   },
 } as const;
