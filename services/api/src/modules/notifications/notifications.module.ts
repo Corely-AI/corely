@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import { BookingModule } from "../booking";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
@@ -10,20 +11,25 @@ import { MarkReadUseCase } from "./application/use-cases/mark-read.usecase";
 import { MarkAllReadUseCase } from "./application/use-cases/mark-all-read.usecase";
 import { PrismaNotificationRepository } from "./infrastructure/prisma-notification.repository";
 import { NOTIFICATION_REPOSITORY } from "./application/ports/notification.repository.port";
+import { APPOINTMENT_DELIVERY_STORE } from "./application/ports/appointment-delivery.port";
+import { AppointmentDeliveryUseCase } from "./application/use-cases/appointment-delivery.usecase";
+import { PrismaAppointmentDeliveryStore } from "./infrastructure/prisma-appointment-delivery.store";
 
 @Module({
-  imports: [DataModule, IdentityModule, PlatformModule, WorkspacesModule],
+  imports: [DataModule, IdentityModule, PlatformModule, WorkspacesModule, BookingModule],
   controllers: [NotificationsController],
   providers: [
     ListNotificationsUseCase,
     GetUnreadCountUseCase,
     MarkReadUseCase,
     MarkAllReadUseCase,
+    AppointmentDeliveryUseCase,
+    { provide: APPOINTMENT_DELIVERY_STORE, useClass: PrismaAppointmentDeliveryStore },
     {
       provide: NOTIFICATION_REPOSITORY,
       useClass: PrismaNotificationRepository,
     },
   ],
-  exports: [],
+  exports: [AppointmentDeliveryUseCase],
 })
 export class NotificationsModule {}

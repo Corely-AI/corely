@@ -37,7 +37,8 @@ export interface OpenBukRepositoryPort {
     from: Date,
     to: Date,
     now: Date,
-    tx?: TransactionContext
+    tx?: TransactionContext,
+    excludeBookingId?: string
   ): Promise<OccupiedInterval[]>;
   receipt(
     scope: StudioScope,

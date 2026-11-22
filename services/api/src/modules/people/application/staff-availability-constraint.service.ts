@@ -17,6 +17,24 @@ export class StaffAvailabilityConstraintService {
     @Inject(STAFF_AVAILABILITY_REPOSITORY) private readonly schedules: StaffAvailabilityRepository,
     @Inject(STAFF_ABSENCE_REPOSITORY) private readonly absences: StaffAbsenceRepository
   ) {}
+
+  async hasApprovedAbsence(
+    scope: StaffLinkScope,
+    resourceId: string,
+    from: Date,
+    to: Date,
+    tx?: TransactionContext
+  ): Promise<boolean> {
+    const profiles = (await this.staff.list(scope, tx)).filter((p) => p.resourceId === resourceId);
+    if (profiles.length !== 1 || profiles[0].archivedAt) {
+      return false;
+    }
+    return absenceBlocks(await this.absences.list(scope, profiles[0].id, tx)).some(
+      (block) =>
+        Date.parse(block.startAt) < to.getTime() && Date.parse(block.endAt) > from.getTime()
+    );
+  }
+
   async windows(
     scope: StaffLinkScope,
     resourceId: string,

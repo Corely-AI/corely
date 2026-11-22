@@ -3,6 +3,7 @@ import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking
 import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
 import { WorkspacesModule } from "../workspaces";
 import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
+import { OpenBukAppointmentChangeUseCase } from "./application/use-cases/openbuk-appointment-change.usecase";
 import { OpenBukAdminController, OpenBukPublicController } from "./http/openbuk.controller";
 import { OPENBUK_REPOSITORY } from "./application/ports/openbuk-repository.port";
 import { PrismaOpenBukRepositoryAdapter } from "./infrastructure/adapters/prisma-openbuk-repository.adapter";
@@ -40,6 +41,7 @@ import {
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
   ID_GENERATOR_TOKEN,
   CLOCK_PORT_TOKEN,
+  UNIT_OF_WORK,
 } from "@corely/kernel";
 
 import { CreateResourceUseCase } from "./application/use-cases/create-resource.usecase";
@@ -83,6 +85,7 @@ import { bookingPolicies } from "./booking-extensions";
     BookingStaffConstraintAdapter,
     OpenBukRateLimitGuard,
     OpenBukStudioUseCase,
+    OpenBukAppointmentChangeUseCase,
     { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },
@@ -194,48 +197,56 @@ import { bookingPolicies } from "./booking-extensions";
       useFactory: (
         bookingRepo,
         holdRepo,
-        resourceRepo,
         audit,
         outbox,
         idempotency,
         idgen,
         clock,
+        uow,
         policies
       ) =>
         new CreateBookingUseCase(
           bookingRepo,
           holdRepo,
-          resourceRepo,
           audit,
           outbox,
           idempotency,
           idgen,
           clock,
+          uow,
           policies
         ),
       inject: [
         BOOKING_REPOSITORY,
         HOLD_REPOSITORY,
-        RESOURCE_REPOSITORY,
         AUDIT_PORT,
         OUTBOX_PORT,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
         BOOKING_POLICIES,
       ],
     },
     {
       provide: RescheduleBookingUseCase,
-      useFactory: (bookingRepo, audit, outbox, idgen, clock) =>
-        new RescheduleBookingUseCase(bookingRepo, audit, outbox, idgen, clock),
-      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+      useFactory: (bookingRepo, audit, outbox, idgen, clock, uow, policies) =>
+        new RescheduleBookingUseCase(bookingRepo, audit, outbox, idgen, clock, uow, policies),
+      inject: [
+        BOOKING_REPOSITORY,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
+        BOOKING_POLICIES,
+      ],
     },
     {
       provide: CancelBookingUseCase,
-      useFactory: (bookingRepo, audit, outbox) =>
-        new CancelBookingUseCase(bookingRepo, audit, outbox),
-      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT],
+      useFactory: (bookingRepo, audit, outbox, uow) =>
+        new CancelBookingUseCase(bookingRepo, audit, outbox, uow),
+      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT, UNIT_OF_WORK],
     },
     {
       provide: ListBookingsUseCase,
@@ -268,6 +279,6 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [AVAILABILITY_RULE_REPOSITORY, BOOKING_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [OpenBukStudioUseCase],
+  exports: [OpenBukStudioUseCase, OpenBukAppointmentChangeUseCase],
 })
 export class BookingModule {}
