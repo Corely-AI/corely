@@ -43,7 +43,8 @@ export class AppointmentDeliveryUseCase {
   async enqueue(
     scope: AppointmentDeliveryScope,
     input: AppointmentUpdateMessage,
-    tx: TransactionContext
+    tx: TransactionContext,
+    expiresAt?: string
   ) {
     const message = AppointmentUpdateMessageSchema.parse(input);
     const id = createHash("sha256")
@@ -69,6 +70,9 @@ export class AppointmentDeliveryUseCase {
       throw new ConflictException("Notifications:AppointmentUpdateStale");
     }
     const now = this.clock.now();
+    if (expiresAt && Date.parse(expiresAt) <= now.getTime()) {
+      throw new ConflictException("Notifications:ReviewExpired");
+    }
     const record: AppointmentDeliveryRecord = {
       message,
       state: "pending",
@@ -86,8 +90,8 @@ export class AppointmentDeliveryUseCase {
     return this.status(scope, id, record);
   }
 
-  async getStatus(scope: AppointmentDeliveryScope, id: string) {
-    const record = await this.store.get(scope, id);
+  async getStatus(scope: AppointmentDeliveryScope, id: string, tx?: TransactionContext) {
+    const record = await this.store.get(scope, id, tx);
     if (!record) {
       throw new NotFoundException("Delivery not found");
     }
