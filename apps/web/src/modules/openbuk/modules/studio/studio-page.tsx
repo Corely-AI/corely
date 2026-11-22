@@ -11,6 +11,7 @@ import {
 import { getTaskCreationGuidance } from "../../../tasks/task-creation-guidance";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ListEmployeeTasksSchema } from "@corely/contracts";
 import type {
   ListWorkspacesOutput,
   WorkspaceDto,
@@ -35,6 +36,11 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
   const templatesRoute = location.pathname.endsWith("/tasks/templates");
   const tasksRoute = location.pathname.endsWith("/tasks") || templatesRoute;
   const operationalRoute = tasksRoute || selfRoute;
+  const hint = new URLSearchParams(location.search);
+  const taskId = tasksRoute
+    ? ListEmployeeTasksSchema.shape.taskId.safeParse(hint.get("taskId") ?? undefined)
+    : null;
+  const taskWorkspaceHint = taskId?.success && taskId.data ? hint.get("workspaceId") : null;
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [workspace, setWorkspace] = useState<WorkspaceDto | null>(null);
   const staffClient = useMemo(
@@ -72,9 +78,10 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
           { workspaceScope: "none" }
         );
         const selected = await storage.getActiveWorkspaceId();
-        const chosen =
-          result.workspaces.find((w) => w.id === selected) ??
-          (result.workspaces.length === 1 ? result.workspaces[0] : null);
+        const chosen = taskWorkspaceHint
+          ? (result.workspaces.find((w) => w.id === taskWorkspaceHint) ?? null)
+          : (result.workspaces.find((w) => w.id === selected) ??
+            (result.workspaces.length === 1 ? result.workspaces[0] : null));
         if (!active) {
           return;
         }
@@ -117,7 +124,7 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
     return () => {
       active = false;
     };
-  }, [navigate, operationalRoute, prefix]);
+  }, [navigate, operationalRoute, prefix, taskWorkspaceHint]);
   useEffect(() => {
     if (!studio || !day || !canManage || operationalRoute) {
       return;
@@ -243,6 +250,9 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
               creationGuidance={getTaskCreationGuidance(workspace.id)}
               locale={locale}
               templatesHref={prefix + "/app/tasks/templates"}
+              {...(workspace.id === taskWorkspaceHint && taskId?.success && taskId.data
+                ? { focusTaskId: taskId.data, allTasksHref: prefix + "/app/tasks" }
+                : {})}
             />
           )
         ) : workspace && !canManage ? (

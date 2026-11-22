@@ -6,12 +6,15 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
   UnauthorizedException,
 } from "@nestjs/common";
 import { type ExtKvPort, EXT_KV_PORT } from "@corely/data";
 import { UNIT_OF_WORK, type TransactionContext, type UnitOfWorkPort } from "@corely/kernel";
 import {
   CliDayBriefOperation,
+  CliTaskAssigneesOperation,
+  CliTaskCreateOperation,
   CliGrantSchema,
   CliAgentFingerprintSchema,
   cliAgentProof,
@@ -21,6 +24,8 @@ import {
 } from "@corely/contracts";
 import { z } from "zod";
 import { CLOCK_PORT_TOKEN, type ClockPort } from "../../../../shared/ports/clock.port";
+import { TenantEntitlementService } from "../../../platform/public";
+import { GetEffectivePermissionsUseCase } from "../use-cases/get-effective-permissions.usecase";
 import { AuthorizeWorkspaceUseCase } from "../../../workspaces/public";
 import { AUDIT_PORT_TOKEN, type AuditPort } from "../ports/audit.port";
 import { CLI_GRANT_LOCK, type CliGrantLock } from "../ports/cli-grant-lock.port";
@@ -36,7 +41,12 @@ const workspaceDescribe = {
   inputSchema: { type: "object", additionalProperties: false, properties: {} },
 } as const;
 
-const operations = [workspaceDescribe, CliDayBriefOperation];
+const operations = [
+  workspaceDescribe,
+  CliDayBriefOperation,
+  CliTaskAssigneesOperation,
+  CliTaskCreateOperation,
+];
 
 function publicGrant({ fingerprint: _fingerprint, ...grant }: GrantRecord): CliGrant {
   return grant;
@@ -53,7 +63,11 @@ export class CliAgentGrantsService {
     @Inject(CLI_GRANT_LOCK) private readonly lock: CliGrantLock,
     @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWorkPort,
     @Inject(AUDIT_PORT_TOKEN) private readonly audit: AuditPort,
-    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
+    @Inject(GetEffectivePermissionsUseCase)
+    private readonly permissions: Pick<GetEffectivePermissionsUseCase, "execute">,
+    @Inject(forwardRef(() => TenantEntitlementService))
+    private readonly entitlements: Pick<TenantEntitlementService, "isAppEnabled">
   ) {}
 
   async create(userId: string, input: CliGrantInput) {
@@ -113,7 +127,14 @@ export class CliAgentGrantsService {
   async capabilities(scope: CliGrantScope, credential: { agentId: string; secret: string }) {
     return this.withAuthorizedGrant(scope, credential, async (grant, _workspace, tx) => {
       await this.record(grant, grant.delegatorId, "discovered", tx);
-      return operations.filter(({ id }) => grant.operations.includes(id));
+      const granted = operations.filter(({ id }) => grant.operations.includes(id));
+      if (
+        granted.some(({ id }) => isTaskOperation(id)) &&
+        !(await this.canUseTasks(scope, grant.delegatorId, tx))
+      ) {
+        return granted.filter(({ id }) => !isTaskOperation(id));
+      }
+      return granted;
     });
   }
 
@@ -148,7 +169,10 @@ export class CliAgentGrantsService {
       throw new ForbiddenException("Operation not available to this agent");
     }
     return this.withAuthorizedGrant(scope, credential, async (grant, workspace, tx) => {
-      if (!grant.operations.includes(operation)) {
+      if (
+        !grant.operations.includes(operation) ||
+        (isTaskOperation(operation) && !(await this.canUseTasks(scope, grant.delegatorId, tx)))
+      ) {
         throw new ForbiddenException("Operation not granted");
       }
       const result = await run(
@@ -192,6 +216,21 @@ export class CliAgentGrantsService {
   private async authorizeManager(scope: CliGrantScope, userId: string, tx?: TransactionContext) {
     await this.sessions.principal(userId, scope.tenantId);
     return this.workspaces.execute({ ...inputScope(scope), userId, manage: true }, tx);
+  }
+
+  private async canUseTasks(scope: CliGrantScope, userId: string, tx: TransactionContext) {
+    const { tenantId, workspaceId } = inputScope(scope);
+    const { permissions } = await this.permissions.execute({ tenantId, workspaceId, userId }, tx);
+    const allowed = ["tasks.read", "tasks.manage"].every(
+      (key) =>
+        !permissions.denied.includes(key) &&
+        (permissions.allowAll || permissions.allowed.includes(key))
+    );
+    return (
+      allowed &&
+      (await this.entitlements.isAppEnabled(tenantId, "tasks", tx)) &&
+      (await this.entitlements.isAppEnabled(tenantId, "people", tx))
+    );
   }
 
   private assertEnabled() {
@@ -249,4 +288,8 @@ export class CliAgentGrantsService {
 
 function inputScope({ tenantId, workspaceId }: CliGrantScope) {
   return { tenantId, workspaceId };
+}
+
+function isTaskOperation(id: string) {
+  return id === CliTaskAssigneesOperation.id || id === CliTaskCreateOperation.id;
 }

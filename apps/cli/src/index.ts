@@ -5,6 +5,9 @@ import {
   CliDayBriefDateSchema,
   CliDayBriefSchema,
   CliGrantScopeSchema,
+  CliTaskCreatedSchema,
+  CliTaskCreateInputSchema,
+  TaskAssigneeSchema,
   CliSsoAccountSchema,
   CliSsoSessionSchema,
   SsoHandleSchema,
@@ -22,6 +25,9 @@ Commands
   corely auth logout [--json]
   corely workspaces list [--json]
   corely whoami [--workspace <id-or-slug>] [--json]
+  corely tasks assignees --workspace <id-or-slug> [--json]
+  corely tasks create --workspace <id-or-slug> --owner <staff-id>
+    --title <title> --due <timestamp> --idempotency-key <key> [--json]
   corely day brief --workspace <id-or-slug> [--date today|YYYY-MM-DD] [--json]
 
 Agent access
@@ -214,6 +220,10 @@ async function run() {
       operation: { type: "string", multiple: true },
       minutes: { type: "string" },
       date: { type: "string" },
+      owner: { type: "string" },
+      title: { type: "string" },
+      due: { type: "string" },
+      "idempotency-key": { type: "string" },
     },
   });
   const command = positionals.join(" ");
@@ -226,7 +236,15 @@ async function run() {
     return;
   }
   const genericBrief = command === "operations run day.brief";
-  if (!genericBrief && ["agent", "grants", "capabilities", "operations"].includes(positionals[0])) {
+  const taskAssignees =
+    command === "tasks assignees" || command === "operations run tasks.assignees";
+  const taskCreate = command === "tasks create" || command === "operations run tasks.create";
+  if (
+    !genericBrief &&
+    !taskAssignees &&
+    !taskCreate &&
+    ["agent", "grants", "capabilities", "operations"].includes(positionals[0])
+  ) {
     const origin = getOrigin();
     const result = await runAgentCommand(
       positionals,
@@ -244,15 +262,11 @@ async function run() {
     emit(result, JSON.stringify(result, null, 2));
     return;
   }
-  if (command === "day brief" || genericBrief) {
-    if (genericBrief && !values.agent) {
+  if (command === "day brief" || genericBrief || taskAssignees || taskCreate) {
+    if (positionals[0] === "operations" && !values.agent) {
       throw new CliError("USAGE", "Specify the prepared agent ID with --agent.");
     }
     const origin = getOrigin();
-    const date = CliDayBriefDateSchema.safeParse(values.date ?? "today");
-    if (!date.success) {
-      throw new CliError("USAGE", "Use --date today or a valid YYYY-MM-DD date.");
-    }
     let scope;
     let accessToken;
     if (values.agent) {
@@ -275,6 +289,47 @@ async function run() {
       const account = CliSsoAccountSchema.parse(await api(origin, "account", { accessToken }));
       const workspace = selectWorkspace(account.workspaces, values.workspace);
       scope = { tenantId: workspace.tenantId, workspaceId: workspace.id };
+    }
+    if (taskAssignees) {
+      const people = TaskAssigneeSchema.array().parse(
+        await api(origin, "tasks/assignees", { accessToken, method: "POST", body: scope })
+      );
+      emit(
+        { assignees: people },
+        people.map((person) => `${terminalLabel(person.displayName)} · ${person.id}`).join("\n") ||
+          "No active task assignees."
+      );
+      return;
+    }
+    if (taskCreate) {
+      const task = CliTaskCreateInputSchema.safeParse({
+        ownerStaffId: values.owner,
+        title: values.title,
+        dueAt: values.due,
+        idempotencyKey: values["idempotency-key"],
+      });
+      if (!task.success) {
+        throw new CliError(
+          "USAGE",
+          "Specify --owner, --title, --due with an offset, and --idempotency-key."
+        );
+      }
+      const saved = CliTaskCreatedSchema.parse(
+        await api(origin, "tasks/create", {
+          accessToken,
+          method: "POST",
+          body: { ...scope, task: task.data },
+        })
+      );
+      emit(
+        saved,
+        `${saved.status} · ${saved.id}\nOwner ${saved.ownerStaffId} · due ${saved.dueAt}\n${saved.sourcePath}`
+      );
+      return;
+    }
+    const date = CliDayBriefDateSchema.safeParse(values.date ?? "today");
+    if (!date.success) {
+      throw new CliError("USAGE", "Use --date today or a valid YYYY-MM-DD date.");
     }
     const brief = CliDayBriefSchema.parse(
       await api(origin, "day-brief", {
@@ -366,19 +421,25 @@ try {
   if (error instanceof HttpError) {
     failure =
       error.status === 401
-        ? (args.includes("--agent") && args.includes("brief")) ||
+        ? (args.some((arg) => arg === "--agent" || arg.startsWith("--agent=")) &&
+            (args.includes("brief") || args.includes("tasks"))) ||
           ["capabilities", "operations"].includes(args.find((arg) => !arg.startsWith("-")) ?? "")
           ? new CliError(
               "AGENT_ACCESS_REQUIRED",
               "The agent grant is unavailable. Ask your workspace manager to verify access."
             )
           : new CliError("AUTH_REQUIRED", "Sign-in expired. Run corely auth login again.")
-        : error.status === 403
-          ? new CliError("ACCESS_DENIED", "Corely denied access to this account or workspace.")
-          : new CliError(
-              "REQUEST_FAILED",
-              "Corely could not complete this request. Check the sign-in origin and try again."
-            );
+        : error.status === 409 && (args.includes("create") || args.includes("tasks.create"))
+          ? new CliError(
+              "CONFLICT",
+              "The request conflicts with an existing operation. Use a new key for a different task."
+            )
+          : error.status === 403
+            ? new CliError("ACCESS_DENIED", "Corely denied access to this account or workspace.")
+            : new CliError(
+                "REQUEST_FAILED",
+                "Corely could not complete this request. Check the sign-in origin and try again."
+              );
   } else if (
     error instanceof TypeError &&
     "code" in error &&

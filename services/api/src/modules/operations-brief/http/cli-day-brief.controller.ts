@@ -3,27 +3,18 @@ import {
   Body,
   Controller,
   HttpCode,
+  Inject,
   Post,
   Req,
-  UnauthorizedException,
   UseFilters,
 } from "@nestjs/common";
 import {
   CliDayBriefDateSchema,
   CliDayBriefOperation,
   CliGrantScopeSchema,
-  SsoHandleSchema,
 } from "@corely/contracts";
 import type { Request } from "express";
-import {
-  CliAgentGrantsService,
-  SsoExceptionFilter,
-  SsoHttpSecurity,
-  SsoSessionService,
-  cliAgentCredential,
-  cliBearer,
-} from "../../identity/public/cli";
-import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
+import { CliOperationAccess, SsoExceptionFilter } from "../../identity/public/cli";
 import { DailyOperationsBrief } from "../application/daily-operations-brief";
 
 const inputSchema = CliGrantScopeSchema.extend({ date: CliDayBriefDateSchema });
@@ -32,42 +23,24 @@ const inputSchema = CliGrantScopeSchema.extend({ date: CliDayBriefDateSchema });
 @UseFilters(SsoExceptionFilter)
 export class CliDayBriefController {
   constructor(
-    private readonly brief: DailyOperationsBrief,
-    private readonly grants: CliAgentGrantsService,
-    private readonly sessions: SsoSessionService,
-    private readonly security: SsoHttpSecurity,
-    private readonly workspaces: AuthorizeWorkspaceUseCase
+    @Inject(DailyOperationsBrief) private readonly brief: DailyOperationsBrief,
+    @Inject(CliOperationAccess) private readonly access: CliOperationAccess
   ) {}
 
   @Post("day-brief")
   @HttpCode(200)
-  async execute(@Req() req: Request, @Body() raw: unknown) {
-    this.security.origin(req, true);
+  execute(@Req() req: Request, @Body() raw: unknown) {
     const parsed = inputSchema.safeParse(raw);
     if (!parsed.success) {
       throw new BadRequestException("Choose a workspace and a valid date");
     }
     const { tenantId, workspaceId, date } = parsed.data;
     const scope = { tenantId, workspaceId };
-    const token = cliBearer(req);
-    if (token.startsWith("corely-agent.")) {
-      return this.grants.useOperation(
-        scope,
-        cliAgentCredential(req),
-        CliDayBriefOperation.id,
-        (actor) =>
-          this.brief.execute(
-            { ...scope, userId: actor.userId, workspaceName: actor.workspaceName },
-            date
-          )
-      );
-    }
-    if (!SsoHandleSchema.safeParse(token).success) {
-      throw new UnauthorizedException("CLI credential required");
-    }
-    const userId = await this.sessions.authenticateCli(token);
-    await this.sessions.principal(userId, tenantId);
-    const workspace = await this.workspaces.execute({ ...scope, userId, manage: true });
-    return this.brief.execute({ ...scope, userId, workspaceName: workspace.name }, date);
+    return this.access.run(req, scope, CliDayBriefOperation.id, (actor) =>
+      this.brief.execute(
+        { ...scope, userId: actor.userId, workspaceName: actor.workspaceName },
+        date
+      )
+    );
   }
 }

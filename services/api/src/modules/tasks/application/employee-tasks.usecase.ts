@@ -93,7 +93,8 @@ export class EmployeeTasksUseCase {
       .filter(
         (t) =>
           (auth.manage || t.ownerStaffId === auth.self?.id) &&
-          (input.status === "all" || t.status === input.status)
+          (input.status === "all" || t.status === input.status) &&
+          (!input.taskId || t.id === input.taskId)
       )
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));
     return {
@@ -130,9 +131,10 @@ export class EmployeeTasksUseCase {
     body: unknown,
     key: string | undefined,
     ctx: UseCaseContext,
-    stepId?: string
+    stepId?: string,
+    origin?: { agentId: string; transaction: TransactionContext }
   ) {
-    const initial = await this.authorize(ctx);
+    const initial = await this.authorize(ctx, origin?.transaction);
     if (!key || key.length > 160 || !/^[\w-]+$/.test(key)) {
       throw new BadRequestException("A valid Idempotency-Key is required");
     }
@@ -148,111 +150,117 @@ export class EmployeeTasksUseCase {
       .update(JSON.stringify(kind === "checklist" ? [kind, id, stepId, input] : [kind, id, input]))
       .digest("hex");
     const commandKey = createHash("sha256")
-      .update(JSON.stringify([ctx.userId, key]))
+      .update(JSON.stringify(origin ? [ctx.userId, origin.agentId, key] : [ctx.userId, key]))
       .digest("hex");
-    return this.repo.transaction(initial.scope, async (tx) => {
-      // Coordinate assignment with People archival/link changes before checking the current owner.
-      await this.staff.lock(initial.scope, tx);
-      const auth = await this.authorize(ctx, tx);
-      if ((kind === "create" || kind === "update") && !auth.manage) {
-        throw new ForbiddenException("Task management required");
-      }
-      if (!auth.manage && !auth.completeOwn) {
-        throw new ForbiddenException("Task completion denied");
-      }
-      const replay = await this.repo.replay(auth.scope, commandKey, tx);
-      if (replay) {
-        if (replay.fingerprint !== fingerprint) {
-          throw new ConflictException("Idempotency key already used for another command");
+    return this.repo.transaction(
+      initial.scope,
+      async (tx) => {
+        // Coordinate assignment with People archival/link changes before checking the current owner.
+        await this.staff.lock(initial.scope, tx);
+        const auth = await this.authorize(ctx, tx);
+        if ((kind === "create" || kind === "update") && !auth.manage) {
+          throw new ForbiddenException("Task management required");
         }
-        const record = await this.record(auth.scope, replay.taskId, tx);
-        this.visible(record, auth);
-        return this.projection(auth.scope, record, tx);
-      }
-      const previous = id ? await this.record(auth.scope, id, tx) : null;
-      if (previous) {
-        this.visible(previous, auth);
-        if (!("version" in input) || input.version !== previous.version) {
-          throw new ConflictException("Task changed; reload before saving");
+        if (!auth.manage && !auth.completeOwn) {
+          throw new ForbiddenException("Task completion denied");
         }
-      }
-      const now = new Date().toISOString();
-      let next: TaskRecord;
-      if (kind === "create" || kind === "update") {
-        const fields = CreateEmployeeTaskSchema.parse(
-          Object.fromEntries(Object.entries(input).filter(([key]) => key !== "version"))
-        );
-        const owner = await this.staff.get(auth.scope, fields.ownerStaffId, tx);
-        // Updating a historical task without changing its archived owner preserves history.
-        const unchangedOwner = previous?.ownerStaffId === fields.ownerStaffId;
-        if (!owner || (owner.archivedAt && !unchangedOwner)) {
-          throw new BadRequestException("Assignee must be active in this workspace");
-        }
-        if (kind === "create") {
-          const message = taskCreationRejection(taskCreationPolicies, auth.scope, {
-            dueAt: fields.dueAt,
-          });
-          if (message)
-            {throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });}
-        }
-        next = {
-          ...fields,
-          id: previous?.id ?? randomUUID(),
-          workspaceId: auth.scope.workspaceId,
-          ownerName: owner.displayName,
-          status: previous?.status ?? "OPEN",
-          version: (previous?.version ?? 0) + 1,
-          createdAt: previous?.createdAt ?? now,
-          updatedAt: now,
-          completedAt: previous?.completedAt ?? null,
-          ...(previous?.recurrence ? { recurrence: previous.recurrence } : {}),
-          ...(previous?.checklist ? { checklist: previous.checklist } : {}),
-        };
-      } else {
-        if (!previous) {
-          throw new NotFoundException("Task not found");
-        }
-        if (kind === "checklist") {
-          if (previous.status !== "OPEN") {
-            throw new ConflictException("Reopen the task before changing its checklist");
+        const replay = await this.repo.replay(auth.scope, commandKey, tx);
+        if (replay) {
+          if (replay.fingerprint !== fingerprint) {
+            throw new ConflictException("Idempotency key already used for another command");
           }
-          const step = previous.checklist?.find((item) => item.id === stepId);
-          if (!step) {
-            throw new NotFoundException("Checklist item not found");
+          const record = await this.record(auth.scope, replay.taskId, tx);
+          this.visible(record, auth);
+          return this.projection(auth.scope, record, tx);
+        }
+        const previous = id ? await this.record(auth.scope, id, tx) : null;
+        if (previous) {
+          this.visible(previous, auth);
+          if (!("version" in input) || input.version !== previous.version) {
+            throw new ConflictException("Task changed; reload before saving");
           }
-          const toggle = ToggleChecklistStepSchema.parse(input);
-          if (step.completed === toggle.completed) {
-            throw new ConflictException("Checklist item already has this state");
+        }
+        const now = new Date().toISOString();
+        let next: TaskRecord;
+        if (kind === "create" || kind === "update") {
+          const fields = CreateEmployeeTaskSchema.parse(
+            Object.fromEntries(Object.entries(input).filter(([key]) => key !== "version"))
+          );
+          const owner = await this.staff.get(auth.scope, fields.ownerStaffId, tx);
+          // Updating a historical task without changing its archived owner preserves history.
+          const unchangedOwner = previous?.ownerStaffId === fields.ownerStaffId;
+          if (!owner || (owner.archivedAt && !unchangedOwner)) {
+            throw new BadRequestException("Assignee must be active in this workspace");
+          }
+          if (kind === "create") {
+            const message = taskCreationRejection(taskCreationPolicies, auth.scope, {
+              dueAt: fields.dueAt,
+            });
+            if (message) {
+              throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });
+            }
           }
           next = {
-            ...previous,
-            checklist: (previous.checklist ?? []).map((item) =>
-              item.id === stepId ? { ...item, completed: toggle.completed } : item
-            ),
-            version: previous.version + 1,
+            ...fields,
+            id: previous?.id ?? randomUUID(),
+            workspaceId: auth.scope.workspaceId,
+            ownerName: owner.displayName,
+            status: previous?.status ?? "OPEN",
+            version: (previous?.version ?? 0) + 1,
+            createdAt: previous?.createdAt ?? now,
             updatedAt: now,
+            completedAt: previous?.completedAt ?? null,
+            ...(previous?.recurrence ? { recurrence: previous.recurrence } : {}),
+            ...(previous?.checklist ? { checklist: previous.checklist } : {}),
           };
         } else {
-          const completed = kind === "complete";
-          if (completed && previous.checklist?.some((item) => !item.completed)) {
-            throw new ConflictException("Complete every checklist item first");
+          if (!previous) {
+            throw new NotFoundException("Task not found");
           }
-          if ((previous.status === "COMPLETED") === completed) {
-            throw new ConflictException("Task already has this status; reload before saving");
+          if (kind === "checklist") {
+            if (previous.status !== "OPEN") {
+              throw new ConflictException("Reopen the task before changing its checklist");
+            }
+            const step = previous.checklist?.find((item) => item.id === stepId);
+            if (!step) {
+              throw new NotFoundException("Checklist item not found");
+            }
+            const toggle = ToggleChecklistStepSchema.parse(input);
+            if (step.completed === toggle.completed) {
+              throw new ConflictException("Checklist item already has this state");
+            }
+            next = {
+              ...previous,
+              checklist: (previous.checklist ?? []).map((item) =>
+                item.id === stepId ? { ...item, completed: toggle.completed } : item
+              ),
+              version: previous.version + 1,
+              updatedAt: now,
+            };
+          } else {
+            const completed = kind === "complete";
+            if (completed && previous.checklist?.some((item) => !item.completed)) {
+              throw new ConflictException("Complete every checklist item first");
+            }
+            if ((previous.status === "COMPLETED") === completed) {
+              throw new ConflictException("Task already has this status; reload before saving");
+            }
+            next = transitionTask(previous, completed, now);
           }
-          next = transitionTask(previous, completed, now);
         }
-      }
-      await persistTaskMutation(
-        { repo: this.repo, audit: this.audit, outbox: this.outbox },
-        auth.scope,
-        next,
-        kind,
-        ctx,
-        tx
-      );
-      await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, taskId: next.id }, tx);
-      return this.projection(auth.scope, next, tx);
-    });
+        await persistTaskMutation(
+          { repo: this.repo, audit: this.audit, outbox: this.outbox },
+          auth.scope,
+          next,
+          kind,
+          ctx,
+          tx,
+          origin?.agentId
+        );
+        await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, taskId: next.id }, tx);
+        return this.projection(auth.scope, next, tx);
+      },
+      origin?.transaction
+    );
   }
 }

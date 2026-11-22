@@ -1,6 +1,21 @@
 import { createHash, randomUUID } from "node:crypto";
-import { cliAgentProof } from "@corely/contracts";
-import { PrismaExtKvAdapter, PrismaUnitOfWork } from "@corely/data";
+import { cliAgentProof, StaffProfileSchema } from "@corely/contracts";
+import {
+  PrismaAuditAdapter,
+  PrismaExtKvAdapter,
+  PrismaOutboxAdapter,
+  PrismaUnitOfWork,
+} from "@corely/data";
+import { mockDeep } from "vitest-mock-extended";
+import { CliOperationAccess } from "../adapters/http/cli-operation-access";
+import { GetEffectivePermissionsUseCase } from "../application/use-cases/get-effective-permissions.usecase";
+import { PrismaRolePermissionGrantRepository } from "../infrastructure/adapters/prisma-role-permission-grant-repository.adapter";
+import { StaffOperationsLookup } from "../../people/public";
+import { ExtStaffRepositoryAdapter } from "../../people/infrastructure/ext-staff-repository.adapter";
+import { TenantEntitlementService } from "../../platform/public";
+import { EmployeeTasksUseCase } from "../../tasks/public";
+import { ExtTaskRepositoryAdapter } from "../../tasks/infrastructure/ext-task-repository.adapter";
+import { CliTaskController } from "../../tasks/adapters/http/cli-task.controller";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -42,6 +57,25 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
       new AuthorizeRequestContextUseCase(memberships, workspaceAuth),
       new PrismaUserRepository(fixture.prisma)
     );
+    const entitlements = mockDeep<TenantEntitlementService>();
+    entitlements.isAppEnabled.mockResolvedValue(true);
+    const permissions = new GetEffectivePermissionsUseCase(
+      new PrismaRolePermissionGrantRepository(fixture.prisma),
+      memberships,
+      workspaceAuth
+    );
+    const kv = new PrismaExtKvAdapter(fixture.prisma);
+    const staffRepo = new ExtStaffRepositoryAdapter(fixture.prisma, kv);
+    const taskRepo = new ExtTaskRepositoryAdapter(fixture.prisma, kv);
+    const tasks = new EmployeeTasksUseCase(
+      taskRepo,
+      permissions,
+      new StaffOperationsLookup(staffRepo),
+      entitlements,
+      new PrismaAuditAdapter(fixture.prisma),
+      new PrismaOutboxAdapter(fixture.prisma)
+    );
+    const security = new SsoHttpSecurity(fixture.registrations, fixture.crypto);
     const grants = new CliAgentGrantsService(
       fixture.registrations,
       fixture.service,
@@ -51,7 +85,9 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
       new PrismaCliGrantLock(fixture.prisma),
       new PrismaUnitOfWork(fixture.prisma),
       fixture.audit,
-      fixture.clock
+      fixture.clock,
+      permissions,
+      entitlements
     );
     const brief = {
       execute: vi.fn(async (scope: { workspaceId: string }, date: string) => ({
@@ -60,9 +96,14 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
       })),
     };
     const module = await Test.createTestingModule({
-      controllers: [CliAgentController, CliSsoController, CliDayBriefController],
+      controllers: [CliAgentController, CliSsoController, CliDayBriefController, CliTaskController],
       providers: [
         { provide: CliAgentGrantsService, useValue: grants },
+        {
+          provide: CliOperationAccess,
+          useValue: new CliOperationAccess(grants, sessions, security, workspaceAuth),
+        },
+        { provide: EmployeeTasksUseCase, useValue: tasks },
         { provide: DailyOperationsBrief, useValue: brief },
         { provide: AuthorizeWorkspaceUseCase, useValue: workspaceAuth },
         { provide: SsoService, useValue: fixture.service },
@@ -226,6 +267,125 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
       expect(response.body).toEqual({ workspaceId: scope.workspaceId, date: "today" });
       await day(`Bearer ${manager.accessToken}`).expect(200);
       expect(brief.execute).toHaveBeenCalledTimes(2);
+      await fixture.prisma.rolePermissionGrant.createMany({
+        data: ["tasks.read", "tasks.manage"].map((permissionKey) => ({
+          tenantId,
+          roleId: fixture.membership.roleId,
+          permissionKey,
+          effect: "ALLOW" as const,
+        })),
+      });
+      const ownerStaffId = randomUUID();
+      const archivedStaffId = randomUUID();
+      const foreignStaffId = randomUUID();
+      const current = fixture.clock.now().toISOString();
+      for (const [id, target, archivedAt] of [
+        [ownerStaffId, scope, null],
+        [archivedStaffId, scope, current],
+        [foreignStaffId, { ...scope, workspaceId: neighbor.id }, null],
+      ] as const) {
+        await staffRepo.transaction(target, (tx) =>
+          staffRepo.save(
+            target,
+            StaffProfileSchema.parse({
+              id,
+              workspaceId: target.workspaceId,
+              displayName: "Lena",
+              createdAt: current,
+              updatedAt: current,
+              version: 1,
+              archivedAt,
+            }),
+            tx
+          )
+        );
+      }
+      const writer = prepare();
+      await issue({ ...writer.grant, operations: ["tasks.create", "day.brief"] }).expect(201);
+      const assigneeReader = prepare();
+      await issue({ ...assigneeReader.grant, operations: ["tasks.assignees"] }).expect(201);
+      const assigned = await client
+        .post("/sso/cli/tasks/assignees")
+        .set(ingress)
+        .set("Authorization", assigneeReader.credential)
+        .send(scope)
+        .expect(200);
+      expect(assigned.body).toEqual([{ id: ownerStaffId, displayName: "Lena" }]);
+      await client
+        .post("/sso/cli/tasks/assignees")
+        .set(ingress)
+        .set("Authorization", writer.credential)
+        .send(scope)
+        .expect(403);
+      await day(writer.credential).expect(200);
+      const task = {
+        title: "Resolve coverage for the 14:00 appointment",
+        ownerStaffId,
+        dueAt: "2026-11-22T12:00:00+01:00",
+        idempotencyKey: "one-follow-up",
+      };
+      const createTask = (token: string, change = {}) =>
+        client
+          .post("/sso/cli/tasks/create")
+          .set(ingress)
+          .set("Authorization", token)
+          .send({ ...scope, task: { ...task, ...change } });
+      await createTask(briefing.credential).expect(403);
+      await createTask(assigneeReader.credential).expect(403);
+      await createTask(writer.credential, { ownerStaffId: archivedStaffId }).expect(400);
+      await createTask(writer.credential, { ownerStaffId: foreignStaffId }).expect(400);
+      await createTask(writer.credential, { dueAt: "2026-11-22T12:00:00+99:00" }).expect(400);
+      // First response is dropped by the caller. Retry makes the task ID observable.
+      await createTask(writer.credential).expect(200);
+      const recovered = await createTask(writer.credential).expect(200);
+      expect(recovered.body).toMatchObject({
+        status: "OPEN",
+        ownerStaffId,
+        dueAt: "2026-11-22T11:00:00.000Z",
+      });
+      expect(recovered.body.sourcePath).toBe(
+        `/openbuk/app/tasks?taskId=${recovered.body.id}&workspaceId=${scope.workspaceId}`
+      );
+      await createTask(writer.credential, { title: "Different task" }).expect(409);
+      const visible = await tasks.list(
+        { taskId: recovered.body.id },
+        { ...scope, userId: fixture.userId }
+      );
+      expect(visible.items).toEqual([
+        expect.objectContaining({ id: recovered.body.id, title: task.title, ownerName: "Lena" }),
+      ]);
+      expect(await taskRepo.list(scope)).toHaveLength(1);
+      const changes = await fixture.prisma.auditLog.findMany({
+        where: { tenantId, action: "tasks.task.create", entityId: recovered.body.id },
+      });
+      expect(changes).toHaveLength(1);
+      expect(changes[0].actorUserId).toBe(fixture.userId);
+      expect(JSON.parse(changes[0].details ?? "{}")).toMatchObject({
+        agentId: writer.grant.agentId,
+        delegatorId: fixture.userId,
+      });
+      expect(
+        await fixture.prisma.outboxEvent.count({
+          where: {
+            tenantId,
+            eventType: "tasks.task.create",
+            payloadJson: { contains: recovered.body.id },
+          },
+        })
+      ).toBe(1);
+      entitlements.isAppEnabled.mockImplementation(async (_tenant, id) => id !== "tasks");
+      expect((await discovery(writer.credential).expect(200)).body.map(({ id }) => id)).toEqual([
+        "day.brief",
+      ]);
+      await createTask(writer.credential).expect(403);
+      entitlements.isAppEnabled.mockResolvedValue(true);
+      await client
+        .post(`/sso/cli/grants/${writer.grant.agentId}/revoke`)
+        .set(ingress)
+        .set("Authorization", `Bearer ${manager.accessToken}`)
+        .send(scope)
+        .expect(200);
+      await createTask(writer.credential).expect(401);
       const expiring = prepare();
       await issue(expiring.grant).expect(201);
       await discovery(expiring.credential).expect(200);
@@ -247,7 +407,10 @@ describe.skipIf(!process.env.SSO_TEST_DATABASE_URL)("CLI agent grants", () => {
     } finally {
       await app.close();
       await fixture.prisma.extKv.deleteMany({
-        where: { tenantId, moduleId: "identity-cli-agent-grants" },
+        where: { tenantId, moduleId: { in: ["identity-cli-agent-grants", "tasks", "people"] } },
+      });
+      await fixture.prisma.outboxEvent.deleteMany({
+        where: { tenantId, eventType: "tasks.task.create" },
       });
       await fixture.prisma.workspace.deleteMany({ where: { tenantId } });
       await fixture.cleanup();

@@ -10,13 +10,14 @@ import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity/identity.module";
 import { PeopleModule } from "../people/people.module";
 import { PlatformModule } from "../platform/platform.module";
+import { CliTaskController } from "./adapters/http/cli-task.controller";
 import { EmployeeTasksController } from "./adapters/http/employee-tasks.controller";
 import { EmployeeTasksUseCase } from "./application/employee-tasks.usecase";
 import { TASK_REPOSITORY } from "./application/ports/task-repository.port";
 import { ExtTaskRepositoryAdapter } from "./infrastructure/ext-task-repository.adapter";
 @Module({
   imports: [KernelModule, DataModule, IdentityModule, PeopleModule, PlatformModule],
-  controllers: [RecurringChecklistsController, EmployeeTasksController],
+  controllers: [RecurringChecklistsController, EmployeeTasksController, CliTaskController],
   exports: [RecurringGenerationUseCase, EmployeeTasksUseCase],
   providers: [
     RecurringChecklistsUseCase,
