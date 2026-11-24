@@ -20,7 +20,12 @@ import {
 } from "../../modules/invoices";
 import { NewStudentPage } from "../../modules/customers";
 import { FormsPage, NewFormPage, FormDetailPage } from "../../modules/forms";
-import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
+import {
+  IssuesListPage,
+  IssueDetailPage,
+  NewIssuePage,
+  SubmitRequestPage,
+} from "../../modules/issues";
 import { TeacherDashboardPage } from "../../modules/classes";
 import {
   AccountingDashboard,
@@ -216,6 +221,7 @@ export const appShellRoutes = (
       <Route path="/forms/:id" element={<FormDetailPage />} />
       <Route path="/issues" element={<IssuesListPage />} />
       {classRoutes}
+      <Route path="/issues/submit" element={<SubmitRequestPage />} />
       <Route path="/issues/new" element={<NewIssuePage />} />
       <Route path="/issues/:id" element={<IssueDetailPage />} />
       <Route path="/expenses" element={<ExpensesPage />} />

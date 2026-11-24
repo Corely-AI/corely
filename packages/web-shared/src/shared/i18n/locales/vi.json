@@ -494,7 +494,7 @@
     "paymentMethods": "Phương thức thanh toán",
     "taxSettings": "Cài đặt thuế",
     "cashManagement": "Quản lý tiền mặt",
-    "issues": "Vấn đề",
+    "issues": "Yêu cầu",
     "crmDashboard": "Bảng điều khiển",
     "crmDeals": "Cơ hội",
     "crmLeads": "Tiềm năng",
@@ -608,6 +608,39 @@
       "website": {
         "enabled": "Trang web"
       }
+    }
+  },
+  "requests": {
+    "submit": "Gửi yêu cầu",
+    "whatDoYouNeed": "Bạn cần gì?",
+    "problem": "Báo cáo sự cố",
+    "service": "Yêu cầu dịch vụ",
+    "title": "Tiêu đề",
+    "clientEmail": "Email khách hàng (không bắt buộc)",
+    "submitFailed": "Không gửi được yêu cầu. Hãy thử lại.",
+    "back": "Quay lại yêu cầu",
+    "queue": "Hàng đợi",
+    "mine": "Yêu cầu của tôi",
+    "assign": "Phân công",
+    "assignFailed": "Không thể phân công yêu cầu.",
+    "internalNote": "Thêm ghi chú nội bộ",
+    "clientUpdate": "Cập nhật cho khách hàng",
+    "summary": "Tóm tắt kết quả",
+    "confirmRecipient": "Tôi đã xác nhận người nhận",
+    "retry": "Gửi lại cập nhật",
+    "send": "Gửi cập nhật cho khách hàng",
+    "sendFailed": "Không gửi được cập nhật. Hãy kiểm tra trạng thái gửi và thử lại.",
+    "resolved": "Đã xử lý yêu cầu",
+    "reference": "Mã {{reference}}",
+    "saveNote": "Lưu ghi chú nội bộ",
+    "internalNotes": "Ghi chú nội bộ",
+    "empty": "Không tìm thấy yêu cầu",
+    "emptyDescription": "Gửi yêu cầu để theo dõi tiến độ.",
+    "delivery": {
+      "QUEUED": "Đang chờ gửi",
+      "SENT": "Đã gửi",
+      "FAILED": "Gửi thất bại",
+      "NEEDS_REVIEW": "Kiểm tra trước khi gửi lại"
     }
   },
   "issues": {

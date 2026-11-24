@@ -21,6 +21,10 @@ import {
 import { Textarea } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { formatDate } from "@/shared/lib/formatters";
+import { useAuth } from "@corely/web-shared/lib/auth-provider";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { workspacesApi } from "@/shared/workspaces/workspaces-api";
+import { ClientUpdatePanel } from "../components/client-update-panel";
 import { issueKeys } from "../queries";
 import type { IssueStatus } from "@corely/contracts";
 
@@ -46,15 +50,40 @@ export default function IssueDetailPage() {
   const [galleryApi, setGalleryApi] = useState<CarouselApi>();
 
   const issueId = id ?? "";
+  const { activeWorkspaceId } = useWorkspace();
+  const userId = useAuth().user?.userId;
+  const detailKey = [...issueKeys.detail(issueId), activeWorkspaceId, userId];
+  const [assignee, setAssignee] = useState("");
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: issueKeys.detail(issueId),
+    queryKey: detailKey,
     queryFn: () => issuesApi.getIssue(issueId),
     enabled: Boolean(issueId),
+    refetchInterval: (query) =>
+      query.state.data?.issue.clientUpdateStatus === "QUEUED" ? 2000 : false,
+  });
+
+  const members = useQuery({
+    queryKey: ["request-assignees", activeWorkspaceId, userId],
+    queryFn: () =>
+      activeWorkspaceId ? workspacesApi.listMembers(activeWorkspaceId) : Promise.resolve(undefined),
+    enabled: Boolean(activeWorkspaceId && data?.canOperate),
+  });
+  const assign = useMutation({
+    mutationFn: (assigneeUserId: string) => issuesApi.assignIssue({ issueId, assigneeUserId }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: detailKey });
+      await queryClient.invalidateQueries({ queryKey: issueKeys.list() });
+      setAssignee("");
+    },
+    onError: () => toast.error(t("requests.assignFailed")),
   });
 
   const issue = data?.issue;
   const comments = data?.comments ?? [];
+  const assignedMember = members.data?.members.find(
+    (member) => member.userId === issue?.assigneeUserId
+  );
   const activity = data?.activity ?? [];
 
   const imageAttachments = useMemo(
@@ -79,7 +108,7 @@ export default function IssueDetailPage() {
   const changeStatusMutation = useMutation({
     mutationFn: (status: IssueStatus) => issuesApi.changeStatus({ issueId, status }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
+      await queryClient.invalidateQueries({ queryKey: detailKey });
       toast.success(t("issues.status.updated"));
       setStatusSelection("");
     },
@@ -89,8 +118,8 @@ export default function IssueDetailPage() {
   const resolveMutation = useMutation({
     mutationFn: () => issuesApi.resolveIssue({ issueId }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
-      toast.success(t("issues.status.resolved"));
+      await queryClient.invalidateQueries({ queryKey: detailKey });
+      toast.success(t(issue?.requestKind ? "requests.resolved" : "issues.status.resolved"));
     },
     onError: () => toast.error(t("issues.status.resolveFailed")),
   });
@@ -98,7 +127,7 @@ export default function IssueDetailPage() {
   const reopenMutation = useMutation({
     mutationFn: () => issuesApi.reopenIssue(issueId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
+      await queryClient.invalidateQueries({ queryKey: detailKey });
       toast.success(t("issues.status.reopened"));
     },
     onError: () => toast.error(t("issues.status.reopenFailed")),
@@ -107,7 +136,7 @@ export default function IssueDetailPage() {
   const addCommentMutation = useMutation({
     mutationFn: () => issuesApi.addComment({ issueId, body: commentBody }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
+      await queryClient.invalidateQueries({ queryKey: detailKey });
       setCommentBody("");
       toast.success(t("issues.comments.added"));
     },
@@ -137,17 +166,40 @@ export default function IssueDetailPage() {
     );
   }
 
+  if (data?.canOperate === false) {
+    return (
+      <main className="space-y-4 p-4 md:p-8">
+        <Button variant="outline" onClick={() => navigate("/issues")}>
+          {t("requests.back")}
+        </Button>
+        <h1 className="text-h1 break-words">{issue.title}</h1>
+        {statusBadge}
+        {issue.requestKind && (
+          <p className="text-xs text-muted-foreground">
+            {t("requests.reference", { reference: issue.id.slice(0, 12) })}
+          </p>
+        )}
+        <p className="whitespace-pre-wrap break-words">{issue.description}</p>
+      </main>
+    );
+  }
+
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/issues")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">{issue.title}</h1>
-            <div className="flex items-center gap-2 mt-1">
+            <h1 className="text-h1 break-words text-foreground">{issue.title}</h1>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
               {statusBadge}
+              {issue.requestKind && (
+                <span className="text-xs text-muted-foreground">
+                  {t("requests.reference", { reference: issue.id.slice(0, 12) })}
+                </span>
+              )}
               <span className="text-xs text-muted-foreground">
                 {t("issues.createdAt", {
                   date: formatDate(issue.createdAt, i18n.t("common.locale")),
@@ -197,7 +249,10 @@ export default function IssueDetailPage() {
             <div>
               <p className="text-xs text-muted-foreground">{t("issues.fields.assignee")}</p>
               <p className="text-sm font-medium">
-                {issue.assigneeUserId ?? t("issues.unassigned")}
+                {assignedMember?.name ||
+                  assignedMember?.email ||
+                  issue.assigneeUserId ||
+                  t("issues.unassigned")}
               </p>
             </div>
           </div>
@@ -209,6 +264,31 @@ export default function IssueDetailPage() {
             </p>
           </div>
 
+          {issue.requestKind && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={assignee} onValueChange={setAssignee}>
+                <SelectTrigger className="w-52" aria-label={t("issues.fields.assignee")}>
+                  <SelectValue placeholder={t("issues.fields.assignee")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {members.data?.members
+                    .filter((member) => member.status === "ACTIVE")
+                    .map((member) => (
+                      <SelectItem key={member.userId} value={member.userId}>
+                        {member.name || member.email || member.userId}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                disabled={!assignee || assign.isPending}
+                onClick={() => assign.mutate(assignee)}
+              >
+                {t("requests.assign")}
+              </Button>
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-3">
             <Select
               value={statusSelection}
@@ -236,14 +316,21 @@ export default function IssueDetailPage() {
         </CardContent>
       </Card>
 
+      {issue.requestKind && issue.clientEmail && (
+        <ClientUpdatePanel
+          key={issue.id}
+          issue={issue}
+          refresh={() => queryClient.invalidateQueries({ queryKey: detailKey })}
+        />
+      )}
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t("issues.comments.addTitle")}</h2>
+          <h2 className="text-lg font-semibold">{t("requests.internalNote")}</h2>
           <Textarea
             rows={3}
             value={commentBody}
             onChange={(event) => setCommentBody(event.target.value)}
-            placeholder={t("issues.comments.placeholder")}
+            aria-label={t("requests.internalNote")}
           />
           <div className="flex justify-end">
             <Button
@@ -252,7 +339,7 @@ export default function IssueDetailPage() {
               disabled={!commentBody.trim() || addCommentMutation.isPending}
             >
               <MessageSquarePlus className="h-4 w-4 mr-2" />
-              {t("issues.comments.add")}
+              {t("requests.saveNote")}
             </Button>
           </div>
         </CardContent>
@@ -260,7 +347,7 @@ export default function IssueDetailPage() {
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">{t("issues.comments.title")}</h2>
+          <h2 className="text-lg font-semibold">{t("requests.internalNotes")}</h2>
           {comments.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("issues.comments.empty")}</p>
           ) : (

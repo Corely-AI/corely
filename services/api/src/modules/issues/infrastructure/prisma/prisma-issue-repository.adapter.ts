@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
+import { getPrismaClient, PrismaService } from "@corely/data";
 import type { Issue, IssuePriority, IssueSiteType, IssueStatus } from "../../domain/issue.types";
 import type {
   IssueListFilters,
@@ -33,6 +34,12 @@ const parseSort = (sort?: string | string[]) => {
 const toIssue = (row: any): Issue => ({
   id: row.id,
   tenantId: row.tenantId,
+  workspaceId: row.workspaceId,
+  requestKind: row.requestKind,
+  clientEmail: row.clientEmail,
+  clientUpdateStatus: row.clientUpdateStatus,
+  clientUpdateSummary: row.clientUpdateSummary,
+  clientUpdateQueuedAt: row.clientUpdateQueuedAt,
   title: row.title,
   description: row.description,
   status: row.status as IssueStatus,
@@ -53,6 +60,71 @@ const toIssue = (row: any): Issue => ({
 @Injectable()
 export class PrismaIssueRepositoryAdapter implements IssueRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
+
+  async finishClientUpdate(issue: Issue, status: "SENT" | "FAILED" | "NEEDS_REVIEW") {
+    await this.prisma.issue.updateMany({
+      where: {
+        id: issue.id,
+        tenantId: issue.tenantId,
+        workspaceId: issue.workspaceId,
+        clientUpdateStatus: status === "SENT" ? { in: ["QUEUED", "FAILED"] } : "QUEUED",
+      },
+      data: { clientUpdateStatus: status },
+    });
+  }
+
+  async insertRequest(issue: Issue, tx: TransactionContext): Promise<boolean> {
+    const client = getPrismaClient(this.prisma, tx);
+    const { count } = await client.issue.createMany({
+      data: {
+        id: issue.id,
+        tenantId: issue.tenantId,
+        workspaceId: issue.workspaceId,
+        reporterUserId: issue.reporterUserId,
+        requestKind: issue.requestKind,
+        clientEmail: issue.clientEmail,
+        title: issue.title,
+        description: issue.description,
+        siteType: issue.siteType,
+        createdAt: issue.createdAt,
+        updatedAt: issue.updatedAt,
+      },
+      skipDuplicates: true,
+    });
+    if (count === 1) {
+      await client.issueActivity.create({
+        data: {
+          id: issue.id,
+          tenantId: issue.tenantId,
+          issueId: issue.id,
+          type: "CREATED",
+          metadataJson: JSON.stringify({ title: issue.title }),
+          createdAt: issue.createdAt,
+          createdByUserId: issue.reporterUserId,
+        },
+      });
+    }
+    return count === 1;
+  }
+
+  async queueClientUpdate(issue: Issue, summary: string, now: Date, tx: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const { count } = await client.issue.updateMany({
+      where: {
+        id: issue.id,
+        tenantId: issue.tenantId,
+        workspaceId: issue.workspaceId,
+        status: { in: ["RESOLVED", "CLOSED"] },
+        clientUpdateStatus: issue.clientUpdateStatus ?? null,
+      },
+      data: {
+        clientUpdateStatus: "QUEUED",
+        clientUpdateSummary: summary,
+        clientUpdateQueuedAt: issue.clientUpdateQueuedAt ?? now,
+      },
+    });
+    return count === 1;
+  }
 
   async create(issue: Issue): Promise<Issue> {
     const created = await this.prisma.issue.create({
@@ -104,9 +176,13 @@ export class PrismaIssueRepositoryAdapter implements IssueRepositoryPort {
     return toIssue(updated);
   }
 
-  async findById(tenantId: string, issueId: string): Promise<Issue | null> {
-    const row = await this.prisma.issue.findUnique({
-      where: { id: issueId, tenantId },
+  async findById(tenantId: string, issueId: string, workspaceId?: string): Promise<Issue | null> {
+    const row = await this.prisma.issue.findFirst({
+      where: {
+        id: issueId,
+        tenantId,
+        OR: [{ workspaceId: null }, { workspaceId: workspaceId ?? null }],
+      },
     });
     return row ? toIssue(row) : null;
   }
@@ -116,7 +192,13 @@ export class PrismaIssueRepositoryAdapter implements IssueRepositoryPort {
     filters: IssueListFilters,
     pagination: { page: number; pageSize: number }
   ): Promise<IssueListResult> {
-    const where: any = { tenantId };
+    const where: any = {
+      tenantId,
+      AND: [{ OR: [{ workspaceId: null }, { workspaceId: filters.workspaceId ?? null }] }],
+    };
+    if (filters.ownerOnly) {
+      where.AND.push({ reporterUserId: filters.ownerOnly });
+    }
 
     if (filters.status) {
       where.status = filters.status;

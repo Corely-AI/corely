@@ -26,14 +26,25 @@ export class GetIssueUseCase {
     private readonly activityRepo: IssueActivityRepositoryPort
   ) {}
 
-  async execute(input: GetIssueRequest, ctx: UseCaseContext): Promise<GetIssueResult> {
+  async execute(
+    input: GetIssueRequest,
+    ctx: UseCaseContext,
+    ownerOnly?: string
+  ): Promise<GetIssueResult> {
     assertCan(ctx);
     const tenantId = ctx.tenantId!;
 
-    const issue = await this.issueRepo.findById(tenantId, input.issueId);
-    if (!issue) {
+    const issue = await this.issueRepo.findById(
+      tenantId,
+      input.issueId,
+      ctx.workspaceId ?? undefined
+    );
+    if (!issue || (ownerOnly && issue.reporterUserId !== ownerOnly)) {
       throw new NotFoundError("Issue not found", { code: "Issues:NotFound" });
     }
+
+    if (ownerOnly)
+      {return { issue, attachments: [], comments: [], activity: [], commentAttachments: new Map() };}
 
     const [attachments, comments, activity] = await Promise.all([
       this.attachmentRepo.listByIssue(tenantId, issue.id),

@@ -8,3 +8,4 @@ export * from "./resolve-issue.schema";
 export * from "./reopen-issue.schema";
 export * from "./assign-issue.schema";
 export * from "./issue-events.schema";
+export * from "./service-request.schema";

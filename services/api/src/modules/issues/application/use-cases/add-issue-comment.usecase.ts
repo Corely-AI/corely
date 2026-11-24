@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { ValidationFailedError, NotFoundError } from "@corely/domain";
 import type { AddIssueCommentRequest } from "@corely/contracts";
 import type { OutboxPort, UseCaseContext } from "@corely/kernel";
@@ -45,7 +46,11 @@ export class AddIssueCommentUseCase {
     private readonly clock: ClockPort
   ) {}
 
-  async execute(input: AddIssueCommentRequest, ctx: UseCaseContext): Promise<IssueComment> {
+  async execute(
+    input: AddIssueCommentRequest,
+    ctx: UseCaseContext,
+    authorizedOperator = false
+  ): Promise<IssueComment> {
     assertCan(ctx);
     const tenantId = ctx.tenantId!;
 
@@ -55,12 +60,17 @@ export class AddIssueCommentUseCase {
       ]);
     }
 
-    const issue = await this.issueRepo.findById(tenantId, input.issueId);
-    if (!issue) {
+    const issue = await this.issueRepo.findById(
+      tenantId,
+      input.issueId,
+      ctx.workspaceId ?? undefined
+    );
+    if (!issue || (issue.workspaceId && !authorizedOperator)) {
       throw new NotFoundError("Issue not found", { code: "Issues:NotFound" });
     }
 
-    const idempotencyKey = input.idempotencyKey ?? "default";
+    const key = input.idempotencyKey ?? (issue.workspaceId ? randomUUID() : "default");
+    const idempotencyKey = issue.workspaceId ? JSON.stringify([issue.id, ctx.userId, key]) : key;
     const cached = await this.idempotency.get(ACTION_KEY, tenantId, idempotencyKey);
     if (cached) {
       return fromStoredComment(cached.body);

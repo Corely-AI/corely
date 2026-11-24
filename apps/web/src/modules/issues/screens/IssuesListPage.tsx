@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@corely/web-shared/lib/auth-provider";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { Plus } from "lucide-react";
 import { Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
@@ -49,6 +52,10 @@ const getFilterValue = (filters: any[] | undefined, field: string) => {
 
 export default function IssuesListPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const userId = useAuth().user?.userId;
+  const { activeWorkspaceId } = useWorkspace();
+  const [mine, setMine] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [state, setUrlState] = useListUrlState(
@@ -93,6 +100,9 @@ export default function IssuesListPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: issueKeys.list({
       ...state,
+      activeWorkspaceId,
+      userId,
+      mine,
       status,
       siteType,
       assigneeUserId,
@@ -102,6 +112,7 @@ export default function IssuesListPage() {
     queryFn: () =>
       issuesApi.listIssues({
         q: state.q,
+        mine,
         page: state.page,
         pageSize: state.pageSize,
         sort: state.sort,
@@ -112,7 +123,17 @@ export default function IssuesListPage() {
         customerPartyId,
         manufacturerPartyId,
       }),
-    placeholderData: keepPreviousData,
+    placeholderData: (previous, query) => {
+      const oldFilters = query?.queryKey.at(-1);
+      return oldFilters &&
+        typeof oldFilters === "object" &&
+        "activeWorkspaceId" in oldFilters &&
+        oldFilters.activeWorkspaceId === activeWorkspaceId &&
+        "userId" in oldFilters &&
+        oldFilters.userId === userId
+        ? keepPreviousData(previous)
+        : undefined;
+    },
   });
 
   const issues = data?.items ?? [];
@@ -133,13 +154,37 @@ export default function IssuesListPage() {
 
   return (
     <>
+      {data?.canOperate && (
+        <div className="flex gap-2 px-4 pt-4 md:px-8" aria-label={t("nav.issues")}>
+          <Button
+            variant={mine ? "outline" : "secondary"}
+            onClick={() => {
+              setMine(false);
+              setUrlState({ page: 1 });
+            }}
+            aria-pressed={!mine}
+          >
+            {t("requests.queue")}
+          </Button>
+          <Button
+            variant={mine ? "secondary" : "outline"}
+            onClick={() => {
+              setMine(true);
+              setUrlState({ page: 1 });
+            }}
+            aria-pressed={mine}
+          >
+            {t("requests.mine")}
+          </Button>
+        </div>
+      )}
       <CrudListPageLayout
-        title="Issues"
-        subtitle="Track and triage field issues"
+        title={t("nav.issues")}
+        subtitle={data?.canOperate && !mine ? t("requests.queue") : t("requests.mine")}
         primaryAction={
-          <Button variant="accent" onClick={() => navigate("/issues/new")}>
+          <Button variant="accent" onClick={() => navigate("/issues/submit")}>
             <Plus className="h-4 w-4" />
-            Report issue
+            {t("requests.submit")}
           </Button>
         }
         toolbar={
@@ -189,10 +234,10 @@ export default function IssuesListPage() {
               <EmptyState
                 icon={Plus}
                 title="No issues yet"
-                description="Create your first issue report to start tracking."
+                description={t("requests.emptyDescription")}
                 action={
-                  <Button variant="outline" onClick={() => navigate("/issues/new")}>
-                    Report issue
+                  <Button variant="outline" onClick={() => navigate("/issues/submit")}>
+                    {t("requests.submit")}
                   </Button>
                 }
               />
