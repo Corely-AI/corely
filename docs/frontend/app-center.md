@@ -242,3 +242,22 @@ legacy-host routing or authentication.
 
 [Desktop controls](images/app-management/team-disable-desktop.png) and
 [renewed dependency confirmation](images/app-management/dependency-reapproval-phone.png).
+
+## Requests
+
+The **Requests** tile opens the existing Issues module in the selected workspace.
+Enable the Issues capability using the existing app management tools and grant
+requesters `issues.read` and `issues.write`. Operators need the Issues permissions
+for the actions they perform, such as `issues.assign` and `issues.resolve`.
+
+From **Submit a request**, signed-in staff can report a problem or request a
+routine service. Include a client email when submitting on the client's behalf.
+**My requests** shows the requester's status. Operators can use **Queue** to assign,
+resolve, and record internal notes. New requests are scoped to the selected
+workspace. Existing issue deep links retain their IDs.
+
+After resolving a request with a client email, an operator can confirm the
+recipient and send a completion summary. The existing background runtime sends
+the summary via Resend and records its send status. Retry uses the same recipient,
+summary, and provider idempotency key. Check delivery with the provider if the
+retry window has expired. Client messages contain the operator's summary.

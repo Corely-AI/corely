@@ -495,7 +495,7 @@
     "paymentMethods": "Payment Methods",
     "taxSettings": "Tax Settings",
     "cashManagement": "Cash Management",
-    "issues": "Issues",
+    "issues": "Requests",
     "crmDashboard": "Dashboard",
     "crmDeals": "Deals",
     "crmLeads": "Leads",
@@ -623,6 +623,39 @@
       "website": {
         "enabled": "Website"
       }
+    }
+  },
+  "requests": {
+    "submit": "Submit a request",
+    "whatDoYouNeed": "What do you need?",
+    "problem": "Report a problem",
+    "service": "Request a service",
+    "title": "Title",
+    "clientEmail": "Client email (optional)",
+    "submitFailed": "The request could not be submitted. Try again.",
+    "back": "Back to requests",
+    "queue": "Queue",
+    "mine": "My requests",
+    "assign": "Assign",
+    "assignFailed": "Unable to assign the request.",
+    "internalNote": "Add internal note",
+    "clientUpdate": "Client update",
+    "summary": "Completion summary",
+    "confirmRecipient": "I’ve confirmed the recipient",
+    "retry": "Retry client update",
+    "send": "Send client update",
+    "sendFailed": "Unable to send the update. Check delivery status and try again.",
+    "resolved": "Request resolved",
+    "reference": "Ref. {{reference}}",
+    "saveNote": "Save internal note",
+    "internalNotes": "Internal notes",
+    "empty": "No requests found",
+    "emptyDescription": "Submit a request to start tracking its progress.",
+    "delivery": {
+      "QUEUED": "Queued",
+      "SENT": "Sent",
+      "FAILED": "Send failed",
+      "NEEDS_REVIEW": "Check delivery before sending again"
     }
   },
   "issues": {

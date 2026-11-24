@@ -494,7 +494,7 @@
     "roles": "Rollen & Rechte",
     "paymentMethods": "Zahlungsmethoden",
     "taxSettings": "Steuereinstellungen",
-    "issues": "Probleme",
+    "issues": "Anfragen",
     "crmDashboard": "Dashboard",
     "crmDeals": "Deals",
     "crmLeads": "Leads",
@@ -607,6 +607,39 @@
       "website": {
         "enabled": "Website"
       }
+    }
+  },
+  "requests": {
+    "submit": "Anfrage senden",
+    "whatDoYouNeed": "Was benötigen Sie?",
+    "problem": "Problem melden",
+    "service": "Service anfragen",
+    "title": "Titel",
+    "clientEmail": "E-Mail des Kunden (optional)",
+    "submitFailed": "Die Anfrage konnte nicht gesendet werden. Versuchen Sie es erneut.",
+    "back": "Zurück zu Anfragen",
+    "queue": "Warteschlange",
+    "mine": "Meine Anfragen",
+    "assign": "Zuweisen",
+    "assignFailed": "Die Anfrage konnte nicht zugewiesen werden.",
+    "internalNote": "Interne Notiz hinzufügen",
+    "clientUpdate": "Kunden-Update",
+    "summary": "Zusammenfassung der Erledigung",
+    "confirmRecipient": "Ich habe den Empfänger bestätigt",
+    "retry": "Kunden-Update erneut senden",
+    "send": "Kunden-Update senden",
+    "sendFailed": "Das Update konnte nicht gesendet werden. Prüfen Sie den Versandstatus.",
+    "resolved": "Anfrage erledigt",
+    "reference": "Nr. {{reference}}",
+    "saveNote": "Interne Notiz speichern",
+    "internalNotes": "Interne Notizen",
+    "empty": "Keine Anfragen gefunden",
+    "emptyDescription": "Senden Sie eine Anfrage, um den Fortschritt zu verfolgen.",
+    "delivery": {
+      "QUEUED": "In Warteschlange",
+      "SENT": "Gesendet",
+      "FAILED": "Versand fehlgeschlagen",
+      "NEEDS_REVIEW": "Versand vor erneutem Senden prüfen"
     }
   },
   "issues": {

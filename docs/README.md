@@ -89,6 +89,7 @@ Frontend guidelines and specific docs.
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
 - [App Center](./frontend/app-center.md) — implemented-module catalog, shared language/app marks, authorized destinations and UI evidence
+- [Requests in App Center](./frontend/app-center.md#requests) — signed-in intake, request queue and client updates
 - [Focused surface diagnostics](./observability/focused-surfaces.md) — sanitized request observations, release reports and pilot operations gates
 - [Focused app UX verification](./frontend/focused-ux-verification.md) — accessibility corrections, locale/keyboard checks and responsive evidence
 - [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition

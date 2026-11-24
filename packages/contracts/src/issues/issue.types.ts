@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ClientUpdateStatusSchema, ServiceRequestKindSchema } from "./service-request.schema";
 
 export const IssueStatusSchema = z.enum([
   "NEW",
@@ -84,6 +85,10 @@ export const IssueActivitySchema = z.object({
 export type IssueActivity = z.infer<typeof IssueActivitySchema>;
 
 export const IssueSchema = z.object({
+  requestKind: ServiceRequestKindSchema.nullish(),
+  clientEmail: z.string().nullish(),
+  clientUpdateStatus: ClientUpdateStatusSchema.nullish(),
+  clientUpdateSummary: z.string().nullish(),
   id: z.string(),
   tenantId: z.string(),
   title: z.string(),

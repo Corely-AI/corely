@@ -1,3 +1,5 @@
+import { IssuesModule } from "../../../../issues";
+import { IssueClientUpdateHandler } from "../issues/issue-client-update.handler";
 import { IdentityModule } from "../../../../identity";
 import {
   SsoEmailCodeRequestedHandler,
@@ -75,6 +77,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     KernelModule,
     AccountingWorkerModule,
     IssuesWorkerModule,
+    IssuesModule,
     InvoicesWorkerModule,
     TaxWorkerModule,
     FormsWorkerModule,
@@ -89,6 +92,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     SignModule,
   ],
   providers: [
+    IssueClientUpdateHandler,
     SsoEmailCodeRequestedHandler,
     SignVerifiedHandler,
     SignCollectedHandler,
@@ -164,10 +168,12 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         collected: SignCollectedHandler,
         invite: SignInvitationHandler,
         coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler,
+        clientUpdateHandler: IssueClientUpdateHandler,
         ssoEmailHandler: SsoEmailCodeRequestedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           ssoEmailHandler,
+          clientUpdateHandler,
           ...createSsoRecordedEventHandlers(),
           ...createEmployeeTaskEventHandlers(),
           ...createChecklistEventHandlers(),
@@ -222,6 +228,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         SignCollectedHandler,
         SignInvitationHandler,
         CoachingExportBundleRequestedHandler,
+        IssueClientUpdateHandler,
         SsoEmailCodeRequestedHandler,
       ],
     },

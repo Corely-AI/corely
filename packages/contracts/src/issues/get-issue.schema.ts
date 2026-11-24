@@ -7,6 +7,7 @@ export const GetIssueRequestSchema = z.object({
 
 export const GetIssueResponseSchema = z.object({
   issue: IssueSchema,
+  canOperate: z.boolean().optional(),
   comments: z.array(IssueCommentSchema),
   activity: z.array(IssueActivitySchema),
 });

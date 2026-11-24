@@ -57,6 +57,12 @@ enum IssueTranscriptionStatus {
 model Issue {
   id                  String        @id @default(cuid())
   tenantId            String
+  workspaceId         String?
+  requestKind         String?
+  clientEmail         String?
+  clientUpdateStatus  String?
+  clientUpdateSummary String?
+  clientUpdateQueuedAt DateTime? @db.Timestamptz(6)
   title               String
   description         String?
   status              IssueStatus   @default(NEW)
@@ -77,6 +83,7 @@ model Issue {
   attachments IssueAttachment[]
   activity    IssueActivity[]
 
+  @@index([tenantId, workspaceId, reporterUserId])
   @@index([tenantId, status])
   @@index([tenantId, assigneeUserId])
   @@index([tenantId, siteType])
