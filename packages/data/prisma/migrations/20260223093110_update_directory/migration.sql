@@ -1,2 +1,0 @@
--- RenameIndex
-ALTER INDEX "content"."DirectoryRestaurant_tenantId_workspaceId_status_neighborhoodSlu" RENAME TO "DirectoryRestaurant_tenantId_workspaceId_status_neighborhoo_idx";
