@@ -114,7 +114,7 @@ test("App Center → Invoice → HR → App Center preserves an authorized works
   await page.getByRole("menuitem", { name: "HR", exact: true }).click();
   await expect(page.getByRole("alertdialog")).toBeVisible();
   await page.getByRole("button", { name: "Leave page", exact: true }).click();
-  await expect(page).toHaveURL(`${origins.hr}/?workspaceId=workspace-b`);
+  await expect(page).toHaveURL(`${origins.hr}/?workspaceId=workspace-b&lang=en`);
   expect(nativeDialogs).toEqual([]);
   await expect(page.getByText("Records: user-a/tenant-b/workspace-b")).toBeVisible();
   await page.getByRole("button", { name: "All apps", exact: true }).click();
