@@ -3,6 +3,7 @@
 ## Tracking and outcome
 
 - [Issue #492](https://github.com/Corely-AI/corely/issues/492).
+- [Draft PR #493](https://github.com/Corely-AI/corely/pull/493).
 - Branch `492-prisma-initial-baseline` targets `development` at `606ccee8`.
 - Reproduce the existing database initialization from one migration and document
   adoption for databases with application data.
