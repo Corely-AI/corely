@@ -35,17 +35,16 @@ export function AppDirectory({
   const text = copy[locale];
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>("all");
-  // The server resolves authorized destinations; no planned catalog tiles are manufactured.
-  const destinations = apps.filter((app) => catalogMetadata(app));
-  const term = search.trim().toLocaleLowerCase(locale);
-  const filtered = destinations.filter((app) => {
-    const entry = catalogMetadata(app);
-    return (
-      entry &&
-      (category === "all" || entry.category === category) &&
-      entry.displayName[locale].toLocaleLowerCase(locale).includes(term)
-    );
+  const destinations = apps.flatMap((app) => {
+    const metadata = catalogMetadata(app);
+    return metadata && entryUrl(app, workspaceId) ? [{ app, metadata }] : [];
   });
+  const term = search.trim().toLocaleLowerCase(locale);
+  const filtered = destinations.filter(
+    ({ metadata }) =>
+      (category === "all" || metadata.category === category) &&
+      metadata.displayName[locale].toLocaleLowerCase(locale).includes(term)
+  );
 
   return (
     <section aria-label={text.title} className="space-y-8">
@@ -101,44 +100,30 @@ export function AppDirectory({
       ) : (
         <div className="space-y-8">
           {categories.map((group) => {
-            const entries = filtered.filter((app) => catalogMetadata(app)?.category === group);
+            const entries = filtered.filter(({ metadata }) => metadata.category === group);
             return entries.length ? (
               <section key={group} aria-label={text[group]} className="space-y-3">
                 <h2 className="text-lg font-semibold">{text[group]}</h2>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {entries.map((app) => {
-                    const launch = catalogMetadata(app);
-                    if (!launch) {
-                      return null;
-                    }
-                    const available = Boolean(entryUrl(app, workspaceId));
-                    const reason =
-                      !app.enabled || app.launch?.availability === "app-disabled"
-                        ? text.disabled
-                        : !app.directory && app.launch?.availability === "coming-soon"
-                          ? text.soon
-                          : text.unavailable;
-                    return (
-                      <article
-                        key={app.appId}
-                        className="flex min-w-0 flex-col items-start gap-5 rounded-xl border bg-card p-6 text-card-foreground shadow-sm"
+                  {entries.map(({ app, metadata }) => (
+                    <article
+                      key={app.appId}
+                      className="flex min-w-0 flex-col items-start gap-5 rounded-xl border bg-card p-6 text-card-foreground shadow-sm"
+                    >
+                      <AppLogo logo={app.directory?.logo} iconKey={app.launch?.iconKey} />
+                      <h3 className="break-words text-xl font-semibold">
+                        {metadata.displayName[locale]}
+                      </h3>
+                      <Button
+                        className="min-h-11 w-full"
+                        disabled={launching}
+                        aria-label={`${text.open}: ${metadata.displayName[locale]}`}
+                        onClick={() => onLaunch(app.appId)}
                       >
-                        <AppLogo logo={app.directory?.logo} iconKey={app.launch?.iconKey} />
-                        <h3 className="break-words text-xl font-semibold">
-                          {launch.displayName[locale]}
-                        </h3>
-                        <Button
-                          className="min-h-11 w-full"
-                          variant={available ? "default" : "outline"}
-                          disabled={!available || launching}
-                          aria-label={`${available ? text.open : reason}: ${launch.displayName[locale]}`}
-                          onClick={() => onLaunch(app.appId)}
-                        >
-                          {available ? text.open : reason}
-                        </Button>
-                      </article>
-                    );
-                  })}
+                        {text.open}
+                      </Button>
+                    </article>
+                  ))}
                 </div>
               </section>
             ) : null;

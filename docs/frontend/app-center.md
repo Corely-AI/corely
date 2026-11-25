@@ -58,12 +58,17 @@ broad administration sidebar. The flag defaults to `false`; HR's separate
 availability gate is unchanged. The local `dev:focused:api` runner opts in
 automatically. Disable the flag and restart the API to restore the legacy launch.
 
-Only enabled, available entries with a valid configured origin can open. Disabled,
-unconfigured and Coming soon entries have disabled controls and a neutral reason.
+The directory lists only apps with a valid launch destination for the selected
+workspace. Search and category sections use the same set of apps. If that set is
+empty, the directory shows the workspace empty state.
+
+[Desktop directory](images/app-center-availability/desktop-de.png) ·
+[Phone directory](images/app-center-availability/phone-de.png) ·
+[Phone empty state](images/app-center-availability/empty-phone-de.png)
+
 Each open action refreshes the projection; removed grants or availability prevent
 navigation. A workspace unmount discards a pending launch. The destination receives
-only the encoded workspace hint and independently revalidates access. HR remains
-Coming soon until the owning server configuration releases it. Origin/return URL
+only the encoded workspace hint and independently revalidates access. Origin/return URL
 query parameters are never used to choose a destination.
 
 The directory has its own lightweight header using shared UI controls and account/
