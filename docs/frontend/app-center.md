@@ -34,6 +34,12 @@ planned app is manufactured from the long-term catalog. The server controls
 visibility; absence of accessible destinations produces an empty state without
 restricted metadata. Dependency topology is omitted from staff discovery. App enablement remains a host administrator workflow.
 
+New signups provision Invoice, Expenses, Booking, and Corely Sign for the new
+tenant. Workspace owners can open these apps from App Center after creating
+their first workspace. Personal and company workspaces use the same defaults.
+Invited users inherit the destination tenant's app settings. Opening Booking
+for internal use leaves public booking subject to the existing publication flow.
+
 Implemented-module entries reuse their owner's existing menu ID and route. The
 server resolves that exact entry from the app's permission/capability-filtered menu
 group and checks installed dependencies. Hidden or revoked entries do not grant a

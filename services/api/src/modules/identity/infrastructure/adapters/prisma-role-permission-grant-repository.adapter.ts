@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { Injectable, Inject } from "@nestjs/common";
 import type { TransactionContext } from "@corely/kernel";
 import { PrismaService, getPrismaClient } from "@corely/data";
@@ -49,10 +50,11 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
     tenantId: string,
     roleId: string,
     grants: Array<{ key: string; effect: RolePermissionEffect }>,
-    createdBy?: string | null
+    createdBy?: string | null,
+    tx?: TransactionContext
   ): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      await tx.rolePermissionGrant.deleteMany({
+    const replace = async (client: Prisma.TransactionClient) => {
+      await client.rolePermissionGrant.deleteMany({
         where: { tenantId, roleId },
       });
 
@@ -60,7 +62,7 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
         return;
       }
 
-      await tx.rolePermissionGrant.createMany({
+      await client.rolePermissionGrant.createMany({
         data: grants.map((grant) => ({
           tenantId,
           roleId,
@@ -69,6 +71,11 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
           createdBy: createdBy ?? null,
         })),
       });
-    });
+    };
+    if (tx) {
+      await replace(getPrismaClient(this.prisma, tx));
+    } else {
+      await this.prisma.$transaction(replace);
+    }
   }
 }

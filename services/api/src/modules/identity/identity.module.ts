@@ -32,6 +32,7 @@ import { EnvModule, EnvService } from "@corely/config";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { PlatformModule } from "../platform/platform.module";
+import { PlatformEntitlementsModule } from "../platform-entitlements/platform-entitlements.module";
 
 // Controllers
 import { AuthController } from "./adapters/http/auth.controller";
@@ -106,6 +107,7 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     DataModule,
     KernelModule,
     forwardRef(() => PlatformModule),
+    forwardRef(() => PlatformEntitlementsModule),
     forwardRef(() => WorkspacesModule),
   ],
   controllers: [

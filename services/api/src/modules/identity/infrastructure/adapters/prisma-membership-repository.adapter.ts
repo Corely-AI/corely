@@ -11,8 +11,8 @@ import { MembershipRepositoryPort } from "../../application/ports/membership-rep
 export class PrismaMembershipRepository implements MembershipRepositoryPort {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async create(membership: Membership): Promise<Membership> {
-    const data = await this.prisma.membership.create({
+  async create(membership: Membership, tx?: TransactionContext): Promise<Membership> {
+    const data = await getPrismaClient(this.prisma, tx).membership.create({
       data: {
         id: membership.getId(),
         tenantId: membership.getTenantId(),

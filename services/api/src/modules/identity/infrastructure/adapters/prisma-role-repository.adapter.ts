@@ -1,5 +1,6 @@
+import type { TransactionContext } from "@corely/kernel";
 import { Injectable, Inject } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import { RoleRepositoryPort } from "../../application/ports/role-repository.port";
 
 /**
@@ -9,15 +10,18 @@ import { RoleRepositoryPort } from "../../application/ports/role-repository.port
 export class PrismaRoleRepository implements RoleRepositoryPort {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async create(data: {
-    id: string;
-    tenantId: string | null;
-    name: string;
-    description?: string | null;
-    isSystem?: boolean;
-    systemKey?: string;
-  }): Promise<void> {
-    await this.prisma.role.create({
+  async create(
+    data: {
+      id: string;
+      tenantId: string | null;
+      name: string;
+      description?: string | null;
+      isSystem?: boolean;
+      systemKey?: string;
+    },
+    tx?: TransactionContext
+  ): Promise<void> {
+    await getPrismaClient(this.prisma, tx).role.create({
       data: {
         id: data.id,
         tenantId: data.tenantId,
@@ -76,7 +80,8 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
 
   async findBySystemKey(
     tenantId: string,
-    systemKey: string
+    systemKey: string,
+    tx?: TransactionContext
   ): Promise<{
     id: string;
     tenantId: string;
@@ -85,7 +90,7 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
     isSystem: boolean;
     systemKey: string | null;
   } | null> {
-    return await this.prisma.role.findUnique({
+    return await getPrismaClient(this.prisma, tx).role.findUnique({
       where: { tenantId_systemKey: { tenantId, systemKey } },
       select: {
         id: true,

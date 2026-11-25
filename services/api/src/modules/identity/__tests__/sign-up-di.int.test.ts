@@ -11,6 +11,10 @@ import { MEMBERSHIP_REPOSITORY_TOKEN } from "../application/ports/membership-rep
 import { ROLE_REPOSITORY_TOKEN } from "../application/ports/role-repository.port";
 import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "../application/ports/refresh-token-repository.port";
 import { PASSWORD_HASHER_TOKEN } from "../application/ports/password-hasher.port";
+import {
+  PASSWORD_RESET_EMAIL_PORT,
+  type PasswordResetEmailPort,
+} from "../application/ports/password-reset-email.port";
 import { TOKEN_SERVICE_TOKEN } from "../application/ports/token-service.port";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { AUDIT_PORT_TOKEN } from "../application/ports/audit.port";
@@ -44,7 +48,10 @@ describe("Sign Up with Real NestJS DI (Production-like)", () => {
       // Override PrismaService to use our test database
       .overrideProvider(PrismaService)
       .useValue(testPrisma)
+      .overrideProvider(PASSWORD_RESET_EMAIL_PORT)
+      .useValue({ send: async () => {} } satisfies PasswordResetEmailPort)
       .compile();
+    await app.init();
 
     // Get the SignUpUseCase from the DI container
     // This is exactly how it would be injected in a controller
@@ -119,7 +126,7 @@ describe("Sign Up with Real NestJS DI (Production-like)", () => {
       expect(outboxEvents.length).toBeGreaterThanOrEqual(3);
 
       const auditLogs = await prisma.auditLog.findMany({
-        where: { tenantId: result.tenantId },
+        where: { tenantId: result.tenantId, action: "identity.sign_up" },
       });
       expect(auditLogs).toHaveLength(1);
     });

@@ -1,5 +1,6 @@
+import type { TransactionContext } from "@corely/kernel";
 import { Injectable, Inject } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import { RefreshTokenRepositoryPort } from "../../application/ports/refresh-token-repository.port";
 
 /**
@@ -9,14 +10,17 @@ import { RefreshTokenRepositoryPort } from "../../application/ports/refresh-toke
 export class PrismaRefreshTokenRepository implements RefreshTokenRepositoryPort {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async create(data: {
-    id: string;
-    userId: string;
-    tenantId?: string | null;
-    tokenHash: string;
-    expiresAt: Date;
-  }): Promise<void> {
-    await this.prisma.refreshToken.create({
+  async create(
+    data: {
+      id: string;
+      userId: string;
+      tenantId?: string | null;
+      tokenHash: string;
+      expiresAt: Date;
+    },
+    tx?: TransactionContext
+  ): Promise<void> {
+    await getPrismaClient(this.prisma, tx).refreshToken.create({
       data: {
         id: data.id,
         userId: data.userId,

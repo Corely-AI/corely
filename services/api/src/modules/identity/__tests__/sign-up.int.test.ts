@@ -1,69 +1,55 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { type PostgresTestDb, createTestDb, stopSharedContainer } from "@corely/testkit";
-import type { PrismaService } from "@corely/data";
-import { buildRequestContext } from "@shared/context/request-context";
+import { PrismaService } from "@corely/data";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { TenantEntitlementsService } from "../../platform-entitlements";
+import { EnableAppUseCase } from "../../platform/public";
+import { ListAppLaunchesUseCase } from "../../platform/application/use-cases/list-app-launches.usecase";
+import {
+  APP_INVOICE_LAUNCH_ENABLED_TOKEN,
+  APP_LAUNCH_ORIGINS_TOKEN,
+} from "../../platform/application/ports/app-launch-origins.port";
+import { CreateWorkspaceUseCase } from "../../workspaces/application/use-cases/create-workspace.usecase";
+import { PilotSetupUseCase } from "../../workspaces/application/use-cases/pilot-setup.usecase";
+import { IdentityModule } from "../identity.module";
 import { SignUpUseCase } from "../application/use-cases/sign-up.usecase";
+import {
+  PASSWORD_RESET_EMAIL_PORT,
+  type PasswordResetEmailPort,
+} from "../application/ports/password-reset-email.port";
 import { buildSignUpInput } from "../testkit/builders/build-signup-input";
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
+
+const appPaths = {
+  invoices: "/invoices",
+  expenses: "/expenses",
+  booking: "/booking/bookings",
+  sign: "/sign",
+};
 
 describe("Sign Up integration (Postgres)", () => {
   let db: PostgresTestDb;
   let prisma: PrismaService;
   let useCase: SignUpUseCase;
+  let module: TestingModule;
 
   beforeAll(async () => {
     db = await createTestDb();
     prisma = db.client;
 
-    const [
-      { PrismaUserRepository },
-      { PrismaTenantRepository },
-      { PrismaMembershipRepository },
-      { PrismaRoleRepository },
-      { PrismaRolePermissionGrantRepository },
-      { PrismaRefreshTokenRepository },
-      { BcryptPasswordHasher },
-      { JwtTokenService },
-      { PrismaOutboxAdapter },
-      { PrismaAuditRepository },
-      { PermissionCatalogRegistry },
-      { PrismaIdempotencyStorageAdapter },
-      { SystemIdGenerator },
-      { SystemClock },
-    ] = await Promise.all([
-      import("../infrastructure/adapters/prisma-user-repository.adapter"),
-      import("../infrastructure/adapters/prisma-tenant-repository.adapter"),
-      import("../infrastructure/adapters/prisma-membership-repository.adapter"),
-      import("../infrastructure/adapters/prisma-role-repository.adapter"),
-      import("../infrastructure/adapters/prisma-role-permission-grant-repository.adapter"),
-      import("../infrastructure/adapters/prisma-refresh-token-repository.adapter"),
-      import("../infrastructure/security/bcrypt.password-hasher"),
-      import("../infrastructure/security/jwt.token-service"),
-      import("@corely/data"),
-      import("../infrastructure/adapters/prisma-audit-repository.adapter"),
-      import("../permissions/permission-catalog"),
-      import("../../../shared/infrastructure/persistence/prisma-idempotency-storage.adapter"),
-      import("../../../shared/infrastructure/system-id-generator"),
-      import("../../../shared/infrastructure/system-clock"),
-    ]);
-
-    useCase = new SignUpUseCase(
-      new PrismaUserRepository(prisma),
-      new PrismaTenantRepository(prisma),
-      new PrismaMembershipRepository(prisma),
-      new PrismaRoleRepository(prisma),
-      new PrismaRolePermissionGrantRepository(prisma),
-      new PermissionCatalogRegistry(),
-      new BcryptPasswordHasher(),
-      new JwtTokenService(),
-      new PrismaRefreshTokenRepository(prisma),
-      new PrismaOutboxAdapter(prisma),
-      new PrismaAuditRepository(prisma),
-      new PrismaIdempotencyStorageAdapter(prisma),
-      new SystemIdGenerator(),
-      new SystemClock()
-    );
+    module = await Test.createTestingModule({ imports: [IdentityModule] })
+      .overrideProvider(PrismaService)
+      .useValue(prisma)
+      .overrideProvider(PASSWORD_RESET_EMAIL_PORT)
+      .useValue({ send: async () => {} } satisfies PasswordResetEmailPort)
+      .overrideProvider(APP_LAUNCH_ORIGINS_TOKEN)
+      .useValue({ legacy: "https://app.example.test" })
+      .overrideProvider(APP_INVOICE_LAUNCH_ENABLED_TOKEN)
+      .useValue(false)
+      .compile();
+    await module.init();
+    useCase = module.get(SignUpUseCase);
   });
 
   beforeEach(async () => {
@@ -71,6 +57,7 @@ describe("Sign Up integration (Postgres)", () => {
   });
 
   afterAll(async () => {
+    await module?.close();
     if (db) {
       await db.down();
     }
@@ -148,11 +135,124 @@ describe("Sign Up integration (Postgres)", () => {
 
     // Verify audit log was created
     const auditLogs = await prisma.auditLog.findMany({
-      where: { tenantId: result.tenantId },
+      where: { tenantId: result.tenantId, action: "identity.sign_up" },
     });
     expect(auditLogs).toHaveLength(1);
     expect(auditLogs[0].action).toBe("identity.sign_up");
     expect(auditLogs[0].entityId).toBe(result.userId);
+  });
+
+  it.each(["PERSONAL", "COMPANY"] as const)(
+    "provides all four App Center destinations after %s workspace setup",
+    async (kind) => {
+      const owner = await useCase.execute(
+        buildSignUpInput({
+          email: `${kind.toLowerCase()}-apps@example.test`,
+          tenantName: `${kind} Apps`,
+          idempotencyKey: `${kind}-signup-apps`,
+        })
+      );
+      const { tenantId, userId } = owner;
+      const installs = await prisma.tenantAppInstall.findMany({
+        where: { tenantId, enabled: true },
+      });
+      expect(installs.map(({ appId }) => appId)).toEqual(
+        expect.arrayContaining([...Object.keys(appPaths), "parties"])
+      );
+      const { workspace } = await module.get(CreateWorkspaceUseCase).execute({
+        tenantId,
+        userId,
+        name: `${kind} workspace`,
+        kind,
+      });
+      expect(workspace.publicEnabled).toBe(false);
+
+      const membership = await prisma.membership.findUniqueOrThrow({
+        where: { id: owner.membershipId },
+      });
+      const grants = await prisma.rolePermissionGrant.findMany({
+        where: { tenantId, roleId: membership.roleId, effect: "ALLOW" },
+      });
+      const launches = await module.get(ListAppLaunchesUseCase).execute({
+        tenantId,
+        userId,
+        workspaceId: workspace.id,
+        permissions: grants.map((grant) => grant.permissionKey),
+        surfaceId: "platform",
+        surfaceResolutionSource: "fallback",
+        surfaceHeaderMismatch: false,
+        scope: "web",
+        route: "/menu/launches",
+      });
+      for (const [appId, path] of Object.entries(appPaths)) {
+        expect(launches.find((item) => item.appId === appId)?.directory?.destination?.path).toBe(
+          path
+        );
+      }
+    }
+  );
+
+  it("preserves an existing tenant's disabled app when a newly registered member joins", async () => {
+    const owner = await useCase.execute(
+      buildSignUpInput({
+        email: "workspace-owner@example.test",
+        idempotencyKey: "invite-owner-signup",
+      })
+    );
+    const { tenantId, userId } = owner;
+    const { workspace } = await module.get(CreateWorkspaceUseCase).execute({
+      tenantId,
+      userId,
+      name: "Existing workspace",
+      kind: "COMPANY",
+    });
+    const entitlements = module.get(TenantEntitlementsService);
+    await entitlements.updateAppEnablement(tenantId, "sign", false, userId);
+
+    const email = "workspace-invitee@example.test";
+    const invitations = module.get(PilotSetupUseCase);
+    const { invite } = await invitations.invite(workspace.id, email, { tenantId, userId });
+    const invitee = await useCase.execute(
+      buildSignUpInput({ email, tenantName: "Invitee team", idempotencyKey: "invitee-signup" })
+    );
+    const joined = await invitations.accept(invite.token, {
+      tenantId: invitee.tenantId,
+      userId: invitee.userId,
+    });
+
+    expect(joined).toMatchObject({ tenantId, workspaceId: workspace.id });
+    expect((await entitlements.getEntitlements(tenantId)).apps).toContainEqual(
+      expect.objectContaining({ appId: "sign", enabled: false })
+    );
+    expect((await entitlements.getEntitlements(invitee.tenantId)).apps).toContainEqual(
+      expect.objectContaining({ appId: "sign", enabled: true })
+    );
+  });
+
+  it("rolls back signup and partial app installs when provisioning fails", async () => {
+    const input = buildSignUpInput({
+      email: "rollback-signup@example.test",
+      tenantName: "Rollback Signup",
+      idempotencyKey: "rollback-app-provisioning",
+    });
+    const enable = module.get(EnableAppUseCase);
+    const execute = enable.execute.bind(enable);
+    const fail = vi.spyOn(enable, "execute").mockImplementation(async (command, tx) => {
+      if (command.appId === "sign") {
+        throw new Error("App provisioning unavailable");
+      }
+      return execute(command, tx);
+    });
+    try {
+      await expect(useCase.execute(input)).rejects.toThrow("App provisioning unavailable");
+    } finally {
+      fail.mockRestore();
+    }
+
+    expect(await prisma.tenant.findUnique({ where: { slug: "rollbacksignup" } })).toBeNull();
+    expect(await prisma.user.findUnique({ where: { email: input.email } })).toBeNull();
+    const retry = await useCase.execute(input);
+    expect(await prisma.tenantAppInstall.count({ where: { tenantId: retry.tenantId } })).toBe(5);
   });
 
   it("is idempotent - returns same result for duplicate idempotency key", async () => {

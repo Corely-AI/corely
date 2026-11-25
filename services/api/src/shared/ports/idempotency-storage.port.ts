@@ -1,3 +1,5 @@
+import type { TransactionContext } from "@corely/kernel";
+
 export interface StoredResponse {
   statusCode?: number;
   body: any;
@@ -9,7 +11,8 @@ export interface IdempotencyStoragePort {
     actionKey: string,
     tenantId: string | null,
     key: string,
-    response: StoredResponse
+    response: StoredResponse,
+    tx?: TransactionContext
   ): Promise<void>;
 }
 
