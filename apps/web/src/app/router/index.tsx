@@ -22,6 +22,7 @@ import {
   PublicShowcaseBlog,
 } from "../../modules/portfolio";
 import { appShellRoutes } from "./app-shell-routes";
+import { GuestOnly } from "./guest-only";
 import { getDefaultRouteForSurface, useSurfaceId } from "@corely/web-shared/shared/surface";
 
 // OpenBuk owns its branded layout and stylesheet in the shared web build.
@@ -77,9 +78,11 @@ export const Router = () => (
         <Route path="blog" element={<PublicShowcaseBlog />} />
       </Route>
 
-      <Route path="/auth/login" element={<LoginPage />} />
+      <Route element={<GuestOnly />}>
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/signup" element={<SignupPage />} />
+      </Route>
       <Route path="/cash/signup" element={<SignupPage defaultPath="/cash/dashboard" />} />
-      <Route path="/auth/signup" element={<SignupPage />} />
       <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
       <Route path="/f/:publicId" element={<PublicFormPage />} />
