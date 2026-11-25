@@ -9,6 +9,7 @@ import { TenantEntitlementsService } from "./application/tenant-entitlements.ser
 import { TenantEntitlementsController } from "./http/tenant-entitlements.controller";
 import { PlatformEntitlementGuard } from "./http/entitlement.guard";
 import { TenantEntitlementsReadAdapter } from "./adapters/tenant-entitlements-read.adapter";
+import { SIGNUP_APP_PROVISIONER } from "./signup-app-provisioner.port";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TenantEntitlementsReadAdapter } from "./adapters/tenant-entitlements-re
     TenantEntitlementsService,
     PlatformEntitlementGuard,
     TenantEntitlementsReadAdapter,
+    { provide: SIGNUP_APP_PROVISIONER, useExisting: TenantEntitlementsService },
     {
       provide: TENANT_ENTITLEMENTS_READ_PORT_TOKEN,
       useExisting: TenantEntitlementsReadAdapter,
@@ -33,6 +35,7 @@ import { TenantEntitlementsReadAdapter } from "./adapters/tenant-entitlements-re
     FeatureCatalogService,
     PlatformEntitlementGuard,
     TENANT_ENTITLEMENTS_READ_PORT_TOKEN,
+    SIGNUP_APP_PROVISIONER,
   ],
 })
 export class PlatformEntitlementsModule {}

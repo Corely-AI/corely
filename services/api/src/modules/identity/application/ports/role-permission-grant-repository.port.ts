@@ -18,7 +18,8 @@ export interface RolePermissionGrantRepositoryPort {
     tenantId: string,
     roleId: string,
     grants: Array<{ key: string; effect: RolePermissionEffect }>,
-    createdBy?: string | null
+    createdBy?: string | null,
+    tx?: TransactionContext
   ): Promise<void>;
 }
 

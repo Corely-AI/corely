@@ -10,9 +10,12 @@ import {
   TenantEntitlements,
 } from "../domain/entitlement.types";
 import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../billing";
+import type { SignupAppProvisioner } from "../signup-app-provisioner.port";
+
+const signupApps = ["invoices", "expenses", "booking", "sign"] as const;
 
 @Injectable()
-export class TenantEntitlementsService {
+export class TenantEntitlementsService implements SignupAppProvisioner {
   constructor(
     private readonly prisma: PrismaService,
     private readonly featureCatalog: FeatureCatalogService,
@@ -135,22 +138,7 @@ export class TenantEntitlementsService {
           // Platform owns install records, dependency validation and the enabled audit.
           await this.enableApp.execute({ tenantId, appId, actorUserId: userId }, context);
         }
-        for (const id of affected) {
-          const definition = this.featureCatalog.getAppEntitlementDefinition(id);
-          if (!definition) {
-            throw new NotFoundException(`App ${id} not found`);
-          }
-          await tx.tenantFeatureOverride.upsert({
-            where: { tenantId_featureKey: { tenantId, featureKey: definition.enabledFeatureKey } },
-            create: {
-              tenantId,
-              featureKey: definition.enabledFeatureKey,
-              valueJson: JSON.stringify(enabled),
-              updatedBy: userId,
-            },
-            update: { valueJson: JSON.stringify(enabled), updatedBy: userId },
-          });
-        }
+        await this.writeAppEnablement(tenantId, affected, enabled, userId, context);
         if (!enabled) {
           await this.audit.log(
             {
@@ -167,6 +155,44 @@ export class TenantEntitlementsService {
       },
       { isolationLevel: "Serializable" }
     );
+  }
+
+  async provisionSignupApps(
+    tenantId: string,
+    userId: string,
+    tx: TransactionContext
+  ): Promise<void> {
+    const affected = new Set<string>();
+    for (const appId of signupApps) {
+      await this.enableApp.execute({ tenantId, appId, actorUserId: userId }, tx);
+      for (const id of this.resolveDependencies(appId)) {
+        affected.add(id);
+      }
+    }
+    await this.writeAppEnablement(tenantId, affected, true, userId, tx);
+  }
+
+  private async writeAppEnablement(
+    tenantId: string,
+    appIds: Iterable<string>,
+    enabled: boolean,
+    userId: string,
+    tx: TransactionContext
+  ): Promise<void> {
+    const prisma = getPrismaClient(this.prisma, tx);
+    const value = { valueJson: JSON.stringify(enabled), updatedBy: userId };
+    for (const appId of appIds) {
+      const definition = this.featureCatalog.getAppEntitlementDefinition(appId);
+      if (!definition) {
+        throw new NotFoundException(`App ${appId} not found`);
+      }
+      const featureKey = definition.enabledFeatureKey;
+      await prisma.tenantFeatureOverride.upsert({
+        where: { tenantId_featureKey: { tenantId, featureKey } },
+        create: { tenantId, featureKey, ...value },
+        update: value,
+      });
+    }
   }
 
   async updateFeatures(
