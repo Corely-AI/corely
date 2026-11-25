@@ -6,10 +6,11 @@ App manifests may also declare a `directory` entry with an existing menu ID,
 localized names, category and icon/semantic-tone logo metadata. This is separate
 from the focused `invoice`/`hr` launch IDs and never broadens their BFF allowlists.
 `GET /menu/launches` resolves each directory entry from its own authorized composed
-menu group, checks enabled installations/dependencies, and uses the exact validated
-`CORELY_LAUNCH_LEGACY_ORIGIN` plus the implemented static entry route. The origin is
-deployment configuration, never tenant-supplied. Missing origin leaves the entry
-unavailable. Query, fragment, encoded, auth and API paths cannot be destinations.
+menu group and checks enabled installations and dependencies. It projects the validated
+static route as `directory.path` for same-host Backoffice navigation. When
+`CORELY_LAUNCH_LEGACY_ORIGIN` is configured, the endpoint also includes the absolute
+destination for separately hosted launchers. Query, fragment, encoded, auth and API
+paths cannot be destinations.
 
 The directory remains read-only. Existing focused availability gates and public
 routes are unchanged; destinations enforce their own authentication and permissions.
