@@ -1,6 +1,6 @@
 ---
 name: release
-description: Prepare or execute explicitly requested Corely deployment, redeploy or rollback using verified repository workflows and runtime evidence. PR creation and ticket work do not themselves authorize a release.
+description: Prepare or execute explicitly requested Corely deployments, redeployments, or rollbacks, including the app.corely.one CLI release on Vercel, Cloud Run, and Supabase. PR creation and ticket work do not themselves authorize a release.
 ---
 
 # Release Corely
@@ -9,13 +9,14 @@ Read [AGENTS](../../../AGENTS.md), the requested environment/surface/action,
 [current deployment workflow](../../../.github/workflows/deploy.yml),
 [CI](../../../.github/workflows/ci.yml), affected Docker/configuration files and owner runbooks.
 For OpenBuk use [its deployment notes](../../../docs/products/openbuk/README.md).
+For `app.corely.one` and its production API, use the [production CLI runbook](references/app-corely-one-cli.md).
 
 1. Separate preparation from requested execution. Resolve actual environment, source SHA, selected
    surfaces/artifacts, configuration, migration needs and rollback from current evidence. Preserve
    already explicit authorization for its scope; do not infer production deployment from a PR.
 2. Discover the current remote/default branch and actual workflow triggers/inputs. The inspected
-   default is `development` while checked-in CI/deploy push triggers name `main`. Deployment YAML
-   still has historical worker/configuration references; do not assume they match effective runtime.
+   default is `development` while automatic Cloud Run deployment targets `main`. Deployment YAML
+   still has historical worker/configuration references. Compare its bindings with the live service.
    Reconcile a material mismatch before execution and report the exact unresolved operation. Do
    not recreate `services/worker` or import another repository's deployment labels/ticket engine.
 3. Verify authenticated access, exact-source checks, artifact identity, current traffic/revision,
