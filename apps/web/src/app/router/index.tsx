@@ -1,6 +1,6 @@
 import { LegacyInvoiceObservation } from "./legacy-invoice-observation";
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { PublicFormPage } from "../../modules/forms";
 import { PublicCmsListPage, PublicCmsPostPage } from "../../modules/cms";
 import { PublicRentalsListScreen, PublicRentalDetailScreen } from "../../modules/rentals";
@@ -24,6 +24,8 @@ import {
 import { appShellRoutes } from "./app-shell-routes";
 import { GuestOnly } from "./guest-only";
 import { getDefaultRouteForSurface, useSurfaceId } from "@corely/web-shared/shared/surface";
+import { useAuth } from "@corely/web-shared/lib/auth-provider";
+import { CORELY_APP_ORIGIN } from "../corely-app-origin";
 
 // OpenBuk owns its branded layout and stylesheet in the shared web build.
 function OpenBukEntry() {
@@ -33,6 +35,16 @@ function OpenBukEntry() {
 
 const SurfaceRootRedirect = () => {
   const surfaceId = useSurfaceId();
+  const { search } = useLocation();
+  const { user, isLoading } = useAuth();
+  if (window.location.origin === CORELY_APP_ORIGIN) {
+    if (isLoading) {
+      return null;
+    }
+    if (user?.activeTenantId !== null) {
+      return <Navigate to={{ pathname: "/apps", search }} replace />;
+    }
+  }
   return <Navigate to={getDefaultRouteForSurface(surfaceId)} replace />;
 };
 
@@ -79,6 +91,7 @@ export const Router = () => (
       </Route>
 
       <Route element={<GuestOnly />}>
+        <Route path="/login" element={<Navigate to="/auth/login" replace />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/signup" element={<SignupPage />} />
       </Route>

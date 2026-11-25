@@ -1,6 +1,19 @@
 # App Center
 
-`apps/app-center` is the thin Vite/React launcher for the approved App Center
+The production workspace directory runs inside Backoffice at
+`https://app.corely.one/apps`. The web entry at `https://app.corely.one/` opens the
+directory. Sign-in and app navigation use the same web host. The browser uses
+`https://api.corely.one` for API requests. App tiles use the authorized relative
+paths from `GET /menu/launches` and carry the selected workspace into the
+destination. These paths need no separate Backoffice origin.
+
+Deploy the API that includes the relative paths before the corresponding web
+build. Users with only a previous focused App Center session may need to sign in
+again through the Backoffice sign-in screen.
+
+## Dedicated launcher
+
+`apps/web` also contains a thin Vite/React launcher for a separately configured App Center
 surface. It uses the existing workspace/session boundary and staff launch
 projection. It contains no Invoice or People screens, installation logic or
 subscription checkout. Existing `apps/portal` routes and hosting are unchanged.

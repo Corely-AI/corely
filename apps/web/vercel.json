@@ -3,6 +3,17 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.corely.one"
+        }
+      ],
+      "destination": "/auth/login",
+      "permanent": false
+    },
+    {
       "source": "/",
       "has": [
         {

@@ -88,7 +88,7 @@ Frontend guidelines and specific docs.
 - [CRUD and operational entry-point standard](./frontend/crud-ui-standard.md)
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
-- [App Center](./frontend/app-center.md) — app defaults for new signups, app catalog, authorized destinations and UI evidence
+- [App Center](./frontend/app-center.md) — workspace directory on `app.corely.one`, authorized app paths and UI evidence
 - [Requests in App Center](./frontend/app-center.md#requests) — signed-in intake, request queue and client updates
 - [Focused surface diagnostics](./observability/focused-surfaces.md) — sanitized request observations, release reports and pilot operations gates
 - [Focused app UX verification](./frontend/focused-ux-verification.md) — accessibility corrections, locale/keyboard checks and responsive evidence

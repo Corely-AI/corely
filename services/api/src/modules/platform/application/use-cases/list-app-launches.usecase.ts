@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import {
   AppDirectoryDestinationSchema,
+  AppDirectoryPathSchema,
   type AppCatalogItem,
   type AppLaunchOrigins,
 } from "@corely/contracts";
@@ -29,21 +30,26 @@ export class ListAppLaunchesUseCase {
       const item = legacyMenu?.groups
         .find((group) => group.appId === app.appId)
         ?.items.find((menuItem) => menuItem.id === entry?.menuId);
+      const path = AppDirectoryPathSchema.safeParse(item?.route);
       if (
         app.enabled &&
         app.dependencies.every((id) => enabledApps.has(id)) &&
         entry &&
-        item?.route &&
+        path.success &&
         ["platform", "app"].includes(input.surfaceId)
       ) {
         const destination = AppDirectoryDestinationSchema.safeParse({
           origin: this.origins.legacy,
-          path: item.route,
+          path: path.data,
         });
         visible.push({
           ...app,
           dependencies: [],
-          directory: { ...entry, destination: destination.success ? destination.data : undefined },
+          directory: {
+            ...entry,
+            path: path.data,
+            destination: destination.success ? destination.data : undefined,
+          },
         });
         continue;
       }
