@@ -1,6 +1,12 @@
 import type { AppManifest } from "@corely/contracts";
 export const signAppManifest: AppManifest = {
   appId: "sign",
+  directory: {
+    menuId: "sign-home",
+    logo: { iconKey: "FileText", tone: "accent" },
+    displayName: { en: "Corely Sign", de: "Corely Sign", vi: "Corely Sign" },
+    category: "operations",
+  },
   name: "Corely Sign",
   tier: 1,
   version: "0.1.0",

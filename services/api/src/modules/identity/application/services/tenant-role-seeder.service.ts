@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 import { Inject, Injectable } from "@nestjs/common";
 import { type RoleRepositoryPort, ROLE_REPOSITORY_TOKEN } from "../ports/role-repository.port";
 import {
@@ -24,7 +25,11 @@ export class TenantRoleSeederService {
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort
   ) {}
 
-  async seed(tenantId: string, actorUserId: string): Promise<Record<DefaultRoleKey, string>> {
+  async seed(
+    tenantId: string,
+    actorUserId: string,
+    tx?: TransactionContext
+  ): Promise<Record<DefaultRoleKey, string>> {
     const roles = [
       { key: "OWNER" as const, name: "Owner" },
       { key: "ADMIN" as const, name: "Admin" },
@@ -45,21 +50,26 @@ export class TenantRoleSeederService {
       STUDENT: "",
     };
 
+    const txArgs: [] | [TransactionContext] = tx ? [tx] : [];
+
     // 1. Ensure roles exist
     for (const role of roles) {
-      const existing = await this.roleRepo.findBySystemKey(tenantId, role.key);
+      const existing = await this.roleRepo.findBySystemKey(tenantId, role.key, ...txArgs);
       if (existing) {
         roleIds[role.key] = existing.id;
         continue;
       }
       const id = this.idGenerator.newId();
-      await this.roleRepo.create({
-        id,
-        tenantId,
-        name: role.name,
-        systemKey: role.key,
-        isSystem: true,
-      });
+      await this.roleRepo.create(
+        {
+          id,
+          tenantId,
+          name: role.name,
+          systemKey: role.key,
+          isSystem: true,
+        },
+        ...txArgs
+      );
       roleIds[role.key] = id;
     }
 
@@ -68,7 +78,7 @@ export class TenantRoleSeederService {
     const grants = buildDefaultRoleGrants(catalog);
 
     for (const key of Object.keys(roleIds) as DefaultRoleKey[]) {
-      await this.grantRepo.replaceAll(tenantId, roleIds[key], grants[key], actorUserId);
+      await this.grantRepo.replaceAll(tenantId, roleIds[key], grants[key], actorUserId, ...txArgs);
     }
 
     return roleIds;

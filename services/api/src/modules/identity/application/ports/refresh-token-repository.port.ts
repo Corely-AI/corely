@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 /**
  * Refresh Token Repository Port
  */
@@ -5,13 +6,16 @@ export interface RefreshTokenRepositoryPort {
   /**
    * Create a refresh token
    */
-  create(data: {
-    id: string;
-    userId: string;
-    tenantId?: string | null;
-    tokenHash: string;
-    expiresAt: Date;
-  }): Promise<void>;
+  create(
+    data: {
+      id: string;
+      userId: string;
+      tenantId?: string | null;
+      tokenHash: string;
+      expiresAt: Date;
+    },
+    tx?: TransactionContext
+  ): Promise<void>;
 
   /**
    * Find valid refresh token by hash

@@ -22,17 +22,18 @@ import {
 } from "../ports/membership-repository.port";
 import { type PasswordHasherPort, PASSWORD_HASHER_TOKEN } from "../ports/password-hasher.port";
 import { type TokenServicePort, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
-import { type OutboxPort, OUTBOX_PORT } from "@corely/kernel";
+import {
+  type OutboxPort,
+  OUTBOX_PORT,
+  type TransactionContext,
+  type UnitOfWorkPort,
+  UNIT_OF_WORK,
+} from "@corely/kernel";
+import {
+  SIGNUP_APP_PROVISIONER,
+  type SignupAppProvisioner,
+} from "../../../platform-entitlements/signup-app-provisioner.port";
 import { type AuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
-import { type RoleRepositoryPort, ROLE_REPOSITORY_TOKEN } from "../ports/role-repository.port";
-import {
-  type RolePermissionGrantRepositoryPort,
-  ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN,
-} from "../ports/role-permission-grant-repository.port";
-import {
-  type PermissionCatalogPort,
-  PERMISSION_CATALOG_PORT,
-} from "../ports/permission-catalog.port";
 import { type ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import {
   type RefreshTokenRepositoryPort,
@@ -48,7 +49,6 @@ import {
 } from "../../../../shared/ports/id-generator.port";
 import { type RequestContext } from "../../../../shared/context/request-context";
 import { ConflictError, ValidationError } from "../../../../shared/errors/domain-errors";
-import { buildDefaultRoleGrants, type DefaultRoleKey } from "../../permissions/default-role-grants";
 
 export interface SignUpInput {
   email: string;
@@ -77,10 +77,6 @@ export class SignUpUseCase {
     @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
     @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: MembershipRepositoryPort,
-    @Inject(ROLE_REPOSITORY_TOKEN) private readonly roleRepo: RoleRepositoryPort,
-    @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
-    private readonly grantRepo: RolePermissionGrantRepositoryPort,
-    @Inject(PERMISSION_CATALOG_PORT) private readonly catalogPort: PermissionCatalogPort,
     @Inject(PASSWORD_HASHER_TOKEN) private readonly passwordHasher: PasswordHasherPort,
     @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
     @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
@@ -90,7 +86,10 @@ export class SignUpUseCase {
     @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN) private readonly idempotency: IdempotencyStoragePort,
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
-    private readonly roleSeeder: TenantRoleSeederService
+    @Inject(TenantRoleSeederService)
+    private readonly roleSeeder: Pick<TenantRoleSeederService, "seed">,
+    @Inject(SIGNUP_APP_PROVISIONER) private readonly apps: SignupAppProvisioner,
+    @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWorkPort
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
@@ -113,67 +112,70 @@ export class SignUpUseCase {
     const slug = await this.resolveUniqueTenantSlug(input.tenantName, tenantId);
 
     const tenant = Tenant.create(tenantId, input.tenantName, slug);
-    await this.tenantRepo.create(tenant);
-
     const userId = this.idGenerator.newId();
     const passwordHash = await this.passwordHasher.hash(password.getValue());
     const user = User.create(userId, email, passwordHash, input.userName || null);
-    await this.userRepo.create(user);
 
-    const defaultRoles = await this.roleSeeder.seed(tenantId, userId);
-    const ownerRole = defaultRoles.OWNER;
-    const membershipId = this.idGenerator.newId();
-    const membership = Membership.create(membershipId, tenantId, userId, ownerRole);
-    await this.membershipRepo.create(membership);
+    return this.uow.withinTransaction(async (tx) => {
+      await this.tenantRepo.create(tenant, tx);
+      await this.userRepo.create(user, tx);
 
-    const accessToken = this.tokenService.generateAccessToken({
-      userId,
-      email: email.getValue(),
-      tenantId,
-      roleIds: [ownerRole],
+      const { OWNER: ownerRole } = await this.roleSeeder.seed(tenantId, userId, tx);
+      const membershipId = this.idGenerator.newId();
+      const membership = Membership.create(membershipId, tenantId, userId, ownerRole);
+      await this.membershipRepo.create(membership, tx);
+      await this.apps.provisionSignupApps(tenantId, userId, tx);
+
+      const accessToken = this.tokenService.generateAccessToken({
+        userId,
+        email: email.getValue(),
+        tenantId,
+        roleIds: [ownerRole],
+      });
+      const refreshToken = this.tokenService.generateRefreshToken();
+      const { refreshTokenExpiresInMs } = this.tokenService.getExpirationTimes();
+      await this.refreshTokenRepo.create(
+        {
+          id: this.idGenerator.newId(),
+          userId,
+          tenantId,
+          tokenHash: this.hashToken(refreshToken),
+          expiresAt: new Date(this.clock.now().getTime() + refreshTokenExpiresInMs),
+        },
+        tx
+      );
+
+      await this.emitOutboxEvents(tenant, user, membership, tx);
+      await this.audit.write(
+        {
+          tenantId,
+          actorUserId: userId,
+          action: "identity.sign_up",
+          targetType: "User",
+          targetId: userId,
+          context: input.context,
+        },
+        tx
+      );
+
+      const response: SignUpOutput = {
+        userId,
+        email: email.getValue(),
+        tenantId,
+        tenantName: input.tenantName,
+        membershipId,
+        accessToken,
+        refreshToken,
+      };
+      await this.idempotency.store(
+        SIGN_UP_ACTION,
+        null,
+        input.idempotencyKey,
+        { body: response },
+        tx
+      );
+      return response;
     });
-    const refreshToken = this.tokenService.generateRefreshToken();
-    const { refreshTokenExpiresInMs } = this.tokenService.getExpirationTimes();
-    await this.refreshTokenRepo.create({
-      id: this.idGenerator.newId(),
-      userId,
-      tenantId,
-      tokenHash: await this.hashToken(refreshToken),
-      expiresAt: new Date(this.clock.now().getTime() + refreshTokenExpiresInMs),
-    });
-
-    await this.emitOutboxEvents(
-      tenantId,
-      input.tenantName,
-      userId,
-      membershipId,
-      ownerRole,
-      email.getValue(),
-      input.userName || null,
-      slug
-    );
-
-    await this.audit.write({
-      tenantId,
-      actorUserId: userId,
-      action: "identity.sign_up",
-      targetType: "User",
-      targetId: userId,
-      context: input.context,
-    });
-
-    const response: SignUpOutput = {
-      userId,
-      email: email.getValue(),
-      tenantId,
-      tenantName: input.tenantName,
-      membershipId,
-      accessToken,
-      refreshToken,
-    };
-
-    await this.idempotency.store(SIGN_UP_ACTION, null, input.idempotencyKey, { body: response });
-    return response;
   }
 
   private validate(input: SignUpInput) {
@@ -213,43 +215,28 @@ export class SignUpUseCase {
   }
 
   private async emitOutboxEvents(
-    tenantId: string,
-    tenantName: string,
-    userId: string,
-    membershipId: string,
-    roleId: string,
-    email: string,
-    name: string | null,
-    slug: string
+    tenant: Tenant,
+    user: User,
+    membership: Membership,
+    tx: TransactionContext
   ) {
-    const userCreatedEvent = new UserCreatedEvent(userId, email, name, null);
-    await this.outbox.enqueue({
-      tenantId,
-      eventType: userCreatedEvent.eventType,
-      payload: userCreatedEvent,
-    });
-
-    const tenantCreatedEvent = new TenantCreatedEvent(tenantId, tenantName, slug);
-    await this.outbox.enqueue({
-      tenantId,
-      eventType: tenantCreatedEvent.eventType,
-      payload: tenantCreatedEvent,
-    });
-
-    const membershipCreatedEvent = new MembershipCreatedEvent(
-      membershipId,
-      tenantId,
-      userId,
-      roleId
-    );
-    await this.outbox.enqueue({
-      tenantId,
-      eventType: membershipCreatedEvent.eventType,
-      payload: membershipCreatedEvent,
-    });
+    const tenantId = tenant.getId();
+    const events = [
+      new UserCreatedEvent(user.getId(), user.getEmail().getValue(), user.getName(), null),
+      new TenantCreatedEvent(tenantId, tenant.getName(), tenant.getSlug()),
+      new MembershipCreatedEvent(
+        membership.getId(),
+        tenantId,
+        user.getId(),
+        membership.getRoleId()
+      ),
+    ];
+    for (const event of events) {
+      await this.outbox.enqueue({ tenantId, eventType: event.eventType, payload: event }, tx);
+    }
   }
 
-  private async hashToken(token: string) {
+  private hashToken(token: string) {
     return createHash("sha256").update(token).digest("hex");
   }
 }

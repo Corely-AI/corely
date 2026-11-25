@@ -65,31 +65,32 @@ function setup(overrides: Partial<AppDirectoryProps> = {}) {
   return props;
 }
 describe("workspace app directory", () => {
-  it("groups supported destinations and excludes catalog records without a surface", () => {
+  it("groups openable apps and excludes coming-soon apps and records without a surface", () => {
     setup({
       apps: [
         invoice,
+        crm,
         hr,
         { ...invoice, appId: "planned", name: "Secret planned app", launch: undefined },
       ],
     });
     expect(screen.getByRole("heading", { name: "Finance" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "People" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Sales" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "People" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "HR" })).toBeNull();
     expect(screen.queryByText("Secret planned app")).toBeNull();
   });
-  it("launches accessible Invoice and keeps unreleased HR disabled", () => {
+  it("launches accessible Invoice", () => {
     const props = setup();
     fireEvent.click(screen.getByRole("button", { name: "Open: Invoice" }));
     expect(props.onLaunch).toHaveBeenCalledWith("invoices");
-    expect(
-      (screen.getByRole("button", { name: "Coming soon: HR" }) as HTMLButtonElement).disabled
-    ).toBe(true);
   });
   it("filters by localized name and category and reports no matches", () => {
     setup({ locale: "de" });
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Personal" } });
+    expect(screen.getByRole("status").textContent).toContain("Keine Apps entsprechen");
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "RECH" } });
     expect(screen.getByRole("heading", { name: "Rechnungen" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: "Personal", level: 3 })).toBeNull();
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "people" } });
     expect(screen.getByRole("status").textContent).toContain("Keine Apps entsprechen");
   });
@@ -109,7 +110,7 @@ describe("workspace app directory", () => {
     expect(props.onRetry).toHaveBeenCalledOnce();
   });
   it.each(["app-disabled", "unconfigured"] as const)(
-    "keeps %s destinations non-launchable",
+    "shows the empty state when the only app has a %s destination",
     (availability) => {
       setup({
         apps: [
@@ -120,11 +121,8 @@ describe("workspace app directory", () => {
           },
         ],
       });
-      const button = screen.getByRole("button");
-      expect((button as HTMLButtonElement).disabled).toBe(true);
-      expect(button.textContent).toBe(
-        availability === "app-disabled" ? "Not enabled" : "Unavailable"
-      );
+      expect(screen.getByRole("status").textContent).toBe("No apps available for this workspace.");
+      expect(screen.queryByRole("heading", { name: "Invoice" })).toBeNull();
     }
   );
   it("rejects malformed destinations and shows launch revalidation failures", () => {
@@ -137,10 +135,25 @@ describe("workspace app directory", () => {
       ],
       launchError: true,
     });
-    expect(
-      (screen.getByRole("button", { name: "Unavailable: Invoice" }) as HTMLButtonElement).disabled
-    ).toBe(true);
+    expect(screen.queryByRole("heading", { name: "Invoice" })).toBeNull();
     expect(screen.getByRole("alert").textContent).toContain("no longer available");
+  });
+  it("shows an app with a valid directory destination while its focused launch is coming soon", () => {
+    const props = setup({
+      apps: [
+        {
+          ...hr,
+          directory: {
+            menuId: "people-staff",
+            category: "people",
+            displayName: { en: "Staff", de: "Personal", vi: "Nhân sự" },
+            destination: { origin: "http://localhost:5173", path: "/people/staff" },
+          },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Open: Staff" }));
+    expect(props.onLaunch).toHaveBeenCalledWith("people");
   });
   it("blocks repeated launches while checking access", () => {
     setup({ launching: true });
