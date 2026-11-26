@@ -19,10 +19,13 @@ export const RequireAuth: React.FC = () => {
     activeWorkspaceId,
     setWorkspace,
     isLoading: workspaceLoading,
+    isInitialLoading: workspaceInitialLoading,
     isHostScope,
   } = useWorkspace();
   const location = useLocation();
   const surfaceId = useSurfaceId();
+  const isOnboardingRoute = location.pathname === "/onboarding";
+  const tenantAdminSession = getTenantAdminSession();
   const hint = readWorkspaceHint(location.search);
   const requestedId = hint.kind === "requested" ? hint.workspaceId : undefined;
   const authorizedHint =
@@ -49,11 +52,13 @@ export const RequireAuth: React.FC = () => {
     setWorkspace,
   ]);
 
-  if (isLoading || workspaceLoading) {
+  // Workspace creation is tenant-scoped. Keep its draft mounted during background discovery.
+  const canKeepOnboarding = isOnboardingRoute && hint.kind === "absent" && !tenantAdminSession;
+  if (isLoading || (canKeepOnboarding ? workspaceInitialLoading : workspaceLoading)) {
     return null;
   }
 
-  if (!isAuthenticated && getTenantAdminSession()) {
+  if (!isAuthenticated && tenantAdminSession) {
     return <TenantAdminSessionBanner />;
   }
   if (!isAuthenticated) {
@@ -67,8 +72,7 @@ export const RequireAuth: React.FC = () => {
     return null;
   }
 
-  const isOnboardingRoute = location.pathname === "/onboarding";
-  if (getTenantAdminSession() && workspaces.length === 0) {
+  if (tenantAdminSession && workspaces.length === 0) {
     return <TenantAdminSessionBanner />;
   }
   if (!isOnboardingRoute && workspaces.length === 0 && !isHostScope) {
