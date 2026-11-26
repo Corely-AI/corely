@@ -20,9 +20,7 @@ async function run() {
   )
     throw Error("Review submodule source before packaging.");
   const commit = git("rev-parse", "HEAD");
-  for (const file of ["LICENSE", "LICENSE_ADDITIONAL_TERMS", "NOTICE.md", "upstream-manifest.json"]) {
-    git("cat-file", "-e", "HEAD:docs/devops/sign-notices/" + file);
-  }
+  git("cat-file", "-e", "HEAD:LICENSE");
   const temp = await mkdtemp(join(tmpdir(), "corely-sign-source-"));
   try {
     const filename = "corely-sign-" + commit + ".zip";
