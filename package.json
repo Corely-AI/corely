@@ -42,6 +42,7 @@
     "billing:stripe:cash:setup": "bash ./scripts/setup-stripe-billing-cash.sh",
     "docs:dev": "cd docs-site && npx mint dev",
     "docs:check": "cd docs-site && npx mintlify broken-links",
+    "locales:check": "node --disable-warning=ExperimentalWarning scripts/check-locale-catalogs.mjs",
     "build:web": "pnpm --filter @corely/web... build",
     "dev:api": "node scripts/build-deps-if-stale.mjs @corely/api && pnpm --parallel --filter @corely/prompts --filter @corely/api dev",
     "dev:api:debug": "node scripts/build-deps-if-stale.mjs @corely/api && pnpm --parallel --filter @corely/prompts --filter @corely/api dev:debug",

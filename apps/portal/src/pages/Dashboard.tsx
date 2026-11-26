@@ -1,3 +1,4 @@
+import { PortalLanguagePicker } from "../portal-language-picker";
 import React, { useCallback, useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth";
 import { useTranslation } from "react-i18next";
@@ -22,7 +23,7 @@ import {
 } from "./dashboard-utils";
 
 export const PortalDashboard = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, accessToken, logout } = useAuthStore();
   const [profile, setProfile] = useState<PortalProfile | null>(null);
   const [materials, setMaterials] = useState<PortalMaterial[]>([]);
@@ -140,33 +141,7 @@ export const PortalDashboard = () => {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-1 mr-2 px-2 py-1 rounded-xl bg-white/5 border border-white/10">
-              <button
-                onClick={() => {
-                  void i18n.changeLanguage("en");
-                  localStorage.setItem("Corely Portal-language", "en");
-                }}
-                className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "en" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => {
-                  void i18n.changeLanguage("vi");
-                  localStorage.setItem("Corely Portal-language", "vi");
-                }}
-                className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "vi" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
-              >
-                VI
-              </button>
-              <button
-                onClick={() => {
-                  void i18n.changeLanguage("de");
-                  localStorage.setItem("Corely Portal-language", "de");
-                }}
-                className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "de" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
-              >
-                DE
-              </button>
+              <PortalLanguagePicker />
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <UserIcon className="w-4 h-4 text-teal-400" />

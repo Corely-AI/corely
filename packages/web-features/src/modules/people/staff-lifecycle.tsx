@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { PeopleLink as Link } from "./people-runtime";
 import { useCallback, useState, useRef } from "react";
 
@@ -18,7 +19,7 @@ export function StaffLifecycle({
   locale?: string;
   showTaskLinks?: boolean;
 }) {
-  const t = staffJourneyCopy[locale === "de" || locale === "vi" ? locale : "en"];
+  const t = staffJourneyCopy[resolveCorelyLocale(locale)];
   const load = useCallback(
     (signal: AbortSignal) => client.lifecycle(staffId, signal),
     [client, staffId]

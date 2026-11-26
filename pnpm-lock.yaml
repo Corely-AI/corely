@@ -375,6 +375,12 @@ importers:
 
   apps/landing:
     dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@corely/web-shared':
+        specifier: workspace:*
+        version: link:../../packages/web-shared
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -715,6 +721,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@corely/web-shared':
+        specifier: workspace:*
+        version: link:../../packages/web-shared
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.12(react@18.3.1)

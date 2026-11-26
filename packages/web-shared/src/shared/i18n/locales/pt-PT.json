@@ -1,0 +1,3960 @@
+{
+  "sign": {
+    "recipient": {
+      "openReviewedPdf": "Abrir PDF revisto",
+      "reviewAndSign": "Reveja e assine",
+      "signatureRecorded": "A sua assinatura foi registada.",
+      "requestDeclined": "Recusou esta solicitação.",
+      "openForReview": "Abrir documento para revisão",
+      "openOriginalPdf": "Abra o PDF original",
+      "typeSignature": "Introduza a sua assinatura",
+      "confirmSignature": "Confirme a sua assinatura",
+      "drawnSignature": "Assinatura desenhada",
+      "editAnswers": "Editar respostas",
+      "progressSaved": "Progresso salvo.",
+      "saveProgress": "Guardar progresso",
+      "signAndSubmit": "Assine e envie",
+      "reviewAnswers": "Reveja as respostas",
+      "confirmDecline": "Recusar este pedido de assinatura?",
+      "declineRequest": "Recusar solicitação",
+      "requestedBy": "Solicitado por",
+      "previousPage": "Página anterior",
+      "nextPage": "Próxima página",
+      "pageTitle": "Página",
+      "of": "de",
+      "useTypedSignature": "Usar assinatura digitada",
+      "useDrawnSignature": "Utilize assinatura desenhada",
+      "clearDrawing": "Desenho claro",
+      "drawSignature": "Desenhar assinatura",
+      "signature": "assinatura",
+      "initials": "iniciais",
+      "date": "data",
+      "checkbox": "caixa de seleção",
+      "text": "texto",
+      "page": "página",
+      "field": "campo",
+      "linkUnavailable": "Este link ou sessão de subscrição não está disponível.",
+      "requestFailed": "A solicitação não pôde ser processada. Verifique os seus campos e tente novamente.",
+      "documentUnavailable": "Não foi possível visualizar o documento. Utilize o link do PDF original para o rever.",
+      "pageRenderFailed": "Não foi possível renderizar esta página.",
+      "unableToSign": "Não foi possível assinar."
+    },
+    "documentTitle": "Título do documento",
+    "selectedFieldType": "Tipo de campo selecionado",
+    "continueReview": "Pedido de revisão",
+    "editFields": "Editar campos",
+    "recipients": "Destinatários",
+    "continueRecipients": "Continuar para destinatários",
+    "requireSignatures": "Adicione um campo de assinatura obrigatório para cada signatário antes de continuar.",
+    "staticCopy": "Importe este PDF como imagens de página. Utilize isto para PDFs com formulários ou links. Apenas a sua aparência visível é incluída na cópia para assinatura.",
+    "useTemplate": "Utilize um modelo existente",
+    "uploadInstructions": "Carregue um PDF não assinado (até 10 MiB e 100 páginas), coloque campos no documento e escolha os seus destinatários.",
+    "workspaceRequired": "É necessário um espaço de trabalho ativo para utilizar o sinal Corely.",
+    "firstRequestHint": "Escolha um PDF ou modelo para preparar o seu primeiro pedido de assinatura.",
+    "resizeField": "Redimensionar campo",
+    "activity": "Solicitar atividade",
+    "coachingAgreement": "Prepare um acordo de assinatura",
+    "search": "Pesquisar",
+    "all": "Todos",
+    "overview": "Visão geral",
+    "settings": "Configurações de assinatura",
+    "publicOrigin": "Origem da assinatura pública",
+    "invitationKeyConfigured": "Encriptação de convite configurada",
+    "certificateExpiresAt": "O certificado de serviço expira",
+    "signerPinned": "Impressão digital do certificado permitida",
+    "privateKeyReadable": "Chave privada acessível",
+    "trustFileReadable": "Loja fiável acessível",
+    "yes": "Sim",
+    "no": "Não",
+    "states": {
+      "DRAFT": "Rascunho",
+      "SENT": "Aguarda assinaturas",
+      "COLLECTED": "Assinaturas recolhidas",
+      "COMPLETED": "Concluído",
+      "EXPIRED": "Expirado",
+      "VOID": "Anulado",
+      "DECLINED": "Recusado",
+      "INVITED": "Convidado",
+      "WAITING": "Esperando",
+      "ACCEPTED": "Assinado"
+    },
+    "statusLabel": "Estado",
+    "needsAttention": "Assinaturas recolhidas. A verificação ou o arquivo de documentos precisa de atenção.",
+    "providerSent": " · E-mail entregue ao prestador",
+    "sourceError": "PDF original indisponível",
+    "downloadError": "Não foi possível fazer download do artefacto verificado",
+    "confirmRemind": "Enviar um convite de substituição e revogar o link anterior?",
+    "confirmVoid": "Anular este pedido e revogar o acesso do destinatário?",
+    "confirmSend": "Enviar convites de assinatura para os destinatários acima indicados?",
+    "export": "Exportar pacote de evidência",
+    "download": "Baixar PDF selado",
+    "refresh": "Atualizar estado",
+    "void": "Solicitação anulada",
+    "reminder": "Enviar lembrete",
+    "reviewSend": "Reveja e envie convites",
+    "invitation": "Mensagem de convite",
+    "consentLabel": "Declaração de consentimento para destinatários",
+    "expiry": "Expira em (UTC)",
+    "retryFinal": "Tentar novamente a finalização",
+    "reviewOriginal": "Reveja o PDF original",
+    "progressTitle": "Progresso da assinatura",
+    "requests": "Os meus pedidos de assinatura",
+    "noRequests": "Sem solicitação de assinatura.",
+    "recipientError": "Introduza um nome e um e-mail válido para cada função.",
+    "saveFailed": "Não foi possível guardar a solicitação.",
+    "requestSaved": "Rascunho da solicitação guardado. Os convites não foram enviados.",
+    "openRequest": "Abrir rascunho de pedido",
+    "prepareRequest": "Prepare uma solicitação",
+    "routing": "Ordem de assinatura",
+    "parallel": "Paralelo",
+    "sequential": "Sequencial",
+    "name": "Nome do destinatário",
+    "email": "E-mail do destinatário",
+    "earlier": "Mover-se mais cedo",
+    "createRequestDraft": "Guardar rascunho de solicitação",
+    "loadingRequest": "Carregando pedido…",
+    "prepare": "Prepare um modelo de assinatura",
+    "instructions": "Abra um PDF local para colocar campos. Guarde o layout para continuar a editá-lo mais tarde.",
+    "pdf": "Documento PDF",
+    "opening": "Abrindo PDF…",
+    "title": "Título do modelo",
+    "saveWorkspace": "Guardar rascunho do espaço de trabalho",
+    "saving": "Salvando…",
+    "signerRole": "Função do signatário",
+    "addRole": "Adicionar função",
+    "fieldType": "Tipo de campo",
+    "addField": "Adicionar campo",
+    "previewRole": "Visualizar função selecionada",
+    "assigned": "Função atribuída",
+    "duplicate": "Duplicar",
+    "required": "Obrigatório",
+    "remove": "Remover",
+    "saveLayout": "Guardar layout",
+    "restore": "Restaurar layout",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "zoom": "Zoom",
+    "templates": "Modelos de assinatura",
+    "newDraft": "Novo esboço de modelo",
+    "noDrafts": "Sem rascunho de modelo nesta página.",
+    "nextPage": "Próxima página",
+    "archive": "Arquivo",
+    "archived": "Arquivado",
+    "retry": "Tentar novamente",
+    "loading": "Carregando modelos…",
+    "signer": "Signatário",
+    "signature": "Assinatura",
+    "initials": "Iniciais",
+    "text": "Texto",
+    "date": "Data",
+    "checkbox": "Caixa de seleção",
+    "width": "Largura",
+    "height": "Altura",
+    "x": "X",
+    "y": "S",
+    "publish": "Publicar revisão guardada",
+    "published": "Análise publicada {{revision}}",
+    "openSaved": "Abrir revisão guardada {{revision}}",
+    "revision": "Análise {{revision}}",
+    "placement": "Posicionamento {{type}}",
+    "page": "Página {{page}} de {{count}}",
+    "forRole": "{{type}} para {{role}}",
+    "publishConfirm": "Publicar esta revisão de modelo para reutilização?",
+    "discard": "Descartar alterações de layout não guardadas?",
+    "replace": "Substituir alterações de layout não guardadas?"
+  },
+  "common": {
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "suspended": "Suspenso",
+    "activate": "Ativar",
+    "deactivate": "Desativar",
+    "lead": "Liderar",
+    "paused": "Pausado",
+    "archived": "Arquivado",
+    "appName": "Corely Um ERP",
+    "tagline": "Administre o seu negócio de ponta a ponta.",
+    "loading": "Carregando...",
+    "select": "Selecione",
+    "optional": "Opcional",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "create": "Criar",
+    "search": "Pesquisar",
+    "filter": "Filtro",
+    "export": "Exportar",
+    "import": "Importar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "confirm": "Confirmar",
+    "close": "Fechar",
+    "docs": "Documentos",
+    "logout": "Sair",
+    "viewAll": "Ver tudo",
+    "comingSoon": "Em breve",
+    "noResults": "Nenhum resultado encontrado",
+    "selectDate": "Selecione a data",
+    "noTopic": "Nenhum tópico",
+    "error": "Algo correu mal",
+    "success": "Sucesso",
+    "currency": "euros",
+    "locale": "pt-PT",
+    "view": "Ver",
+    "status": "Estado",
+    "unknown": "Desconhecido",
+    "currencies": {
+      "eur": "euro",
+      "usd": "Dólar americano",
+      "gbp": "Libra britânica",
+      "chf": "Franco Suíço"
+    },
+    "reset": "Redefinir",
+    "name": "Nome",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "notes": "Notas",
+    "details": "Detalhes",
+    "open": "Abrir",
+    "closed": "Fechado",
+    "tags": "Etiquetas",
+    "noTags": "Nenhuma tag adicionada.",
+    "for": "Para",
+    "draft": "Rascunho",
+    "createdAt": "Criado {{date}}",
+    "empty": "Vazio",
+    "amount": "Quantidade",
+    "copy": "Copiar",
+    "type": "Tipo",
+    "description": "Descrição",
+    "date": "Data",
+    "noteOptional": "Nota (opcional)",
+    "saveChanges": "Guardar alterações",
+    "saving": "Salvando...",
+    "subject": "Assunto",
+    "message": "Mensagem",
+    "attachments": "Anexos",
+    "changeStatus": "Alterar estado",
+    "current": "Atual",
+    "action": "Ação",
+    "statusAuditTrail": "O histórico de alterações de estado é registado.",
+    "confirmAction": "Confirmar ação",
+    "confirmMessage": "Tem a certeza de que pretende prosseguir?",
+    "reason": "Razão",
+    "reasonPlaceholder": "Introduza o motivo...",
+    "badge": "Distintivo",
+    "actions": "Ações",
+    "other": "Outro",
+    "moreActions": "Mais ações",
+    "dangerZone": "Zona de perigo",
+    "goBack": "Volte",
+    "phoneShort": "Telefone",
+    "emailShort": "E-mail",
+    "website": "Site",
+    "bank": "Banco",
+    "iban": "IBAN",
+    "default": "Padrão",
+    "copyLink": "Copiar Link",
+    "add": "Adicionar",
+    "created": "Criado",
+    "updated": "Atualizado",
+    "notSet": "Não definido",
+    "done": "Concluído",
+    "customFields": "Campos personalizados",
+    "trial": {
+      "activeTitle": "Avaliação de acesso total ativa: {{days}} dias restantes",
+      "expiringTitle": "{{days}} dias restantes para a sua avaliação com acesso total",
+      "description": "Não é necessário cartão. Escolha um plano pago antes do fim da avaliação para manter o acesso à exportação, à IA e a vários locais.",
+      "cta": "Faturamento aberto",
+      "expiredTitle": "O seu teste de 30 dias terminou",
+      "expiredDescription": "Atualize agora para continuar a utilizar todos os recursos.",
+      "dismiss": "Dispensar",
+      "modalTitle": "O seu teste de acesso total de 30 dias terminou",
+      "modalDescription": "O seu espaço de trabalho utiliza agora o plano Gratuito. Os dados históricos ainda estão disponíveis, mas as capacidades de exportação, IA e vários locais estão bloqueadas até assinar.",
+      "modalLater": "Mais tarde",
+      "choosePlan": "Escolha um plano"
+    },
+    "searching": "Procura...",
+    "retry": "Tente novamente",
+    "loadMore": "Carregar mais"
+  },
+  "onboarding": {
+    "title": "Integração",
+    "progressTitle": "Progresso",
+    "allSet": "Está tudo pronto!",
+    "redirectingToDashboard": "Redireccionamento para o seu painel...",
+    "saveAndExit": "Guardar e sair",
+    "goBack": "Volte",
+    "skipForNow": "Saltar por enquanto",
+    "skip": "Saltar integração",
+    "loading": "A carregar integração...",
+    "aiAssistant": "Assistente de IA",
+    "aiTipTitle": "Assistente útil",
+    "aiHelpTitle": "Precisa de ajuda com esta etapa?",
+    "aiHelpPrompt": "Precisa de ajuda com esta etapa? Peça ao nosso assistente de IA para explicar ou sugerir o que fazer a seguir.",
+    "askAssistant": "Pergunte ao assistente",
+    "sidebarHelpTitle": "Precisa de ajuda?",
+    "sidebarHelpDescription": "O nosso assistente de IA está disponível em todas as etapas para o ajudar a configurar o Corely de forma eficaz.",
+    "businessName": "Nome comercial",
+    "businessNamePlaceholder": "por exemplo Bella Studio de beleza",
+    "businessNameRequired": "O nome da empresa é obrigatório",
+    "businessType": "Tipo de negócio",
+    "selectType": "Selecione o tipo",
+    "businessTypeRequired": "A categoria é obrigatória",
+    "currency": "Moeda",
+    "categories": {
+      "beauty": "Salão de manicure/beleza",
+      "hair": "Cabeleireiro / Barbeiro",
+      "gastronomy": "Café/Restaurante",
+      "retail": "Loja de retalho",
+      "other": "Outro"
+    },
+    "workflowOptions": {
+      "paper": "Papel / Caderno",
+      "paperDesc": "Transição dos cadernos manuais para os digitais.",
+      "excel": "Excel/Folha de Cálculo",
+      "excelDesc": "Acabaram-se as fórmulas complexas ou as células quebradas.",
+      "pos": "Sistema POS",
+      "posDesc": "Una perfeitamente o seu PDV e o seu livro-caixa.",
+      "software": "Outros softwares",
+      "softwareDesc": "Atualize para uma solução de caixa mais moderna."
+    },
+    "workflow": {
+      "insightTitle": "Visão personalizada",
+      "selectHint": "Selecione o seu fluxo anterior"
+    },
+    "language": {
+      "defaultHint": "Idioma padrão"
+    },
+    "welcome": {
+      "badge": "Nova experiência",
+      "footer": "Desenvolvido por IA Corely"
+    },
+    "receipt": {
+      "errorUnsupported": "Ficheiro não suportado. Faça o upload de um PDF, JPG ou PNG com menos de 10 MB.",
+      "uploadPrompt": "Clique para fazer upload ou arraste e largue",
+      "uploadHint": "PDF, JPG, PNG (máx. 10 MB)",
+      "skipLabel": "Farei isso mais tarde",
+      "successTitle": "Recibo anexado!",
+      "successDesc": "Passando para a próxima etapa...",
+      "continueLabel": "Continuar"
+    },
+    "openingBalance": {
+      "errorAmount": "Quantidade válida necessária",
+      "label": "Dinheiro real atualmente registado",
+      "hint": "💡 Não inclui pagamentos com cartão nem transferências bancárias. Apenas dinheiro físico.",
+      "importantTip": "Dica importante"
+    },
+    "entries": {
+      "errorAmount": "Quantidade válida necessária",
+      "errorNote": "Nota é obrigatória",
+      "ctaAdd": "Adicionar entrada",
+      "successTitle": "Entrada guardada",
+      "successOne": "Ótimo! Adicionou a sua primeira entrada. Vamos fazer mais um.",
+      "typeLabel": "Tipo de transação",
+      "typeIncome": "Renda em dinheiro",
+      "typeExpense": "Despesa em dinheiro",
+      "amountLabel": "Valor ({{symbol}})",
+      "descLabel": "Descrição",
+      "descPlaceholder": "por exemplo Corte de cabelo ou material para café",
+      "skipSecond": "Saltar segunda entrada"
+    },
+    "status": {
+      "expectedLabel": "Dinheiro esperado na gaveta",
+      "incomeLabel": "Renda de hoje",
+      "expenseLabel": "Despesas de hoje",
+      "receiptMissing": "Lembrete: o seu primeiro recibo ainda está em falta. Pode anexá-lo posteriormente na lista de entradas de dinheiro.",
+      "workflowPaper": "Como utilizou um portátil, esta visualização substitui a contagem manual.",
+      "workflowExcel": "Como utilizou folhas de cálculo, isso mantém os seus totais de caixa ativos sem fórmulas.",
+      "workflowPos": "Como utiliza um sistema POS, este mantém o dinheiro e os recebimentos alinhados num só lugar.",
+      "workflowSoftware": "Como utilizou outro software, este dá-lhe uma visão única do dinheiro diário.",
+      "receiptReminder": "Lembrete de receção",
+      "tipTitle": "Este é o seu estado de caixa.",
+      "tipDesc": "O seu saldo esperado é atualizado automaticamente sempre que adiciona uma entrada. Chega de cálculos manuais ao final do dia.",
+      "cta": "Veja o que vem a seguir"
+    },
+    "closing": {
+      "watchTutorial": "Assista ao tutorial dos anos 30",
+      "previewAlt": "Fechando registo",
+      "skipLabel": "Farei isso mais tarde"
+    },
+    "errors": {
+      "missingStepComponent": "Componente de passo não encontrado para o tipo: {{type}}"
+    },
+    "postValue": {
+      "inviteTitle": "Convide a sua equipa",
+      "inviteDesc": "Dê aos seus colaboradores acesso para adicionar entradas de dinheiro utilizando a aplicação para tablet.",
+      "inviteAction": "Adicionar membros",
+      "categoriesTitle": "Categorias personalizadas",
+      "categoriesDesc": "Configure categorias personalizadas de despesas e receitas para obter melhores relatórios.",
+      "categoriesAction": "Editar categorias",
+      "cta": "Vá para o painel"
+    }
+  },
+  "actions": {
+    "takeAttendance": "Marque presença",
+    "markDone": "Marcar como concluído",
+    "assignPayer": "Atribuir pagador",
+    "viewInvoice": "Ver"
+  },
+  "list": {
+    "searchPlaceholder": "Pesquisar...",
+    "sort": "Classificar",
+    "filters": "Filtros",
+    "filtersDescription": "Filtre a lista selecionando critérios específicos.",
+    "clearAll": "Limpar tudo",
+    "noActiveFilters": "Nenhum filtro ativo",
+    "addFilter": "Adicionar filtro",
+    "applyFilters": "Aplicar filtros",
+    "noResults": "Nenhum item encontrado."
+  },
+  "nav": {
+    "people": "Diretório de pessoal",
+    "peopleSelfService": "O meu perfil",
+    "dashboard": "Painel",
+    "portfolio": "Portfólio",
+    "rentals": {
+      "properties": "Propriedades"
+    },
+    "quotes": "Citações",
+    "clients": "Clientes",
+    "tax": {
+      "overview": "Visão geral",
+      "filings": "Arquivos",
+      "payments": "Pagamentos",
+      "documents": "Documentos",
+      "settings": "Configurações fiscais",
+      "reports": "Relatórios",
+      "annualAssistant": "Assistente Anual"
+    },
+    "assistant": "Assistente",
+    "billing": "Faturamento",
+    "expenses": "Despesas",
+    "invoices": "Faturas",
+    "registers": "Registros",
+    "directory": {
+      "restaurants": "Restaurantes"
+    },
+    "tenants": "Inquilinos",
+    "groups": {
+      "core": "Núcleo",
+      "freelancer": "Autônomo",
+      "sales": "Vendas",
+      "purchasing": "Compras",
+      "inventory": "Inventário",
+      "finance": "Finanças",
+      "booking": "Reserva",
+      "settings": "Configurações",
+      "platform": "Plataforma",
+      "tax": "Imposto",
+      "education": "Educação",
+      "other": "Outro"
+    },
+    "customers": "Clientes",
+    "students": "Alunos",
+    "salesQuotes": "Cotações de vendas",
+    "salesOrders": "Pedidos de venda",
+    "salesInvoices": "Faturas de vendas",
+    "salesCopilot": "Copiloto de Vendas",
+    "salesSettings": "Configurações de vendas",
+    "purchaseOrders": "Pedidos de compra",
+    "vendorBills": "Faturas de fornecedores",
+    "purchasingSettings": "Configurações de compra",
+    "purchasingCopilot": "Comprar Copiloto",
+    "settings": "Configurações",
+    "projects": "Projetos",
+    "accounting": "Contabilidade",
+    "inventory": "Inventário",
+    "inventoryProducts": "Stock - Produtos",
+    "inventoryWarehouses": "Stock - Armazéns",
+    "inventoryStock": "Estoque - Estoque",
+    "inventoryDocuments": "Inventário - Documentos",
+    "inventoryReorder": "Stock - Reordenar",
+    "inventoryCopilot": "Inventário - Copiloto",
+    "catalogItems": "Artigos de catálogo",
+    "pos": {
+      "catalog": "Catálogo",
+      "catalogQuickAdd": "Artigo de adição rápida",
+      "transactions": "Transações"
+    },
+    "importShipments": "Remessas",
+    "suppliers": "Fornecedores",
+    "automation": "Automação",
+    "documents": "Documentos",
+    "cms": {
+      "posts": "Postagens CMS",
+      "comments": "Comentários do CMS"
+    },
+    "hr": "RH",
+    "workspace": "Configurações do espaço de trabalho",
+    "profile": "Perfil e conta",
+    "members": "Gestão de Equipas",
+    "roles": "Funções e permissões",
+    "paymentMethods": "Métodos de pagamento",
+    "taxSettings": "Configurações fiscais",
+    "cashManagement": "Gestão de caixa",
+    "issues": "Solicitações",
+    "crmDashboard": "Painel",
+    "crmDeals": "Ofertas",
+    "crmLeads": "Leads",
+    "crmActivities": "Atividades",
+    "crmSequences": "Sequências",
+    "crmEmailSettings": "Definições de e-mail",
+    "crmTemplates": "Modelos",
+    "classes": "Aulas",
+    "booking": {
+      "appointments": "Compromissos",
+      "resources": "Recursos",
+      "services": "Serviços",
+      "bookingPage": "Página de reserva"
+    },
+    "coaching": {
+      "engagements": "Compromissos de coaching",
+      "sessions": "Sessões de coaching"
+    },
+    "programs": "Programas",
+    "teacherDashboard": "Painel do professor",
+    "classSessions": "Sessões",
+    "classBilling": "Faturação de aula",
+    "website": "Site",
+    "platform": "Plataforma",
+    "forms": "Formulários"
+  },
+  "coaching": {
+    "engagements": {
+      "title": "Compromissos de coaching",
+      "subtitle": "Acompanhe as reservas de coaching, pré-requisitos, documentos e follow-ups.",
+      "columns": {
+        "offer": "Oferta",
+        "client": "Cliente",
+        "status": "Estado",
+        "billing": "Faturamento",
+        "updated": "Atualizado"
+      }
+    },
+    "sessions": {
+      "title": "Sessões de coaching",
+      "subtitle": "Monitorize sessões de coaching futuras e concluídas.",
+      "columns": {
+        "engagement": "Engajamento",
+        "start": "Começar",
+        "status": "Estado",
+        "meeting": "Reunião"
+      },
+      "pendingMeeting": "Pré-requisitos pendentes"
+    },
+    "detail": {
+      "openCheckout": "Abrir check-out",
+      "exportBundle": "Pacote de exportação",
+      "exportQueued": "Pedido de pacote de exportação na fila.",
+      "exportError": "Falha ao solicitar pacote de exportação.",
+      "checkoutError": "Falha ao criar sessão de checkout.",
+      "sections": {
+        "overview": "Visão geral",
+        "workflow": "Estado do fluxo de trabalho",
+        "sessions": "Preparação e sessões",
+        "documents": "Documentos",
+        "activity": "Atividade e auditoria",
+        "aiSummary": "Resumo de IA"
+      },
+      "noArtifacts": "Nenhum artefacto armazenado ainda.",
+      "noAiSummary": "Nenhum resumo de IA disponível ainda."
+    },
+    "empty": {
+      "engagements": "Nenhum compromisso de coaching encontrado.",
+      "sessions": "Nenhuma sessão de coaching encontrada."
+    }
+  },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Núcleo"
+      },
+      "platform": {
+        "enabled": "Plataforma"
+      },
+      "invoices": {
+        "enabled": "Faturas"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Portfólio"
+      },
+      "issues": {
+        "enabled": "Problemas"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Despesas"
+      },
+      "parties": {
+        "enabled": "Festas"
+      },
+      "ai-copilot": {
+        "enabled": "Copiloto de IA"
+      },
+      "tax": {
+        "enabled": "Imposto"
+      },
+      "cash-management": {
+        "enabled": "Gestão de caixa"
+      },
+      "sales": {
+        "enabled": "Vendas"
+      },
+      "workspaces": {
+        "enabled": "Espaços de trabalho"
+      },
+      "purchasing": {
+        "enabled": "Compras"
+      },
+      "rentals": {
+        "enabled": "Aluguéis"
+      },
+      "booking": {
+        "enabled": "Reserva"
+      },
+      "website": {
+        "enabled": "Site"
+      }
+    }
+  },
+  "requests": {
+    "submit": "Envie uma solicitação",
+    "whatDoYouNeed": "O que precisa?",
+    "problem": "Informar um problema",
+    "service": "Solicite um serviço",
+    "title": "Título",
+    "clientEmail": "E-mail do cliente (opcional)",
+    "submitFailed": "Não foi possível enviar o pedido. Tente novamente.",
+    "back": "Voltar aos pedidos",
+    "queue": "Fila",
+    "mine": "Os meus pedidos",
+    "assign": "Atribuir",
+    "assignFailed": "Não foi possível atribuir o pedido.",
+    "internalNote": "Adicionar nota interna",
+    "clientUpdate": "Atualização do cliente",
+    "summary": "Resumo de conclusão",
+    "confirmRecipient": "Eu confirmei o destinatário",
+    "retry": "Tentar novamente a atualização do cliente",
+    "send": "Enviar atualização do cliente",
+    "sendFailed": "Não foi possível enviar a atualização. Verifique o estado da entrega e tente novamente.",
+    "resolved": "Solicitação resolvida",
+    "reference": "Ref. {{reference}}",
+    "saveNote": "Guardar nota interna",
+    "internalNotes": "Notas internas",
+    "empty": "Nenhuma solicitação encontrada",
+    "emptyDescription": "Envie um pedido para começar a acompanhar o seu progresso.",
+    "delivery": {
+      "QUEUED": "Na fila",
+      "SENT": "Enviado",
+      "FAILED": "Falha no envio",
+      "NEEDS_REVIEW": "Verifique a entrega antes de enviar novamente"
+    }
+  },
+  "issues": {
+    "title": "Problemas",
+    "reportTitle": "Informar novo problema",
+    "unassigned": "Não atribuído",
+    "description": {
+      "empty": "Nenhuma descrição fornecida."
+    },
+    "createdAt": "Criado {{date}}",
+    "status": {
+      "change": "Alterar estado",
+      "update": "Atualizar estado",
+      "updated": "Estado atualizado com sucesso",
+      "updateFailed": "Falha ao atualizar o estado",
+      "resolved": "Problema resolvido",
+      "resolveFailed": "Falha ao resolver o problema",
+      "reopened": "Problema reaberto",
+      "reopenFailed": "Falha ao reabrir o problema"
+    },
+    "actions": {
+      "resolve": "Resolver",
+      "reopen": "Reabrir"
+    },
+    "fields": {
+      "title": "Título",
+      "priority": "Prioridade",
+      "description": "Descrição",
+      "siteType": "Tipo de site",
+      "siteIdOptional": "ID do site (opcional)",
+      "customerIdOptional": "ID do cliente (opcional)",
+      "manufacturerIdOptional": "ID do fabricante (opcional)",
+      "transcriptOptional": "Transcrição da nota de voz (opcional)",
+      "site": "Local",
+      "assignee": "Cessionário"
+    },
+    "placeholders": {
+      "priority": "Selecione prioridade",
+      "siteType": "Selecione o tipo de site"
+    },
+    "priority": {
+      "low": "Baixo",
+      "medium": "Médio",
+      "high": "Alto",
+      "urgent": "Urgente"
+    },
+    "siteTypes": {
+      "field": "Campo",
+      "customer": "Cliente",
+      "manufacturer": "Fabricante"
+    },
+    "statuses": {
+      "NEW": "Novo",
+      "TRIAGED": "Triagem",
+      "IN_PROGRESS": "Em curso",
+      "WAITING": "Esperando",
+      "RESOLVED": "Resolvido",
+      "CLOSED": "Fechado",
+      "REOPENED": "Reaberto"
+    },
+    "attachments": {
+      "title": "Anexos",
+      "images": "Imagens",
+      "addImages": "Adicionar imagens",
+      "takePicture": "Tirar foto",
+      "audio": "Gravações de áudio",
+      "voiceNote": "Nota de voz",
+      "uploaded": "Anexos carregados:",
+      "empty": "Sem anexos.",
+      "transcript": "Transcrição: {{transcript}}"
+    },
+    "voiceNote": "Nota de voz",
+    "startRecording": "Comece a gravar",
+    "stopRecording": "Pare de gravar",
+    "submitting": "Enviando...",
+    "submit": "Enviar problema",
+    "speech": {
+      "liveTranscription": "Transcrição ao vivo ativada",
+      "notAvailable": "O reconhecimento de voz não está disponível neste browser"
+    },
+    "comments": {
+      "title": "Comentários",
+      "addTitle": "Adicionar comentário",
+      "add": "Adicionar comentário",
+      "added": "Comentário adicionado",
+      "addFailed": "Falha ao adicionar comentário",
+      "placeholder": "Escreva um comentário...",
+      "empty": "Nenhum comentário ainda."
+    },
+    "activity": {
+      "title": "Histórico de atividades",
+      "empty": "Nenhuma atividade registada."
+    },
+    "errors": {
+      "microphoneDenied": "Acesso ao microfone negado",
+      "cameraDenied": "Acesso à câmara negado",
+      "loadFailed": "Falha ao carregar os detalhes do problema"
+    }
+  },
+  "tax": {
+    "title": "Centro Fiscal",
+    "subtitle": "Gira o seu perfil fiscal, registos e conformidade",
+    "loading": "A carregar dados fiscais...",
+    "profile": {
+      "title": "Perfil Fiscal",
+      "vatEnabled": "IVA/imposto sobre as vendas registado",
+      "vatEnabledHelp": "Ative isto se a sua empresa estiver registada para IVA ou imposto sobre as vendas",
+      "country": "Jurisdição Fiscal",
+      "countryHelp": "Selecione o país principal onde a sua empresa está registada para efeitos fiscais",
+      "regime": "Regime do IVA",
+      "usesAdvisor": "Utilize consultor fiscal/contabilista",
+      "usesAdvisorHelp": "Ative se trabalha com um profissional externo para declarações fiscais",
+      "vatIdOptional": "IVA/ID fiscal (opcional)",
+      "filingFrequency": "Frequência de arquivamento",
+      "accountingMethod": "Método de contabilidade",
+      "effectiveFrom": "Eficaz a partir de",
+      "effectiveFromHelp": "Escolha uma data igual ou anterior às transações em dinheiro que este perfil fiscal deve cobrir.",
+      "taxYearStartMonth": "Mês de início do ano fiscal",
+      "localTaxOffice": "Repartição Fiscal Local",
+      "save": "Guardar perfil fiscal",
+      "saveSuccess": "Perfil fiscal guardado",
+      "saveFailed": "Falha ao guardar o perfil fiscal",
+      "vatExemption": "Parágrafo de isenção de IVA",
+      "vatExemptionHelp": "Selecione o parágrafo de isenção relevante para o seu negócio"
+    },
+    "countries": {
+      "de": "Alemanha"
+    },
+    "regimes": {
+      "smallBusiness": "Pequenas Empresas (Kleinunternehmer)",
+      "standardVat": "IVA padrão",
+      "vatExempt": "Isento de IVA"
+    },
+    "exemptions": {
+      "exportDeliveries": "§ 4º nº. 1a UStG - Entregas de exportação",
+      "intraCommunityDeliveries": "§ 4º nº. 1b UStG - Entregas intracomunitárias",
+      "financialServices": "§ 4º nº. 8 UStG - Serviços financeiros",
+      "insuranceServices": "§ 4º nº. 11 UStG - Serviços de seguros",
+      "lettingLeasing": "§ 4º nº. 12 UStG - Locação e locação",
+      "medicalServices": "§ 4º nº. 14 UStG - Serviços médicos",
+      "educationalServices": "§ 4º nº. 21 UStG - Serviços educativos"
+    },
+    "filing": {
+      "monthly": "Mensalmente",
+      "quarterly": "Trimestralmente",
+      "yearly": "Anualmente"
+    },
+    "accounting": {
+      "cashBasis": "Base de caixa (Ist-Versteuerung)",
+      "accrualBasis": "Base de competência (Soll-Versteuerung)",
+      "cashBasisHelp": "A receita é registada quando o dinheiro é recebido",
+      "accrualBasisHelp": "A receita é registada quando auferida, independentemente do momento em que o dinheiro é recebido"
+    },
+    "placeholders": {
+      "country": "Selecione o país",
+      "regime": "Selecione o regime",
+      "vatExemption": "Selecione o parágrafo de isenção",
+      "filingFrequency": "Selecione a frequência",
+      "accountingMethod": "Selecione o método",
+      "vatId": "Introduza o seu ID de IVA (por exemplo, DE123456789)",
+      "month": "Selecione o mês",
+      "localTaxOffice": "Introduza o nome da repartição de finanças local"
+    },
+    "consultant": {
+      "title": "Consultor Fiscal",
+      "save": "Guardar informações do consultor",
+      "saveSuccess": "Informações do consultor guardadas",
+      "saveFailed": "Falha ao guardar informações do consultor"
+    },
+    "submitStep": {
+      "methods": {
+        "manual": "Manuais",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Exportar para ELSTER",
+        "description": "Descarregue os dados de arquivo para fazer o upload no Mein ELSTER. Após enviar no ELSTER, cole o ID de transferência/referência abaixo.",
+        "actions": {
+          "elsterXml": "Exportar XML ELSTER",
+          "kennzifferCsv": "Exportar CSV (mapeamento Kennziffer)",
+          "loading": "Exportando..."
+        },
+        "unavailable": "A exportação ELSTER não está disponível para este arquivo.",
+        "success": {
+          "elsterXml": "XML ELSTER descarregado",
+          "kennzifferCsv": "CSV Kennziffer descarregado"
+        },
+        "errors": {
+          "generic": "Falha ao exportar o ficheiro."
+        }
+      },
+      "connection": {
+        "title": "Método de envio",
+        "connected": "A sua ligação de envio automatizado está configurada.",
+        "notConfigured": "A ligação de envio não está configurada.",
+        "manageIn": "Gira as configurações de envio em",
+        "settingsLink": "Configurações fiscais",
+        "enableDirectFiling": "para permitir o arquivamento direto."
+      },
+      "confirmation": {
+        "title": "Confirmação de envio",
+        "method": "Método",
+        "reference": "Referência de envio",
+        "referencePlaceholder": "Introduza o ID/referência do envio",
+        "submittedAt": "Enviado em",
+        "notes": "Notas (opcional)",
+        "notesPlaceholder": "Adicione uma nota para os seus registos",
+        "submit": "Enviar arquivamento"
+      }
+    },
+    "attachments": {
+      "title": "Anexos",
+      "attachFromDocuments": "Anexar de documentos fiscais",
+      "uploadAttachment": "Carregar anexo",
+      "loading": "A carregar anexos...",
+      "error": "Falha ao carregar anexos.",
+      "empty": "Carregue documentos comprovativos, como recibos ou confirmações de envio.",
+      "untitled": "Documento sem título",
+      "type": "Tipo: {{type}}",
+      "uploadedAt": "Carregado {{date}}",
+      "uploader": "Carregador: {{name}}",
+      "remove": "Remover",
+      "dialog": {
+        "title": "Anexar recibo",
+        "description": "Carregue o comprovativo de pagamento deste depósito.",
+        "replace": "Substituir recibo",
+        "choose": "Escolha o recibo",
+        "noFile": "Nenhum ficheiro selecionado",
+        "uploading": "Fazendo upload...",
+        "submit": "Anexar recibo"
+      },
+      "messages": {
+        "uploadSuccess": "Anexo enviado",
+        "uploadError": "Falha ao carregar o anexo",
+        "selectFile": "Selecione um recibo para fazer o upload"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "Declaração de IVA",
+        "vat-annual": "Declaração Anual de IVA",
+        "income-annual": "Declaração de IRS",
+        "trade": "Declaração de imposto comercial",
+        "payroll": "Declaração de imposto sobre a folha de",
+        "corporate-annual": "Declaração de imposto sobre as empresas",
+        "year-end": "Arquivamento de fim de ano",
+        "other": "Declaração de imposto"
+      },
+      "status": {
+        "draft": "Rascunho",
+        "needsFix": "Precisa de atenção",
+        "readyForReview": "Pronto para revisão",
+        "submitted": "Enviado",
+        "paid": "Pago",
+        "archived": "Arquivado"
+      },
+      "actions": {
+        "review": "Revisão",
+        "continueReview": "Continuar revisão",
+        "markPaid": "Marcar como pago",
+        "view": "Ver",
+        "previousPeriod": "Período anterior",
+        "nextPeriod": "Próximo período",
+        "recalculate": "Recalcular",
+        "exportPdf": "Exportar PDF",
+        "exportCsv": "Exportar CSV",
+        "delete": "Apagar arquivamento",
+        "deleteConfirmTitle": "Apagar arquivamento?",
+        "deleteConfirmMessage": "Esta ação não pode ser anulada."
+      },
+      "due": "Vencimento {{date}}",
+      "dueWithDays": "Vencimento {{date}} • {{count}} dia restante",
+      "dueWithDays_plural": "Vencimento {{date}} • {{count}} dias restantes"
+    },
+    "activity": {
+      "title": "Atividade",
+      "loading": "A carregar atividade...",
+      "error": "Falha ao carregar atividade.",
+      "noActivity": "Nenhuma atividade ainda.",
+      "by": "Por {{name}}",
+      "types": {
+        "created": "Arquivo criado",
+        "recalculated": "Recalculado",
+        "submitted": "Enviado",
+        "paid": "Marcado como pago",
+        "attachmentAdded": "Anexo adicionado",
+        "issuesDetected": "Problemas detectados",
+        "issuesResolved": "Problemas resolvidos",
+        "deleted": "Excluído"
+      }
+    },
+    "center": {
+      "title": "Centro Fiscal",
+      "myTaxes": "Os meus impostos",
+      "freelancerSubtitle": "Faça a gestão das suas obrigações fiscais de freelancer.",
+      "companySubtitle": "Visão geral da conformidade e registos fiscais da empresa.",
+      "errorLoading": "Erro ao carregar a Central Fiscal",
+      "errorDescription": "Não foi possível carregar a sua visão geral fiscal. Por favor, tente novamente.",
+      "retry": "Tentar novamente",
+      "reviewNext": "Reveja o próximo arquivamento",
+      "settings": "Configurações",
+      "nextUp": {
+        "title": "Próximo",
+        "allCaughtUp": "Estão todos atualizados!",
+        "noUpcoming": "Nenhum registo futuro encontrado.",
+        "createFiling": "Criar arquivamento",
+        "dueDate": "Data de vencimento",
+        "estimatedAmount": "Valor estimado",
+        "reviewFiling": "Rever arquivamento",
+        "viewAll": "Ver todos os registos",
+        "overdue": "ATRASADO",
+        "vat": "IVA",
+        "tax": "Imposto"
+      },
+      "annual": {
+        "title": "Arquivos Anuais",
+        "yearendTitle": "Fim de ano e arquivamentos anuais",
+        "viewAll": "Ver tudo",
+        "createForYear": "Criar para {{year}}",
+        "noFilings": "Não há registo anual para {{year}}",
+        "obligations": "Obrigações anuais.",
+        "status": {
+          "draft": "Rascunho",
+          "needsFix": "Precisa de atenção",
+          "readyForReview": "Pronto para revisão",
+          "submitted": "Enviado",
+          "paid": "Pago",
+          "archived": "Arquivado",
+          "openForSubmission": "Aberto para submissão",
+          "yearInProgress": "Ano em curso"
+        },
+        "year": "Ano {{year}}",
+        "estimatedTaxToPay": "Imposto estimado a pagar",
+        "reviewAndSubmit": "Reveja e envie",
+        "preview": "Visualização"
+      },
+      "issues": {
+        "title": "Problemas em aberto",
+        "noIssues": "Nenhum problema detectado. A sua contabilidade parece limpa!",
+        "items": "itens",
+        "affected": "afetado",
+        "fix": "Correção",
+        "blocking": "FIM DO BLOCO"
+      },
+      "shortcuts": {
+        "title": "Atalhos",
+        "createFiling": "Criar arquivamento",
+        "exportReport": "Relatório de exportação",
+        "payTaxes": "Pagar impostos",
+        "documents": "Documentos"
+      },
+      "snapshot": {
+        "title": "Instantâneo acumulado no ano ({{year}})",
+        "updated": "{{date}} atualizado",
+        "noData": "Ainda não há dados disponíveis."
+      }
+    },
+    "reports": {
+      "title": "Relatórios fiscais",
+      "subtitle": "Acompanhe as próximas declarações e envios.",
+      "tabs": {
+        "upcoming": "Próximos relatórios",
+        "submitted": "Enviado"
+      },
+      "groups": {
+        "vat": "Declarações antecipadas de IVA",
+        "compliance": "Conformidade (Vendas na UE e Intrastat)",
+        "submitted": "Relatórios enviados"
+      },
+      "actions": {
+        "markSubmitted": "Marcar como enviado",
+        "downloadPdf": "Baixar PDF",
+        "generatingPdf": "Gerando PDF...",
+        "downloadStarted": "Download iniciado",
+        "pdfPrepared": "O PDF está a ser preparado. Tente novamente em breve.",
+        "downloadFailed": "Falha ao descarregar o PDF"
+      },
+      "status": {
+        "loading": "A carregar relatórios...",
+        "empty": "Nenhum relatório encontrado."
+      },
+      "types": {
+        "vatAdvance": "Declaração antecipada de IVA",
+        "vatAnnual": "Relatório anual do IVA",
+        "incomeTax": "Imposto de rendimento",
+        "euSales": "Lista de vendas da UE (ZM)",
+        "intrastat": "Declaração Intrastat",
+        "tradeTax": "Imposto Comercial (Gewerbesteuer)",
+        "profitLoss": "Declaração de resultados (EÜR)",
+        "payrollTax": "Imposto sobre a folha de pagamentos"
+      },
+      "eur": {
+        "title": "Anlage EÜR (Lucros e Perdas)",
+        "subtitle": "Extrato anual baseado em caixa para relatórios fiscais pessoais de DE.",
+        "status": {
+          "loadingCapabilities": "Carregamento de recursos fiscais...",
+          "loadingStatement": "Carregando extrato EÜR..."
+        },
+        "unsupported": {
+          "title": "O EUR não está disponível",
+          "description": "Atualmente, este relatório é apenas compatível com espaços de trabalho DE pessoais."
+        },
+        "errors": {
+          "capabilitiesTitle": "Não foi possível carregar recursos fiscais",
+          "capabilitiesDescription": "Tente novamente quando o contexto do seu espaço de trabalho estiver disponível.",
+          "statementTitle": "Não foi possível carregar a instrução EÜR",
+          "generic": "Falha ao carregar a instrução EÜR."
+        },
+        "summary": {
+          "income": "Renda",
+          "expenses": "Despesas",
+          "profit": "Lucro"
+        },
+        "lines": {
+          "title": "Linhas de declaração",
+          "columns": {
+            "line": "Linha",
+            "group": "Grupo",
+            "amount": "Quantidade"
+          },
+          "groups": {
+            "income": "Renda",
+            "expense": "Despesa"
+          }
+        },
+        "lineLabels": {
+          "income": {
+            "sales": "Receita de vendas",
+            "other": "Outras receitas operacionais"
+          },
+          "expense": {
+            "rent": "Custos das instalações (renda/serviços públicos)",
+            "software": "Software e assinaturas",
+            "travel": "Despesas de deslocação",
+            "marketing": "Publicidade e marketing",
+            "professional": "Serviços profissionais e externos",
+            "taxes": "Impostos, taxas e encargos",
+            "other": "Outras despesas operacionais totalmente dedutíveis"
+          }
+        },
+        "generatedAt": "Gerado {{date}}"
+      }
+    },
+    "documents": {
+      "title": "Documentos Fiscais",
+      "subtitle": "Repositório de todos os documentos relacionados com impostos."
+    },
+    "payments": {
+      "title": "Pagamentos",
+      "subtitle": "Acompanhe os registos pagos e vencidos ao longo do ano.",
+      "exportCsv": "Exportar CSV",
+      "status": {
+        "due": "Devido",
+        "overdue": "Atrasado",
+        "paid": "Pago"
+      },
+      "types": {
+        "vat": "IVA",
+        "vatAnnual": "IVA anual",
+        "incomeAnnual": "Imposto de rendimento",
+        "trade": "Imposto comercial",
+        "payroll": "Folha de pagamento",
+        "corporateAnnual": "Imposto sobre as empresas",
+        "yearEnd": "Fim de ano",
+        "other": "Outro"
+      },
+      "columns": {
+        "filing": "Arquivamento",
+        "dueDate": "Data de vencimento",
+        "amount": "Quantidade",
+        "status": "Estado",
+        "paidDate": "Data de pagamento",
+        "method": "Método",
+        "payable": "A pagar",
+        "receivable": "Recebíveis"
+      },
+      "actions": {
+        "markPaid": "Marcar como pago",
+        "attachReceipt": "Anexar recibo",
+        "markedPaid": "Marcado como pago",
+        "markPaidFailed": "Falha ao marcar como pago",
+        "receiptAttached": "Recibo anexado",
+        "attachReceiptFailed": "Falha ao anexar o recibo",
+        "exportFailed": "Falha ao exportar pagamentos"
+      },
+      "empty": {
+        "title": "Sem pagamento para rastrear",
+        "description": "Os pagamentos aparecerão aqui assim que os registos forem enviados.",
+        "goToFilings": "Ir para arquivamentos"
+      },
+      "error": {
+        "title": "Não foi possível carregar os pagamentos",
+        "description": "Verifique a sua ligação e tente novamente."
+      },
+      "sort": {
+        "dueDateSoonest": "Data de vencimento (mais breve)",
+        "dueDateLatest": "Data de validade (mais recente)",
+        "paidDateNewest": "Data de pagamento (mais recente)",
+        "paidDateOldest": "Data de pagamento (mais antiga)",
+        "amountHighLow": "Quantidade (alto-baixo)",
+        "amountLowHigh": "Valor (baixo-alto)"
+      }
+    },
+    "overview": {
+      "title": "Impostos",
+      "greeting": "Boa noite, {{name}}!",
+      "yourTaxes": "Os seus impostos na sua região",
+      "localOffice": "Escritório local: {{name}}",
+      "annualAssistant": "Assistente anual",
+      "viewReports": "Ver relatórios",
+      "taxSettings": "Configurações fiscais",
+      "currentVatPeriod": "Período de IVA atual: {{period}} {{year}}",
+      "estimatedVatDue": "Estimativa do IVA devido",
+      "notConfigured": "Não configurado",
+      "viewDetails": "Ver detalhes",
+      "kpis": {
+        "taxesToBePaid": "Impostos a pagar",
+        "income": "Renda",
+        "expenses": "Despesas",
+        "vatNotApplicable": "IVA não aplicável",
+        "completeSetup": "Configuração tributária completa",
+        "seeOverview": "Veja a visão geral dos impostos",
+        "unpaidInvoices": "{{count}} faturas não pagas",
+        "itemsToReview": "Itens {{count}} para rever"
+      },
+      "headsUp": "Atenção",
+      "settingsIncomplete": "Configurações fiscais incompletas",
+      "settingsIncompleteDescription": "Configure o seu perfil fiscal para estimar o que deve.",
+      "goToSettings": "Vá para as definições de impostos",
+      "expenseHelper": {
+        "title": "O que posso gastar?",
+        "description": "Saiba quais as compras que pode categorizar como despesas comerciais.",
+        "learnMore": "Saiba mais"
+      },
+      "yourReports": "Os seus relatórios fiscais",
+      "reportsDescription": "Com base nos seus detalhes, estes são os relatórios que deve enviar atualmente…",
+      "submitReports": "Enviar relatórios",
+      "upcomingDeadline": "Próximo prazo {{count}}",
+      "upcomingDeadline_plural": "Próximos prazos {{count}}",
+      "noUpcoming": "Não há relatórios futuros.",
+      "localTaxOffice": "Repartição de impostos local",
+      "addLocalOffice": "Adicione a sua repartição de finanças local para manter os seus registos completos.",
+      "updateSettings": "Atualizar as configurações",
+      "errorLoading": "Não foi possível carregar impostos",
+      "errorDescription": "Algo correu mal ao procurar a sua visão geral fiscal."
+    },
+    "annualAssistant": {
+      "threadTitle": "Imposto sobre o rendimento anual {{year}}",
+      "loading": "Preparar a sua sessão anual de assistente fiscal...",
+      "placeholder": "Peça-me para criar o seu rascunho, gerar EÜR ou orientar o seu próximo passo",
+      "emptyStateTitle": "Imposto Anual sobre o Rendimento {{year}}",
+      "emptyStateDescription": "Conclua o seu arquivo anual no chat: crie um rascunho, gere EÜR, responda às perguntas da entrevista e exporte PDF.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Criar rascunho anual",
+          "value": "Crie a minha minuta anual de IRS para {{year}}."
+        },
+        "checklist": {
+          "label": "Mostrar lista de verificação",
+          "value": "Mostrar lista de verificação de rascunho e bloqueadores."
+        },
+        "export": {
+          "label": "Exportar PDF",
+          "value": "Exportar o meu rascunho anual em PDF."
+        }
+      },
+      "errors": {
+        "createTitle": "Não foi possível iniciar o assistente anual",
+        "createDescription": "O thread do assistente não pôde ser criado. Tente novamente para continuar."
+      }
+    },
+    "history": {
+      "title": "Períodos de IVA",
+      "year": "Ano",
+      "overdueAlert": "Ação necessária: {{count}} períodos de IVA em atraso",
+      "overdueDescription": "O período de atraso mais antigo é pré-selecionado. Pode ainda trabalhar no período atual.",
+      "submitOverdue": "Enviar períodos de atraso",
+      "noData": "Não há dados para este ano.",
+      "noPeriods": "Nenhum período encontrado.",
+      "quarter": "Trimestre",
+      "selectQuarter": "Selecione o trimestre",
+      "viewDetails": "Ver detalhes do período",
+      "selectedPeriod": "Período selecionado: {{label}} ({{range}})",
+      "taxDue": "Imposto devido",
+      "salesVat": "IVA sobre as vendas",
+      "purchaseVat": "IVA de compra",
+      "submittedOn": "Enviado em {{date}}",
+      "reference": "Referência: {{ref}}",
+      "notes": "Notas: {{notes}}",
+      "archiveReason": "Motivo do ficheiro: {{reason}}",
+      "downloadPdf": "Baixar PDF",
+      "markSubmitted": "Marcar como enviado",
+      "markNil": "Marcar como nulo",
+      "archive": "Arquivo",
+      "tabs": {
+        "upcoming": "Próximos relatórios",
+        "submitted": "Relatórios enviados"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Marcar o período como enviado",
+          "date": "Data de envio",
+          "reference": "Referência (opcional)",
+          "notes": "Notas (opcional)",
+          "submit": "Período de envio"
+        },
+        "nil": {
+          "title": "Marcar período como nulo",
+          "date": "Data de envio",
+          "notes": "Notas (opcional)",
+          "submit": "Marcar zero"
+        },
+        "archive": {
+          "title": "Período de arquivo",
+          "reason": "Razão",
+          "notes": "Notas (opcional)",
+          "submit": "Período de arquivo"
+        },
+        "cancel": "Cancelar"
+      },
+      "periodCombobox": {
+        "placeholder": "Selecione ou introduza um período…",
+        "searchPlaceholder": "Pesquise ou digite período…",
+        "useCustom": "Usar \"{{value}}\"",
+        "customHint": "Prima Enter ou clique para utilizar este período personalizado",
+        "noPeriods": "Nenhum período encontrado.",
+        "customHeading": "Personalizado",
+        "customPeriod": "Período personalizado",
+        "quartersHeading": "Trimestres",
+        "monthlyHeading": "Mensalmente",
+        "footerHint": "Introduza {{qExample}} ou {{mExample}} para um período personalizado",
+        "quarters": {
+          "1": "1º trimestre",
+          "2": "2º trimestre",
+          "3": "3º trimestre",
+          "4": "4º trimestre"
+        },
+        "quarterMonths": {
+          "1": "Janeiro – março",
+          "2": "Abril – Junho",
+          "3": "Julho – Setembro",
+          "4": "Outubro - dezembro"
+        }
+      },
+      "navigator": {
+        "prevYear": "Ano anterior",
+        "nextYear": "No próximo ano",
+        "failedToLoad": "Falha ao carregar períodos de IVA.",
+        "retry": "Tentar novamente",
+        "notStarted": "Não iniciado",
+        "noFilingYet": "Ainda não há registo para {{period}} {{year}}.",
+        "createFiling": "Criar arquivamento",
+        "status": {
+          "draft": "Rascunho",
+          "needsFix": "Precisa de atenção",
+          "readyForReview": "Pronto",
+          "submitted": "Enviado",
+          "paid": "Pago",
+          "archived": "Arquivado"
+        }
+      },
+      "attachments": {
+        "title": "Anexos",
+        "attachFromDocuments": "Anexar de documentos fiscais",
+        "uploadAttachment": "Carregar anexo",
+        "loading": "A carregar anexos...",
+        "error": "Falha ao carregar anexos.",
+        "empty": "Carregue documentos comprovativos, como recibos ou confirmações de envio.",
+        "untitled": "Documento sem título",
+        "type": "Tipo: {{type}}",
+        "uploadedAt": "Carregado {{date}}",
+        "uploader": "Carregador: {{name}}",
+        "remove": "Remover",
+        "dialog": {
+          "title": "Anexar recibo",
+          "description": "Carregue o comprovativo de pagamento deste depósito.",
+          "replace": "Substituir recibo",
+          "choose": "Escolha o recibo",
+          "noFile": "Nenhum ficheiro selecionado",
+          "uploading": "Fazendo upload...",
+          "submit": "Anexar recibo"
+        },
+        "messages": {
+          "uploadSuccess": "Anexo enviado",
+          "uploadError": "Falha ao carregar o anexo",
+          "selectFile": "Selecione um recibo para fazer o upload"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "Declaração de IVA",
+          "vat-annual": "Declaração Anual de IVA",
+          "income-annual": "Declaração de IRS",
+          "trade": "Declaração de imposto comercial",
+          "payroll": "Declaração de imposto sobre a folha de",
+          "corporate-annual": "Declaração de imposto sobre as empresas",
+          "year-end": "Arquivamento de fim de ano",
+          "other": "Declaração de imposto"
+        },
+        "status": {
+          "draft": "Rascunho",
+          "needsFix": "Precisa de atenção",
+          "readyForReview": "Pronto para revisão",
+          "submitted": "Enviado",
+          "paid": "Pago",
+          "archived": "Arquivado"
+        },
+        "actions": {
+          "review": "Revisão",
+          "continueReview": "Continuar revisão",
+          "markPaid": "Marcar como pago",
+          "view": "Ver",
+          "previousPeriod": "Período anterior",
+          "nextPeriod": "Próximo período",
+          "recalculate": "Recalcular",
+          "exportPdf": "Exportar PDF",
+          "exportCsv": "Exportar CSV",
+          "delete": "Apagar arquivamento",
+          "deleteConfirmTitle": "Apagar arquivamento?",
+          "deleteConfirmMessage": "Esta ação não pode ser anulada."
+        },
+        "due": "Vencimento {{date}}",
+        "dueWithDays": "Vencimento {{date}} • {{count}} dia restante",
+        "dueWithDays_plural": "Vencimento {{date}} • {{count}} dias restantes"
+      },
+      "activity": {
+        "title": "Atividade",
+        "loading": "A carregar atividade...",
+        "error": "Falha ao carregar atividade.",
+        "noActivity": "Nenhuma atividade ainda.",
+        "by": "Por {{name}}",
+        "types": {
+          "created": "Arquivo criado",
+          "recalculated": "Recalculado",
+          "submitted": "Enviado",
+          "paid": "Marcado como pago",
+          "attachmentAdded": "Anexo adicionado",
+          "issuesDetected": "Problemas detectados",
+          "issuesResolved": "Problemas resolvidos",
+          "deleted": "Excluído"
+        }
+      },
+      "createFiling": {
+        "title": "Nova Declaração Fiscal",
+        "subtitle": "Escolha o tipo de depósito e o período para criar uma nova obrigação.",
+        "form": {
+          "details": "Detalhes de arquivamento",
+          "type": "Tipo de arquivamento",
+          "selectType": "Selecione o tipo",
+          "types": {
+            "vat": "Declaração de IVA",
+            "income-annual": "Imposto sobre o Rendimento (Anual)",
+            "vat-annual": "IVA anual",
+            "other": "Outro"
+          },
+          "year": "Ano fiscal",
+          "period": "Período",
+          "cancel": "Cancelar",
+          "submit": "Criar arquivamento",
+          "errors": {
+            "periodRequired": "O período é necessário para as declarações de IVA",
+            "yearRequired": "O ano é obrigatório para os registos anuais"
+          }
+        },
+        "messages": {
+          "successTitle": "Arquivo criado",
+          "successDescription": "Redireccionamento para detalhes de arquivamento...",
+          "errorTitle": "Erro ao criar ficheiro"
+        }
+      },
+      "filingItems": {
+        "error": "Falha ao carregar artigos.",
+        "emptyTitle": "Nenhum item {{type}}",
+        "emptyDescription": "Não encontrámos nenhum artigo {{type}} para este período.",
+        "table": {
+          "date": "Data",
+          "counterparty": "Contraparte",
+          "description": "Descrição",
+          "net": "Rede",
+          "tax": "Imposto",
+          "gross": "Bruto"
+        }
+      },
+      "includedItems": {
+        "title": "Itens incluídos",
+        "emptyTitle": "Nenhum item incluído",
+        "emptyDescription": "Ainda não encontrámos nenhum item de origem para este arquivamento.",
+        "table": {
+          "type": "Tipo",
+          "date": "Data",
+          "counterparty": "Contraparte",
+          "category": "Categoria",
+          "vatTreatment": "Tratamento do IVA",
+          "net": "Rede",
+          "tax": "Imposto",
+          "gross": "Bruto",
+          "flags": "Bandeiras"
+        },
+        "badges": {
+          "needsAttention": "Precisa de atenção",
+          "ok": "OK",
+          "noCategory": "Nenhuma categoria",
+          "noVatTreatment": "Sem tratamento de IVA"
+        },
+        "error": "Falha ao carregar os artigos incluídos.",
+        "retry": "Tentar novamente"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Marcar como pago",
+          "description": "Registe os dados do pagamento e, opcionalmente, anexe um recibo."
+        },
+        "form": {
+          "paidAt": "Pago em",
+          "method": "Método",
+          "methods": {
+            "bank-transfer": "Transferência bancária",
+            "direct-debit": "Débito direto",
+            "other": "Outro"
+          },
+          "amount": "Quantidade",
+          "receipt": "Recibo",
+          "replace": "Substituir recibo",
+          "upload": "Carregar recibo",
+          "optional": "Opcional",
+          "uploading": "Fazendo upload...",
+          "submit": "Marcar como pago"
+        },
+        "messages": {
+          "uploadError": "Falha ao carregar o recibo"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "Período de IVA marcado como enviado",
+        "submittedError": "Falha ao marcar o período de IVA como enviado",
+        "nilSuccess": "Período de IVA marcado como nulo",
+        "nilError": "Falha ao marcar o período de IVA como nulo",
+        "archiveSuccess": "Período de IVA arquivado",
+        "archiveError": "Falha ao apresentar o período de IVA",
+        "generatingPdf": "Gerando PDF...",
+        "downloadStarted": "Download iniciado",
+        "pdfPrepared": "O PDF está a ser preparado. Tente novamente em breve.",
+        "downloadFailed": "Falha ao descarregar o PDF"
+      }
+    }
+  },
+  "cashManagement": {
+    "title": "Gestão de caixa",
+    "registers": "Registros",
+    "newRegister": "Novo registo",
+    "addEntry": "Adicionar entrada",
+    "dailyClose": "Fecho Diário"
+  },
+  "cash": {
+    "title": "Gestão de caixa",
+    "subtitle": "Acompanhe os registos, entradas e fecho diário",
+    "registers": {
+      "add": "Adicionar registo",
+      "addTitle": "Criar registo",
+      "namePlaceholder": "Registar nome",
+      "noLocation": "Sem localização",
+      "currentBalance": "Saldo atual",
+      "empty": "Ainda não há caixas registadoras",
+      "created": "Registo criado",
+      "createFailed": "Falha ao criar registo"
+    },
+    "detail": {
+      "cashIn": "Ganhe dinheiro",
+      "cashOut": "Sacar",
+      "dailyCloses": "Fechos diários",
+      "updatedBalance": "Saldo atualizado",
+      "noEntriesFound": "Nenhuma entrada encontrada",
+      "noDailyCloses": "Ainda não há fecho diário",
+      "addCashIn": "Adicionar dinheiro",
+      "addCashOut": "Adicionar saque",
+      "reasonPlaceholder": "Motivo da entrada...",
+      "confirmIn": "Confirmar entrada",
+      "confirmOut": "Confirmar",
+      "entryAdded": "Entrada adicionada",
+      "entryAddFailed": "Falha ao adicionar entrada",
+      "invalidAmount": "Valor inválido"
+    },
+    "dailyClose": {
+      "title": "Fecho Diário",
+      "reconcile": "Reconciliar: {{register}}",
+      "businessDate": "Data Comercial",
+      "expectedBalance": "Saldo Esperado",
+      "countedBalance": "Saldo contado",
+      "countedCash": "Dinheiro contado ({{currency}})",
+      "difference": "Diferença",
+      "perfectMatch": "Combinação Perfeita",
+      "discrepancyDetected": "Discrepância detectada",
+      "differenceEntryNote": "Uma entrada de diferença será criada automaticamente",
+      "notesPlaceholder": "Alguma observação sobre este encerramento...",
+      "submitClose": "Enviar Fechar",
+      "submitting": "Enviando...",
+      "submitted": "Fecho diário enviado",
+      "submitFailed": "Falha ao fechar",
+      "enterCountedAmount": "Por favor insira o valor contado"
+    },
+    "ui": {
+      "common": {
+        "loadingRegister": "A carregar registo...",
+        "registerNotFound": "Caixa registadora não encontrada.",
+        "noLocation": "Sem localização",
+        "cancel": "Cancelar"
+      },
+      "registers": {
+        "title": "Caixas registadoras",
+        "subtitle": "Faça a gestão de registos, saldos e operações diárias.",
+        "newRegister": "Novo registo",
+        "searchPlaceholder": "Nome do registo de pesquisa",
+        "locationPlaceholder": "Filtrar por localização",
+        "currencyPlaceholder": "Moeda (por exemplo, EUR)",
+        "loading": "Carregando registos...",
+        "loadFailed": "Falha ao carregar registos.",
+        "empty": "Nenhuma caixa registadora encontrada.",
+        "open": "Abrir",
+        "table": {
+          "name": "Nome",
+          "location": "Localização",
+          "currency": "Moeda",
+          "currentBalance": "Saldo atual",
+          "actions": "Ações"
+        }
+      },
+      "registerDetail": {
+        "newCashEntry": "Nova entrada de dinheiro",
+        "closeDay": "Dia de encerramento (Kassensturz)",
+        "kassenbericht": "Cassenbericht",
+        "export": "Exportar",
+        "edit": "Editar",
+        "currentBalance": "Saldo atual",
+        "lastClosedDay": "Último dia fechado",
+        "noSubmittedClose": "Nenhum dia enviado foi ainda encerrado",
+        "tabs": {
+          "overview": "Visão geral",
+          "entriesPreview": "Pré-visualização das entradas",
+          "activityAudit": "Atividade/Auditoria",
+          "unclosedDays": "Dias não encerrados"
+        },
+        "registerId": "Registar ID",
+        "negativeBalancePolicy": "Política de saldo negativo",
+        "policyBlocked": "Bloqueado",
+        "policyAllowed": "Permitido",
+        "noEntriesYet": "Nenhuma entrada ainda.",
+        "openFullEntries": "Abra a lista completa de entradas",
+        "activityPrefix": "Registos de auditoria e exportados",
+        "auditPack": "pacotes de auditoria",
+        "activitySuffix": "aparecerá aqui assim que estiver disponível.",
+        "unclosedDaysModal": {
+          "title": "Dias não encerrados",
+          "description": "Antes de visitar o Kassenbericht, todos os dias anteriores devem estar encerrados. O primeiro dia não fechado é:",
+          "cancel": "Cancelar",
+          "goClose": "Vá para o dia próximo",
+          "viewLastKassenbericht": "Ver último Kassenbericht"
+        },
+        "unclosedDays": {
+          "draft": "Rascunho",
+          "open": "Não fechado",
+          "close": "Feche já →"
+        }
+      },
+      "registerForm": {
+        "newTitle": "Criar caixa registadora",
+        "editTitle": "Editar caixa registadora",
+        "name": "Nome",
+        "namePlaceholder": "Registo principal",
+        "location": "Localização",
+        "locationPlaceholder": "Vitrine",
+        "currency": "Moeda",
+        "disallowNegativeBalance": "Proibir saldo de caixa negativo",
+        "createFailed": "Falha ao criar caixa registadora.",
+        "updateFailed": "Falha ao atualizar a caixa registadora.",
+        "create": "Criar registo",
+        "saveChanges": "Guardar alterações"
+      },
+      "entries": {
+        "title": "Inscrições · {{register}}",
+        "subtitle": "Lista de caixa com filtros, reversões e anexos beleg.",
+        "newCashEntry": "Nova entrada de dinheiro",
+        "backToRegister": "Voltar para registar",
+        "filters": {
+          "dayFrom": "Dia de",
+          "dayTo": "Dia para",
+          "allTypes": "Todos os tipos",
+          "allSources": "Todas as fontes",
+          "allPayments": "Todos os pagamentos",
+          "searchDescription": "Descrição da pesquisa"
+        },
+        "loading": "A carregar entradas...",
+        "loadFailed": "Falha ao carregar entradas.",
+        "empty": "Nenhuma entrada encontrada.",
+        "table": {
+          "dateTime": "Data/hora",
+          "entryNo": "Entrada nº",
+          "description": "Descrição",
+          "type": "Tipo",
+          "direction": "ENTRADA/SAÍDA",
+          "amount": "Quantidade",
+          "tax": "IVA",
+          "source": "Fonte",
+          "balanceAfter": "Saldo depois",
+          "beleg": "Beleg",
+          "actions": "Ações"
+        },
+        "rowActions": {
+          "viewRegister": "Ver registo",
+          "reverse": "Reverso",
+          "addBeleg": "Adicionar beleg",
+          "downloadBeleg": "Baixar beleg"
+        },
+        "camera": {
+          "title": "Câmera",
+          "description": "Utilize a câmara do seu dispositivo para capturar o recibo diretamente.",
+          "capture": "Capturar foto",
+          "switchCamera": "Trocar câmara",
+          "unavailable": "A câmara não está disponível neste browser.",
+          "permissionDenied": "O acesso à câmara foi negado."
+        },
+        "createDialog": {
+          "title": "Criar entrada de dinheiro",
+          "description": "Registe um movimento Kassenbuch apenas em dinheiro com o valor bruto, comprovativo e IVA, quando aplicável.",
+          "grossAmount": "Montante bruto",
+          "type": "Tipo",
+          "taxCodeRequired": "Código do IVA",
+          "taxCodeOptional": "Código do IVA (opcional)",
+          "noVat": "Sem IVA",
+          "taxProfileRequiredTitle": "Configuração fiscal necessária",
+          "taxProfileRequiredDescription": "Escolha a forma como este livro de caixa deve tratar o IVA antes de registar as vendas a dinheiro tributáveis.",
+          "configureTaxSettings": "Configurar impostos e IVA",
+          "setupStandardVat": "Utilize o IVA alemão padrão",
+          "setupSmallBusiness": "Use Kleinunternehmer (sem IVA)",
+          "taxSummary": "Resumo do IVA",
+          "netAmount": "Valor líquido",
+          "taxAmount": "Valor do IVA",
+          "outputVat": "IVA liquidado",
+          "inputVat": "IVA suportado",
+          "salesVatRequiredHint": "Selecione o código de IVA utilizado para esta venda a dinheiro.",
+          "salesVatOptionalHint": "Selecione um código de IVA quando esta venda a dinheiro for tributável.",
+          "expenseVatHint": "Selecione um código de IVA de entrada apenas quando esta despesa tiver um recibo dedutível.",
+          "bookingText": "Texto de reserva",
+          "documentReference": "Referência de recibo / Eigenbeleg",
+          "documentReferencePlaceholder": "Nº do recibo, nº da fatura ou motivo",
+          "documentReferenceHint": "Adicione uma referência de recibo ou carregue um beleg. O flutuador de abertura pode ficar sem ele.",
+          "occurredAt": "Ocorreu em",
+          "attachBeleg": "Anexar beleg (opcional)",
+          "chooseAttachment": "Escolha o ficheiro",
+          "takePicture": "Tire uma fotografia",
+          "replaceAttachment": "Substituir ficheiro",
+          "noAttachment": "Nenhum ficheiro selecionado",
+          "projectedBalance": "Saldo projetado após guardar",
+          "failed": "Falha ao criar entrada.",
+          "save": "Guardar entrada",
+          "uploading": "Fazendo upload..."
+        },
+        "reverseDialog": {
+          "title": "Entrada reversa",
+          "description": "Reverter esta entrada de dinheiro lançada com um motivo seguro para auditoria.",
+          "reason": "Razão",
+          "failed": "Falha ao reverter a entrada.",
+          "confirm": "Confirmar reversão"
+        },
+        "attachmentDialog": {
+          "title": "Adicionar beleg à entrada",
+          "description": "Carregue um ficheiro de recibo ou tire uma fotografia para anexar provas de apoio a esta entrada em dinheiro.",
+          "file": "Arquivo de recibo",
+          "uploadFile": "Carregar ficheiro",
+          "replaceFile": "Substituir ficheiro",
+          "takePicture": "Tire uma fotografia",
+          "noFile": "Nenhum ficheiro selecionado",
+          "failed": "Falha ao anexar o beleg.",
+          "attach": "Anexar"
+        }
+      },
+      "dayClose": {
+        "title": "Fecho do dia (Kassensturz)",
+        "backToRegister": "Voltar para registar",
+        "addCorrectionEntry": "Adicionar entrada de correção",
+        "viewReport": "Ver Kassenbericht",
+        "closeDayFor": "Dia de encerramento para {{register}}",
+        "day": "Dia",
+        "expectedBalance": "Saldo esperado (Soll)",
+        "countedBalance": "Total de dinheiro contado (Ist)",
+        "countedBalanceHelp": "Conte todo o dinheiro pertencente ao mesmo fundo de caixa comercial, incluindo o dinheiro na gaveta, cofre ou caixa.",
+        "denomination": "Denominação",
+        "count": "Contar",
+        "subtotal": "Subtotal",
+        "difference": "Diferença",
+        "differenceNoteRequired": "É necessária uma nota quando a diferença não é zero.",
+        "note": "Nota",
+        "notePlaceholder": "Opcional para diferença zero; necessário de outra forma.",
+        "submitFailed": "Falha ao enviar o fecho do dia.",
+        "submitAndLock": "Enviar e bloquear dia",
+        "lockedInfo": "Este dia está bloqueado. Utilize apenas entradas de correção.",
+        "loadExistingFailed": "Falha ao carregar o fecho do dia existente.",
+        "expected": "Esperado",
+        "counted": "Contado",
+        "confirmClose": "Confirmar fecho",
+        "countByDenomination": "Contar por denominação",
+        "dayCalculatedTitle": "Dia calculado",
+        "dayCalculatedDesc": "O dinheiro físico não foi contabilizado. O relatório utiliza o saldo contabilístico esperado.",
+        "expectedClosingCash": "Caixa de fecho esperado",
+        "physicalCount": "Contagem física",
+        "notPerformed": "Não realizado",
+        "notAvailable": "Não disponível",
+        "tageslosung": "Receita diária em dinheiro (Tageslosung)",
+        "countMatched": "Contagem correspondida",
+        "countDifference": "Diferença de contagem"
+      },
+      "kassenbericht": {
+        "title": "Diário Kassenbericht",
+        "subtitle": "Disposição de formulário em papel alemão com explicações em linguagem simples para verificação ou cópia manual.",
+        "back": "Voltar para registar",
+        "download": "Baixar PDF",
+        "downloading": "Gerando PDF...",
+        "loading": "Carregando Cassenbericht...",
+        "loadFailed": "Não foi possível carregar o Kassenbericht para este dia.",
+        "explanations": {
+          "date": "Data",
+          "number": "Número",
+          "currency": "Moeda",
+          "closingCash": "Fecho saldo de caixa",
+          "bookNote": "Nota de livro",
+          "outflows": "Despesas durante o dia",
+          "taxAmount": "Valor do imposto",
+          "netGrossAmount": "Valor líquido/bruto",
+          "purchases": "1. Compras e custos de mercadorias",
+          "expenses": "2. Despesas comerciais",
+          "withdrawals": "3.º Retiradas privadas",
+          "otherOutflows": "4. Outras despesas (por exemplo, depósitos bancários)",
+          "total": "Total",
+          "previousClosingCash": "menos o caixa de fecho do dia anterior",
+          "cashReceived": "= Dinheiro recebido",
+          "otherIncome": "menos outras receitas",
+          "cashSales": "= Vendas a pronto do dia",
+          "customerCount": "Contagem de clientes",
+          "signature": "Assinatura"
+        }
+      },
+      "exports": {
+        "title": "Exportações · {{register}}",
+        "backToRegister": "Voltar para registar",
+        "generateTitle": "Gerar exportação de caixa",
+        "month": "Mês",
+        "format": "Formato",
+        "includeAttachmentFiles": "Incluir ficheiros anexos no pacote de auditoria",
+        "generating": "Gerando...",
+        "generate": "Gerar exportação",
+        "failed": "Falha ao gerar exportação.",
+        "latestTitle": "Última exportação",
+        "file": "Arquivo",
+        "type": "Tipo",
+        "size": "Tamanho",
+        "bytes": "bytes",
+        "download": "Baixar exportação",
+        "formatOptions": {
+          "CSV": "CSV",
+          "PDF": "PDF",
+          "DATEV": "DATAV",
+          "AUDIT_PACK": "Pacote de auditoria"
+        }
+      },
+      "enums": {
+        "direction": {
+          "IN": "DENTRO",
+          "OUT": "FORA"
+        },
+        "paymentMethod": {
+          "CASH": "Dinheiro",
+          "CARD": "Cartão",
+          "TRANSFER": "Transferência",
+          "OTHER": "Outro"
+        },
+        "entrySource": {
+          "MANUAL": "Manuais",
+          "SALES": "Vendas",
+          "EXPENSE": "Despesa",
+          "DIFFERENCE": "Diferença",
+          "IMPORT": "Importar",
+          "INTEGRATION": "Integração"
+        },
+        "entryType": {
+          "SALE_CASH": "Venda a dinheiro",
+          "REFUND_CASH": "Reembolso em dinheiro",
+          "EXPENSE_CASH": "Despesa em dinheiro",
+          "OWNER_DEPOSIT": "Depósito privado",
+          "OWNER_WITHDRAWAL": "Retirada privada",
+          "BANK_DEPOSIT": "Depósito bancário",
+          "BANK_WITHDRAWAL": "Levantamento bancário",
+          "CORRECTION": "Correção",
+          "OPENING_FLOAT": "Flutuador de abertura",
+          "CLOSING_ADJUSTMENT": "Ajuste de fecho",
+          "IN": "DENTRO",
+          "OUT": "FORA"
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Painel",
+    "welcome": "Bem vindo de volta",
+    "revenueThisMonth": "Receita deste mês",
+    "outstandingInvoices": "Faturas pendentes",
+    "expensesThisMonth": "Despesas este mês",
+    "quickActions": "Ações rápidas",
+    "recentActivity": "Atividade recente",
+    "addExpense": "Adicionar despesa",
+    "createInvoice": "Criar fatura",
+    "createQuote": "Criar cotação",
+    "openAssistant": "Assistente aberto",
+    "fromLastMonth": "do mês passado",
+    "invoicesPending": "faturas pendentes",
+    "expensesCount": "despesas este mês",
+    "uploadReceipt": "Carregar recibo com IA",
+    "generateWithAi": "Gere com IA",
+    "createNew": "Criar novo",
+    "askAnything": "Pergunte qualquer coisa",
+    "manageTeam": "Gerir equipe",
+    "inviteMembers": "Convidar membros",
+    "noInvoices": "Ainda não há faturas",
+    "noExpenses": "Ainda não há despesas",
+    "teacher": {
+      "welcome": "Painel do professor",
+      "subtitle": "As suas aulas e tarefas para hoje",
+      "allClasses": "Todas as aulas",
+      "sessionsToday": "Sessões hoje",
+      "sessionsThisWeek": "Sessões desta semana",
+      "missingAttendance": "Ausência de comparência",
+      "actionRequired": "Ação necessária",
+      "unfinished": "Sessões inacabadas",
+      "studentsMissingPayer": "Alunos sem pagador",
+      "unpaidInvoices": "Faturas não pagas",
+      "overdue": "Atrasado",
+      "upcomingSessions": "Próximas sessões",
+      "noUpcoming": "Não há sessões futuras neste intervalo",
+      "needsAttention": "Precisa de atenção",
+      "unfinishedSessions": "Sessões inacabadas",
+      "allCaughtUp": "Todos apanhados!",
+      "noActions": "Nenhuma ação pendente requer a sua atenção."
+    }
+  },
+  "assistant": {
+    "title": "Assistente",
+    "subtitle": "Pergunte qualquer coisa, extraia recibos, gere faturas ou solicite resumos rápidos.",
+    "placeholder": "Pergunte qualquer coisa, extraia recibos, elabore faturas ou solicite resumos rápidos.",
+    "emptyStateTitle": "Como posso ajudá-lo?",
+    "emptyStateDescription": "Pergunte qualquer coisa, extraia recibos, gere faturas ou solicite resumos rápidos.",
+    "awaitingInputs": "Aguardamos a sua contribuição...",
+    "approvalRequired": "Aprovação necessária ({{toolName}})",
+    "approvalDescription": "O assistente pretende utilizar a ferramenta '{{toolName}}'. Quer permitir isso?",
+    "toolResult": "Resultado de {{toolName}}",
+    "toolFailed": "Falha da ferramenta {{toolName}}: {{reason}}",
+    "denied": "Negado pelo utilizador",
+    "toolCall": "A correr {{toolName}}...",
+    "send": "Enviar",
+    "sending": "Enviando...",
+    "attachments": {
+      "add": "Adicionar ficheiro",
+      "remove": "Remover ficheiro",
+      "invalidType": "{{name}} não é compatível. Apenas ficheiros de imagem e PDF são permitidos.",
+      "tooLarge": "{{name}} é demasiado grande. O tamanho máximo é {{maxSize}}."
+    },
+    "suggestions": {
+      "extractReceipt": {
+        "label": "Extraia um recibo e crie uma despesa",
+        "value": "Carreguei um recibo. Extraia-o e elabore uma despesa."
+      },
+      "invoiceDraft": {
+        "label": "Gerar um rascunho de uma fatura",
+        "value": "Gere um rascunho de fatura para a ACME GmbH para este mês."
+      },
+      "summarizeExpenses": {
+        "label": "Resumir as minhas despesas",
+        "value": "Resuma as minhas despesas dos últimos 30 dias."
+      },
+      "taxGuidance": {
+        "label": "Orientação fiscal",
+        "value": "O que posso deduzir como freelancer na Alemanha?"
+      }
+    },
+    "toolCards": {
+      "extractingReceipt": "Extrair dados de recibo...",
+      "creatingExpense": "Criação de despesa...",
+      "generatingInvoice": "Gerar rascunho de fatura...",
+      "issuingInvoice": "Emitindo fatura..."
+    },
+    "disclaimer": "Não se trata de um aconselhamento jurídico ou fiscal. Consulte um profissional fiscal para obter orientação específica.",
+    "confirmExpense": "Confirme os detalhes das despesas",
+    "invoicePreview": "Visualização da fatura",
+    "openExpense": "Despesa aberta",
+    "openInvoice": "Fatura aberta",
+    "issueInvoice": "Emitir fatura",
+    "userRole": "Você",
+    "assistantRole": "Assistente",
+    "systemRole": "Sistema",
+    "searchAction": "Pesquisar",
+    "newChat": "Novo bate-papo",
+    "recentChats": "Bate-papos recentes",
+    "recentChatsDescription": "Navegue pelas conversas anteriores ou inicie uma nova.",
+    "loadingChats": "Carregando chats...",
+    "noChats": "Ainda não há chats",
+    "noChatsDescription": "Inicie uma conversa e ela aparecerá aqui.",
+    "loadingPreview": "Carregando visualização...",
+    "loadingMonthlyReport": "A carregar relatório mensal...",
+    "cashConfirmation": {
+      "title": "Rascunho pronto para confirmação",
+      "description": "Reveja o resumo de {{date}} e confirme para guardar as entradas de dinheiro.",
+      "confirm": "Confirme e guarde",
+      "confirming": "Confirmando...",
+      "confirmPrompt": "Confirmo e autorizo ​​​​explicitamente o salvamento deste levantamento do dia de pagamento.",
+      "savedTitle": "Saque de dinheiro salvo",
+      "savedDescription": "Os movimentos de dinheiro confirmados foram guardados com sucesso.",
+      "taxProfileRequiredTitle": "Perfil fiscal necessário antes de guardar",
+      "taxProfileRequiredDescription": "Escolha se a empresa utiliza o IVA alemão padrão ou o esquema de Kleinunternehmer. A aplicação não deve adivinhar esta configuração de imposto.",
+      "configureTaxSettings": "Configurar impostos e IVA"
+    },
+    "search": {
+      "title": "Pesquisar bate-papos",
+      "placeholder": "Pesquisar mensagens...",
+      "minLength": "Introduza pelo menos 2 caracteres para pesquisar.",
+      "noResults": "Nenhuma mensagem correspondente encontrada.",
+      "noPreview": "(Sem visualização)"
+    },
+    "groups": {
+      "today": "Hoje",
+      "needsAttention": "Precisa de atenção",
+      "previousDays": "Dias anteriores",
+      "monthlyReviews": "Avaliações mensais",
+      "generalQuestions": "Perguntas gerais",
+      "yesterday": "Ontem",
+      "week": "Esta semana",
+      "older": "Mais velho"
+    }
+  },
+  "copilot": {
+    "title": "Assistente",
+    "placeholder": "Pergunte-me qualquer coisa...",
+    "confirmation": {
+      "title": "Aprovação necessária",
+      "subtitle": "O assistente pretende utilizar '{{toolName}}'. Quer permitir isso?"
+    },
+    "toolResult": "Resultado de {{toolName}}",
+    "toolFailed": "Falha da ferramenta {{toolName}}: {{reason}}",
+    "denied": "Negado pelo utilizador",
+    "toolCall": "A correr {{toolName}}...",
+    "roles": {
+      "user": "Você",
+      "assistant": "Assistente"
+    },
+    "confidence": "{{percent}}% de confiança",
+    "noStructuredOutput": "Nenhum dado estruturado disponível",
+    "allowTool": "O assistente pretende utilizar '{{toolName}}'. Quer permitir isso?"
+  },
+  "expenses": {
+    "title": "Despesas",
+    "addExpense": "Adicionar despesa",
+    "noExpenses": "Ainda não há despesas",
+    "noExpensesDescription": "Comece por adicionar a sua primeira despesa ou carregue um recibo para o assistente.",
+    "merchant": "Comerciante",
+    "date": "Data",
+    "amount": "Quantidade",
+    "category": "Categoria",
+    "vat": "IVA",
+    "project": "Projeto",
+    "receipt": "Recibo",
+    "notes": "Notas",
+    "categories": {
+      "office_supplies": "Material de escritório",
+      "software": "Programas",
+      "travel": "Viajar",
+      "meals": "Refeições",
+      "home_office": "Escritório doméstico",
+      "education": "Educação",
+      "hardware": "Hardware",
+      "phone_internet": "Telefone/Internet",
+      "other": "Outro"
+    },
+    "notifications": {
+      "created": "Despesa criada",
+      "updated": "Despesa atualizada",
+      "deleted": "Despesa excluída",
+      "deleteFailed": "Falha ao eliminar despesa",
+      "saveFailed": "Falha ao poupar despesas",
+      "loadFailed": "Falha ao carregar despesas",
+      "transitioned": "Despesa transferida para {{to}}",
+      "transitionFailed": "Falha ao fazer a transição da despesa",
+      "receiptAttachPartial": "{{successMessage}}, mas não foi possível anexar o(s) ficheiro(s) de recibo {{count}}"
+    },
+    "list": {
+      "subtitle": "Acompanhe e gerencie os seus gastos",
+      "noExpensesDescription": "Crie a sua primeira despesa para controlar os gastos.",
+      "selectedCount": "{{count}} selecionado",
+      "deleteSelected": "Apagar selecionado",
+      "deleteSelectedTitle": "Apagar despesas selecionadas",
+      "deleteSelectedDescription": "Isto arquivará as despesas selecionadas.",
+      "selectAll": "Selecionar tudo",
+      "selectExpense": "Selecione a despesa {{id}}",
+      "deductiblePercent": "% de franquia",
+      "deleteExpenseTitle": "Excluir despesa",
+      "deleteExpenseDescription": "Isto irá arquivar a despesa e removê-la da lista.",
+      "pageInfo": "Página {{page}} de {{totalPages}}",
+      "dimensionLabel": "Dimensão",
+      "customLabel": "Personalizado",
+      "ruleKind": {
+        "perDiem": "diárias",
+        "mixedUse": "uso misto",
+        "gift": "presente"
+      },
+      "sort": {
+        "dateNewest": "Data (mais recente)",
+        "dateOldest": "Data (mais antiga)",
+        "amountHighLow": "Quantidade (alto-baixo)",
+        "amountLowHigh": "Valor (baixo-alto)",
+        "createdNewest": "Criado (mais recente)"
+      }
+    },
+    "detail": {
+      "overview": "Visão geral",
+      "taxDeductibility": "Dedutibilidade Fiscal (DE)",
+      "deductiblePercentLabel": "{{percent}}% franquia",
+      "needsMoreInfo": "Necessita de mais informações",
+      "deductible": "Franquia",
+      "nonDeductible": "Não dedutível",
+      "fillRequiredFields": "Preencha os campos obrigatórios ao editar esta despesa para calcular a dedutibilidade.",
+      "notComputed": "Franquia ainda não computada. Edite esta despesa para acionar o cálculo.",
+      "attachReceipts": "Anexe os recibos para os ver aqui.",
+      "auditTrail": "A trilha de auditoria aparecerá aqui assim que estiver disponível.",
+      "backToExpenses": "Voltar às despesas",
+      "notFound": "Despesa não encontrada.",
+      "noNotes": "Nenhuma nota adicionada.",
+      "transitionSoon": "A transição para {{to}} ocorrerá em breve",
+      "actionSoon": "Ação {{action}} em breve",
+      "ruleKind": {
+        "percent": "% fixa",
+        "giftThreshold": "Limite de presente",
+        "perDiem": "Diárias",
+        "mixedUse": "Uso misto"
+      }
+    },
+    "form": {
+      "editTitle": "Editar despesa",
+      "create": "Criar despesa",
+      "selectCategory": "Selecione a categoria",
+      "selectCategoryHint": "Selecione uma categoria para ver as regras de dedutibilidade.",
+      "merchantPlaceholder": "por exemplo Restaurante Zum Hirsch",
+      "taxDeductibilityTitle": "Dedutibilidade Fiscal (DE)",
+      "participants": "Participantes",
+      "participantsPlaceholder": "por exemplo Max Müller, Julia Schneider",
+      "participantsHint": "Obrigatório para desconto de refeição do cliente (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Ocasião de negócios",
+      "businessOccasionPlaceholder": "por exemplo Início do projeto no primeiro trimestre, negociação de parceria",
+      "clientMealsHint": "70% dedutível no IRS. A dedução do IVA pode ser diferente; informe-se junto do seu consultor fiscal.",
+      "giftRecipient": "Destinatário do presente",
+      "giftRecipientPlaceholder": "por exemplo Acme Corp / Hans Müller",
+      "giftRecipientHint": "As ofertas ao mesmo destinatário que excedam 50 euros por ano civil passam a ser dedutíveis de 0% (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "% de utilização comercial",
+      "businessUsePercentPlaceholder": "por exemplo 60",
+      "businessUsePercentHint": "% de utilização comercial",
+      "travelDetails": "Detalhes da viagem (para diárias - DE 2026)",
+      "travelDate": "Data da viagem",
+      "absenceHours": "Horas de ausência",
+      "absenceHoursPlaceholder": "por exemplo 10",
+      "travelHint": ">=8h de ausência: franquia de 14 euros - 24h: franquia de 28 euros (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Dias de home office",
+      "homeOfficeDaysPlaceholder": "por exemplo 30",
+      "days": "dias",
+      "homeOfficeHint": "6 euros/dia - máximo de 1.260 euros/ano limite anual (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "Esta categoria de despesas é",
+      "nonDeductibleWarningStrong": "0% dedutível no imposto sobre o rendimento",
+      "nonDeductibleWarningSuffix": "ao abrigo da legislação fiscal alemã.",
+      "receiptOptional": "Recibo (opcional)",
+      "addReceiptFiles": "Adicionar ficheiros de recibo",
+      "uploadReceiptHint": "Carregue já os recibos em imagem ou PDF. Eles serão anexados quando guardar.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: apenas imagem e PDF são permitidos",
+        "fileTooLarge": "{{name}}: excede o limite de 10 MB"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "{{percent}}% franquia",
+        "mixedUse": "Franquia {{percent}}% (uso misto)",
+        "enterBusinessUse": "Insira a percentagem de uso comercial",
+        "perDiemServer": "Diárias (calculadas do lado do servidor)",
+        "homeOfficeRate": "Taxa fixa de 6 EUR/dia",
+        "giftThreshold": "Até 50 euros/destinatário/ano - requer destinatário"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Refeições do cliente (Bewirtung) - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Refeições da equipa/colaboradores - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Brindes empresariais - até 50 euros",
+        "GIFTS_PROMO_STREUARTIKEL": "Brindes promocionais (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Coimas e penalidades - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Vestuário de proteção/fardamento - 100%",
+        "CLOTHING_CIVILIAN": "Vestuário civil - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Diárias de refeição de viagem (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Taxa fixa de home-office (6 euros/dia)",
+        "PHONE_INTERNET": "Telefone / Internet (uso misto)",
+        "CAR": "Automóvel (uso misto)",
+        "HOME_INTERNET": "Internet doméstica (uso misto)",
+        "office_supplies": "Material de escritório - 100%",
+        "software": "Programas - 100%",
+        "travel": "Viagens - 100%",
+        "meals": "Refeições - 70%",
+        "home_office": "Escritório em casa – 100%",
+        "education": "Educação - 100%",
+        "hardware": "Hardware - 100%",
+        "phone_internet": "Telefone/Internet (uso misto)",
+        "other": "Outro"
+      }
+    }
+  },
+  "invoices": {
+    "title": "Faturas",
+    "createInvoice": "Criar fatura",
+    "createNewInvoice": "Criar nova fatura",
+    "noInvoices": "Ainda não há faturas",
+    "noInvoicesDescription": "Crie a sua primeira fatura para começar.",
+    "invoiceNumber": "Fatura #",
+    "invoiceNumberLabel": "Número da fatura",
+    "customer": "Cliente",
+    "billedTo": "Faturado para",
+    "date": "Data",
+    "invoiceDate": "Data da fatura",
+    "serviceDate": "Data do serviço",
+    "dueDate": "Data de vencimento",
+    "amount": "Quantidade",
+    "statusLabel": "Estado",
+    "items": "Itens",
+    "description": "Descrição",
+    "quantity": "Quantidade",
+    "rate": "Taxa",
+    "subtotal": "Subtotal",
+    "vatAmount": "IVA",
+    "total": "Total",
+    "totalAmountNet": "Valor total (líquido)",
+    "totalAmountGross": "Valor total (bruto)",
+    "paymentTerms": "Condições de pagamento",
+    "notes": "Notas",
+    "notesPlaceholder": "Notas internas, não visíveis para o cliente...",
+    "terms": "Condições de pagamento",
+    "termsPlaceholder": "por exemplo Por favor, pague no prazo de 14 dias...",
+    "addLine": "Adicione uma linha",
+    "units": {
+      "h": "h",
+      "day": "Dia",
+      "piece": "Peça",
+      "service": "Serviço"
+    },
+    "generate": "Gerar",
+    "creating": "Criando...",
+    "saving": "Salvando...",
+    "selectDate": "Selecione a data",
+    "selectDateRange": "Selecione o período",
+    "statuses": {
+      "draft": "Rascunho",
+      "issued": "Emitido",
+      "sent": "Enviado",
+      "paid": "Pago",
+      "overdue": "Atrasado",
+      "canceled": "Cancelado"
+    },
+    "badges": {
+      "OVERDUE": "Atrasado",
+      "PARTIALLY_PAID": "Parcialmente pago",
+      "SENT_DELIVERY": "Enviado"
+    },
+    "transitions": {
+      "ISSUED": "Emitir fatura",
+      "SENT": "Enviar para o cliente",
+      "CANCELED": "Cancelar fatura"
+    },
+    "actions": {
+      "issue": "Emitir fatura",
+      "send": "Enviar",
+      "resend": "Reenviar",
+      "record_payment": "Registar pagamento",
+      "download_pdf": "Baixar PDF",
+      "send_reminder": "Enviar lembrete",
+      "duplicate": "Duplicar",
+      "export": "Exportar",
+      "view_audit": "Ver rasto de auditoria",
+      "cancel": "Cancelar fatura"
+    },
+    "pdf": {
+      "pendingTitle": "PDF está a ser preparado",
+      "pendingDescription": "Começamos a gerar o PDF. Por favor, tente novamente dentro de alguns instantes.",
+      "stillGeneratingTitle": "O PDF ainda está a ser gerado",
+      "stillGeneratingDescription": "Isto pode demorar mais tempo sob carga. Tente novamente dentro de alguns segundos."
+    },
+    "notifications": {
+      "created": "Fatura criada",
+      "updated": "Fatura atualizada",
+      "deleted": "Fatura excluída",
+      "canceled": "Fatura cancelada",
+      "duplicateSoon": "Recurso duplicado em breve",
+      "exportSoon": "Recurso de exportação em breve",
+      "reminderSoon": "Recurso de lembrete em breve"
+    },
+    "wizard": {
+      "selectCustomer": "Selecione o cliente",
+      "addItems": "Adicionar itens de linha",
+      "review": "Reveja e crie"
+    },
+    "notFound": "Fatura não encontrada",
+    "backToList": "Voltar à lista",
+    "notFoundDescription": "A fatura que procura não existe ou foi eliminada.",
+    "titleWithNumber": "Fatura {{number}}",
+    "issued": "Fatura emitida",
+    "canceled": "Fatura cancelada",
+    "updated": "Fatura atualizada com sucesso",
+    "payments": {
+      "recordTitle": "Registar pagamento",
+      "recordDescription": "Introduza os dados de pagamento desta fatura.",
+      "dueAmount": "Valor devido: {{amount}}",
+      "notePlaceholder": "Descreva o pagamento (por exemplo, transferência bancária, dinheiro, ...)",
+      "save": "Registar pagamento",
+      "recordFailed": "Falha ao registar o pagamento",
+      "saveFailed": "Falha ao guardar o pagamento"
+    },
+    "errors": {
+      "downloadFailed": "Falha ao descarregar o PDF",
+      "updateFailed": "Falha ao atualizar a fatura",
+      "invalidAmount": "Valor inválido",
+      "actionFailed": "Falha na ação"
+    },
+    "footer": {
+      "taxDetails": "Detalhes fiscais",
+      "vatIdLabel": "ID de IVA",
+      "taxNumberLabel": "Número fiscal",
+      "addTaxDetails": "Adicionar detalhes fiscais",
+      "paymentMethod": "Método de pagamento",
+      "addPaymentMethod": "Adicionar forma de pagamento",
+      "contactDetails": "Detalhes de contacto",
+      "addContactDetails": "Adicionar detalhes de contacto",
+      "taxDetailsDescription": "As informações fiscais da sua empresa são apresentadas na fatura.",
+      "contactDetailsDescription": "As suas informações de contacto comercial mostradas no rodapé.",
+      "selectPaymentMethod": "Selecione o método de pagamento",
+      "selectPaymentMethodTitle": "Selecione a sua forma de pagamento",
+      "addNewPaymentMethod": "Adicionar nova forma de pagamento",
+      "selectedBankAccount": "Conta bancária selecionada"
+    },
+    "email": {
+      "title": "Enviar fatura",
+      "subtitle": "Reveja o destinatário e a mensagem antes de enviar.",
+      "to": "Destinatário",
+      "toPlaceholder": "cliente@exemplo.com",
+      "subject": "{{number}} Fatura de {{brand}}",
+      "sendCopy": "Envie-me uma cópia",
+      "savedForFuture": "Este e-mail será guardado no perfil de {{name}}.",
+      "messagePlaceholder": "Adicione uma nota pessoal...",
+      "deliveryLabel": "Entrega",
+      "deliveryHint": "Confirme o destinatário antes de enviar esta fatura por email.",
+      "attachmentsHint": "A fatura em PDF será anexada automaticamente.",
+      "attachmentName": "Fatura-{{number}}.pdf",
+      "attachmentFallback": "Fatura.pdf",
+      "sendTest": "Enviar e-mail de teste",
+      "send": "Enviar e-mail",
+      "sending": "Enviando...",
+      "sent": "E-mail de fatura enviado",
+      "sendFailed": "Falha ao enviar e-mail de fatura"
+    },
+    "status": {
+      "updateFailed": "Falha ao atualizar o estado"
+    },
+    "loading": "A carregar fatura...",
+    "focused": {
+      "notFound": "Página não encontrada",
+      "notPart": "Esta página não faz parte da fatura.",
+      "back": "Voltar para faturas",
+      "setup": "A fatura não está disponível porque a sua configuração está incompleta. Contacte o administrador do seu espaço de trabalho.",
+      "previous": "Anterior",
+      "duplicate": "Duplicar",
+      "downloadPdf": "Baixar PDF",
+      "selectInvoice": "Selecione a fatura {{id}}",
+      "unit": "Unidade",
+      "removeLine": "Remover linha",
+      "copilot": {
+        "intro": "Gere um rascunho de e-mail para revisão. O Copilot não envia e-mails automaticamente.",
+        "language": "Idioma",
+        "tone": "Tom de lembrete",
+        "de": "Alemão (de)",
+        "vi": "Vietnamita (vi)",
+        "en": "Inglês (pt)",
+        "polite": "Educado",
+        "normal": "Normais",
+        "firm": "Empresa",
+        "drafting": "Elaboração...",
+        "issue": "E-mail de rascunho de fatura",
+        "reminder": "Lembrete de rascunho",
+        "issueDisabled": "A fatura deverá ser EMITIDA ou ENVIADA antes da elaboração da cópia do e-mail.",
+        "reminderDisabled": "O rascunho de lembrete só está disponível quando o valor devido é superior a zero.",
+        "review": "Reveja e edite o rascunho antes de o copiar/colar para o seu fluxo de envio.",
+        "subject": "Assunto",
+        "body": "Corpo",
+        "copySubject": "Copiar assunto",
+        "copyBody": "Copiar corpo",
+        "subjectCopied": "Assunto copiado",
+        "bodyCopied": "Corpo copiado",
+        "copyError": "Não é possível copiar para a área de transferência",
+        "close": "Fechar"
+      }
+    }
+  },
+  "customers": {
+    "title": "Clientes",
+    "addCustomer": "Adicionar cliente",
+    "addNewClient": "Adicionar novo cliente",
+    "noCustomers": "Ainda não há clientes",
+    "noCustomersDescription": "Adicione o seu primeiro cliente para começar a criar faturas.",
+    "name": "Nome",
+    "displayName": "Nome de exibição",
+    "company": "Empresa",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "addressLine1": "Linha de endereço 1",
+    "addressLine2": "Linha de endereço 2",
+    "city": "Cidade",
+    "postalCode": "Código Postal",
+    "country": "País",
+    "vatId": "ID de IVA",
+    "notes": "Notas",
+    "invoiceHistory": "Histórico da fatura",
+    "totalRevenue": "Receita total",
+    "kindLabel": "Tipo de cliente",
+    "kindIndividual": "Individual",
+    "kindOrganization": "Organização",
+    "organizationName": "Nome da organização",
+    "basicInformation": "Informações Básicas",
+    "billingAddress": "Endereço de faturação",
+    "placeholders": {
+      "displayName": "Nome da empresa ou pessoa",
+      "email": "cliente@exemplo.com",
+      "phone": "+49 30 12345678",
+      "vatId": "DE123456789",
+      "addressLine1": "Rua e número",
+      "addressLine2": "Apartamento, suite, etc. (opcional)",
+      "city": "Berlim",
+      "postalCode": "10115",
+      "country": "Alemanha",
+      "notes": "Observações adicionais sobre este cliente",
+      "status": "Selecione o estado"
+    },
+    "createDescription": "Crie um novo cliente com informações básicas de contacto e faturação.",
+    "selectCustomer": "Selecione um cliente",
+    "searchCustomers": "Pesquise por nome, e-mail ou IVA...",
+    "searchOrAdd": "Pesquise clientes ou adicione um novo",
+    "addNewCustomer": "Adicionar novo cliente",
+    "noCustomersFound": "Nenhum cliente encontrado.",
+    "selectExisting": "Pesquise clientes existentes ou crie um novo.",
+    "social": {
+      "title": "Perfis Sociais",
+      "add": "Adicionar perfil",
+      "empty": "Nenhum perfil social adicionado."
+    },
+    "lookupFailed": "A pesquisa do cliente não está disponível ou o acesso foi negado. Tente novamente ou pergunte ao seu administrador."
+  },
+  "settings": {
+    "title": "Configurações",
+    "profile": "Perfil",
+    "business": "Negócios",
+    "tax": "Configurações fiscais",
+    "invoiceSettings": "Configurações de fatura",
+    "language": "Idioma",
+    "theme": "Tema",
+    "name": "Nome",
+    "email": "E-mail",
+    "businessName": "Nome comercial",
+    "address": "Endereço",
+    "vatId": "ID de IVA",
+    "defaultVatRate": "Taxa de IVA padrão",
+    "invoicePrefix": "Prefixo da fatura",
+    "invoiceNumberFormat": "Formato do número da fatura",
+    "paymentTermsDays": "Condições de pagamento (dias)",
+    "themes": {
+      "light": "Luz",
+      "dark": "Escuro",
+      "system": "Sistema"
+    },
+    "languages": {
+      "en": "Inglês",
+      "de": "Alemão",
+      "vi": "Tiếng Việt"
+    }
+  },
+  "time": {
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mês",
+    "lastMonth": "Mês passado",
+    "thisYear": "Este ano",
+    "daysAgo": "{{count}} há dias",
+    "tomorrow": "Amanhã",
+    "inDays": "em dias {{count}}"
+  },
+  "dueDate": {
+    "today": "vencimento hoje",
+    "inDays": "em dias {{count}}",
+    "inDays_one": "em 1 dia",
+    "overdue": "{{count}} dias atrasados",
+    "overdue_one": "1 dia atrasado",
+    "inDays_other": "em dias {{count}}",
+    "inDays_many": "em dias {{count}}",
+    "overdue_other": "{{count}} dias atrasados",
+    "overdue_many": "{{count}} dias atrasados"
+  },
+  "errors": {
+    "loadMenuFailed": "Falha ao carregar menu",
+    "pageNotFound": "Página não encontrada",
+    "returnHome": "Voltar para casa"
+  },
+  "accounting": {
+    "entryStatus": {
+      "draft": "Rascunho",
+      "posted": "Publicado",
+      "reversed": "Invertido"
+    },
+    "accountTypes": {
+      "asset": "Ativo",
+      "liability": "Responsabilidade",
+      "equity": "Patrimônio líquido",
+      "income": "Renda",
+      "expense": "Despesa"
+    },
+    "accountSelect": {
+      "placeholder": "Selecione a conta...",
+      "searchPlaceholder": "Pesquisar contas...",
+      "empty": "Nenhuma conta encontrada."
+    },
+    "journalLines": {
+      "title": "Linhas do Diário",
+      "addLine": "Adicionar linha",
+      "emptyMessage": "Ainda não há filas. Clique em \"{{action}}\" para começar.",
+      "account": "Conta",
+      "type": "Tipo",
+      "debit": "Débito",
+      "credit": "Crédito",
+      "memo": "Memorando",
+      "memoOptional": "Memorando opcional",
+      "minimumLines": "Mínimo de 2 linhas necessárias",
+      "removeLine": "Remover linha",
+      "totals": "Totais",
+      "imbalance": "Desequilíbrio",
+      "balanced": "✓ Equilibrado"
+    },
+    "journalEntries": {
+      "title": "Lançamentos de diário",
+      "subtitle": "Visualize e gerencie todas as transações contabilísticas",
+      "newEntry": "Nova entrada",
+      "searchPlaceholder": "Pesquise por memorando ou número de entrada...",
+      "allStatuses": "Todos os estados",
+      "entries": "Entradas",
+      "entriesFound": "Entradas {{count}} encontradas",
+      "entriesFound_one": "Entrada {{count}} encontrada",
+      "entriesFound_other": "Entradas {{count}} encontradas",
+      "loading": "A carregar entradas...",
+      "emptyTitle": "Nenhuma entrada de diário encontrada",
+      "emptyAction": "Crie a sua primeira entrada",
+      "entryNumber": "Entrada nº",
+      "date": "Data",
+      "memo": "Memorando",
+      "amount": "Quantidade",
+      "linesCount": "Linhas {{count}}",
+      "linesCount_one": "Linha {{count}}",
+      "linesCount_other": "Linhas {{count}}",
+      "entriesFound_many": "Entradas {{count}} encontradas",
+      "linesCount_many": "Linhas {{count}}"
+    },
+    "chartOfAccounts": {
+      "title": "Plano de contas",
+      "subtitle": "Gerir as suas contas contábeis",
+      "newAccount": "Nova conta",
+      "searchPlaceholder": "Pesquise por código ou nome...",
+      "allTypes": "Todos os tipos",
+      "allStatuses": "Todos os estados",
+      "activeOnly": "Somente ativo",
+      "inactiveOnly": "Somente inativo",
+      "accounts": "Contas",
+      "accountsFound": "Contas {{count}} encontradas",
+      "accountsFound_one": "Conta {{count}} encontrada",
+      "accountsFound_other": "Contas {{count}} encontradas",
+      "loading": "Contas de carregamento...",
+      "empty": "Nenhuma conta encontrada que corresponda aos seus critérios",
+      "code": "Código",
+      "name": "Nome",
+      "type": "Tipo",
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "accountsFound_many": "Contas {{count}} encontradas"
+    },
+    "dashboard": {
+      "title": "Contabilidade",
+      "subtitle": "Gira os seus registos e relatórios financeiros",
+      "newEntry": "Nova entrada",
+      "newEntryDescription": "Criar entrada de diário",
+      "chartOfAccounts": "Plano de contas",
+      "activeAccounts": "Contas ativas",
+      "journalEntries": "Lançamentos de diário",
+      "totalEntries": "Total de entradas",
+      "reports": "Relatórios",
+      "reportsDescription": "Ver relatórios financeiros",
+      "recentEntries": "Entradas recentes",
+      "recentEntriesDescription": "Últimas entradas no diário",
+      "noEntries": "Nenhuma entrada ainda. Crie a sua primeira entrada para começar.",
+      "viewAllEntries": "Ver todas as entradas",
+      "quickLinks": "Links rápidos",
+      "quickLinksDescription": "Tarefas contabilísticas comuns",
+      "viewTrialBalance": "Ver balancete",
+      "viewProfitLoss": "Relatório de resultados",
+      "settings": "Configurações de contabilidade"
+    },
+    "reports": {
+      "title": "Relatórios Financeiros",
+      "subtitle": "Aceda a relatórios abrangentes para analisar os seus dados financeiros",
+      "viewReport": "Ver relatório",
+      "aboutTitle": "Sobre os relatórios financeiros",
+      "aboutLine1": "Todos os relatórios são gerados em tempo real a partir dos lançamentos contabilísticos manuais lançados. As entradas de rascunho não são incluídas nos relatórios.",
+      "aboutLine2": "Pode exportar relatórios para formatos PDF ou Excel e utilizar filtros de intervalo de datas para analisar períodos específicos.",
+      "aboutLine3": "💡 Os insights baseados em IA estão disponíveis em cada relatório para o ajudar a compreender tendências e anomalias.",
+      "trialBalance": {
+        "title": "Balancete",
+        "description": "Resumo de todos os saldos das contas para verificar se os débitos são iguais aos créditos"
+      },
+      "generalLedger": {
+        "title": "Razão Geral",
+        "description": "Histórico detalhado de transações para contas individuais"
+      },
+      "profitLoss": {
+        "title": "Lucro e Perda",
+        "description": "Demonstração de resultados que mostra receitas, despesas e lucro líquido"
+      },
+      "balanceSheet": {
+        "title": "Balanço Patrimonial",
+        "description": "Instantâneo de ativos, passivos e capital próprio numa data específica"
+      }
+    },
+    "setup": {
+      "title": "Configurar a contabilidade",
+      "subtitle": "Defina as suas definições de contabilidade e plano de contas para começar",
+      "basic": {
+        "title": "Configurações básicas",
+        "description": "Configure as suas preferências contabilísticas fundamentais"
+      },
+      "baseCurrency": "Moeda base",
+      "selectCurrency": "Selecione a moeda",
+      "baseCurrencyHelp": "A moeda principal para os seus registos contabilísticos",
+      "fiscalYearStart": "Início do ano fiscal",
+      "selectFiscalStart": "Selecione o início do ano fiscal",
+      "fiscalStart": {
+        "jan1": "1 de janeiro (ano civil)",
+        "apr1": "1 de abril",
+        "jul1": "1 de julho",
+        "oct1": "1 de outubro"
+      },
+      "fiscalYearHelp": "Quando o seu ano fiscal começa (afeta a geração do período)",
+      "periodLocking": "Ativar bloqueio de período",
+      "periodLockingHelp": "Impedir a afixação de entradas em períodos fechados (recomendado para utilização em produção)",
+      "chartOfAccountsTitle": "Plano de contas",
+      "chartOfAccountsDescription": "Escolha um modelo predefinido para começar (pode adicionar mais contas posteriormente)",
+      "templates": {
+        "minimal": {
+          "label": "Mínimo (5 contas)",
+          "description": "Configuração básica para necessidades de contabilidade muito simples"
+        },
+        "freelancer": {
+          "label": "Freelancer (16 contas)",
+          "description": "Ideal para empreiteiros e consultores independentes"
+        },
+        "smallBusiness": {
+          "label": "Pequenas empresas (35 contas)",
+          "description": "Configuração abrangente para pequenas empresas"
+        },
+        "standard": {
+          "label": "Padrão (79 contas) (recomendado)",
+          "description": "Plano de contas completo para a maioria das empresas"
+        }
+      },
+      "next": {
+        "title": "O que acontece a seguir",
+        "line1": "O modelo de plano de contas selecionado será criado com todas as contas predefinidas",
+        "line2": "Serão gerados 12 períodos contabilísticos mensais para o ano fiscal em curso",
+        "line3": "Pode personalizar contas, adicionar novas e começar a criar lançamentos contabilísticos manuais",
+        "line4": "Todos os relatórios financeiros estarão disponíveis de imediato"
+      },
+      "settingUp": "Configurando...",
+      "complete": "Configuração completa"
+    },
+    "validation": {
+      "accountRequired": "A conta é obrigatória",
+      "amountPositive": "O valor deve ser positivo",
+      "invalidDate": "Formato de data inválido",
+      "memoRequired": "O memorando é obrigatório",
+      "minimumLines": "São necessárias pelo menos 2 linhas",
+      "debitsEqualCredits": "Os débitos devem ser iguais aos créditos",
+      "accountCodeRequired": "O código da conta é obrigatório",
+      "accountCodeMax": "O código deve ter 20 caracteres ou menos",
+      "accountCodeFormat": "O código deve conter apenas letras maiúsculas, números e hífens",
+      "accountNameRequired": "O nome da conta é obrigatório",
+      "accountNameMax": "O nome deve ter 100 caracteres ou menos"
+    },
+    "toasts": {
+      "accountCreated": "Conta \"{{name}}\" criada com sucesso",
+      "accountCreateFailed": "Falha ao criar conta: {{message}}",
+      "accountUpdated": "Conta \"{{name}}\" atualizada com sucesso",
+      "accountUpdateFailed": "Falha ao atualizar a conta: {{message}}",
+      "journalEntryDraftCreated": "Rascunho de lançamento contabilístico criado com sucesso",
+      "journalEntryCreateFailed": "Falha ao criar lançamento contabilístico manual: {{message}}",
+      "journalEntryDraftUpdated": "Rascunho do lançamento contabilístico atualizado com sucesso",
+      "journalEntryUpdateFailed": "Falha ao atualizar o lançamento contabilístico manual: {{message}}",
+      "journalEntryPosted": "Lançamento contabilístico {{entryNumber}} lançado com sucesso",
+      "journalEntryPostFailed": "Falha ao lançar lançamento contabilístico manual: {{message}}",
+      "journalEntryReversed": "Entrada invertida. Original: {{original}}, Reversão: {{reversal}}",
+      "journalEntryReverseFailed": "Falha ao reverter o lançamento contabilístico manual: {{message}}",
+      "setupCompleted": "Configuração de contabilidade concluída com sucesso",
+      "setupFailed": "Falha ao configurar a contabilização: {{message}}",
+      "settingsUpdated": "Configurações de contabilidade atualizadas com sucesso",
+      "settingsUpdateFailed": "Falha ao atualizar as definições: {{message}}",
+      "periodClosed": "Período {{name}} terminou com sucesso",
+      "periodCloseFailed": "Falha ao fechar período: {{message}}",
+      "periodReopened": "Período {{name}} reaberto com sucesso",
+      "periodReopenFailed": "Falha ao reabrir período: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "Faça login na sua conta",
+      "subtitle": "Faça login para gerir registos e operações diárias de caixa.",
+      "rememberMe": "Lembre-se de mim",
+      "forgotPassword": "Esqueceu-se da sua senha?",
+      "cta": "Faça login",
+      "signingIn": "Fazendo login...",
+      "noAccount": "Não tem conta?"
+    },
+    "signup": {
+      "title": "Crie a sua conta",
+      "subtitle": "Inscreva-se para começar a gerir fluxos de trabalho de caixa.",
+      "cta": "Inscreva-se",
+      "creating": "Criação de conta...",
+      "hasAccount": "Já tem conta?"
+    },
+    "forgot": {
+      "title": "Redefinir a sua palavra-passe",
+      "subtitle": "Introduza o seu e-mail e enviaremos um link de redefinição.",
+      "cta": "Enviar link de redefinição",
+      "sending": "Enviando link...",
+      "successMessage": "Se existir uma conta para {{email}}, enviamos um link de redefinição de palavra-passe.",
+      "backToLogin": "Voltar para fazer login"
+    },
+    "reset": {
+      "title": "Defina uma nova palavra-passe",
+      "cta": "Atualizar palavra-passe",
+      "updating": "A atualizar senha...",
+      "successToast": "Senha atualizada",
+      "missingTokenTitle": "Token de reposição em falta",
+      "missingTokenMessage": "O link de redefinição de palavra-passe é inválido ou incompleto.",
+      "requestNewLink": "Solicite um novo link",
+      "confirmLabel": "Confirmar palavra-passe"
+    },
+    "fields": {
+      "fullName": "Nome completo",
+      "email": "Endereço de e-mail",
+      "password": "Senha"
+    },
+    "placeholders": {
+      "fullName": "Nome completo",
+      "email": "Endereço de e-mail",
+      "password": "Senha",
+      "passwordMin": "Mínimo 6 caracteres"
+    },
+    "help": {
+      "passwordMin": "A palavra-passe deve ter pelo menos 6 caracteres."
+    },
+    "errors": {
+      "loginFailed": "E-mail ou palavra-passe inválida",
+      "passwordLength": "A palavra-passe deve ter pelo menos 6 caracteres",
+      "passwordMismatch": "As senhas não coincidem",
+      "missingResetToken": "O token de reposição está em falta",
+      "requestFailed": "Não foi possível enviar o link de redefinição",
+      "resetFailed": "Não foi possível redefinir a palavra-passe",
+      "signupFailed": "Falha ao criar conta",
+      "networkError": "Erro de rede. Verifique se o servidor está a funcionar."
+    }
+  },
+  "forms": {
+    "submit": "Enviar",
+    "repeater": {
+      "missingItemFields": "Campos de item repetidor em falta",
+      "empty": "Nenhuma linha adicionada",
+      "row": "Linha {{index}}",
+      "remove": "Remover",
+      "add": "Adicionar linha"
+    },
+    "list": {
+      "title": "Formulários",
+      "subtitle": "Crie e gerencie formulários públicos",
+      "newForm": "Novo formulário",
+      "noForms": "Ainda não há formulários",
+      "noFormsDescription": "Crie o seu primeiro formulário para recolher respostas.",
+      "createForm": "Criar formulário",
+      "columns": {
+        "name": "Nome",
+        "status": "Estado",
+        "updated": "Atualizado"
+      },
+      "sort": {
+        "updatedNewest": "Atualizado (mais recente)",
+        "updatedOldest": "Atualizado (mais antigo)",
+        "createdNewest": "Criado (mais recente)",
+        "nameAz": "Nome (A-Z)"
+      },
+      "filters": {
+        "status": "Estado"
+      },
+      "statuses": {
+        "DRAFT": "Rascunho",
+        "PUBLISHED": "Publicado"
+      },
+      "page": "Página {{page}} de {{total}}",
+      "delete": {
+        "title": "Apagar formulário",
+        "description": "Isto arquivará o formulário e removê-lo-á da lista."
+      },
+      "errors": {
+        "loadFailed": "Falha ao carregar formulários"
+      },
+      "toast": {
+        "deleted": "Formulário excluído",
+        "deleteFailed": "Falha ao eliminar o formulário"
+      }
+    },
+    "detail": {
+      "subtitle": "Construtor de formulários e envios",
+      "backToForms": "Voltar aos formulários",
+      "notFound": "Formulário não encontrado.",
+      "tabs": {
+        "builder": "Construtor",
+        "share": "Compartilhar",
+        "submissions": "Envios"
+      },
+      "builder": {
+        "formDetails": "Detalhes do formulário",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "name": "Nome",
+        "description": "Descrição",
+        "fields": "Campos",
+        "addField": "Adicionar campo",
+        "emptyFields": "Adicione campos para começar a construir o seu formulário.",
+        "columns": {
+          "label": "Etiqueta",
+          "type": "Tipo",
+          "required": "Obrigatório",
+          "order": "Pedido"
+        },
+        "required": {
+          "yes": "Sim",
+          "no": "Não"
+        }
+      },
+      "share": {
+        "publishing": "Publicação",
+        "regenerateToken": "Regenerar token",
+        "unpublish": "Cancelar publicação",
+        "publishForm": "Publicar formulário",
+        "publishHint": "A publicação gera um link público e um token de acesso para os envios.",
+        "publicUrl": "URL público",
+        "accessToken": "Token de acesso (mostrado uma vez)",
+        "regenerateToView": "Regenerar para visualizar",
+        "linkCopied": "Link copiado",
+        "tokenCopied": "Token copiado"
+      },
+      "submissions": {
+        "title": "Envios",
+        "empty": "Ainda não há envios.",
+        "columns": {
+          "submitted": "Enviado",
+          "source": "Fonte"
+        },
+        "view": "Ver",
+        "detailTitle": "Detalhes do envio",
+        "notProvided": "(não fornecido)",
+        "noSubmissionSelected": "Nenhum envio selecionado."
+      },
+      "fieldDialog": {
+        "addTitle": "Adicionar campo",
+        "editTitle": "Editar campo",
+        "label": "Etiqueta",
+        "type": "Tipo",
+        "selectType": "Selecione o tipo",
+        "options": "Opções (separadas por vírgula)",
+        "required": "Obrigatório",
+        "helpText": "Texto de ajuda",
+        "cancel": "Cancelar",
+        "saveField": "Guardar campo",
+        "labelRequired": "O rótulo do campo é obrigatório"
+      },
+      "fieldTypes": {
+        "SHORT_TEXT": "Texto curto",
+        "LONG_TEXT": "Texto longo",
+        "NUMBER": "Número",
+        "DATE": "Data",
+        "BOOLEAN": "Booleano",
+        "SINGLE_SELECT": "Seleção única",
+        "MULTI_SELECT": "Seleção múltipla",
+        "EMAIL": "E-mail"
+      },
+      "statuses": {
+        "DRAFT": "Rascunho",
+        "PUBLISHED": "Publicado"
+      },
+      "toast": {
+        "updated": "Formulário atualizado",
+        "updateFailed": "Falha ao atualizar o formulário",
+        "fieldAdded": "Campo adicionado",
+        "fieldAddFailed": "Falha ao adicionar campo",
+        "fieldUpdated": "Campo atualizado",
+        "fieldUpdateFailed": "Falha ao atualizar o campo",
+        "fieldRemoved": "Campo removido",
+        "fieldRemoveFailed": "Falha ao remover campo",
+        "published": "Formulário publicado",
+        "publishFailed": "Falha ao publicar formulário",
+        "unpublished": "Formulário não publicado",
+        "unpublishFailed": "Falha ao cancelar a publicação do formulário"
+      }
+    },
+    "new": {
+      "title": "Criar novo formulário",
+      "cancel": "Cancelar",
+      "creating": "Criando...",
+      "createForm": "Criar formulário",
+      "formName": "Nome do formulário",
+      "namePlaceholder": "Contate-nos",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Diga aos inquiridos para que serve este formulário",
+      "toast": {
+        "created": "Formulário criado",
+        "createFailed": "Falha ao criar formulário"
+      }
+    }
+  },
+  "portfolioPublic": {
+    "nav": {
+      "works": "Funciona",
+      "clients": "Clientes",
+      "services": "Serviços",
+      "team": "Equipe",
+      "blog": "Blogue"
+    },
+    "home": {
+      "welcome": "Bem-vindo ao",
+      "about": "Sobre",
+      "featuredProjects": "Projetos em destaque",
+      "viewAll": "Ver tudo",
+      "trustedBy": "Confiável por"
+    },
+    "works": {
+      "title": "Funciona",
+      "subtitle": "Uma seleção dos meus projetos recentes."
+    },
+    "project": {
+      "backToWorks": "De volta ao trabalho",
+      "links": "Links do projeto",
+      "liveDemo": "Demonstração ao vivo",
+      "sourceCode": "Código Fonte",
+      "techStack": "Pilha de tecnologia"
+    },
+    "common": {
+      "contact": "Contato",
+      "contactMe": "Entre em contacto comigo",
+      "viewDetails": "Ver detalhes"
+    },
+    "errors": {
+      "notFound": "Vitrine não encontrada",
+      "notFoundDesc": "O portefólio que procura não existe ou ainda não foi publicado.",
+      "error": "Algo correu mal",
+      "errorDesc": "Encontrámos um erro ao carregar este portfólio."
+    }
+  },
+  "crm": {
+    "dashboard": {
+      "title": "Painel de CRM",
+      "pageTitle": "Painel de CRM",
+      "subtitle": "Espaço de trabalho AI + CRM focado em pipeline e relacionamentos.",
+      "breadcrumb": {
+        "crm": "CRM",
+        "dashboard": "Painel"
+      }
+    },
+    "activities": {
+      "title": "Atividades",
+      "new": "Nova atividade",
+      "emptyTitle": "Nenhuma atividade encontrada",
+      "emptyDescription": "Acompanhe aqui as suas interações e tarefas."
+    },
+    "activity": {
+      "newTitle": "Nova atividade",
+      "newSubtitle": "Registe uma tarefa, chamada ou reunião para manter o seu CRM atualizado.",
+      "create": "Criar atividade",
+      "created": "Atividade criada com sucesso",
+      "createFailed": "Falha ao criar atividade",
+      "subject": "Assunto",
+      "subjectPlaceholder": "por exemplo Acompanhe a proposta",
+      "type": "Tipo de atividade",
+      "selectType": "Selecione o tipo",
+      "dueAt": "Data e hora de vencimento",
+      "dueDate": "Data de vencimento",
+      "selectDate": "Selecione a data",
+      "reminderHint": "A atividade estará agendada para este horário.",
+      "dealIdOptional": "Link para a oferta (opcional)",
+      "dealIdPlaceholder": "Introduza o ID da transação",
+      "partyIdOptional": "Link para contacto (opcional)",
+      "partyIdPlaceholder": "Introduza o ID do contacto",
+      "linkRequiredHint": "Ligue esta atividade a um negócio ou contacto para um melhor contexto.",
+      "notesPlaceholder": "Adicione aqui quaisquer detalhes ou resultados...",
+      "tipTitle": "Dicas de atividades",
+      "tipSubtitle": "Como manter-se organizado",
+      "tipOne": "Registe as atividades imediatamente para manter os dados atualizados.",
+      "tipTwo": "Utilize assuntos descritivos para referência rápida.",
+      "tipThree": "Link para negócios para ver o histórico completo em curso.",
+      "subjectRequired": "O assunto é obrigatório",
+      "linkRequired": "Deve estar ligado a uma oportunidade ou a um contacto",
+      "due": "Vencimento {{date}}",
+      "statuses": {
+        "open": "Abrir",
+        "completed": "Concluído",
+        "canceled": "Cancelado",
+        "scheduled": "Agendado"
+      },
+      "channel": "Canal",
+      "direction": "Direção",
+      "directionOutbound": "Saída",
+      "directionInbound": "Entrada",
+      "communicationStatus": "Estado de comunicação",
+      "communicationLogged": "Registrado",
+      "communicationDraft": "Rascunho",
+      "types": {
+        "note": "Nota",
+        "task": "Tarefa",
+        "call": "Ligar",
+        "meeting": "Reunião",
+        "communication": "Comunicação",
+        "system_event": "Evento do sistema"
+      },
+      "addTitle": "Adicionar atividade",
+      "addSubtitle": "Registe uma atualização ou tarefa rápida",
+      "pickDate": "Escolha uma data",
+      "time": "Hora",
+      "duration": "Duração (minutos)",
+      "durationPlaceholder": "Exemplo: 15, 30, 60",
+      "outcome": "Resultado",
+      "selectOutcome": "Selecione o resultado",
+      "location": "Localização",
+      "locationPlaceholder": "Ligação de zoom ou localização física",
+      "outcomes": {
+        "connected": "Conectado",
+        "voicemail": "Correio de voz",
+        "noanswer": "Sem resposta",
+        "busy": "Ocupado",
+        "wrongnumber": "Número errado"
+      }
+    },
+    "timeline": {
+      "title": "Linha do tempo",
+      "subtitle": "Histórico das atividades e interações desta transação",
+      "empty": "Nenhuma atividade registada ainda.",
+      "due": "Vencimento {{date}}",
+      "stage": "Mudou-se para {{stage}}",
+      "channelMessage": "Mensagem {{channel}}",
+      "filters": {
+        "all": "Todos",
+        "notes": "Notas",
+        "calls": "Chamadas",
+        "meetings": "Reuniões",
+        "tasks": "Tarefas",
+        "communications": "Comunicações",
+        "stage": "Estágios"
+      },
+      "duePrefix": "Devido: "
+    },
+    "deals": {
+      "title": "Ofertas",
+      "new": "Novo acordo",
+      "emptyTitle": "Nenhuma oferta encontrada",
+      "emptyDescription": "Comece a monitorizar o seu pipeline de vendas criando o seu primeiro negócio.",
+      "noAmount": "Nenhuma quantia",
+      "stage": "Palco",
+      "status": {
+        "open": "Abrir",
+        "won": "Ganhou",
+        "lost": "Perdido"
+      },
+      "statuses": {
+        "open": "Abrir",
+        "won": "Ganhou",
+        "lost": "Perdido"
+      },
+      "newTitle": "Novo acordo",
+      "newSubtitle": "Crie uma nova oportunidade de vendas para acompanhar no seu pipeline.",
+      "create": "Criar negócio",
+      "created": "Negócio criado com sucesso",
+      "createFailed": "Falha ao criar negócio",
+      "titleLabel": "Título do negócio",
+      "titlePlaceholder": "por exemplo Redesenho do site da Acme Corp",
+      "customer": "Cliente",
+      "customerPlaceholder": "Pesquise ou selecione um cliente",
+      "customersLoading": "Clientes de carregamento...",
+      "customersHint": "Apenas os clientes com relacionamento ativo podem ser ligados a negócios.",
+      "stagePlaceholder": "Selecione um estágio",
+      "expectedCloseLabel": "Data prevista de fecho",
+      "selectDate": "Selecione uma data",
+      "amount": "Valor do negócio",
+      "amountPlaceholder": "0,00",
+      "currency": "Moeda",
+      "currencyPlaceholder": "Selecione a moeda",
+      "probabilityLabel": "Probabilidade (%)",
+      "probabilityPlaceholder": "por exemplo 50",
+      "notesPlaceholder": "Adicione quaisquer notas internas ou contexto sobre este negócio...",
+      "tagsPlaceholder": "por exemplo urgente, de valor elevado (separado por vírgula)",
+      "pipelineTitle": "Estado do pipeline",
+      "pipelineDescription": "Este negócio será acompanhado nas seguintes etapas do pipeline.",
+      "tipsTitle": "Dicas de negócio",
+      "tipsSubtitle": "Melhores práticas para CRM",
+      "tipsOne": "Mantenha os títulos dos seus negócios descritivos, mas concisos.",
+      "tipsTwo": "Atualize a probabilidade à medida que o negócio avança pelas fases.",
+      "tipsThree": "Defina uma data de fecho esperada realista para uma melhor previsão.",
+      "quickActions": "Ações rápidas",
+      "message": "Mensagem",
+      "quickNote": "Nota rápida",
+      "stages": {
+        "lead": "Liderar",
+        "qualified": "Qualificado",
+        "proposal": "Proposta",
+        "negotiation": "Negociação",
+        "won": "Ganhou",
+        "lost": "Perdido"
+      },
+      "validation": {
+        "titleRequired": "O título da transação é obrigatório",
+        "customerRequired": "Selecione um cliente",
+        "stageRequired": "A seleção do estágio é obrigatória",
+        "amountNumber": "O valor precisa de ser um número válido",
+        "currencyRequired": "A moeda é obrigatória",
+        "probabilityRange": "A probabilidade deve estar entre 0 e 100",
+        "probabilityValidation": "A probabilidade deve estar entre 0 e 100"
+      },
+      "deletedReason": "Transação excluída",
+      "loadFailed": "Falha ao carregar o negócio",
+      "loadFailedHint": "Não foi possível recuperar os detalhes da transação. Por favor, tente novamente.",
+      "backToDeals": "Voltar para ofertas",
+      "markLostTitle": "Marcar negócio como perdido",
+      "markLostDescription": "Forneça um motivo pelo qual esta transação foi perdida.",
+      "markLostPlaceholder": "por exemplo Concorrente ganhou, corte no orçamento...",
+      "channelsLoading": "Canais de carregamento...",
+      "noChannels": "Nenhum canal disponível",
+      "missingContactFields": "Informação de contacto em falta: {{fields}}",
+      "noteSubject": "Assunto",
+      "noteDetails": "Observe os pormenores...",
+      "addNote": "Adicionar nota",
+      "markLost": "Marca perdida",
+      "deleteTitle": "Excluir negócio",
+      "deleteDescription": "Tem a certeza que pretende excluir esta oferta? Esta ação não pode ser anulada.",
+      "delete": "Excluir",
+      "noNotes": "Nenhuma nota adicionada.",
+      "probability": "Provavelmente. {{probability}}%",
+      "probabilityValue": "{{probability}}%",
+      "expectedClose": "Exp. {{date}}",
+      "expectedCloseTitle": "Fechamento esperado",
+      "markWon": "Marcos Ganhou",
+      "edit": "Editar oferta",
+      "alreadyClosed": "O negócio já está fechado",
+      "relationships": "Relacionamentos",
+      "party": "Contato vinculado",
+      "owner": "Proprietário do negócio",
+      "unassigned": "Não atribuído"
+    },
+    "channel": {
+      "messageVia": "Mensagem via {{channel}}",
+      "template": "Modelo",
+      "chooseTemplate": "Escolha um modelo",
+      "subject": "Assunto",
+      "message": "Mensagem",
+      "log": "Mensagem de registo",
+      "copySuccess": "Copiado para a área de transferência",
+      "copyFailed": "Falha ao copiar",
+      "draftCreated": "Rascunho de comunicação criado",
+      "messageLogged": "Mensagem registada",
+      "createDraftFailed": "Falha ao criar rascunho",
+      "logFailed": "Falha ao registar mensagem"
+    },
+    "accounts": {
+      "title": "Contas",
+      "new": "Nova conta",
+      "searchPlaceholder": "Pesquisar contas...",
+      "emptyTitle": "Nenhuma conta encontrada",
+      "emptyDescription": "Crie uma nova conta para começar.",
+      "noContactInfo": "Sem informação de contato",
+      "status": {
+        "active": "Ativo",
+        "inactive": "Inativo",
+        "prospect": "Cliente em potencial"
+      },
+      "type": {
+        "customer": "Cliente",
+        "vendor": "Fornecedor",
+        "partner": "Parceiro",
+        "other": "Outro"
+      }
+    },
+    "accountForm": {
+      "newTitle": "Nova conta",
+      "editTitle": "Editar conta",
+      "identityTitle": "Identidade",
+      "identityDescription": "Informações de contacto armazenadas no registo do Party",
+      "accountNameRequired": "Nome da conta *",
+      "websitePlaceholder": "https://...",
+      "industry": "Indústria",
+      "profileTitle": "Perfil CRM",
+      "profileDescription": "Campos específicos de vendas",
+      "accountType": "Tipo de conta",
+      "create": "Criar conta",
+      "update": "Atualizar conta"
+    },
+    "contactForm": {
+      "newTitle": "Novo contacto",
+      "editTitle": "Editar contacto",
+      "detailsTitle": "Detalhes de contacto",
+      "create": "Criar contacto",
+      "update": "Atualizar contacto",
+      "createFailed": "Falha ao criar contacto",
+      "updateFailed": "Falha ao atualizar o contacto"
+    },
+    "sequences": {
+      "new": "Nova sequência",
+      "setupTitle": "Configuração de sequência",
+      "applyPreset": "Aplicar predefinição de 3 passos do Unhas",
+      "created": "Sequência criada",
+      "createFailed": "Falha ao criar sequência",
+      "nameRequired": "O nome da sequência é obrigatório",
+      "addAtLeastOneStep": "Adicione pelo menos um passo",
+      "stepTitle": "Passo {{step}}",
+      "removeStep": "Remover etapa {{step}}",
+      "stepType": "Tipo de etapa",
+      "dayDelay": "Atraso de um dia",
+      "stepSubject": "Assunto da etapa",
+      "stepBody": "Passo Corpo",
+      "addStep": "Adicionar etapa",
+      "create": "Criar sequência",
+      "creating": "Criando...",
+      "stepTypes": {
+        "task": "Tarefa",
+        "call": "Ligar",
+        "emailManual": "Manual de e-mail",
+        "emailAuto": "E-mail automático"
+      },
+      "nailsPreset": {
+        "name": "Liderar para ganhar - Unhas",
+        "description": "Acompanhamento automatizado por e-mail do dia 1/dia 3/dia 7 para leads de unhas."
+      }
+    },
+    "emailSettings": {
+      "title": "Configurações de e-mail do CRM",
+      "subtitle": "Configure Reenviar para emails de sequência automatizada e respostas de entrada.",
+      "defaultDisplayName": "Reenvio de CRM",
+      "saved": "Configurações de e-mail do CRM guardadas",
+      "connectionValid": "Reenviar ligação é válida",
+      "connectionTitle": "Reenviar ligação",
+      "connectionDescription": "As mensagens de saída utilizam o remetente configurado. O padrão de e-mails de sequência é",
+      "connectionName": "Nome da ligação",
+      "fromAddress": "Do endereço",
+      "replyToAddress": "Endereço para resposta",
+      "apiKeyLabel": "Chave API",
+      "apiKeyLeaveBlank": "deixe em branco para manter a chave atual",
+      "apiKeyPlaceholder": "re_...",
+      "testConnection": "Conexão de teste",
+      "noWorkspace": "Nenhum espaço de trabalho ativo selecionado.",
+      "inboundWebhookTitle": "Webhook de entrada",
+      "inboundWebhookDescription": "Configure este URL nas definições de Reenviar webhook de entrada.",
+      "tenantResolution": "O inquilino é resolvido automaticamente. Fallback opcional: adicionar",
+      "setupGuideTitle": "Guia de configuração de reenvio",
+      "setupGuideDescription": "Utilize estas definições exatas para o rastreamento de respostas de CRM.",
+      "guide": {
+        "step1": "Abra Reenviar painel -> Webhooks -> Adicionar webhook.",
+        "step2": "Defina Endpoint URL com o valor acima.",
+        "step3": "Em Tipos de eventos, seleccione apenas",
+        "step4": "Não selecione eventos de contacto/domínio para este webhook de CRM.",
+        "localhostNotePrefix": "Nota do host local: Reenviar não pode ligar",
+        "localhostNoteSuffix": "diretamente. Para testes locais, exponha a sua API com um túnel público e utilize esse URL HTTPS como endpoint de webhook."
+      },
+      "errors": {
+        "selectWorkspace": "Selecione um espaço de trabalho antes de guardar as definições de e-mail.",
+        "apiKeyRequired": "O reenvio da chave API é necessário para a primeira configuração.",
+        "saveFailed": "Falha ao guardar as configurações",
+        "saveConnectionFirst": "Guarde uma ligação de reenvio primeiro.",
+        "connectionTestFailed": "Falha no teste de ligação"
+      }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Sessões",
+      "subtitle": "Acompanhe as sessões planeadas e concluídas",
+      "new": "Nova sessão",
+      "loading": "A carregar sessões...",
+      "empty": "Nenhuma sessão encontrada.",
+      "starts": "Começa",
+      "topic": "Tópico",
+      "status": "Estado",
+      "open": "Abrir",
+      "markDone": "Marcar como concluído",
+      "cancel": "Cancelar",
+      "updated": "Sessão atualizada",
+      "updateFailed": "Falha ao atualizar a sessão",
+      "loadFailed": "Falha ao carregar sessões",
+      "confirmTitle": "Atualizar o estado da sessão?",
+      "confirmDescription": "Definir sessão como {{status}}?",
+      "filterClassGroup": "Grupo de turma",
+      "filterStatus": "Estado",
+      "filterDateFrom": "Data de",
+      "filterDateTo": "Data para",
+      "monthLocked": "O mês está bloqueado",
+      "monthLockedDescription": "Este mês já foi faturado. Reabra o mês ou crie um ajuste.",
+      "billingLockedTooltip": "Este mês está bloqueado porque foi criado o faturamento.",
+      "statusOptions": {
+        "planned": "Planejado",
+        "done": "Concluído",
+        "cancelled": "Cancelado"
+      },
+      "sortOptions": {
+        "newest": "Iniciar (mais recente)",
+        "oldest": "Iniciar (mais antigo)"
+      }
+    },
+    "groups": {
+      "title": "Grupos de turma",
+      "subtitle": "Organize os seus grupos de tutoria e os preços",
+      "new": "Novo grupo de turma",
+      "loading": "Carregamento de grupos de turmas...",
+      "loadFailed": "Falha ao carregar grupos de turmas",
+      "emptyTitle": "Ainda não há grupos de turma",
+      "emptyDescription": "Crie o seu primeiro grupo para começar a agendar sessões.",
+      "name": "Nome",
+      "subject": "Assunto",
+      "level": "Nível",
+      "pricePerSession": "Preço/sessão",
+      "status": "Estado",
+      "updated": "Atualizado",
+      "open": "Abrir",
+      "edit": "Editar",
+      "statusOptions": {
+        "active": "Ativo",
+        "archived": "Arquivado"
+      },
+      "sortOptions": {
+        "newest": "Atualizado (mais recente)",
+        "oldest": "Atualizado (mais antigo)",
+        "name": "Nome (A-Z)"
+      }
+    },
+    "students": {
+      "title": "Alunos",
+      "subtitle": "Gerir registos de alunos e responsáveis",
+      "createTitle": "Criar aluno",
+      "add": "Adicionar aluno",
+      "creating": "Criando...",
+      "created": "Aluno Criado",
+      "createSuccess": "Aluno criado. Agora pode vincular os responsáveis.",
+      "createFailed": "Falha ao criar aluno. Por favor, tente novamente.",
+      "createFirstTip": "Crie primeiro o aluno e depois ligue os encarregados de educação.",
+      "loading": "Alunos a carregar...",
+      "loadFailed": "Falha ao carregar alunos.",
+      "emptyTitle": "Nenhum aluno ainda",
+      "emptyDescription": "Crie o seu primeiro aluno para começar a monitorizar os encarregados de educação e as matrículas.",
+      "record": "Estudante",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "primaryPayer": "Pagador principal",
+      "status": "Estado",
+      "updated": "Atualizado",
+      "open": "Abrir",
+      "edit": "Editar",
+      "archive": "Arquivo",
+      "archived": "Aluno arquivado",
+      "archiveFailed": "Falha ao arquivar o aluno",
+      "archiveConfirmTitle": "Arquivar aluno",
+      "archiveConfirmDescription": "Isto arquivará o aluno. Pode desarquivá-los mais tarde.",
+      "statusOptions": {
+        "active": "Ativo",
+        "archived": "Arquivado"
+      },
+      "guardians": {
+        "title": "Guardiões",
+        "subtitle": "Vincule os pais ou encarregados de educação e defina o pagador da cobrança.",
+        "link": "Guardião do link",
+        "empty": "Nenhum responsável vinculado ainda. Adicione um para gerir a responsabilidade de cobrança."
+      }
+    },
+    "billing": {
+      "title": "Faturação de aula",
+      "subtitle": "Visualize as mensalidades e crie faturas para o mês selecionado.",
+      "createInvoices": "Criar faturas por mês",
+      "billingMonth": "Mês de faturação",
+      "refresh": "Atualizar",
+      "invoicesCreated": "As faturas {{count}} criadas",
+      "sendInvoices": "Enviar faturas",
+      "invoicesSent": "Faturas na fila para envio",
+      "sendFailed": "Falha ao enviar faturas",
+      "alreadySent": "Já enviado",
+      "sendDialogTitle": "Faturas criadas",
+      "sendDialogDescription": "Faturas {{count}} criadas. Quer enviá-los já?",
+      "sendDialogYes": "Sim, enviar",
+      "sendDialogNo": "Não",
+      "summaryCreated": "Faturas {{count}} criadas para {{month}}",
+      "loading": "Carregando visualização do faturamento...",
+      "loadFailed": "Falha ao carregar a visualização",
+      "strategy": "Estratégia de cobrança:",
+      "basis": "Base de faturação:",
+      "prepaid": "Pré-pago",
+      "arrears": "Atrasados",
+      "scheduledBasis": "Sessões agendadas",
+      "attendedBasis": "Sessões assistidas",
+      "arrearsTip": "Apenas as sessões marcadas como \"CONCLUÍDAS\" com presença são faturáveis",
+      "payerId": "ID do pagador:",
+      "sessionsTotal": "total de sessões",
+      "classGroup": "Grupo de turma",
+      "sessions": "Sessões",
+      "pricePerSession": "Preço / Sessão",
+      "subtotal": "Subtotal",
+      "invoice": "Fatura",
+      "markSent": "Marcar como enviado",
+      "markSentSuccess": "Fatura marcada como enviada",
+      "markSentFailed": "Falha ao marcar a fatura como enviada",
+      "customerEmailRequired": "O e-mail do cliente é obrigatório",
+      "generatePrivateLink": "Gerar link",
+      "generateLinkSuccess": "Link privado gerado",
+      "generateLinkFailed": "Falha ao gerar link privado",
+      "copyLink": "Copiar Link",
+      "copyLinkSuccess": "Ligação copiada para a área de transferência",
+      "copyLinkFailed": "Falha ao copiar o link",
+      "regenerateLink": "Regenerar ligação",
+      "regenerateLinkSuccess": "Link privado regenerado",
+      "regenerateLinkConfirmTitle": "Regenerar link privado?",
+      "regenerateLinkConfirmDescription": "O link antigo irá parar de funcionar imediatamente.",
+      "regenerateLinkConfirmAction": "Regenerar",
+      "linkRegenerated": "Link regenerado",
+      "linkGenerationFailed": "Falha ao gerar link",
+      "viewInvoice": "Ver fatura",
+      "invoiceNotCreated": "Não criado",
+      "emptyTitle": "Nenhuma sessão faturável",
+      "emptyDescription": "Não existem sessões confirmadas para o mês selecionado que ainda não tenham sido faturadas.",
+      "attendedSessionsTip": "Dica: No modo \"Sessões Participadas\", deve marcar as sessões como CONCLUÍDAS e registar a participação antes que possam ser cobradas.",
+      "regenerate": "Gerar novamente faturas",
+      "regenerateConfirm": "Tem a certeza de que pretende regenerar faturas? Isto separará os rascunhos de faturas existentes para este mês.",
+      "allGroups": "Todos os grupos",
+      "selectAllGroups": "Selecione o grupo"
+    },
+    "settings": {
+      "title": "Configurações de aulas",
+      "description": "Configure a forma como as faturas de classe são geradas para este espaço de trabalho.",
+      "billingStrategy": "Estratégia de cobrança",
+      "monthStrategy": "Estratégia do mês de faturação",
+      "billingBasis": "Base de faturação",
+      "save": "Guardar configurações",
+      "updated": "Configurações de aulas atualizadas",
+      "updateFailed": "Falha ao atualizar as definições das turmas",
+      "placeholderStrategy": "Selecione a estratégia de faturação",
+      "placeholderBasis": "Selecione a base de faturação",
+      "strategies": {
+        "prepaid": {
+          "label": "Fatura do mês corrente (pré-paga)",
+          "description": "As faturas são geradas no início do mês para as sessões agendadas."
+        },
+        "arrears": {
+          "label": "Fatura do mês anterior (em atraso)",
+          "description": "As faturas são geradas no início do mês para as sessões assistidas."
+        }
+      },
+      "attendance": {
+        "title": "Presença",
+        "description": "Configurar o comportamento de atendimento",
+        "mode": "Modo de Atendimento",
+        "manual": {
+          "label": "Atendimento Manual",
+          "description": "Os professores devem registar a presença por sessão."
+        },
+        "autoFull": {
+          "label": "Atendimento Automático Completo",
+          "description": "Quando uma sessão é marcada como concluída, todos os alunos inscritos são automaticamente marcados como presentes. Os professores podem ainda editar, se necessário."
+        }
+      },
+      "bases": {
+        "scheduled": {
+          "label": "Sessões agendadas",
+          "description": "Conta as sessões planeadas/realizadas no mês de faturação."
+        },
+        "attended": {
+          "label": "Sessões assistidas",
+          "description": "Conta a participação faturável nas sessões concluídas."
+        }
+      }
+    }
+  },
+  "purchasing": {
+    "settings": {
+      "title": "Configurações de compra",
+      "save": "Guardar configurações",
+      "defaultCurrency": "Moeda padrão",
+      "defaultPaymentTerms": "Termos de pagamento padrão",
+      "poNumberPrefix": "Prefixo do número da ordem de compra",
+      "defaultApAccount": "Conta de contas a pagar padrão",
+      "defaultExpenseAccount": "Conta de despesas padrão",
+      "defaultBankAccount": "Conta bancária padrão",
+      "autoPostBill": "Publicação automática na faturação",
+      "autoPostBillHelp": "Crie lançamentos contabilísticos automaticamente quando uma fatura de fornecedor é lançada",
+      "autoPostPayment": "Postagem automática no pagamento",
+      "autoPostPaymentHelp": "Crie lançamentos contabilísticos automaticamente quando um pagamento é registado",
+      "duplicateDetection": "Detecção de facturas duplicadas",
+      "duplicateDetectionHelp": "Avisar quando já existe uma fatura com o mesmo fornecedor e referência",
+      "approvalRequired": "Aprovação necessária para contas",
+      "approvalRequiredHelp": "As faturas dos fornecedores devem ser aprovadas antes de serem lançadas"
+    },
+    "copilot": {
+      "title": "Assistente de compras",
+      "purchaseOrderDraft": "Rascunho do pedido de compra",
+      "vendorBillDraft": "Rascunho da fatura do fornecedor",
+      "promptBill": "Extrair dados de um texto ou imagem de uma fatura de fornecedor",
+      "promptBillLabel": "Extrair fatura",
+      "promptPo": "Elabore um pedido de compra de 50 portáteis Dell",
+      "promptPoLabel": "Rascunho do pedido de compra",
+      "placeholder": "Pergunte qualquer coisa ao assistente de compras..."
+    }
+  },
+  "workspace": {
+    "create": "Criar espaço de trabalho",
+    "setupDescription": "Comece por conta própria e convide colegas de equipa sempre que precisar.",
+    "legalEntityType": "Tipo de pessoa coletiva",
+    "legalEntityPersonal": "Pessoa singular ou unipessoal",
+    "legalEntityCompany": "Empresa",
+    "legalEntityHelp": "Isto determina quais as informações fiscais que Corely mostra à sua empresa."
+  },
+  "tenants": {
+    "openAdminSession": "Abrir como administrador de locatário",
+    "openingAdminSession": "Abrindo…",
+    "openAdminSessionError": "Não foi possível abrir a sessão de administração do locatário.",
+    "adminSessionTitle": "Sessão de administração de locatário",
+    "adminSessionBanner": "Trabalhar como administrador de inquilinos em {{name}}",
+    "returnToPlatform": "Voltar à plataforma",
+    "endAdminSessionError": "Não foi possível terminar a sessão de administração do locatário. Tente novamente.",
+    "title": "Inquilinos",
+    "description": "Gerir direitos e configurações de locatário.",
+    "listTitle": "Lista de inquilinos",
+    "addTenant": "Adicionar inquilino",
+    "noTenants": "Nenhum inquilino encontrado.",
+    "status": "Estado",
+    "slug": "Lesma",
+    "tenantId": "ID do locatário",
+    "actions": "Ações",
+    "manage": "Gerir",
+    "confirmDeactivate": "Tem a certeza de que pretende desativar este locatário? Os utilizadores não poderão mais fazer login."
+  },
+  "billing": {
+    "title": "Planos e faturação",
+    "subtitle": "Plano atual, utilização de cash flow e próximas opções de atualização para o seu salão.",
+    "currentPlan": "Plano atual",
+    "planStatus": "Estado do plano",
+    "billingActions": "Ações de faturação",
+    "usage": "Utilização neste período",
+    "planCatalog": "Planos disponíveis",
+    "manageBilling": "Gerir faturamento",
+    "upgradePlan": "Plano de atualização",
+    "currentPlanBadge": "Plano atual",
+    "noLimit": "Sem limite",
+    "billedMonthly": "Faturado mensalmente",
+    "active": "Ativo",
+    "period": "Período atual",
+    "unavailable": "Não disponível neste plano",
+    "loading": "A carregar informações de faturação...",
+    "loadFailed": "Não é possível carregar a faturação no momento.",
+    "openPortalDescription": "Abra o portal do cliente alojado para atualizar os dados de pagamento ou gerir a faturação.",
+    "checkoutDescription": "Atualize através do Stripe Checkout hospedado. Corely mantém o catálogo do plano e a lógica de utilização.",
+    "featureAccess": "Acesso a recursos",
+    "recommendedTitle": "Precisa de mais limites?",
+    "recommendedDescription": "Atualize quando o seu salão precisar de exportação, ajuda de IA ou vários locais.",
+    "startTrial": "Iniciar teste de 30 dias",
+    "trialTitle": "Comece o teste de acesso total de 30 dias",
+    "noCardRequired": "Não é necessário cartão",
+    "trialDescription": "O Workspace obtém recursos completos de vários locais durante 30 dias e depois regressa ao Gratuito se não for assinado.",
+    "trialActive": "{{daysRemaining}} dias restantes para teste de acesso total.",
+    "trialExpiring": "Faltam {{daysRemaining}} dias. Escolha um plano agora para manter a exportação, IA e localizações adicionais.",
+    "trialExpired": "A avaliação de acesso total terminou",
+    "trialExpiredDescription": "O Workspace voltou ao plano Gratuito. Os dados antigos são preservados, mas a exportação, a IA e locais adicionais ficam bloqueados até à assinatura.",
+    "upgradeNow": "Escolha o plano",
+    "afterTrialTitle": "O que muda após o teste",
+    "afterTrialDescription": "Corely mantém todos os dados antigos. Após 30 dias, o espaço de trabalho passa para Gratuito e a nova utilização segue os limites mensais do Gratuito.",
+    "trialStarted": "Teste iniciado",
+    "trialStartFailed": "Não é possível iniciar o teste agora.",
+    "pricePerMonth": "{{price}}/mês",
+    "remaining": "{{count}} esquerda",
+    "featuredPlanNameFallback": "Atualizar",
+    "featuredTitleFree": "Atualize para desbloquear exportações, IA e receitas ilimitadas",
+    "featuredTitlePaid": "Mantenha-se à frente com todos os recursos",
+    "featuredDescriptionFallback": "Controlo total de caixa com exportações, assistência de IA e suporte em vários locais.",
+    "featuredFootnoteFree": "Entradas e recebimentos ilimitados, exportações, assistente de IA e vários locais.",
+    "featuredFootnotePaid": "Mantenha as exportações, a IA e vários locais prontos para a sua equipa.",
+    "statusLabels": {
+      "free": "Grátis",
+      "active": "Ativo",
+      "trialing": "Teste",
+      "past_due": "Vencido",
+      "canceled": "Cancelado",
+      "incomplete": "Incompleto",
+      "incomplete_expired": "Incompleto expirado",
+      "unpaid": "Não pago"
+    },
+    "usageMetrics": {
+      "entries": "Entradas em dinheiro neste período",
+      "receipts": "As receitas neste período"
+    },
+    "usageNudges": {
+      "entries": "Atualize para entradas e exportações ilimitadas de dinheiro.",
+      "receipts": "Atualize para recebimentos e exportações ilimitadas."
+    },
+    "plans": {
+      "free": {
+        "name": "Grátis",
+        "summary": "Para um salão de beleza, começando pelo controlo diário básico de caixa.",
+        "highlights": {
+          "0": "1 local",
+          "1": "30 entradas por mês",
+          "2": "10 recibos por mês",
+          "3": "Sem exportação",
+          "4": "Sem assistente de IA"
+        }
+      },
+      "starter-monthly": {
+        "name": "Iniciante",
+        "summary": "Operações diárias ilimitadas de livro de caixa para um local.",
+        "highlights": {
+          "0": "1 local",
+          "1": "Entradas ilimitadas",
+          "2": "Recibos ilimitados",
+          "3": "Fecho diário",
+          "4": "Exportação mensal"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pró",
+        "summary": "Adiciona ajuda de IA e deteção avançada de problemas para um local.",
+        "highlights": {
+          "0": "Tudo no Starter",
+          "1": "Assistente de IA",
+          "2": "Ajuda multilingue de IA",
+          "3": "Detecção de problemas",
+          "4": "Orientação de fecho"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Vários locais",
+        "summary": "Para grupos de salões que gerem vários locais e equipas.",
+        "highlights": {
+          "0": "Tudo em Pró",
+          "1": "Vários locais",
+          "2": "Acesso da equipa",
+          "3": "Visão geral consolidada"
+        }
+      }
+    },
+    "usageLabels": {
+      "usedOf": "Usado {{used}} / {{limit}}",
+      "currentPeriod": "Período atual"
+    },
+    "featureLabels": {
+      "maxLocations": "Locais",
+      "maxEntriesPerMonth": "Entradas em dinheiro",
+      "maxReceiptsPerMonth": "Recibos",
+      "canExport": "Exportação mensal",
+      "dailyClosing": "Fecho diário",
+      "aiAssistant": "Assistente de IA",
+      "multilingualAiHelp": "Ajuda multilingue de IA",
+      "issueDetection": "Detecção de problemas",
+      "closingGuidance": "Orientação de fecho",
+      "teamAccess": "Acesso da equipa",
+      "consolidatedOverview": "Visão geral consolidada"
+    }
+  },
+  "cashDashboard": {
+    "workspace": {
+      "register": "Cadastre-se",
+      "location": "Localização"
+    },
+    "registerSelector": {
+      "title": "Escolha uma caixa registadora",
+      "description": "Esta conversa utilizará o registo selecionado.",
+      "binding": "Selecionando registo...",
+      "error": "Não foi possível configurar a caixa registadora.",
+      "retry": "Tente novamente"
+    },
+    "headerTitle": "Painel de controlo de caixa",
+    "headerSubtitle": "Controlo diário de caixa e receção do salão.",
+    "previewLabel": "Estado de visualização",
+    "previewStates": {
+      "open": "Dia aberto",
+      "ready": "Pronto para fechar",
+      "closed": "Encerrado e pronto para exportação"
+    },
+    "banner": {
+      "open": "O livro de caixa de hoje ainda está aberto",
+      "receiptsMissing": "Os recibos {{count}} estão em falta",
+      "closeNow": "Pode fechar o dia agora",
+      "monthReady": "Este mês está pronto para exportar",
+      "closedToday": "Hoje foi encerrado",
+      "staleTitle": "Mostrando o último snapshot de dinheiro sincronizado",
+      "staleDescription": "Uma nova sincronização ainda está a ser executada. Reveja as entradas mais recentes antes de fechar o dia."
+    },
+    "actions": {
+      "addEntry": "Nova entrada de dinheiro",
+      "openEntries": "Entradas abertas",
+      "closeDay": "Feche o livro de caixa de hoje",
+      "exportMonth": "Exportação para Steuerberater",
+      "openRegister": "Registo aberto",
+      "attachReceipt": "Anexar recibo",
+      "reviewEntries": "Rever entradas",
+      "seeAll": "Ver todas as entradas",
+      "edit": "Editar",
+      "reverse": "Reverso",
+      "viewDetails": "Detalhes",
+      "attachNow": "Anexe agora",
+      "createFirstEntry": "Crie a primeira entrada",
+      "openBilling": "Faturamento aberto",
+      "upgradeToStarter": "Atualizar para o Starter",
+      "upgradeToPro": "Atualizar para Pro"
+    },
+    "labels": {
+      "openingBalance": "Saldo inicial",
+      "cashInToday": "Ganhe dinheiro hoje",
+      "cashOutToday": "Sacar hoje",
+      "expectedBalance": "Saldo esperado",
+      "countedCash": "Dinheiro contado",
+      "difference": "Diferença",
+      "missingReceipts": "Recibos ausentes",
+      "dailyClosing": "Estado de fecho diário",
+      "todaysCashStatus": "Situação de tesouraria de hoje",
+      "actionRequired": "Ação necessária",
+      "recentEntries": "Entradas recentes",
+      "receiptStatus": "Estado do recebimento",
+      "closingWorkflow": "Fechar fluxo de trabalho",
+      "exportStatus": "Estado de exportação mensal",
+      "trendOverview": "Visão geral operacional",
+      "privateDeposits": "Depósitos privados",
+      "privateWithdrawals": "Retiradas privadas",
+      "lastClosedDate": "Última data de fecho",
+      "closedBy": "Encerrado por",
+      "responsibleToday": "Responsável hoje",
+      "currentMonth": "Mês atual",
+      "entriesCompleted": "Inscrições concluídas",
+      "lastExport": "Última exportação",
+      "status": "Estado",
+      "time": "Hora",
+      "type": "Tipo",
+      "amount": "Quantidade",
+      "note": "Nota",
+      "receipt": "Recibo",
+      "rowActions": "Ações",
+      "attachedToday": "Anexado hoje",
+      "missingToday": "Desaparecido hoje",
+      "missingThisMonth": "Desapareceu este mês",
+      "weekIncome": "Rendimento em dinheiro esta semana",
+      "weekExpenses": "Despesas em dinheiro esta semana",
+      "openDays": "Dias abertos",
+      "monthVsLastMonth": "Este mês vs mês passado",
+      "exportChecklistDays": "Todos os dias obrigatórios estão encerrados",
+      "exportChecklistReceipts": "Todos os recibos necessários estão anexados",
+      "exportChecklistReview": "Nenhum item de revisão crítica permanece",
+      "helperWidget": "Precisa de ajuda?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Inclui depósitos privados {{deposit}} e levantamentos privados {{withdrawal}}.",
+      "countNotEntered": "Ainda não entrou",
+      "differenceBalanced": "Sem diferença",
+      "differenceOver": "{{amount}} acabou",
+      "differenceShort": "{{amount}} curto",
+      "statusOpen": "Abrir",
+      "statusNeedsReview": "Precisa de revisão",
+      "statusReadyToClose": "Pronto para fechar",
+      "statusClosed": "Fechado",
+      "monthExportReady": "Pronto para exportação",
+      "exportBlockedReceipts": "Bloqueado por recibos perdidos",
+      "exportBlockedDays": "Bloqueado por dias não fechados",
+      "exportBlockedReview": "Bloqueado por itens de revisão",
+      "exportAlreadyGenerated": "Já exportado",
+      "receiptsComplete": "A verificação de receção está concluída hoje.",
+      "receiptsIncomplete": "Os artigos de receção {{count}} ainda precisam de atenção hoje.",
+      "noActionNeeded": "Nenhuma ação urgente no momento",
+      "noActionDescription": "O livro de caixa de hoje está em ordem. Pode continuar a registar entradas ou exportar o mês.",
+      "noEntriesTitle": "Nenhuma atividade de caixa ainda hoje",
+      "noEntriesDescription": "Comece pelo saldo inicial ou registe a primeira movimentação de dinheiro do salão.",
+      "loadingTitle": "Preparar a visão geral do caixa de hoje",
+      "loadingDescription": "Recolha de recibos, lançamentos e sinais de fecho."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "As entradas {{count}} estão em falta recibos",
+      "missingReceiptsDescription": "Anexe recibos antes que o dia possa ser fiável ou exportado.",
+      "closeDayTitle": "O livro de caixa de hoje ainda não está fechado",
+      "closeDayDescription": "Conte a gaveta e confirme o saldo final para finalizar hoje.",
+      "missingNotesTitle": "Despesas em dinheiro {{count}} faltam notas",
+      "missingNotesDescription": "Adicione uma breve nota para que cada despesa possa ser compreendida posteriormente.",
+      "openDaysTitle": "Os dias {{count}} ainda estão abertos esta semana",
+      "openDaysDescription": "Feche os dias abertos para que o mês possa ser exportado sem trabalho de acompanhamento.",
+      "reviewTitle": "As entradas {{count}} necessitam de revisão",
+      "reviewDescription": "Verifique os movimentos invulgares de dinheiro antes de fechar o livro.",
+      "exportTitle": "A exportação mensal ainda está bloqueada",
+      "exportDescription": "Resolva os restantes bloqueadores antes de enviar os dados para o consultor fiscal.",
+      "exportReadyTitle": "A exportação mensal está pronta",
+      "exportReadyDescription": "O mês pode ser exportado agora sem falta de documentos."
+    },
+    "entryTypes": {
+      "income": "Renda",
+      "expense": "Despesa",
+      "private-deposit": "Depósito privado",
+      "private-withdrawal": "Retirada privada"
+    },
+    "entryStatus": {
+      "attached": "Anexado",
+      "missing": "Desaparecido",
+      "review": "Precisa de revisão",
+      "ok": "OK"
+    },
+    "assistant": {
+      "title": "Precisa de ajuda?",
+      "description": "Utilize o assistente quando algo não está claro, e não como fluxo de trabalho principal.",
+      "prompts": [
+        "Porque é que hoje não está pronto para fechar?",
+        "Que entradas ainda precisam de recibos?",
+        "Porque é que o meu saldo está curto?",
+        "O que significa Privateinlage?"
+      ],
+      "suggestions": [
+        {
+          "label": "Encontre recibos perdidos",
+          "value": "Que entradas de caixa de hoje ainda precisam de recibos?"
+        },
+        {
+          "label": "Situação de tesouraria de hoje",
+          "value": "Mostre-me a situação do caixa de hoje e se o dia está pronto para terminar."
+        },
+        {
+          "label": "Fechar o dia",
+          "value": "O que está a bloquear o fecho do caixa de hoje?"
+        },
+        {
+          "label": "Explique um termo",
+          "value": "O que significa Privateinlage no livro de caixa?"
+        }
+      ],
+      "capabilityCatalogTitle": "Tarefas de gestão de caixa",
+      "capabilityCatalogDescription": "Esta é a lista completa do que o operador de caixa o pode ajudar a fazer. Escolha uma tarefa para preencher previamente o pedido e começar mais rapidamente.",
+      "capabilityGroups": [
+        {
+          "title": "Entradas em dinheiro",
+          "description": "Crie, corrija e reveja lançamentos do livro de caixa para a caixa registadora atual.",
+          "items": [
+            {
+              "title": "Crie uma entrada de dinheiro",
+              "description": "Inicie uma nova entrada de loot ou loot com os detalhes necessários.",
+              "prompt": "Crie uma entrada de dinheiro para a caixa registadora atual."
+            },
+            {
+              "title": "Corrigir uma entrada aberta",
+              "description": "Reverter uma entrada aberta e criar a entrada de substituição corrigida.",
+              "prompt": "Corrija uma entrada de dinheiro aberta para mim."
+            },
+            {
+              "title": "Listar entradas de dinheiro",
+              "description": "Reveja as entradas por intervalo de datas, tipo, tipo de letra ou descrição.",
+              "prompt": "Liste as entradas de dinheiro para este registo."
+            }
+          ]
+        },
+        {
+          "title": "Recibos e anexos",
+          "description": "Carregue recibos, anexe-os às entradas e encontre documentos perdidos.",
+          "items": [
+            {
+              "title": "Carregar um recibo",
+              "description": "Carregue um ou mais ficheiros de recibos a partir deste chat.",
+              "prompt": "Faça o upload dos ficheiros de recibo deste chat."
+            },
+            {
+              "title": "Anexar um recibo a uma entrada",
+              "description": "Ligue os documentos de recebimento carregados à entrada de dinheiro correta.",
+              "prompt": "Fixe o recibo carregado à entrada de dinheiro correta."
+            },
+            {
+              "title": "Encontre recibos perdidos",
+              "description": "Mostrar as entradas que ainda exigem recibo antes da revisão ou exportação.",
+              "prompt": "Encontre as entradas de dinheiro que ainda faltam recibos."
+            }
+          ]
+        },
+        {
+          "title": "Encerramento do dia",
+          "description": "Verifique a prontidão, poupe o dinheiro contado e feche o dia corretamente.",
+          "items": [
+            {
+              "title": "Situação de tesouraria de hoje",
+              "description": "Veja o saldo esperado, as lacunas de recebimento e se o fecho está pronto.",
+              "prompt": "Mostre-me a situação do caixa de hoje e se o dia está pronto para terminar."
+            },
+            {
+              "title": "Enviar dinheiro contado",
+              "description": "Guarde o dinheiro contado ou as contagens de denominação antes do fecho final.",
+              "prompt": "Envie o dinheiro contado de hoje para o registo atual."
+            },
+            {
+              "title": "Fechar o dia",
+              "description": "Finalize o dia de pagamento de hoje assim que todos os bloqueadores forem eliminados.",
+              "prompt": "Feche o dia de caixa de hoje para a caixa registadora atual."
+            },
+            {
+              "title": "Listar dias não encerrados",
+              "description": "Encontre dias abertos ou de rascunho que ainda precisam de ser fechados.",
+              "prompt": "Liste os dias que ainda não estão fechados para este registo."
+            }
+          ]
+        },
+        {
+          "title": "Painel e exportação",
+          "description": "Monitorizar o estado operacional e preparar o pacote mensal de exportação.",
+          "items": [
+            {
+              "title": "Resumo do painel",
+              "description": "Visualize o resumo operacional de dinheiro, recebimentos, estado de fecho e prontidão para exportação.",
+              "prompt": "Mostre-me o resumo do painel desta caixa registadora."
+            },
+            {
+              "title": "Ações necessárias",
+              "description": "Veja as próximas ações operacionais que o proprietário deve realizar.",
+              "prompt": "Que ações preciso de tomar a seguir na gestão de caixa?"
+            },
+            {
+              "title": "Gerar exportação mensal",
+              "description": "Prepare o pacote mensal de exportação para o consultor fiscal.",
+              "prompt": "Gere o pacote mensal de exportação de dinheiro para este registo."
+            }
+          ]
+        },
+        {
+          "title": "Orientação e termos",
+          "description": "Obtenha orientação sobre o fluxo de trabalho e explicações em linguagem simples sobre os termos do livro de caixa.",
+          "items": [
+            {
+              "title": "Explique um termo de livro de caixa",
+              "description": "Obtenha uma explicação em linguagem simples de um termo como Privateinlage.",
+              "prompt": "Explique-me um termo de livro de caixa."
+            },
+            {
+              "title": "Ajuda sobre o fluxo de trabalho",
+              "description": "Obtenha orientação passo a passo para o fecho do dia, recebimentos perdidos ou exportação mensal.",
+              "prompt": "Mostre-me a ajuda do fluxo de trabalho para a gestão de caixa."
+            }
+          ]
+        }
+      ],
+      "languages": "Alemão, Inglês, Vietnamita",
+      "lockedTitle": "A ajuda da IA está bloqueada neste plano",
+      "lockedDescription": "Atualize para o Pro para desbloquear o assistente de caixa, explicações multilingues e revisão guiada de problemas.",
+      "lockedBadge": "IA bloqueada",
+      "emptyStateActions": {
+        "recordTransactions": {
+          "label": "Registe as transações de hoje",
+          "value": "Quero registar as transações em dinheiro de hoje."
+        },
+        "reviewMonth": {
+          "label": "Reveja o relatório mensal",
+          "value": "Quero analisar o relatório de caixa deste mês."
+        },
+        "closeDay": {
+          "label": "Feche o dia do caixa",
+          "value": "Quero fechar a caixa registadora por hoje."
+        },
+        "generalHelp": {
+          "label": "Faça uma pergunta geral",
+          "value": "Tenho uma questão geral sobre a gestão de caixa."
+        }
+      }
+    },
+    "severity": {
+      "high": "Alto",
+      "medium": "Médio",
+      "low": "Baixo"
+    }
+  },
+  "cashAssistant": {
+    "kassenbericht": {
+      "title": "Cassenbericht",
+      "open": "Abrir Kassenbericht",
+      "openForDay": "Abrir Kassenbericht para {{day}}",
+      "invalidLink": "O link Kassenbericht não pôde ser criado."
+    }
+  }
+}

@@ -1,3 +1,16 @@
+import {
+  corelyLocaleDetails,
+  corelyLocales,
+  normalizeCorelyLocale,
+  type CorelyLocale,
+} from "@corely/contracts";
+import tr from "./locales/tr.json";
+import pl from "./locales/pl.json";
+import ru from "./locales/ru.json";
+import ptPT from "./locales/pt-PT.json";
+import it from "./locales/it.json";
+import fr from "./locales/fr.json";
+import es from "./locales/es.json";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import * as Localization from "expo-localization";
@@ -5,9 +18,9 @@ import en from "./locales/en.json";
 import de from "./locales/de.json";
 import vi from "./locales/vi.json";
 
-export const supportedLanguages = ["en", "de", "vi"] as const;
+export const supportedLanguages = corelyLocales;
 
-export type SupportedLanguage = (typeof supportedLanguages)[number];
+export type SupportedLanguage = CorelyLocale;
 
 function getDeviceLocaleTag(): string {
   const localeFromList = Localization.getLocales?.()[0]?.languageTag;
@@ -20,17 +33,7 @@ function getDeviceLocaleTag(): string {
 export function normalizeLanguageTag(
   languageTag: string | null | undefined
 ): SupportedLanguage | null {
-  if (!languageTag) {
-    return null;
-  }
-
-  const normalized = languageTag.toLowerCase().replace("_", "-");
-  const languageCode = normalized.split("-")[0];
-  if (supportedLanguages.includes(languageCode as SupportedLanguage)) {
-    return languageCode as SupportedLanguage;
-  }
-
-  return null;
+  return normalizeCorelyLocale(languageTag) ?? null;
 }
 
 export function resolveDeviceLanguage(): SupportedLanguage {
@@ -49,7 +52,15 @@ export async function initializeI18n(preferredLanguage?: string | null): Promise
           en: { translation: en },
           de: { translation: de },
           vi: { translation: vi },
+          tr: { translation: tr },
+          pl: { translation: pl },
+          ru: { translation: ru },
+          "pt-PT": { translation: ptPT },
+          it: { translation: it },
+          fr: { translation: fr },
+          es: { translation: es },
         },
+        load: "currentOnly",
         fallbackLng: "en",
         interpolation: {
           escapeValue: false,
@@ -88,14 +99,7 @@ export function getI18nLanguage(): SupportedLanguage {
 }
 
 export function getLanguageLocaleTag(language: SupportedLanguage): string {
-  switch (language) {
-    case "de":
-      return "de-DE";
-    case "vi":
-      return "vi-VN";
-    default:
-      return "en-US";
-  }
+  return corelyLocaleDetails[language].format;
 }
 
 export default i18n;

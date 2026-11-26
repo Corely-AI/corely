@@ -1,3 +1,8 @@
+import {
+  BrowserLanguageSelect,
+  useBrowserLocale,
+} from "@corely/web-shared/shared/i18n/browser-locale";
+import messages from "@/shared/i18n/locales/directory.json";
 import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createIdempotencyKey } from "@corely/api-client";
@@ -23,6 +28,8 @@ const INITIAL_FORM: LeadFormState = {
 };
 
 export const RestaurantDetailPage = () => {
+  const locale = useBrowserLocale();
+  const copy = messages[locale];
   const { slug } = useParams<{ slug: string }>();
   const { pushToast } = useToast();
   const [form, setForm] = useState<LeadFormState>(INITIAL_FORM);
@@ -43,10 +50,10 @@ export const RestaurantDetailPage = () => {
       setSubmittedLeadId(response.leadId);
       setForm(INITIAL_FORM);
       setActiveIdempotencyKey(null);
-      pushToast("Inquiry sent successfully", "success");
+      pushToast(copy.success, "success");
     },
     onError: (error) => {
-      pushToast(error instanceof Error ? error.message : "Failed to send inquiry", "error");
+      pushToast(error instanceof Error ? error.message : copy.failedSend, "error");
     },
   });
 
@@ -87,14 +94,15 @@ export const RestaurantDetailPage = () => {
   };
 
   if (!slug) {
-    return <EmptyState title="Restaurant not found" message="No restaurant slug was provided." />;
+    return <EmptyState title={copy.missing} message={copy.missingSlug} />;
   }
 
   return (
     <div className="page">
+      <BrowserLanguageSelect className="language-select" />
       <p>
         <Link className="link-back" to="/berlin">
-          Back to listing
+          {copy.back}
         </Link>
       </p>
 
@@ -102,9 +110,7 @@ export const RestaurantDetailPage = () => {
 
       {detailQuery.error ? (
         <ErrorState
-          message={
-            detailQuery.error instanceof Error ? detailQuery.error.message : "Failed to load"
-          }
+          message={detailQuery.error instanceof Error ? detailQuery.error.message : copy.failedLoad}
           onRetry={() => detailQuery.refetch()}
         />
       ) : null}
@@ -117,27 +123,27 @@ export const RestaurantDetailPage = () => {
               <span>{restaurant.priceRange ?? "$"}</span>
             </div>
             <h1>{restaurant.name}</h1>
-            <p>{restaurant.shortDescription ?? "No description available."}</p>
+            <p>{restaurant.shortDescription ?? copy.noDescription}</p>
             <ul className="detail-list">
               <li>
-                <strong>Address</strong>
+                <strong>{copy.address}</strong>
                 <span>
                   {restaurant.addressLine}, {restaurant.postalCode} {restaurant.city}
                 </span>
               </li>
               <li>
-                <strong>Phone</strong>
-                <span>{restaurant.phone ?? "Not listed"}</span>
+                <strong>{copy.phone}</strong>
+                <span>{restaurant.phone ?? copy.notListed}</span>
               </li>
               <li>
-                <strong>Website</strong>
+                <strong>{copy.website}</strong>
                 <span>
                   {restaurant.website ? (
                     <a href={restaurant.website} target="_blank" rel="noreferrer">
                       {restaurant.website}
                     </a>
                   ) : (
-                    "Not listed"
+                    copy.notListed
                   )}
                 </span>
               </li>
@@ -153,22 +159,22 @@ export const RestaurantDetailPage = () => {
           </article>
 
           <section className="form-card">
-            <h2>Catering / Group inquiry</h2>
-            <p>Send one reliable inquiry. Retries reuse the same idempotency key.</p>
+            <h2>{copy.inquiry}</h2>
+            <p>{copy.inquiryIntro}</p>
 
             <form className="lead-form" onSubmit={handleSubmit}>
               <label>
-                Name
+                {copy.name}
                 <input
                   value={form.name}
                   onChange={(event) => updateField("name", event.currentTarget.value)}
-                  placeholder="Your name"
+                  placeholder={copy.yourName}
                   required
                 />
               </label>
 
               <label>
-                Contact (email or phone)
+                {copy.contact}
                 <input
                   value={form.contact}
                   onChange={(event) => updateField("contact", event.currentTarget.value)}
@@ -178,28 +184,26 @@ export const RestaurantDetailPage = () => {
               </label>
 
               <label>
-                Message
+                {copy.message}
                 <textarea
                   rows={5}
                   value={form.message}
                   onChange={(event) => updateField("message", event.currentTarget.value)}
-                  placeholder="Date, group size, menu preference..."
+                  placeholder={copy.inquiryPlaceholder}
                   required
                 />
               </label>
 
               <button className="btn" type="submit" disabled={!canSubmit || mutation.isPending}>
-                {mutation.isPending ? "Sending..." : "Send inquiry"}
+                {mutation.isPending ? copy.sending : copy.send}
               </button>
 
               {submittedLeadId ? (
-                <p className="submit-hint">Inquiry submitted. Lead ID: {submittedLeadId}</p>
+                <p className="submit-hint">{copy.submitted.replace("{{id}}", submittedLeadId)}</p>
               ) : null}
 
               {mutation.isError ? (
-                <p className="submit-hint submit-hint-error">
-                  Submission failed. Retry keeps the same idempotency key.
-                </p>
+                <p className="submit-hint submit-hint-error">{copy.submissionError}</p>
               ) : null}
             </form>
           </section>

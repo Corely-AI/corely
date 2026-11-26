@@ -19,6 +19,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: node --test scripts/ci/*.test.mjs
+      - run: pnpm locales:check
       - run: node scripts/ci/frontend-policy.mjs
       - id: matrix
         run: echo "matrix=$(node scripts/ci/frontend-policy.mjs --matrix)" >> "$GITHUB_OUTPUT"

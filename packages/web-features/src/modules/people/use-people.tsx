@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,7 +20,7 @@ function useLegacyPeopleAccess() {
     tenantId: user?.activeTenantId,
     workspaceId: activeWorkspaceId ?? undefined,
     scope: JSON.stringify([user?.userId, user?.activeTenantId, activeWorkspaceId]),
-    copy: peopleCopy[locale === "de" || locale === "vi" ? locale : "en"],
+    copy: peopleCopy[resolveCorelyLocale(locale)],
     loading: permissions.isLoading,
     can: (key: string) => hasPermission(permissions.data?.permissions, `people.${key}`),
   };
@@ -39,7 +40,7 @@ export function PeopleAccessProvider({ children }: { children: ReactNode }) {
         tenantId: runtime.scope.tenantId,
         workspaceId: runtime.scope.workspaceId,
         scope: JSON.stringify(runtime.scope),
-        copy: peopleCopy[locale === "de" || locale === "vi" ? locale : "en"],
+        copy: peopleCopy[resolveCorelyLocale(locale)],
         loading: false,
         can: (key: string) => hasPermission(runtime.permissions, `people.${key}`),
       }}

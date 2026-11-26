@@ -1,3 +1,5 @@
+import { persistFocusedLocale } from "@corely/web-shared/session/focused-locale";
+import { corelyLocaleDetails, corelyLocales, type CorelyLocale } from "@corely/contracts";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -45,9 +47,9 @@ export default function SettingsPage() {
   const tenantIdValue = user?.activeTenantId ?? activeTenant?.tenantId ?? "";
   const tenantNameValue = activeTenant?.tenantName ?? "";
 
-  const changeLanguage = (lang: string) => {
+  const changeLanguage = (lang: CorelyLocale) => {
     void i18n.changeLanguage(lang);
-    localStorage.setItem("Corely One ERP-language", lang);
+    persistFocusedLocale(lang);
   };
 
   return (
@@ -130,18 +132,15 @@ export default function SettingsPage() {
           <CardTitle>{t("settings.language")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
-            {[
-              { code: "de", label: "🇩🇪 Deutsch" },
-              { code: "en", label: "🇬🇧 English" },
-            ].map(({ code, label }) => (
+          <div className="flex flex-wrap gap-2">
+            {corelyLocales.map((code) => (
               <Button
                 key={code}
                 variant={i18n.language === code ? "accent" : "outline"}
                 onClick={() => changeLanguage(code)}
-                className="flex-1"
+                lang={code}
               >
-                {label}
+                {corelyLocaleDetails[code].name}
               </Button>
             ))}
           </div>

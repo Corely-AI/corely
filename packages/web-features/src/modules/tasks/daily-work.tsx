@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { checklistsCopy } from "./checklists-copy";
@@ -34,8 +35,8 @@ export function DailyWork({
   templatesHref?: string;
   creationGuidance?: TaskCreationGuidance;
 }) {
-  const c = checklistsCopy[locale === "de" || locale === "vi" ? locale : "en"];
-  const t = tasksCopy[locale === "de" || locale === "vi" ? locale : "en"];
+  const c = checklistsCopy[resolveCorelyLocale(locale)];
+  const t = tasksCopy[resolveCorelyLocale(locale)];
   const [data, setData] = useState<EmployeeTaskList>();
   const [assignees, setAssignees] = useState<TaskAssignee[]>([]);
   const [filter, setFilter] = useState("all");

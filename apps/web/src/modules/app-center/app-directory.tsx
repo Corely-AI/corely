@@ -1,3 +1,4 @@
+import { localizedValue } from "@corely/contracts";
 import React, { useState } from "react";
 import type { AppCatalogItem } from "@corely/contracts";
 import { Button, Input } from "@corely/ui";
@@ -41,9 +42,11 @@ export function AppDirectory({
   });
   const term = search.trim().toLocaleLowerCase(locale);
   const filtered = destinations.filter(
-    ({ metadata }) =>
+    ({ app, metadata }) =>
       (category === "all" || metadata.category === category) &&
-      metadata.displayName[locale].toLocaleLowerCase(locale).includes(term)
+      localizedValue(metadata.displayName, locale, app.appId)
+        .toLocaleLowerCase(locale)
+        .includes(term)
   );
 
   return (
@@ -112,12 +115,12 @@ export function AppDirectory({
                     >
                       <AppLogo logo={app.directory?.logo} iconKey={app.launch?.iconKey} />
                       <h3 className="break-words text-xl font-semibold">
-                        {metadata.displayName[locale]}
+                        {localizedValue(metadata.displayName, locale, app.appId)}
                       </h3>
                       <Button
                         className="min-h-11 w-full"
                         disabled={launching}
-                        aria-label={`${text.open}: ${metadata.displayName[locale]}`}
+                        aria-label={`${text.open}: ${localizedValue(metadata.displayName, locale, app.appId)}`}
                         onClick={() => onLaunch(app.appId)}
                       >
                         {text.open}

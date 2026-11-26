@@ -63,6 +63,7 @@ export const WebsitePublicPageScreen = ({
 
   return (
     <PublicSiteLayout
+      locale={page.locale}
       menus={page.menus}
       settings={page.settings}
       host={host}

@@ -1,0 +1,3955 @@
+{
+  "sign": {
+    "recipient": {
+      "openReviewedPdf": "İncelenen PDF'yi aç",
+      "reviewAndSign": "İncele ve imzala",
+      "signatureRecorded": "İmzanız kaydedildi.",
+      "requestDeclined": "Bu isteği reddettiniz.",
+      "openForReview": "Dokümanı incelenmek üzere aç",
+      "openOriginalPdf": "Orijinal PDF'yi aç",
+      "typeSignature": "İmzanızı yazın",
+      "confirmSignature": "İmzanızı onaylayın",
+      "drawnSignature": "İmza atıldı",
+      "editAnswers": "Yanıtları düzenle",
+      "progressSaved": "İlerleme kaydedildi.",
+      "saveProgress": "İlerlemeyi kaydet",
+      "signAndSubmit": "İmzala ve gönder",
+      "reviewAnswers": "Yanıtları inceleyin",
+      "confirmDecline": "Bu imzalama isteği reddedilsin mi?",
+      "declineRequest": "İsteği reddet",
+      "requestedBy": "Talep eden",
+      "previousPage": "Önceki sayfa",
+      "nextPage": "Sonraki sayfa",
+      "pageTitle": "Sayfa",
+      "of": "arasında",
+      "useTypedSignature": "Yazılan imzayı kullan",
+      "useDrawnSignature": "Çizilmiş imzayı kullan",
+      "clearDrawing": "Çizimi temizle",
+      "drawSignature": "İmza çiz",
+      "signature": "imza",
+      "initials": "baş harfler",
+      "date": "tarih",
+      "checkbox": "onay kutusu",
+      "text": "metin",
+      "page": "sayfa",
+      "field": "alan",
+      "linkUnavailable": "Bu imzalama bağlantısı veya oturumu kullanılamıyor.",
+      "requestFailed": "İstek işlenemedi. Alanlarınızı kontrol edip tekrar deneyin.",
+      "documentUnavailable": "Belge görüntülenemedi. İncelemek için orijinal PDF bağlantısını kullanın.",
+      "pageRenderFailed": "Bu sayfa oluşturulamadı.",
+      "unableToSign": "İmzalanamıyor."
+    },
+    "documentTitle": "Belge başlığı",
+    "selectedFieldType": "Seçilen alan türü",
+    "continueReview": "İsteği inceleyin",
+    "editFields": "Alanları düzenle",
+    "recipients": "Alıcılar",
+    "continueRecipients": "Alıcılara devam et",
+    "requireSignatures": "Devam etmeden önce her imzalayan için zorunlu bir imza alanı ekleyin.",
+    "staticCopy": "Bu PDF'yi sayfa görüntüleri olarak içe aktarın. Bunu form veya bağlantı içeren PDF'ler için kullanın. İmzalanmak üzere kopyaya yalnızca görünür görünümleri dahil edilir.",
+    "useTemplate": "Mevcut bir şablonu kullan",
+    "uploadInstructions": "İmzasız bir PDF yükleyin (en fazla 10 MiB ve 100 sayfa), belgeye alanlar yerleştirin ve ardından alıcılarınızı seçin.",
+    "workspaceRequired": "Corely Sign'ı kullanmak için etkin bir çalışma alanı gereklidir.",
+    "firstRequestHint": "İlk imzalama isteğinizi hazırlamak için bir PDF veya şablon seçin.",
+    "resizeField": "Alanı yeniden boyutlandır",
+    "activity": "Etkinlik iste",
+    "coachingAgreement": "Bir imza sözleşmesi hazırlayın",
+    "search": "Ara",
+    "all": "Hepsi",
+    "overview": "Genel Bakış",
+    "settings": "İmzalama ayarları",
+    "publicOrigin": "Herkese açık imzalama kaynağı",
+    "invitationKeyConfigured": "Davetiye şifrelemesi yapılandırıldı",
+    "certificateExpiresAt": "Hizmet sertifikasının süresi doluyor",
+    "signerPinned": "Sertifika parmak izine izin verildi",
+    "privateKeyReadable": "Özel anahtara erişilebilir",
+    "trustFileReadable": "Güven mağazasına erişilebilir",
+    "yes": "Evet",
+    "no": "Hayır",
+    "states": {
+      "DRAFT": "Taslak",
+      "SENT": "İmzalar bekleniyor",
+      "COLLECTED": "İmzalar toplandı",
+      "COMPLETED": "Tamamlandı",
+      "EXPIRED": "Süresi dolmuş",
+      "VOID": "Geçersiz kılındı",
+      "DECLINED": "Reddedildi",
+      "INVITED": "Davet edildi",
+      "WAITING": "Bekliyor",
+      "ACCEPTED": "İmzalandı"
+    },
+    "statusLabel": "Durum",
+    "needsAttention": "İmzalar toplandı. Belge doğrulama veya arşivlemeye dikkat edilmesi gerekiyor.",
+    "providerSent": " · E-posta sağlayıcıya teslim edildi",
+    "sourceError": "Orijinal PDF kullanılamıyor",
+    "downloadError": "Doğrulanmış yapı indirilemedi",
+    "confirmRemind": "Yeni bir davetiye gönderilip önceki bağlantı iptal edilsin mi?",
+    "confirmVoid": "Bu istek geçersiz kılınsın ve alıcı erişimi iptal edilsin mi?",
+    "confirmSend": "Yukarıda listelenen alıcılara imza daveti gönderilsin mi?",
+    "export": "Kanıt paketini dışa aktar",
+    "download": "Mühürlü PDF'yi indir",
+    "refresh": "Durumu yenile",
+    "void": "İsteği geçersiz kıl",
+    "reminder": "Hatırlatıcı gönder",
+    "reviewSend": "Davetiyeleri inceleyin ve gönderin",
+    "invitation": "Davet mesajı",
+    "consentLabel": "Alıcılar için onay beyanı",
+    "expiry": "(UTC) tarihinde sona eriyor",
+    "retryFinal": "Sonlandırmayı yeniden dene",
+    "reviewOriginal": "Orijinal PDF'yi inceleyin",
+    "progressTitle": "İmza ilerlemesi",
+    "requests": "İmza isteklerim",
+    "noRequests": "İmza isteği yok.",
+    "recipientError": "Her rol için bir ad ve geçerli bir e-posta adresi girin.",
+    "saveFailed": "İstek kaydedilemedi.",
+    "requestSaved": "İstek taslağı kaydedildi. Davetiyeler gönderilmedi.",
+    "openRequest": "İstek taslağını aç",
+    "prepareRequest": "Bir istek hazırlayın",
+    "routing": "İmza sırası",
+    "parallel": "paralel",
+    "sequential": "Sıralı",
+    "name": "Alıcı adı",
+    "email": "Alıcı e-postası",
+    "earlier": "Daha erken hareket et",
+    "createRequestDraft": "İstek taslağını kaydet",
+    "loadingRequest": "İstek yükleniyor…",
+    "prepare": "İmza şablonu hazırlayın",
+    "instructions": "Alanları yerleştirmek için yerel bir PDF açın. Daha sonra düzenlemeye devam etmek için düzeni kaydedin.",
+    "pdf": "PDF belgesi",
+    "opening": "PDF açılıyor…",
+    "title": "Şablon başlığı",
+    "saveWorkspace": "Çalışma alanı taslağını kaydet",
+    "saving": "Kaydediliyor…",
+    "signerRole": "İmzalayan rolü",
+    "addRole": "Rol ekle",
+    "fieldType": "Alan türü",
+    "addField": "Alan ekle",
+    "previewRole": "Seçilen rolü önizle",
+    "assigned": "Atanan rol",
+    "duplicate": "Çoğalt",
+    "required": "Gerekli",
+    "remove": "Kaldır",
+    "saveLayout": "Düzeni kaydet",
+    "restore": "Düzeni geri yükle",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "zoom": "Yakınlaştır",
+    "templates": "Şablonları imzalama",
+    "newDraft": "Yeni şablon taslağı",
+    "noDrafts": "Bu sayfada şablon taslağı yok.",
+    "nextPage": "Sonraki sayfa",
+    "archive": "Arşiv",
+    "archived": "Arşivlendi",
+    "retry": "Yeniden dene",
+    "loading": "Şablonlar yükleniyor…",
+    "signer": "İmzalayan",
+    "signature": "İmza",
+    "initials": "Baş harfler",
+    "text": "Metin",
+    "date": "Tarih",
+    "checkbox": "Onay kutusu",
+    "width": "Genişlik",
+    "height": "Yükseklik",
+    "x": "X",
+    "y": "e",
+    "publish": "Kaydedilen düzeltmeyi yayınla",
+    "published": "Yayınlanan revizyon {{revision}}",
+    "openSaved": "Kaydedilen revizyonu aç {{revision}}",
+    "revision": "Revizyon {{revision}}",
+    "placement": "{{type}} yerleşimi",
+    "page": "{{count}}'nin {{page}} Sayfası",
+    "forRole": "{{role}} için {{type}}",
+    "publishConfirm": "Bu şablon revizyonu yeniden kullanılmak üzere yayınlansın mı?",
+    "discard": "Kaydedilmemiş düzen değişiklikleri silinsin mi?",
+    "replace": "Kaydedilmemiş düzen değişiklikleri değiştirilsin mi?"
+  },
+  "common": {
+    "active": "Aktif",
+    "inactive": "Etkin değil",
+    "suspended": "Askıya alındı",
+    "activate": "Etkinleştir",
+    "deactivate": "Devre dışı bırak",
+    "lead": "Kurşun",
+    "paused": "Duraklatıldı",
+    "archived": "Arşivlendi",
+    "appName": "Corely Bir ERP",
+    "tagline": "İşinizi uçtan uca yönetin.",
+    "loading": "Yükleniyor...",
+    "select": "Seç",
+    "optional": "İsteğe bağlı",
+    "save": "Kaydet",
+    "cancel": "İptal etmek",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "search": "Ara",
+    "filter": "Filtre",
+    "export": "İhracat",
+    "import": "İthalat",
+    "back": "Geri",
+    "next": "Sonraki",
+    "confirm": "Onayla",
+    "close": "Kapat",
+    "docs": "Dokümanlar",
+    "logout": "Oturumu kapat",
+    "viewAll": "Tümünü görüntüle",
+    "comingSoon": "Yakında",
+    "noResults": "Sonuç bulunamadı",
+    "selectDate": "Tarih seçin",
+    "noTopic": "konu yok",
+    "error": "Bir şeyler ters gitti",
+    "success": "Başarı",
+    "currency": "avro",
+    "locale": "tr-TR",
+    "view": "Görüntüle",
+    "status": "Durum",
+    "unknown": "Bilinmiyor",
+    "currencies": {
+      "eur": "Avro",
+      "usd": "ABD Doları",
+      "gbp": "İngiliz Sterlini",
+      "chf": "İsviçre Frangı"
+    },
+    "reset": "Sıfırla",
+    "name": "İsim",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "notes": "Notlar",
+    "details": "Ayrıntılar",
+    "open": "Açık",
+    "closed": "Kapalı",
+    "tags": "Etiketler",
+    "noTags": "Hiçbir etiket eklenmedi.",
+    "for": "için",
+    "draft": "Taslak",
+    "createdAt": "{{date}} oluşturuldu",
+    "empty": "Boş",
+    "amount": "Tutar",
+    "copy": "Kopyala",
+    "type": "Tür",
+    "description": "Açıklama",
+    "date": "Tarih",
+    "noteOptional": "Not (İsteğe bağlı)",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "saving": "Kaydediliyor...",
+    "subject": "Konu",
+    "message": "Mesaj",
+    "attachments": "Ekler",
+    "changeStatus": "Durumu değiştir",
+    "current": "Mevcut",
+    "action": "Eylem",
+    "statusAuditTrail": "Durum değişikliklerinin geçmişi kaydedilir.",
+    "confirmAction": "İşlemi onayla",
+    "confirmMessage": "Devam etmek istediğinizden emin misiniz?",
+    "reason": "Sebep",
+    "reasonPlaceholder": "Nedenini girin...",
+    "badge": "Rozet",
+    "actions": "Eylemler",
+    "other": "Diğer",
+    "moreActions": "Daha fazla işlem",
+    "dangerZone": "Tehlike bölgesi",
+    "goBack": "Geri dön",
+    "phoneShort": "Telefon",
+    "emailShort": "E-posta",
+    "website": "Web sitesi",
+    "bank": "Banka",
+    "iban": "IBAN",
+    "default": "Varsayılan",
+    "copyLink": "Bağlantıyı Kopyala",
+    "add": "Ekle",
+    "created": "Oluşturuldu",
+    "updated": "Güncellendi",
+    "notSet": "Ayarlanmadı",
+    "done": "Bitti",
+    "customFields": "Özel alanlar",
+    "trial": {
+      "activeTitle": "Tam erişim denemesi etkin: {{days}} gün kaldı",
+      "expiringTitle": "Tam erişim deneme sürenizde {{days}} gün kaldı",
+      "description": "Kart gerekmez. Dışa aktarma, yapay zeka ve çoklu konum erişimini sürdürmek için deneme süresi sona ermeden ücretli bir plan seçin.",
+      "cta": "Faturalandırmayı aç",
+      "expiredTitle": "30 günlük deneme süreniz sona erdi",
+      "expiredDescription": "Tüm özellikleri kullanmaya devam etmek için şimdi yükseltin.",
+      "dismiss": "Reddet",
+      "modalTitle": "30 günlük tam erişim deneme süreniz sona erdi",
+      "modalDescription": "Çalışma alanınız artık Ücretsiz planı kullanıyor. Geçmiş veriler hâlâ mevcuttur ancak dışa aktarma, yapay zeka ve çoklu konum özellikleri siz abone olana kadar kilitlidir.",
+      "modalLater": "Daha sonra",
+      "choosePlan": "Bir plan seçin"
+    },
+    "searching": "Aranıyor...",
+    "retry": "Tekrar dene",
+    "loadMore": "Daha fazlasını yükle"
+  },
+  "onboarding": {
+    "title": "İlk katılım",
+    "progressTitle": "İlerleme",
+    "allSet": "Artık hazırsınız!",
+    "redirectingToDashboard": "Kontrol panelinize yönlendiriliyorsunuz...",
+    "saveAndExit": "Kaydet ve Çık",
+    "goBack": "Geri dön",
+    "skipForNow": "Şimdilik atla",
+    "skip": "İlk Katılımı Atla",
+    "loading": "İlk katılım yükleniyor...",
+    "aiAssistant": "Yapay Zeka Asistanı",
+    "aiTipTitle": "Yardımcı Asistan",
+    "aiHelpTitle": "Bu adımda yardıma mı ihtiyacınız var?",
+    "aiHelpPrompt": "Bu adımda yardıma mı ihtiyacınız var? Yapay zeka asistanımızdan bundan sonra ne yapılacağını açıklamasını veya önermesini isteyin.",
+    "askAssistant": "Asistana Sor",
+    "sidebarHelpTitle": "Yardıma mı ihtiyacınız var?",
+    "sidebarHelpDescription": "Yapay zeka asistanımız, Corely'yi etkili bir şekilde kurmanıza yardımcı olmak için her adımda hazırdır.",
+    "businessName": "İşletme Adı",
+    "businessNamePlaceholder": "örneğin Bella Güzellik Stüdyosu",
+    "businessNameRequired": "İşletme adı gerekli",
+    "businessType": "İşletme Türü",
+    "selectType": "Tür seçin",
+    "businessTypeRequired": "Kategori gerekli",
+    "currency": "Para birimi",
+    "categories": {
+      "beauty": "Tırnak / Güzellik Salonu",
+      "hair": "Kuaför / Berber",
+      "gastronomy": "Kafe / Restoran",
+      "retail": "Perakende Mağazası",
+      "other": "Diğer"
+    },
+    "workflowOptions": {
+      "paper": "Kağıt / Defter",
+      "paperDesc": "Manuel dizüstü bilgisayarlardan dijitale geçiş.",
+      "excel": "Excel / Elektronik Tablo",
+      "excelDesc": "Artık karmaşık formüller veya bozuk hücreler yok.",
+      "pos": "POS Sistemi",
+      "posDesc": "POS'unuzu ve kasa defterinizi sorunsuz bir şekilde birleştirin.",
+      "software": "Diğer Yazılımlar",
+      "softwareDesc": "Daha modern bir nakit çözümüne geçin."
+    },
+    "workflow": {
+      "insightTitle": "Kişiselleştirilmiş Bilgi",
+      "selectHint": "Önceki akışınızı seçin"
+    },
+    "language": {
+      "defaultHint": "Varsayılan dil"
+    },
+    "welcome": {
+      "badge": "Yeni Deneyim",
+      "footer": "Corely Yapay Zeka tarafından desteklenmektedir"
+    },
+    "receipt": {
+      "errorUnsupported": "Desteklenmeyen dosya. Lütfen 10 MB'ın altında bir PDF, JPG veya PNG yükleyin.",
+      "uploadPrompt": "Yüklemek için tıklayın veya sürükleyip bırakın",
+      "uploadHint": "PDF, JPG, PNG (maks. 10MB)",
+      "skipLabel": "Bunu daha sonra yapacağım",
+      "successTitle": "Makbuz ektedir!",
+      "successDesc": "Bir sonraki adıma geçiyoruz...",
+      "continueLabel": "Devam et"
+    },
+    "openingBalance": {
+      "errorAmount": "Geçerli tutar gerekli",
+      "label": "Şu anda kayıtlı olan gerçek nakit",
+      "hint": "💡Kart ödemelerini veya banka havalelerini dahil etmeyin. Sadece fiziksel nakit.",
+      "importantTip": "Önemli İpucu"
+    },
+    "entries": {
+      "errorAmount": "Geçerli tutar gerekli",
+      "errorNote": "Not gerekli",
+      "ctaAdd": "Giriş Ekle",
+      "successTitle": "Giriş Kaydedildi",
+      "successOne": "Harika! İlk girişinizi eklediniz. Bir tane daha yapalım.",
+      "typeLabel": "İşlem Türü",
+      "typeIncome": "Nakit Gelir",
+      "typeExpense": "Nakit Gider",
+      "amountLabel": "Tutar ({{symbol}})",
+      "descLabel": "Açıklama",
+      "descPlaceholder": "örneğin Saç kesimi veya Kahve malzemeleri",
+      "skipSecond": "İkinci Girişi Atla"
+    },
+    "status": {
+      "expectedLabel": "Çekmecede Beklenen Nakit",
+      "incomeLabel": "Bugünkü Gelir",
+      "expenseLabel": "Bugünkü Giderler",
+      "receiptMissing": "Hatırlatma: İlk faturanız hâlâ kayıp. Daha sonra kasa girişleri listesinden ekleyebilirsiniz.",
+      "workflowPaper": "Dizüstü bilgisayar kullandığınız için bu görünüm manuel hesaplamanın yerini alır.",
+      "workflowExcel": "Elektronik tablolar kullandığınız için bu, nakit toplamlarınızın formüller olmadan canlı kalmasını sağlar.",
+      "workflowPos": "POS sistemi kullandığınız için bu, nakit ve makbuzların tek bir yerde hizalanmasını sağlar.",
+      "workflowSoftware": "Başka bir yazılım kullandığınız için bu size tek bir günlük nakit görünümü sağlar.",
+      "receiptReminder": "Makbuz Hatırlatıcısı",
+      "tipTitle": "Bu sizin nakit durumunuzdur.",
+      "tipDesc": "Beklenen bakiyeniz her giriş eklediğinizde otomatik olarak güncellenir. Günün sonunda artık manuel hesaplamalara gerek yok.",
+      "cta": "Sırada ne olduğunu görün"
+    },
+    "closing": {
+      "watchTutorial": "30'lu yılların eğitimini izleyin",
+      "previewAlt": "Kapanış kaydı",
+      "skipLabel": "Bunu daha sonra yapacağım"
+    },
+    "errors": {
+      "missingStepComponent": "Şu tür için adım bileşeni bulunamadı: {{type}}"
+    },
+    "postValue": {
+      "inviteTitle": "Ekibinizi davet edin",
+      "inviteDesc": "Çalışanlarınızın tablet uygulamasını kullanarak nakit girişleri eklemelerine izin verin.",
+      "inviteAction": "Üye ekle",
+      "categoriesTitle": "Özel Kategoriler",
+      "categoriesDesc": "Daha iyi raporlama için özel gider ve gelir kategorileri ayarlayın.",
+      "categoriesAction": "Kategorileri düzenle",
+      "cta": "Kontrol paneline git"
+    }
+  },
+  "actions": {
+    "takeAttendance": "Katılım Alın",
+    "markDone": "Tamamlandı Olarak İşaretle",
+    "assignPayer": "Ödeyecek Kişiyi Ata",
+    "viewInvoice": "Görüntüle"
+  },
+  "list": {
+    "searchPlaceholder": "Ara...",
+    "sort": "Sırala",
+    "filters": "Filtreler",
+    "filtersDescription": "Belirli kriterleri seçerek listeyi filtreleyin.",
+    "clearAll": "Tümünü temizle",
+    "noActiveFilters": "Etkin filtre yok",
+    "addFilter": "Filtre ekle",
+    "applyFilters": "Filtreleri uygula",
+    "noResults": "Hiçbir öğe bulunamadı."
+  },
+  "nav": {
+    "people": "Personel dizini",
+    "peopleSelfService": "Profilim",
+    "dashboard": "Kontrol Paneli",
+    "portfolio": "Portföy",
+    "rentals": {
+      "properties": "Özellikler"
+    },
+    "quotes": "Alıntılar",
+    "clients": "Müşteriler",
+    "tax": {
+      "overview": "Genel Bakış",
+      "filings": "Başvurular",
+      "payments": "Ödemeler",
+      "documents": "Belgeler",
+      "settings": "Vergi Ayarları",
+      "reports": "Raporlar",
+      "annualAssistant": "Yıllık Asistan"
+    },
+    "assistant": "Asistan",
+    "billing": "Faturalandırma",
+    "expenses": "Giderler",
+    "invoices": "Faturalar",
+    "registers": "Kayıtlar",
+    "directory": {
+      "restaurants": "Restoranlar"
+    },
+    "tenants": "Kiracılar",
+    "groups": {
+      "core": "Çekirdek",
+      "freelancer": "Serbest çalışan",
+      "sales": "Satış",
+      "purchasing": "Satın alma",
+      "inventory": "Envanter",
+      "finance": "Finans",
+      "booking": "Rezervasyon",
+      "settings": "Ayarlar",
+      "platform": "platformu",
+      "tax": "Vergi",
+      "education": "Eğitim",
+      "other": "Diğer"
+    },
+    "customers": "Müşteriler",
+    "students": "Öğrenciler",
+    "salesQuotes": "Satış Teklifleri",
+    "salesOrders": "Satış Siparişleri",
+    "salesInvoices": "Satış Faturaları",
+    "salesCopilot": "Satış Yardımcı Pilotu",
+    "salesSettings": "Satış Ayarları",
+    "purchaseOrders": "Satınalma Siparişleri",
+    "vendorBills": "Satıcı Faturaları",
+    "purchasingSettings": "Satın Alma Ayarları",
+    "purchasingCopilot": "Yardımcı Pilot Satın Alma",
+    "settings": "Ayarlar",
+    "projects": "Projeler",
+    "accounting": "Muhasebe",
+    "inventory": "Envanter",
+    "inventoryProducts": "Envanter - Ürünler",
+    "inventoryWarehouses": "Envanter - Depolar",
+    "inventoryStock": "Envanter - Stok",
+    "inventoryDocuments": "Envanter - Belgeler",
+    "inventoryReorder": "Envanter - Yeniden Sırala",
+    "inventoryCopilot": "Envanter - Yardımcı Pilot",
+    "catalogItems": "Katalog Öğeleri",
+    "pos": {
+      "catalog": "Katalog",
+      "catalogQuickAdd": "Hızlı Öğe Ekle",
+      "transactions": "İşlemler"
+    },
+    "importShipments": "Gönderiler",
+    "suppliers": "Tedarikçiler",
+    "automation": "Otomasyon",
+    "documents": "Belgeler",
+    "cms": {
+      "posts": "CMS Gönderileri",
+      "comments": "CMS Yorumları"
+    },
+    "hr": "İK",
+    "workspace": "Çalışma Alanı Ayarları",
+    "profile": "Profil ve Hesap",
+    "members": "Ekip Yönetimi",
+    "roles": "Roller ve İzinler",
+    "paymentMethods": "Ödeme Yöntemleri",
+    "taxSettings": "Vergi Ayarları",
+    "cashManagement": "Nakit Yönetimi",
+    "issues": "İstekler",
+    "crmDashboard": "Kontrol Paneli",
+    "crmDeals": "Fırsatlar",
+    "crmLeads": "Potansiyel müşteriler",
+    "crmActivities": "Faaliyetler",
+    "crmSequences": "Diziler",
+    "crmEmailSettings": "E-posta Ayarları",
+    "crmTemplates": "Şablonlar",
+    "classes": "Sınıflar",
+    "booking": {
+      "appointments": "Randevular",
+      "resources": "Kaynaklar",
+      "services": "Hizmetler",
+      "bookingPage": "Rezervasyon Sayfası"
+    },
+    "coaching": {
+      "engagements": "Koçluk görevleri",
+      "sessions": "Koçluk oturumları"
+    },
+    "programs": "Programlar",
+    "teacherDashboard": "Öğretmen Kontrol Paneli",
+    "classSessions": "Oturumlar",
+    "classBilling": "Sınıf Faturalandırma",
+    "website": "Web sitesi",
+    "platform": "platformu",
+    "forms": "Formlar"
+  },
+  "coaching": {
+    "engagements": {
+      "title": "Koçluk görevleri",
+      "subtitle": "Koçluk rezervasyonlarını, önkoşulları, belgeleri ve takipleri takip edin.",
+      "columns": {
+        "offer": "Teklif",
+        "client": "Müşteri",
+        "status": "Durum",
+        "billing": "Faturalandırma",
+        "updated": "Güncellendi"
+      }
+    },
+    "sessions": {
+      "title": "Koçluk oturumları",
+      "subtitle": "Yaklaşan ve tamamlanan koçluk oturumlarını izleyin.",
+      "columns": {
+        "engagement": "Nişan",
+        "start": "Başlat",
+        "status": "Durum",
+        "meeting": "Toplantı"
+      },
+      "pendingMeeting": "Bekleyen önkoşullar"
+    },
+    "detail": {
+      "openCheckout": "Ödemeyi aç",
+      "exportBundle": "Paketi dışa aktar",
+      "exportQueued": "Paketi dışa aktarma isteği sıraya alındı.",
+      "exportError": "Dışa aktarma paketi istenemedi.",
+      "checkoutError": "Ödeme oturumu oluşturulamadı.",
+      "sections": {
+        "overview": "Genel Bakış",
+        "workflow": "İş akışı durumu",
+        "sessions": "Hazırlık ve oturumlar",
+        "documents": "Belgeler",
+        "activity": "Faaliyet ve denetim",
+        "aiSummary": "Yapay zeka özeti"
+      },
+      "noArtifacts": "Henüz saklanan eser yok.",
+      "noAiSummary": "Henüz AI özeti mevcut değil."
+    },
+    "empty": {
+      "engagements": "Koçluk anlaşması bulunamadı.",
+      "sessions": "Koçluk seansı bulunamadı."
+    }
+  },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Çekirdek"
+      },
+      "platform": {
+        "enabled": "platformu"
+      },
+      "invoices": {
+        "enabled": "Faturalar"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Portföy"
+      },
+      "issues": {
+        "enabled": "Sorunlar"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Giderler"
+      },
+      "parties": {
+        "enabled": "Partiler"
+      },
+      "ai-copilot": {
+        "enabled": "Yapay Zeka Yardımcı Pilotu"
+      },
+      "tax": {
+        "enabled": "Vergi"
+      },
+      "cash-management": {
+        "enabled": "Nakit Yönetimi"
+      },
+      "sales": {
+        "enabled": "Satış"
+      },
+      "workspaces": {
+        "enabled": "Çalışma alanları"
+      },
+      "purchasing": {
+        "enabled": "Satın alma"
+      },
+      "rentals": {
+        "enabled": "Kiralıklar"
+      },
+      "booking": {
+        "enabled": "Rezervasyon"
+      },
+      "website": {
+        "enabled": "Web sitesi"
+      }
+    }
+  },
+  "requests": {
+    "submit": "Bir istek gönderin",
+    "whatDoYouNeed": "Neye ihtiyacın var?",
+    "problem": "Sorun bildir",
+    "service": "Hizmet talep edin",
+    "title": "Başlık",
+    "clientEmail": "Müşteri e-postası (isteğe bağlı)",
+    "submitFailed": "İstek gönderilemedi. Tekrar deneyin.",
+    "back": "İsteklere geri dön",
+    "queue": "Sıra",
+    "mine": "isteklerim",
+    "assign": "Ata",
+    "assignFailed": "İstek atanamadı.",
+    "internalNote": "Dahili not ekle",
+    "clientUpdate": "İstemci güncellemesi",
+    "summary": "Tamamlanma özeti",
+    "confirmRecipient": "Alıcıyı onayladım",
+    "retry": "İstemci güncellemesini yeniden dene",
+    "send": "İstemci güncellemesini gönder",
+    "sendFailed": "Güncelleme gönderilemiyor. Teslimat durumunu kontrol edip tekrar deneyin.",
+    "resolved": "İstek çözüldü",
+    "reference": "Ref. {{reference}}",
+    "saveNote": "Dahili notu kaydet",
+    "internalNotes": "Dahili notlar",
+    "empty": "Hiçbir istek bulunamadı",
+    "emptyDescription": "İlerlemesini izlemeye başlamak için bir istek gönderin.",
+    "delivery": {
+      "QUEUED": "Sıraya alındı",
+      "SENT": "Gönderildi",
+      "FAILED": "Gönderim başarısız oldu",
+      "NEEDS_REVIEW": "Tekrar göndermeden önce teslimatı kontrol edin"
+    }
+  },
+  "issues": {
+    "title": "Sorunlar",
+    "reportTitle": "Yeni Sorun Bildir",
+    "unassigned": "Atanmamış",
+    "description": {
+      "empty": "Açıklama sağlanmadı."
+    },
+    "createdAt": "{{date}} oluşturuldu",
+    "status": {
+      "change": "Durumu değiştir",
+      "update": "Güncelleme durumu",
+      "updated": "Durum başarıyla güncellendi",
+      "updateFailed": "Durum güncellenemedi",
+      "resolved": "Sorun çözüldü",
+      "resolveFailed": "Sorun çözülemedi",
+      "reopened": "Sorun yeniden açıldı",
+      "reopenFailed": "Sorun yeniden açılamadı"
+    },
+    "actions": {
+      "resolve": "Çöz",
+      "reopen": "Yeniden aç"
+    },
+    "fields": {
+      "title": "Başlık",
+      "priority": "Öncelik",
+      "description": "Açıklama",
+      "siteType": "Site Türü",
+      "siteIdOptional": "Site Kimliği (İsteğe bağlı)",
+      "customerIdOptional": "Müşteri Kimliği (İsteğe bağlı)",
+      "manufacturerIdOptional": "Üretici Kimliği (İsteğe bağlı)",
+      "transcriptOptional": "Sesli Not Metni (İsteğe Bağlı)",
+      "site": "sitesi",
+      "assignee": "Vekil"
+    },
+    "placeholders": {
+      "priority": "Öncelik seçin",
+      "siteType": "Site türünü seçin"
+    },
+    "priority": {
+      "low": "Düşük",
+      "medium": "Orta",
+      "high": "Yüksek",
+      "urgent": "Acil"
+    },
+    "siteTypes": {
+      "field": "Alan",
+      "customer": "Müşteri",
+      "manufacturer": "Üretici"
+    },
+    "statuses": {
+      "NEW": "Yeni",
+      "TRIAGED": "Triyajlandı",
+      "IN_PROGRESS": "Devam Ediyor",
+      "WAITING": "Bekliyor",
+      "RESOLVED": "Çözüldü",
+      "CLOSED": "Kapalı",
+      "REOPENED": "Yeniden açıldı"
+    },
+    "attachments": {
+      "title": "Ekler",
+      "images": "Görseller",
+      "addImages": "Resim Ekle",
+      "takePicture": "Resim Çek",
+      "audio": "Ses Kayıtları",
+      "voiceNote": "Sesli Not",
+      "uploaded": "Yüklenen ekler:",
+      "empty": "Ek yok.",
+      "transcript": "Transkript: {{transcript}}"
+    },
+    "voiceNote": "Sesli Not",
+    "startRecording": "Kaydı Başlat",
+    "stopRecording": "Kaydı Durdur",
+    "submitting": "Gönderiliyor...",
+    "submit": "Sorunu Gönder",
+    "speech": {
+      "liveTranscription": "Canlı transkripsiyon etkinleştirildi",
+      "notAvailable": "Konuşma tanıma bu tarayıcıda kullanılamıyor"
+    },
+    "comments": {
+      "title": "Yorumlar",
+      "addTitle": "Yorum Ekle",
+      "add": "Yorum Ekle",
+      "added": "Yorum eklendi",
+      "addFailed": "Yorum eklenemedi",
+      "placeholder": "Bir yorum yazın...",
+      "empty": "Henüz yorum yok."
+    },
+    "activity": {
+      "title": "Etkinlik Geçmişi",
+      "empty": "Hiçbir aktivite kaydedilmedi."
+    },
+    "errors": {
+      "microphoneDenied": "Mikrofon erişimi reddedildi",
+      "cameraDenied": "Kamera erişimi reddedildi",
+      "loadFailed": "Sorun ayrıntıları yüklenemedi"
+    }
+  },
+  "tax": {
+    "title": "Vergi Merkezi",
+    "subtitle": "Vergi profilinizi, dosyalamalarınızı ve uyumluluğunuzu yönetin",
+    "loading": "Vergi verileri yükleniyor...",
+    "profile": {
+      "title": "Vergi Profili",
+      "vatEnabled": "KDV/Satış Vergisi Kayıtlı",
+      "vatEnabledHelp": "İşletmeniz KDV veya Satış Vergisi için kayıtlıysa bunu etkinleştirin",
+      "country": "Vergi Yargısı",
+      "countryHelp": "İşletmenizin vergi açısından kayıtlı olduğu birincil ülkeyi seçin",
+      "regime": "KDV Rejimi",
+      "usesAdvisor": "Vergi Danışmanı/Muhasebeciyi Kullan",
+      "usesAdvisorHelp": "Vergi beyannameleri için harici bir uzmanla çalışıyorsanız etkinleştirin",
+      "vatIdOptional": "KDV/Vergi Numarası (İsteğe bağlı)",
+      "filingFrequency": "Dosyalama Sıklığı",
+      "accountingMethod": "Muhasebe Yöntemi",
+      "effectiveFrom": "Şu tarihten itibaren geçerli:",
+      "effectiveFromHelp": "Bu vergi profilinin kapsaması gereken nakit işlemleriyle ilgili veya öncesinde bir tarih seçin.",
+      "taxYearStartMonth": "Vergi Yılı Başlangıç Ayı",
+      "localTaxOffice": "Yerel Vergi Dairesi",
+      "save": "Vergi Profilini Kaydet",
+      "saveSuccess": "Vergi profili kaydedildi",
+      "saveFailed": "Vergi profili kaydedilemedi",
+      "vatExemption": "KDV İstisnası Paragrafı",
+      "vatExemptionHelp": "İşletmeniz için ilgili muafiyet paragrafını seçin"
+    },
+    "countries": {
+      "de": "Almanya"
+    },
+    "regimes": {
+      "smallBusiness": "Küçük İşletme (Kleinunternehmer)",
+      "standardVat": "Standart KDV",
+      "vatExempt": "KDV Muafiyeti"
+    },
+    "exemptions": {
+      "exportDeliveries": "§ 4 No. 1a UStG - İhracat teslimatları",
+      "intraCommunityDeliveries": "§ 4 No. 1b UStG - Topluluk içi teslimatlar",
+      "financialServices": "§ 4 No. 8 UStG - Finansal hizmetler",
+      "insuranceServices": "§ 4 No. 11 UStG - Sigorta hizmetleri",
+      "lettingLeasing": "§ 4 No. 12 UStG - Kiralama ve leasing",
+      "medicalServices": "§ 4 No. 14 UStG - Tıbbi hizmetler",
+      "educationalServices": "§ 4 No. 21 UStG - Eğitim hizmetleri"
+    },
+    "filing": {
+      "monthly": "Aylık",
+      "quarterly": "Üç ayda bir",
+      "yearly": "yıllık"
+    },
+    "accounting": {
+      "cashBasis": "Nakit Esası (Ist-Versteuerung)",
+      "accrualBasis": "Tahakkuk Esası (Soll-Versteuerung)",
+      "cashBasisHelp": "Nakit alındığında gelir kaydedilir",
+      "accrualBasisHelp": "Gelir, nakdin ne zaman alındığına bakılmaksızın kazanıldığı anda kaydedilir"
+    },
+    "placeholders": {
+      "country": "Ülke seçin",
+      "regime": "Rejim seçin",
+      "vatExemption": "Muafiyet paragrafını seçin",
+      "filingFrequency": "Frekansı seçin",
+      "accountingMethod": "Yöntem seç",
+      "vatId": "KDV numaranızı girin (ör. DE123456789)",
+      "month": "Ay seçin",
+      "localTaxOffice": "Yerel vergi dairenizin adını girin"
+    },
+    "consultant": {
+      "title": "Vergi Danışmanı",
+      "save": "Danışman Bilgilerini Kaydet",
+      "saveSuccess": "Danışman bilgileri kaydedildi",
+      "saveFailed": "Danışman bilgileri kaydedilemedi"
+    },
+    "submitStep": {
+      "methods": {
+        "manual": "Manuel",
+        "api": "API'si",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "ELSTER için ihracat",
+        "description": "Mein ELSTER'e yüklemek için dosyalama verilerini indirin. ELSTER'e gönderdikten sonra aktarım/referans kimliğini aşağıya yapıştırın.",
+        "actions": {
+          "elsterXml": "ELSTER XML'i dışa aktar",
+          "kennzifferCsv": "CSV'yi dışa aktar (Kennziffer eşlemesi)",
+          "loading": "Dışa aktarılıyor..."
+        },
+        "unavailable": "ELSTER dışa aktarımı bu dosyalama için mevcut değil.",
+        "success": {
+          "elsterXml": "ELSTER XML'i indirildi",
+          "kennzifferCsv": "İndirilen Kennziffer CSV"
+        },
+        "errors": {
+          "generic": "Dosyalama dışa aktarılamadı."
+        }
+      },
+      "connection": {
+        "title": "Gönderim yöntemi",
+        "connected": "Otomatik gönderim bağlantınız yapılandırıldı.",
+        "notConfigured": "Gönderim bağlantısı yapılandırılmamış.",
+        "manageIn": "Gönderim ayarlarını şurada yönetin:",
+        "settingsLink": "Vergi Ayarları",
+        "enableDirectFiling": "Doğrudan dosyalamayı etkinleştirmek için."
+      },
+      "confirmation": {
+        "title": "Gönderim onayı",
+        "method": "Yöntem",
+        "reference": "Gönderim referansı",
+        "referencePlaceholder": "Gönderim kimliğini/referansını girin",
+        "submittedAt": "Gönderilme tarihi:",
+        "notes": "Notlar (isteğe bağlı)",
+        "notesPlaceholder": "Kayıtlarınız için not ekleyin",
+        "submit": "Başvuruyu gönder"
+      }
+    },
+    "attachments": {
+      "title": "Ekler",
+      "attachFromDocuments": "Vergi belgelerinden ekleyin",
+      "uploadAttachment": "Eki yükle",
+      "loading": "Ekler yükleniyor...",
+      "error": "Ekler yüklenemedi.",
+      "empty": "Makbuz veya gönderim onayları gibi destekleyici belgeleri yükleyin.",
+      "untitled": "Başlıksız belge",
+      "type": "Tür: {{type}}",
+      "uploadedAt": "Yüklendi {{date}}",
+      "uploader": "Yükleyici: {{name}}",
+      "remove": "Kaldır",
+      "dialog": {
+        "title": "Makbuz ekle",
+        "description": "Bu başvuru için ödeme kanıtını yükleyin.",
+        "replace": "Makbuzu değiştir",
+        "choose": "Makbuz seçin",
+        "noFile": "Hiçbir dosya seçilmedi",
+        "uploading": "Yükleniyor...",
+        "submit": "Makbuz ekle"
+      },
+      "messages": {
+        "uploadSuccess": "Ek yüklendi",
+        "uploadError": "Ek yüklenemedi",
+        "selectFile": "Yüklenecek makbuzu seçin"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "KDV Dosyalama",
+        "vat-annual": "Yıllık KDV Dosyalama",
+        "income-annual": "Gelir Vergisi Başvurusu",
+        "trade": "Ticaret Vergisi Başvurusu",
+        "payroll": "Bordro Vergisi Dosyalama",
+        "corporate-annual": "Kurumlar Vergisi Dosyalama",
+        "year-end": "Yıl Sonu Başvurusu",
+        "other": "Vergi Dosyalama"
+      },
+      "status": {
+        "draft": "Taslak",
+        "needsFix": "Dikkat edilmesi gerekiyor",
+        "readyForReview": "İncelemeye hazır",
+        "submitted": "Gönderildi",
+        "paid": "Ücretli",
+        "archived": "Arşivlendi"
+      },
+      "actions": {
+        "review": "İncele",
+        "continueReview": "İncelemeye devam et",
+        "markPaid": "Ödendi olarak işaretle",
+        "view": "Görüntüle",
+        "previousPeriod": "Önceki dönem",
+        "nextPeriod": "Sonraki dönem",
+        "recalculate": "Yeniden hesapla",
+        "exportPdf": "PDF'yi dışa aktar",
+        "exportCsv": "CSV'yi dışa aktar",
+        "delete": "Dosyalamayı sil",
+        "deleteConfirmTitle": "Dosyalama silinsin mi?",
+        "deleteConfirmMessage": "Bu eylem geri alınamaz."
+      },
+      "due": "Vadesi {{date}}",
+      "dueWithDays": "Vadesi {{date}} • {{count}} gün kaldı",
+      "dueWithDays_plural": "Vadesi {{date}} • {{count}} gün kaldı"
+    },
+    "activity": {
+      "title": "Etkinlik",
+      "loading": "Etkinlik yükleniyor...",
+      "error": "Etkinlik yüklenemedi.",
+      "noActivity": "Henüz etkinlik yok.",
+      "by": "By {{name}}",
+      "types": {
+        "created": "Dosyalama oluşturuldu",
+        "recalculated": "Yeniden hesaplandı",
+        "submitted": "Gönderildi",
+        "paid": "Ödendi olarak işaretlendi",
+        "attachmentAdded": "Ek eklendi",
+        "issuesDetected": "Sorunlar algılandı",
+        "issuesResolved": "Çözülen sorunlar",
+        "deleted": "Silindi"
+      }
+    },
+    "center": {
+      "title": "Vergi Merkezi",
+      "myTaxes": "Vergilerim",
+      "freelancerSubtitle": "Serbest çalışan vergi yükümlülüklerinizi yönetin.",
+      "companySubtitle": "Şirket vergi uyumluluğuna ve başvurulara genel bakış.",
+      "errorLoading": "Vergi Merkezi yüklenirken hata oluştu",
+      "errorDescription": "Vergi genel bakışınızı yükleyemedik. Lütfen tekrar deneyin.",
+      "retry": "Yeniden dene",
+      "reviewNext": "Sonraki başvuruyu inceleyin",
+      "settings": "Ayarlar",
+      "nextUp": {
+        "title": "Sonraki",
+        "allCaughtUp": "Hepiniz yakalandınız!",
+        "noUpcoming": "Yaklaşan başvuru bulunamadı.",
+        "createFiling": "Dosyalama oluştur",
+        "dueDate": "Son Tarih",
+        "estimatedAmount": "Tahmini Tutar",
+        "reviewFiling": "Başvuruyu inceleyin",
+        "viewAll": "Tüm başvuruları görüntüle",
+        "overdue": "GEÇMİŞ",
+        "vat": "KDV",
+        "tax": "Vergi"
+      },
+      "annual": {
+        "title": "Yıllık Başvurular",
+        "yearendTitle": "Yıl Sonu ve Yıllık Başvurular",
+        "viewAll": "Tümünü görüntüle",
+        "createForYear": "{{year}} için oluştur",
+        "noFilings": "{{year}} için yıllık başvuru yok",
+        "obligations": "Yıllık yükümlülükler.",
+        "status": {
+          "draft": "Taslak",
+          "needsFix": "Dikkat edilmesi gerekiyor",
+          "readyForReview": "İncelemeye hazır",
+          "submitted": "Gönderildi",
+          "paid": "Ücretli",
+          "archived": "Arşivlendi",
+          "openForSubmission": "Gönderime açık",
+          "yearInProgress": "Devam eden yıl"
+        },
+        "year": "Yıl {{year}}",
+        "estimatedTaxToPay": "Ödenecek tahmini vergi",
+        "reviewAndSubmit": "İncele ve Gönder",
+        "preview": "Önizleme"
+      },
+      "issues": {
+        "title": "Açık Sayılar",
+        "noIssues": "Hiçbir sorun algılanmadı. Muhasebeniz temiz görünüyor!",
+        "items": "öğeler",
+        "affected": "etkilenen",
+        "fix": "Düzeltme",
+        "blocking": "BLOKEREND"
+      },
+      "shortcuts": {
+        "title": "Kısayollar",
+        "createFiling": "Dosyalama Oluştur",
+        "exportReport": "Raporu Dışa Aktar",
+        "payTaxes": "Vergileri öde",
+        "documents": "Belgeler"
+      },
+      "snapshot": {
+        "title": "YTD Anlık Görüntüsü ({{year}})",
+        "updated": "{{date}} güncellendi",
+        "noData": "Henüz veri mevcut değil."
+      }
+    },
+    "reports": {
+      "title": "Vergi Raporları",
+      "subtitle": "Yaklaşan beyanları ve gönderimleri takip edin.",
+      "tabs": {
+        "upcoming": "Yaklaşan raporlar",
+        "submitted": "Gönderildi"
+      },
+      "groups": {
+        "vat": "Ön KDV beyanları",
+        "compliance": "Uyumluluk (AB Satışları ve Intrastat)",
+        "submitted": "Gönderilen raporlar"
+      },
+      "actions": {
+        "markSubmitted": "Gönderildi olarak işaretle",
+        "downloadPdf": "PDF'yi indir",
+        "generatingPdf": "PDF oluşturuluyor...",
+        "downloadStarted": "İndirme başladı",
+        "pdfPrepared": "PDF hazırlanıyor. Kısa süre sonra tekrar deneyin.",
+        "downloadFailed": "PDF indirilemedi"
+      },
+      "status": {
+        "loading": "Raporlar yükleniyor...",
+        "empty": "Hiçbir rapor bulunamadı."
+      },
+      "types": {
+        "vatAdvance": "Ön KDV beyanı",
+        "vatAnnual": "Yıllık KDV raporu",
+        "incomeTax": "Gelir vergisi",
+        "euSales": "AB Satış Listesi (ZM)",
+        "intrastat": "Intrastat Beyannamesi",
+        "tradeTax": "Ticaret Vergisi (Gewerbesteuer)",
+        "profitLoss": "Kâr ve Zarar Beyanı (EÜR)",
+        "payrollTax": "Bordro Vergisi"
+      },
+      "eur": {
+        "title": "Anlage EÜR (Kar ve Zarar)",
+        "subtitle": "DE kişisel vergi raporlaması için nakit bazlı yıllık beyan.",
+        "status": {
+          "loadingCapabilities": "Vergi özellikleri yükleniyor...",
+          "loadingStatement": "EÜR ekstresi yükleniyor..."
+        },
+        "unsupported": {
+          "title": "EÜR mevcut değil",
+          "description": "Bu rapor şu anda yalnızca kişisel DE çalışma alanları için desteklenmektedir."
+        },
+        "errors": {
+          "capabilitiesTitle": "Vergi özellikleri yüklenemiyor",
+          "capabilitiesDescription": "Çalışma alanı bağlamınız mevcut olduğunda yeniden deneyin.",
+          "statementTitle": "EÜR ekstresi yüklenemiyor",
+          "generic": "EÜR ekstresi yüklenemedi."
+        },
+        "summary": {
+          "income": "Gelir",
+          "expenses": "Giderler",
+          "profit": "Kâr"
+        },
+        "lines": {
+          "title": "Açıklama satırları",
+          "columns": {
+            "line": "Hat",
+            "group": "Grup",
+            "amount": "Tutar"
+          },
+          "groups": {
+            "income": "Gelir",
+            "expense": "Gider"
+          }
+        },
+        "lineLabels": {
+          "income": {
+            "sales": "Satış geliri",
+            "other": "Diğer faaliyet gelirleri"
+          },
+          "expense": {
+            "rent": "Tesis maliyetleri (kira/kamu hizmetleri)",
+            "software": "Yazılım ve abonelikler",
+            "travel": "Seyahat masrafları",
+            "marketing": "Reklam ve pazarlama",
+            "professional": "Profesyonel ve harici hizmetler",
+            "taxes": "Vergiler, harçlar ve harçlar",
+            "other": "Tamamen indirilebilen diğer işletme giderleri"
+          }
+        },
+        "generatedAt": "Oluşturulan {{date}}"
+      }
+    },
+    "documents": {
+      "title": "Vergi Belgeleri",
+      "subtitle": "Vergiyle ilgili tüm belgelerin deposu."
+    },
+    "payments": {
+      "title": "Ödemeler",
+      "subtitle": "Yıl boyunca ödenen ve vadesi gelen başvuruları takip edin.",
+      "exportCsv": "CSV'yi dışa aktar",
+      "status": {
+        "due": "Vadesi gelmiş",
+        "overdue": "vadesi geçmiş",
+        "paid": "Ücretli"
+      },
+      "types": {
+        "vat": "KDV",
+        "vatAnnual": "Yıllık KDV",
+        "incomeAnnual": "Gelir vergisi",
+        "trade": "Ticaret vergisi",
+        "payroll": "Bordro",
+        "corporateAnnual": "Kurumlar vergisi",
+        "yearEnd": "Yıl sonu",
+        "other": "Diğer"
+      },
+      "columns": {
+        "filing": "Dosyalama",
+        "dueDate": "Son tarih",
+        "amount": "Tutar",
+        "status": "Durum",
+        "paidDate": "Ödeme tarihi",
+        "method": "Yöntem",
+        "payable": "Ödenecek",
+        "receivable": "alacak"
+      },
+      "actions": {
+        "markPaid": "Ödendi olarak işaretle",
+        "attachReceipt": "Makbuz ekle",
+        "markedPaid": "Ödendi olarak işaretlendi",
+        "markPaidFailed": "Ödendi olarak işaretlenemedi",
+        "receiptAttached": "Makbuz eklendi",
+        "attachReceiptFailed": "Makbuz eklenemedi",
+        "exportFailed": "Ödemeler dışa aktarılamadı"
+      },
+      "empty": {
+        "title": "Takip edilecek ödeme yok",
+        "description": "Başvurular gönderildikten sonra ödemeler burada görünecektir.",
+        "goToFilings": "Başvurulara git"
+      },
+      "error": {
+        "title": "Ödemeler yüklenemiyor",
+        "description": "Bağlantınızı kontrol edip tekrar deneyin."
+      },
+      "sort": {
+        "dueDateSoonest": "Son tarih (En yakın)",
+        "dueDateLatest": "Son tarih (En son)",
+        "paidDateNewest": "Ödeme tarihi (En yeni)",
+        "paidDateOldest": "Ödeme tarihi (En eski)",
+        "amountHighLow": "Tutar (Yüksek-Düşük)",
+        "amountLowHigh": "Tutar (Düşük-Yüksek)"
+      }
+    },
+    "overview": {
+      "title": "Vergiler",
+      "greeting": "İyi akşamlar {{name}}!",
+      "yourTaxes": "Bölgenizdeki vergileriniz",
+      "localOffice": "Yerel ofis: {{name}}",
+      "annualAssistant": "Yıllık asistan",
+      "viewReports": "Raporları görüntüle",
+      "taxSettings": "Vergi ayarları",
+      "currentVatPeriod": "Cari KDV Dönemi: {{period}} {{year}}",
+      "estimatedVatDue": "Tahmini KDV ödenmesi",
+      "notConfigured": "Yapılandırılmadı",
+      "viewDetails": "Ayrıntıları görüntüle",
+      "kpis": {
+        "taxesToBePaid": "Ödenecek vergiler",
+        "income": "Gelir",
+        "expenses": "Giderler",
+        "vatNotApplicable": "KDV uygulanamaz",
+        "completeSetup": "Vergi kurulumunu tamamlayın",
+        "seeOverview": "Vergilere genel bakışı görün",
+        "unpaidInvoices": "{{count}} ödenmemiş faturalar",
+        "itemsToReview": "{{count}} incelenecek öğeler"
+      },
+      "headsUp": "Dikkat",
+      "settingsIncomplete": "Vergi ayarları eksik",
+      "settingsIncompleteDescription": "Ne kadar borcunuz olduğunu tahmin etmek için vergi profilinizi yapılandırın.",
+      "goToSettings": "Vergi ayarlarına git",
+      "expenseHelper": {
+        "title": "Ne masrafı yapabilirim?",
+        "description": "Hangi satın alma işlemlerini işletme giderleri olarak kategorize edebileceğinizi öğrenin.",
+        "learnMore": "Daha fazla bilgi edinin"
+      },
+      "yourReports": "Vergi raporlarınız",
+      "reportsDescription": "Bilgilerinize göre, bunlar şu anda göndermeniz gereken raporlardır…",
+      "submitReports": "Raporları gönder",
+      "upcomingDeadline": "{{count}} yaklaşan son tarih",
+      "upcomingDeadline_plural": "{{count}} yaklaşan son teslim tarihleri",
+      "noUpcoming": "Yaklaşan rapor yok.",
+      "localTaxOffice": "Yerel vergi dairesi",
+      "addLocalOffice": "Kayıtlarınızı eksiksiz tutmak için yerel vergi dairenizi ekleyin.",
+      "updateSettings": "Ayarları güncelle",
+      "errorLoading": "Vergiler yüklenemedi",
+      "errorDescription": "Vergiye genel bakışınız getirilirken bir şeyler ters gitti."
+    },
+    "annualAssistant": {
+      "threadTitle": "Yıllık gelir vergisi {{year}}",
+      "loading": "Yıllık vergi asistanı oturumunuza hazırlanıyor...",
+      "placeholder": "Taslağınızı oluşturmamı, EÜR oluşturmamı veya bir sonraki adımınıza rehberlik etmemi isteyin",
+      "emptyStateTitle": "Yıllık Gelir Vergisi {{year}}",
+      "emptyStateDescription": "Yıllık dosyalamanızı sohbette tamamlayın: taslak oluşturun, EÜR oluşturun, röportaj sorularını yanıtlayın ve PDF'yi dışa aktarın.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Yıllık taslak oluştur",
+          "value": "{{year}} için yıllık gelir vergisi taslağımı oluştur."
+        },
+        "checklist": {
+          "label": "Kontrol listesini göster",
+          "value": "Taslak kontrol listesini ve engelleyicileri göster."
+        },
+        "export": {
+          "label": "PDF'yi dışa aktar",
+          "value": "Yıllık taslak PDF'imi dışa aktar."
+        }
+      },
+      "errors": {
+        "createTitle": "Yıllık asistan başlatılamıyor",
+        "createDescription": "Asistan iş parçacığı oluşturulamadı. Devam etmek için yeniden deneyin."
+      }
+    },
+    "history": {
+      "title": "KDV dönemleri",
+      "year": "Yıl",
+      "overdueAlert": "İşlem gerekli: {{count}} vadesi geçmiş KDV dönemleri",
+      "overdueDescription": "En eski gecikme süresi önceden seçilir. Halen cari dönem üzerinde çalışabilirsiniz.",
+      "submitOverdue": "Geciken süreleri gönderin",
+      "noData": "Bu yıla ait veri yok.",
+      "noPeriods": "Dönem bulunamadı.",
+      "quarter": "Çeyrek",
+      "selectQuarter": "Çeyreği seçin",
+      "viewDetails": "Dönem ayrıntılarını görüntüle",
+      "selectedPeriod": "Seçilen dönem: {{label}} ({{range}})",
+      "taxDue": "Vergi borcu",
+      "salesVat": "Satış KDV'si",
+      "purchaseVat": "KDV satın al",
+      "submittedOn": "{{date}} tarihinde gönderildi",
+      "reference": "Referans: {{ref}}",
+      "notes": "Notlar: {{notes}}",
+      "archiveReason": "Arşiv nedeni: {{reason}}",
+      "downloadPdf": "PDF'yi indir",
+      "markSubmitted": "Gönderildi olarak işaretle",
+      "markNil": "Sıfır olarak işaretle",
+      "archive": "Arşiv",
+      "tabs": {
+        "upcoming": "Yaklaşan raporlar",
+        "submitted": "Gönderilen raporlar"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Dönemi gönderildiği gibi işaretle",
+          "date": "Gönderim tarihi",
+          "reference": "Referans (isteğe bağlı)",
+          "notes": "Notlar (isteğe bağlı)",
+          "submit": "Gönderim dönemi"
+        },
+        "nil": {
+          "title": "Dönemi sıfır olarak işaretle",
+          "date": "Gönderim tarihi",
+          "notes": "Notlar (isteğe bağlı)",
+          "submit": "Sıfır olarak işaretle"
+        },
+        "archive": {
+          "title": "Arşiv dönemi",
+          "reason": "Sebep",
+          "notes": "Notlar (isteğe bağlı)",
+          "submit": "Arşiv dönemi"
+        },
+        "cancel": "İptal etmek"
+      },
+      "periodCombobox": {
+        "placeholder": "Bir dönem seçin veya yazın…",
+        "searchPlaceholder": "Arayın veya noktayı yazın…",
+        "useCustom": "\"{{value}}\"yi kullanın",
+        "customHint": "Bu özel dönemi kullanmak için Enter'a basın veya tıklayın",
+        "noPeriods": "Dönem bulunamadı.",
+        "customHeading": "Özel",
+        "customPeriod": "Özel dönem",
+        "quartersHeading": "Çeyrekler",
+        "monthlyHeading": "Aylık",
+        "footerHint": "Özel bir süre için {{qExample}} veya {{mExample}} yazın",
+        "quarters": {
+          "1": "1. Çeyrek",
+          "2": "2. Çeyrek",
+          "3": "3. Çeyrek",
+          "4": "4. Çeyrek"
+        },
+        "quarterMonths": {
+          "1": "Ocak – Mart",
+          "2": "Nisan – Haziran",
+          "3": "Temmuz – Eylül",
+          "4": "Ekim – Aralık"
+        }
+      },
+      "navigator": {
+        "prevYear": "Önceki yıl",
+        "nextYear": "Gelecek yıl",
+        "failedToLoad": "KDV dönemleri yüklenemedi.",
+        "retry": "Yeniden dene",
+        "notStarted": "Başlatılmadı",
+        "noFilingYet": "{{period}} {{year}} için henüz başvuru yok.",
+        "createFiling": "Dosyalama oluştur",
+        "status": {
+          "draft": "Taslak",
+          "needsFix": "Dikkat edilmesi gerekiyor",
+          "readyForReview": "Hazır",
+          "submitted": "Gönderildi",
+          "paid": "Ücretli",
+          "archived": "Arşivlendi"
+        }
+      },
+      "attachments": {
+        "title": "Ekler",
+        "attachFromDocuments": "Vergi belgelerinden ekleyin",
+        "uploadAttachment": "Eki yükle",
+        "loading": "Ekler yükleniyor...",
+        "error": "Ekler yüklenemedi.",
+        "empty": "Makbuz veya gönderim onayları gibi destekleyici belgeleri yükleyin.",
+        "untitled": "Başlıksız belge",
+        "type": "Tür: {{type}}",
+        "uploadedAt": "Yüklendi {{date}}",
+        "uploader": "Yükleyici: {{name}}",
+        "remove": "Kaldır",
+        "dialog": {
+          "title": "Makbuz ekle",
+          "description": "Bu başvuru için ödeme kanıtını yükleyin.",
+          "replace": "Makbuzu değiştir",
+          "choose": "Makbuz seçin",
+          "noFile": "Hiçbir dosya seçilmedi",
+          "uploading": "Yükleniyor...",
+          "submit": "Makbuz ekle"
+        },
+        "messages": {
+          "uploadSuccess": "Ek yüklendi",
+          "uploadError": "Ek yüklenemedi",
+          "selectFile": "Yüklenecek makbuzu seçin"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "KDV Dosyalama",
+          "vat-annual": "Yıllık KDV Dosyalama",
+          "income-annual": "Gelir Vergisi Başvurusu",
+          "trade": "Ticaret Vergisi Başvurusu",
+          "payroll": "Bordro Vergisi Dosyalama",
+          "corporate-annual": "Kurumlar Vergisi Dosyalama",
+          "year-end": "Yıl Sonu Başvurusu",
+          "other": "Vergi Dosyalama"
+        },
+        "status": {
+          "draft": "Taslak",
+          "needsFix": "Dikkat edilmesi gerekiyor",
+          "readyForReview": "İncelemeye hazır",
+          "submitted": "Gönderildi",
+          "paid": "Ücretli",
+          "archived": "Arşivlendi"
+        },
+        "actions": {
+          "review": "İncele",
+          "continueReview": "İncelemeye devam et",
+          "markPaid": "Ödendi olarak işaretle",
+          "view": "Görüntüle",
+          "previousPeriod": "Önceki dönem",
+          "nextPeriod": "Sonraki dönem",
+          "recalculate": "Yeniden hesapla",
+          "exportPdf": "PDF'yi dışa aktar",
+          "exportCsv": "CSV'yi dışa aktar",
+          "delete": "Dosyalamayı sil",
+          "deleteConfirmTitle": "Dosyalama silinsin mi?",
+          "deleteConfirmMessage": "Bu eylem geri alınamaz."
+        },
+        "due": "Vadesi {{date}}",
+        "dueWithDays": "Vadesi {{date}} • {{count}} gün kaldı",
+        "dueWithDays_plural": "Vadesi {{date}} • {{count}} gün kaldı"
+      },
+      "activity": {
+        "title": "Etkinlik",
+        "loading": "Etkinlik yükleniyor...",
+        "error": "Etkinlik yüklenemedi.",
+        "noActivity": "Henüz etkinlik yok.",
+        "by": "By {{name}}",
+        "types": {
+          "created": "Dosyalama oluşturuldu",
+          "recalculated": "Yeniden hesaplandı",
+          "submitted": "Gönderildi",
+          "paid": "Ödendi olarak işaretlendi",
+          "attachmentAdded": "Ek eklendi",
+          "issuesDetected": "Sorunlar algılandı",
+          "issuesResolved": "Çözülen sorunlar",
+          "deleted": "Silindi"
+        }
+      },
+      "createFiling": {
+        "title": "Yeni Vergi Dosyalama",
+        "subtitle": "Yeni bir yükümlülük oluşturmak için başvuru türünü ve süresini seçin.",
+        "form": {
+          "details": "Dosyalama ayrıntıları",
+          "type": "Dosyalama Türü",
+          "selectType": "Tür seçin",
+          "types": {
+            "vat": "KDV İadesi",
+            "income-annual": "Gelir Vergisi (Yıllık)",
+            "vat-annual": "Yıllık KDV",
+            "other": "Diğer"
+          },
+          "year": "Vergi Yılı",
+          "period": "Dönem",
+          "cancel": "İptal etmek",
+          "submit": "Dosyalama Oluştur",
+          "errors": {
+            "periodRequired": "KDV beyannameleri için süre gereklidir",
+            "yearRequired": "Yıllık başvurular için yıl gereklidir"
+          }
+        },
+        "messages": {
+          "successTitle": "Dosyalama oluşturuldu",
+          "successDescription": "Dosyalama ayrıntılarına yönlendiriliyorsunuz...",
+          "errorTitle": "Dosyalama oluşturulurken hata oluştu"
+        }
+      },
+      "filingItems": {
+        "error": "Öğeler yüklenemedi.",
+        "emptyTitle": "{{type}} öğesi yok",
+        "emptyDescription": "Bu döneme ait herhangi bir {{type}} öğesi bulamadık.",
+        "table": {
+          "date": "Tarih",
+          "counterparty": "Karşı taraf",
+          "description": "Açıklama",
+          "net": "ağ",
+          "tax": "Vergi",
+          "gross": "Brüt"
+        }
+      },
+      "includedItems": {
+        "title": "Dahil edilen öğeler",
+        "emptyTitle": "Hiçbir öğe dahil edilmedi",
+        "emptyDescription": "Bu dosyalama için henüz herhangi bir kaynak öğe bulamadık.",
+        "table": {
+          "type": "Tür",
+          "date": "Tarih",
+          "counterparty": "Karşı taraf",
+          "category": "Kategori",
+          "vatTreatment": "KDV uygulaması",
+          "net": "ağ",
+          "tax": "Vergi",
+          "gross": "Brüt",
+          "flags": "Bayraklar"
+        },
+        "badges": {
+          "needsAttention": "Dikkat edilmesi gerekiyor",
+          "ok": "tamam",
+          "noCategory": "Kategori yok",
+          "noVatTreatment": "KDV uygulaması yok"
+        },
+        "error": "Dahil edilen öğeler yüklenemedi.",
+        "retry": "Yeniden dene"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Ödendi olarak işaretle",
+          "description": "Ödeme ayrıntılarını kaydedin ve isteğe bağlı olarak bir makbuz ekleyin."
+        },
+        "form": {
+          "paidAt": "Ödeme tarihi:",
+          "method": "Yöntem",
+          "methods": {
+            "bank-transfer": "Banka havalesi",
+            "direct-debit": "Otomatik ödeme",
+            "other": "Diğer"
+          },
+          "amount": "Tutar",
+          "receipt": "Makbuz",
+          "replace": "Makbuzu değiştir",
+          "upload": "Makbuz yükle",
+          "optional": "İsteğe bağlı",
+          "uploading": "Yükleniyor...",
+          "submit": "Ödendi olarak işaretle"
+        },
+        "messages": {
+          "uploadError": "Makbuz yüklenemedi"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "KDV dönemi gönderildi olarak işaretlendi",
+        "submittedError": "KDV dönemi gönderildiği gibi işaretlenemedi",
+        "nilSuccess": "KDV dönemi sıfır olarak işaretlendi",
+        "nilError": "KDV dönemi sıfır olarak işaretlenemedi",
+        "archiveSuccess": "KDV dönemi arşivlendi",
+        "archiveError": "KDV dönemi arşivlenemedi",
+        "generatingPdf": "PDF oluşturuluyor...",
+        "downloadStarted": "İndirme başladı",
+        "pdfPrepared": "PDF hazırlanıyor. Kısa süre sonra tekrar deneyin.",
+        "downloadFailed": "PDF indirilemedi"
+      }
+    }
+  },
+  "cashManagement": {
+    "title": "Nakit Yönetimi",
+    "registers": "Kayıtlar",
+    "newRegister": "Yeni Kayıt",
+    "addEntry": "Giriş Ekle",
+    "dailyClose": "Günlük Kapanış"
+  },
+  "cash": {
+    "title": "Nakit Yönetimi",
+    "subtitle": "Kayıtları, girişleri ve günlük kapanışı takip edin",
+    "registers": {
+      "add": "Ekle Kayıt Ol",
+      "addTitle": "Kayıt Oluştur",
+      "namePlaceholder": "Kayıt adı",
+      "noLocation": "Konum yok",
+      "currentBalance": "Mevcut bakiye",
+      "empty": "Henüz yazar kasa yok",
+      "created": "Kayıt oluşturuldu",
+      "createFailed": "Kayıt oluşturulamadı"
+    },
+    "detail": {
+      "cashIn": "Nakit Girişi",
+      "cashOut": "Nakit Çıkışı",
+      "dailyCloses": "Günlük Kapanışlar",
+      "updatedBalance": "Güncellenmiş Bakiye",
+      "noEntriesFound": "Giriş bulunamadı",
+      "noDailyCloses": "Henüz günlük kapanış yok",
+      "addCashIn": "Nakit Girişi Ekle",
+      "addCashOut": "Nakit Çıkışı Ekle",
+      "reasonPlaceholder": "Giriş nedeni...",
+      "confirmIn": "Onayla",
+      "confirmOut": "Çıkışı Onayla",
+      "entryAdded": "Giriş eklendi",
+      "entryAddFailed": "Giriş eklenemedi",
+      "invalidAmount": "Geçersiz tutar"
+    },
+    "dailyClose": {
+      "title": "Günlük Kapanış",
+      "reconcile": "Uzlaştır: {{register}}",
+      "businessDate": "İş Tarihi",
+      "expectedBalance": "Beklenen Bakiye",
+      "countedBalance": "Sayılan Bakiye",
+      "countedCash": "Sayılan Nakit ({{currency}})",
+      "difference": "Fark",
+      "perfectMatch": "Mükemmel Eşleşme",
+      "discrepancyDetected": "Tutarsızlık Algılandı",
+      "differenceEntryNote": "Otomatik olarak fark girişi oluşturulacaktır",
+      "notesPlaceholder": "Bu kapanışla ilgili herhangi bir not...",
+      "submitClose": "Gönder Kapat",
+      "submitting": "Gönderiliyor...",
+      "submitted": "Günlük kapanış gönderildi",
+      "submitFailed": "Kapatılamadı",
+      "enterCountedAmount": "Lütfen sayılan tutarı girin"
+    },
+    "ui": {
+      "common": {
+        "loadingRegister": "Kayıt yükleniyor...",
+        "registerNotFound": "Yazar kasa bulunamadı.",
+        "noLocation": "Konum yok",
+        "cancel": "İptal etmek"
+      },
+      "registers": {
+        "title": "Yazarkasalar",
+        "subtitle": "Kayıtları, bakiyeleri ve günlük işlemleri yönetin.",
+        "newRegister": "Yeni kayıt",
+        "searchPlaceholder": "Kayıt adını ara",
+        "locationPlaceholder": "Konuma göre filtrele",
+        "currencyPlaceholder": "Para birimi (örn. EUR)",
+        "loading": "Kayıtlar yükleniyor...",
+        "loadFailed": "Kayıtlar yüklenemedi.",
+        "empty": "Yazar kasa bulunamadı.",
+        "open": "Açık",
+        "table": {
+          "name": "İsim",
+          "location": "Konum",
+          "currency": "Para birimi",
+          "currentBalance": "Mevcut bakiye",
+          "actions": "Eylemler"
+        }
+      },
+      "registerDetail": {
+        "newCashEntry": "Yeni nakit girişi",
+        "closeDay": "Kapanış günü (Kassensturz)",
+        "kassenbericht": "Kassenbericht",
+        "export": "İhracat",
+        "edit": "Düzenle",
+        "currentBalance": "Mevcut bakiye",
+        "lastClosedDay": "Son kapalı gün",
+        "noSubmittedClose": "Henüz gönderilen gün kapanışı yok",
+        "tabs": {
+          "overview": "Genel Bakış",
+          "entriesPreview": "Giriş önizlemesi",
+          "activityAudit": "Faaliyet / Denetim",
+          "unclosedDays": "Kapatılmayan günler"
+        },
+        "registerId": "Kayıt Kimliği",
+        "negativeBalancePolicy": "Negatif bakiye politikası",
+        "policyBlocked": "Engellendi",
+        "policyAllowed": "İzin verildi",
+        "noEntriesYet": "Henüz giriş yok.",
+        "openFullEntries": "Tam giriş listesini aç",
+        "activityPrefix": "Denetim günlükleri ve dışa aktarılanlar",
+        "auditPack": "denetim paketleri",
+        "activitySuffix": "kullanılabilir olduğunda burada görünür.",
+        "unclosedDaysModal": {
+          "title": "Kapatılmayan günler",
+          "description": "Kassenbericht'i ziyaret etmeden önce önceki tüm günlerin kapatılması gerekmektedir. Kapatılmayan en erken gün:",
+          "cancel": "İptal etmek",
+          "goClose": "Gün kapanışına git",
+          "viewLastKassenbericht": "Son Kassenbericht'i görüntüle"
+        },
+        "unclosedDays": {
+          "draft": "Taslak",
+          "open": "Kapalı değil",
+          "close": "Şimdi kapat →"
+        }
+      },
+      "registerForm": {
+        "newTitle": "Yazar kasa oluştur",
+        "editTitle": "Yazar kasayı düzenle",
+        "name": "İsim",
+        "namePlaceholder": "Ana kayıt",
+        "location": "Konum",
+        "locationPlaceholder": "Vitrin",
+        "currency": "Para birimi",
+        "disallowNegativeBalance": "Negatif nakit bakiyesine izin verme",
+        "createFailed": "Yazar kasa oluşturulamadı.",
+        "updateFailed": "Yazar kasa güncellenemedi.",
+        "create": "Kayıt oluştur",
+        "saveChanges": "Değişiklikleri kaydet"
+      },
+      "entries": {
+        "title": "Girişler · {{register}}",
+        "subtitle": "Filtreler, iptaller ve beleg ekleri içeren kasa defteri listesi.",
+        "newCashEntry": "Yeni nakit girişi",
+        "backToRegister": "Kayda geri dön",
+        "filters": {
+          "dayFrom": "Başlangıç günü",
+          "dayTo": "Güne kadar",
+          "allTypes": "Tüm türler",
+          "allSources": "Tüm kaynaklar",
+          "allPayments": "Tüm ödemeler",
+          "searchDescription": "Arama açıklaması"
+        },
+        "loading": "Girişler yükleniyor...",
+        "loadFailed": "Girişler yüklenemedi.",
+        "empty": "Hiçbir giriş bulunamadı.",
+        "table": {
+          "dateTime": "Tarih/saat",
+          "entryNo": "Giriş #",
+          "description": "Açıklama",
+          "type": "Tür",
+          "direction": "GİRİŞ/ÇIKIŞ",
+          "amount": "Tutar",
+          "tax": "KDV",
+          "source": "Kaynak",
+          "balanceAfter": "Sonra bakiye",
+          "beleg": "Beleg",
+          "actions": "Eylemler"
+        },
+        "rowActions": {
+          "viewRegister": "Kaydı görüntüle",
+          "reverse": "Ters",
+          "addBeleg": "Beleg ekle",
+          "downloadBeleg": "beleg'i indir"
+        },
+        "camera": {
+          "title": "Kamera",
+          "description": "Makbuzu doğrudan yakalamak için cihazınızın kamerasını kullanın.",
+          "capture": "Fotoğraf çek",
+          "switchCamera": "Kamerayı değiştir",
+          "unavailable": "Kamera bu tarayıcıda kullanılamıyor.",
+          "permissionDenied": "Kamera erişimi reddedildi."
+        },
+        "createDialog": {
+          "title": "Nakit girişi oluştur",
+          "description": "Yalnızca nakit olan bir Kassenbuch hareketini brüt tutar, kanıt ve varsa KDV ile birlikte kaydedin.",
+          "grossAmount": "Brüt tutar",
+          "type": "Tür",
+          "taxCodeRequired": "KDV kodu",
+          "taxCodeOptional": "KDV kodu (isteğe bağlı)",
+          "noVat": "KDV yok",
+          "taxProfileRequiredTitle": "Vergi kurulumu gerekli",
+          "taxProfileRequiredDescription": "Vergiye tabi nakit satışları kaydetmeden önce bu kasa defterinin KDV'yi nasıl ele alacağını seçin.",
+          "configureTaxSettings": "Vergi ve KDV'yi yapılandırma",
+          "setupStandardVat": "Standart Alman KDV'sini kullanın",
+          "setupSmallBusiness": "Kleinunternehmer'i kullanın (KDV Yok)",
+          "taxSummary": "KDV özeti",
+          "netAmount": "Net tutar",
+          "taxAmount": "KDV tutarı",
+          "outputVat": "Çıkış KDV'si",
+          "inputVat": "KDV girişi",
+          "salesVatRequiredHint": "Bu nakit satış için kullanılan KDV kodunu seçin.",
+          "salesVatOptionalHint": "Bu nakit satışın vergiye tabi olduğu durumlarda bir KDV kodu seçin.",
+          "expenseVatHint": "Yalnızca bu giderin düşülebilir bir makbuzunun olması durumunda bir giriş KDV kodu seçin.",
+          "bookingText": "Rezervasyon metni",
+          "documentReference": "Makbuz referansı / Eigenbeleg",
+          "documentReferencePlaceholder": "Makbuz numarası, fatura numarası veya nedeni",
+          "documentReferenceHint": "Bir makbuz referansı ekleyin veya bir beleg yükleyin. Açılış şamandırası olmadan kalabilir.",
+          "occurredAt": "Şu saatte meydana geldi:",
+          "attachBeleg": "Beleg takın (isteğe bağlı)",
+          "chooseAttachment": "Dosya seç",
+          "takePicture": "Resim çek",
+          "replaceAttachment": "Dosyayı değiştir",
+          "noAttachment": "Hiçbir dosya seçilmedi",
+          "projectedBalance": "Kaydetme sonrasında tahmini bakiye",
+          "failed": "Giriş oluşturulamadı.",
+          "save": "Girişi kaydet",
+          "uploading": "Yükleniyor..."
+        },
+        "reverseDialog": {
+          "title": "Ters giriş",
+          "description": "Bu nakledilen nakit girişini denetim açısından güvenli bir neden ile tersine çevirin.",
+          "reason": "Sebep",
+          "failed": "Giriş geri alınamadı.",
+          "confirm": "Geri alma işlemini onayla"
+        },
+        "attachmentDialog": {
+          "title": "Girişe beleg ekle",
+          "description": "Bu nakit girişine destekleyici kanıt eklemek için bir makbuz dosyası yükleyin veya bir fotoğraf çekin.",
+          "file": "Makbuz dosyası",
+          "uploadFile": "Dosya yükle",
+          "replaceFile": "Dosyayı değiştir",
+          "takePicture": "Resim çek",
+          "noFile": "Hiçbir dosya seçilmedi",
+          "failed": "Beleg eklenemedi.",
+          "attach": "Ekle"
+        }
+      },
+      "dayClose": {
+        "title": "Gün kapanışı (Kassensturz)",
+        "backToRegister": "Kayda geri dön",
+        "addCorrectionEntry": "Düzeltme girişi ekle",
+        "viewReport": "Kassenbericht'i görüntüle",
+        "closeDayFor": "{{register}} için kapanış günü",
+        "day": "Gün",
+        "expectedBalance": "Beklenen bakiye (Soll)",
+        "countedBalance": "Toplam sayılan nakit (Ist)",
+        "countedBalanceHelp": "Çekmecedeki, kasadaki veya kutudaki nakit dahil, aynı işletmenin nakit fonuna ait olan tüm nakitleri sayın.",
+        "denomination": "Mezhep",
+        "count": "Sayım",
+        "subtotal": "Ara toplam",
+        "difference": "Fark",
+        "differenceNoteRequired": "Fark sıfır olmadığında not gereklidir.",
+        "note": "Not",
+        "notePlaceholder": "Sıfır fark için isteğe bağlı; aksi halde gereklidir.",
+        "submitFailed": "Gün kapanışı gönderilemedi.",
+        "submitAndLock": "Gönderin ve günü kilitleyin",
+        "lockedInfo": "Bu gün kilitli. Yalnızca düzeltme girişlerini kullanın.",
+        "loadExistingFailed": "Mevcut gün kapanışı yüklenemedi.",
+        "expected": "Beklenen",
+        "counted": "sayıldı",
+        "confirmClose": "Kapatmayı Onayla",
+        "countByDenomination": "Mezhebe göre say",
+        "dayCalculatedTitle": "Hesaplanan gün",
+        "dayCalculatedDesc": "Fiziksel nakit sayılmadı. Rapor beklenen defter bakiyesini kullanıyor.",
+        "expectedClosingCash": "Beklenen kapanış nakit",
+        "physicalCount": "Fiziksel sayım",
+        "notPerformed": "Gerçekleştirilmedi",
+        "notAvailable": "Mevcut değil",
+        "tageslosung": "Günlük nakit geliri (Tageslosung)",
+        "countMatched": "Eşleşen Sayım",
+        "countDifference": "Farkı Say"
+      },
+      "kassenbericht": {
+        "title": "Günlük Kassenbericht",
+        "subtitle": "Elle kontrol etmek veya kopyalamak için sade dilli açıklamalar içeren Almanca kağıt form düzeni.",
+        "back": "Kayda geri dön",
+        "download": "PDF'yi indir",
+        "downloading": "PDF oluşturuluyor...",
+        "loading": "Kassenbericht yükleniyor...",
+        "loadFailed": "Bu gün için Kassenbericht yüklenemedi.",
+        "explanations": {
+          "date": "Tarih",
+          "number": "Sayı",
+          "currency": "Para birimi",
+          "closingCash": "Kasa bakiyesinin kapatılması",
+          "bookNote": "Kitap notu",
+          "outflows": "Gün içindeki harcamalar",
+          "taxAmount": "Vergi tutarı",
+          "netGrossAmount": "Net/Brüt tutar",
+          "purchases": "1. Mal alımları ve maliyetler",
+          "expenses": "2. İşletme giderleri",
+          "withdrawals": "3. Özel para çekme işlemleri",
+          "otherOutflows": "4. Diğer giderler (örn. Banka mevduatları)",
+          "total": "Toplam",
+          "previousClosingCash": "eksi önceki gün kapanış nakiti",
+          "cashReceived": "= Alınan nakit",
+          "otherIncome": "eksi diğer gelir",
+          "cashSales": "= Günün nakit satışları",
+          "customerCount": "Müşteri sayısı",
+          "signature": "İmza"
+        }
+      },
+      "exports": {
+        "title": "İhracat · {{register}}",
+        "backToRegister": "Kayda geri dön",
+        "generateTitle": "Kasa defteri dışa aktarımı oluştur",
+        "month": "Ay",
+        "format": "Biçim",
+        "includeAttachmentFiles": "Ek dosyalarını denetim paketine dahil et",
+        "generating": "Oluşturuluyor...",
+        "generate": "Dışa aktarma oluştur",
+        "failed": "Dışa aktarma oluşturulamadı.",
+        "latestTitle": "En son dışa aktarma",
+        "file": "Dosya",
+        "type": "Tür",
+        "size": "Boyut",
+        "bytes": "bayt",
+        "download": "Dışa aktarmayı indir",
+        "formatOptions": {
+          "CSV": "CSV",
+          "PDF": "PDF'ler",
+          "DATEV": "TARİH",
+          "AUDIT_PACK": "Denetim paketi"
+        }
+      },
+      "enums": {
+        "direction": {
+          "IN": "İÇİNDE",
+          "OUT": "ÇIKIŞ"
+        },
+        "paymentMethod": {
+          "CASH": "Nakit",
+          "CARD": "Kart",
+          "TRANSFER": "Aktarım",
+          "OTHER": "Diğer"
+        },
+        "entrySource": {
+          "MANUAL": "Manuel",
+          "SALES": "Satış",
+          "EXPENSE": "Gider",
+          "DIFFERENCE": "Fark",
+          "IMPORT": "İthalat",
+          "INTEGRATION": "Entegrasyon"
+        },
+        "entryType": {
+          "SALE_CASH": "Nakit satış",
+          "REFUND_CASH": "Nakit iadesi",
+          "EXPENSE_CASH": "Nakit gider",
+          "OWNER_DEPOSIT": "Özel depozito",
+          "OWNER_WITHDRAWAL": "Özel para çekme",
+          "BANK_DEPOSIT": "Banka mevduatı",
+          "BANK_WITHDRAWAL": "Bankadan para çekme",
+          "CORRECTION": "Düzeltme",
+          "OPENING_FLOAT": "Açılış şamandırası",
+          "CLOSING_ADJUSTMENT": "Kapanış ayarı",
+          "IN": "İÇİNDE",
+          "OUT": "ÇIKIŞ"
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Kontrol Paneli",
+    "welcome": "Tekrar hoş geldiniz",
+    "revenueThisMonth": "Bu ayki gelir",
+    "outstandingInvoices": "Ödenmemiş faturalar",
+    "expensesThisMonth": "Bu ayki giderler",
+    "quickActions": "Hızlı eylemler",
+    "recentActivity": "Son etkinlik",
+    "addExpense": "Gider ekle",
+    "createInvoice": "Fatura oluştur",
+    "createQuote": "Teklif oluştur",
+    "openAssistant": "Asistanı aç",
+    "fromLastMonth": "geçen aydan itibaren",
+    "invoicesPending": "bekleyen faturalar",
+    "expensesCount": "bu ayki masraflar",
+    "uploadReceipt": "AI ile makbuz yükleyin",
+    "generateWithAi": "Yapay zeka ile oluşturun",
+    "createNew": "Yeni oluştur",
+    "askAnything": "Herhangi bir şey sor",
+    "manageTeam": "Ekibi yönet",
+    "inviteMembers": "Üyeleri davet et",
+    "noInvoices": "Henüz fatura yok",
+    "noExpenses": "Henüz masraf yok",
+    "teacher": {
+      "welcome": "Öğretmen Kontrol Paneli",
+      "subtitle": "Bugünkü sınıflarınız ve görevleriniz",
+      "allClasses": "Tüm Sınıflar",
+      "sessionsToday": "Bugünkü Oturumlar",
+      "sessionsThisWeek": "Bu Haftaki Oturumlar",
+      "missingAttendance": "Eksik Katılım",
+      "actionRequired": "İşlem gerekli",
+      "unfinished": "Bitmemiş Oturumlar",
+      "studentsMissingPayer": "Ödemeyi Yapamayan Öğrenciler",
+      "unpaidInvoices": "Ödenmemiş Faturalar",
+      "overdue": "vadesi geçmiş",
+      "upcomingSessions": "Yaklaşan Oturumlar",
+      "noUpcoming": "Bu aralıkta yaklaşan oturum yok",
+      "needsAttention": "Dikkat Gerekiyor",
+      "unfinishedSessions": "Bitmemiş Oturumlar",
+      "allCaughtUp": "Hepsi yakalandı!",
+      "noActions": "İlgilenmenizi gerektiren bekleyen hiçbir eylem yok."
+    }
+  },
+  "assistant": {
+    "title": "Asistan",
+    "subtitle": "İstediğiniz şeyi sorun, makbuzları alın, faturalar oluşturun veya hızlı özetler isteyin.",
+    "placeholder": "İstediğiniz şeyi sorun, makbuzları alın, fatura taslakları yapın veya hızlı özetler isteyin.",
+    "emptyStateTitle": "Size nasıl yardımcı olabilirim?",
+    "emptyStateDescription": "İstediğiniz şeyi sorun, makbuzları alın, faturalar oluşturun veya hızlı özetler isteyin.",
+    "awaitingInputs": "Girişinizi bekliyorum...",
+    "approvalRequired": "Onay Gerekli ({{toolName}})",
+    "approvalDescription": "Asistan '{{toolName}}' aracını kullanmak istiyor. Buna izin vermek istiyor musun?",
+    "toolResult": "{{toolName}}'den gelen sonuç",
+    "toolFailed": "{{toolName}} aracı başarısız oldu: {{reason}}",
+    "denied": "Kullanıcı tarafından reddedildi",
+    "toolCall": "{{toolName}} çalıştırılıyor...",
+    "send": "Gönder",
+    "sending": "Gönderiliyor...",
+    "attachments": {
+      "add": "Dosya ekle",
+      "remove": "Dosyayı kaldır",
+      "invalidType": "{{name}} desteklenmiyor. Yalnızca resim ve PDF dosyalarına izin verilir.",
+      "tooLarge": "{{name}} çok büyük. Maksimum boyut {{maxSize}}'dir."
+    },
+    "suggestions": {
+      "extractReceipt": {
+        "label": "Makbuz çıkarın ve gider oluşturun",
+        "value": "Makbuz yükledim. Çıkarın ve bir gider taslağı çizin."
+      },
+      "invoiceDraft": {
+        "label": "Fatura taslağı oluştur",
+        "value": "Bu ay için ACME GmbH için bir fatura taslağı oluşturun."
+      },
+      "summarizeExpenses": {
+        "label": "Harcamalarımı özetle",
+        "value": "Son 30 gündeki harcamalarımı özetleyin."
+      },
+      "taxGuidance": {
+        "label": "Vergi rehberliği",
+        "value": "Almanya'da serbest çalışan olarak ne kadar kesinti yapabilirim?"
+      }
+    },
+    "toolCards": {
+      "extractingReceipt": "Makbuz verileri çıkarılıyor...",
+      "creatingExpense": "Masraf yaratmak...",
+      "generatingInvoice": "Fatura taslağı oluşturuluyor...",
+      "issuingInvoice": "Fatura kesiliyor..."
+    },
+    "disclaimer": "Bu yasal veya vergi tavsiyesi değildir. Özel rehberlik için lütfen bir vergi uzmanına danışın.",
+    "confirmExpense": "Gider ayrıntılarını onaylayın",
+    "invoicePreview": "Fatura önizlemesi",
+    "openExpense": "Açık gider",
+    "openInvoice": "Faturayı aç",
+    "issueInvoice": "Fatura düzenle",
+    "userRole": "sen",
+    "assistantRole": "Asistan",
+    "systemRole": "Sistem",
+    "searchAction": "Ara",
+    "newChat": "Yeni sohbet",
+    "recentChats": "Son sohbetler",
+    "recentChatsDescription": "Önceki görüşmelere göz atın veya yeni bir görüşme başlatın.",
+    "loadingChats": "Sohbetler yükleniyor...",
+    "noChats": "Henüz sohbet yok",
+    "noChatsDescription": "Bir konuşma başlattığınızda burada görünecektir.",
+    "loadingPreview": "Önizleme yükleniyor...",
+    "loadingMonthlyReport": "Aylık rapor yükleniyor...",
+    "cashConfirmation": {
+      "title": "Taslak onaya hazır",
+      "description": "{{date}} özetini inceleyin, ardından nakit girişlerini kaydetmeyi onaylayın.",
+      "confirm": "Onaylayın ve kaydedin",
+      "confirming": "Onaylanıyor...",
+      "confirmPrompt": "Bu nakit günü taslağının kaydedilmesini açıkça onaylıyor ve yetkilendiriyorum.",
+      "savedTitle": "Nakit günü taslağı kaydedildi",
+      "savedDescription": "Onaylanan nakit hareketleri başarıyla kaydedildi.",
+      "taxProfileRequiredTitle": "Kaydetmeden önce vergi profili gerekli",
+      "taxProfileRequiredDescription": "İşletmenin standart Alman KDV'sini mi yoksa Kleinunternehmer planını mı kullanacağını seçin. Uygulama bu vergi ayarını tahmin etmemelidir.",
+      "configureTaxSettings": "Vergi ve KDV'yi yapılandırma"
+    },
+    "search": {
+      "title": "Sohbetlerde ara",
+      "placeholder": "Mesajları ara...",
+      "minLength": "Aramak için en az 2 karakter yazın.",
+      "noResults": "Eşleşen mesaj bulunamadı.",
+      "noPreview": "(Önizleme yok)"
+    },
+    "groups": {
+      "today": "Bugün",
+      "needsAttention": "Dikkat edilmesi gerekiyor",
+      "previousDays": "Önceki günler",
+      "monthlyReviews": "Aylık incelemeler",
+      "generalQuestions": "Genel sorular",
+      "yesterday": "Dün",
+      "week": "Bu hafta",
+      "older": "daha yaşlı"
+    }
+  },
+  "copilot": {
+    "title": "Asistan",
+    "placeholder": "Bana bir şey sor...",
+    "confirmation": {
+      "title": "Onay Gerekli",
+      "subtitle": "Asistan '{{toolName}}'yi kullanmak istiyor. Buna izin vermek istiyor musun?"
+    },
+    "toolResult": "{{toolName}}'den gelen sonuç",
+    "toolFailed": "{{toolName}} aracı başarısız oldu: {{reason}}",
+    "denied": "Kullanıcı tarafından reddedildi",
+    "toolCall": "{{toolName}} çalıştırılıyor...",
+    "roles": {
+      "user": "sen",
+      "assistant": "Asistan"
+    },
+    "confidence": "{{percent}}% güven",
+    "noStructuredOutput": "Yapılandırılmış veri yok",
+    "allowTool": "Asistan '{{toolName}}'yi kullanmak istiyor. Buna izin vermek istiyor musun?"
+  },
+  "expenses": {
+    "title": "Giderler",
+    "addExpense": "Gider ekle",
+    "noExpenses": "Henüz masraf yok",
+    "noExpensesDescription": "İlk harcamanızı ekleyerek başlayın veya asistana bir makbuz yükleyin.",
+    "merchant": "Tüccar",
+    "date": "Tarih",
+    "amount": "Tutar",
+    "category": "Kategori",
+    "vat": "KDV",
+    "project": "Proje",
+    "receipt": "Makbuz",
+    "notes": "Notlar",
+    "categories": {
+      "office_supplies": "Ofis malzemeleri",
+      "software": "Yazılım",
+      "travel": "Seyahat",
+      "meals": "Yemekler",
+      "home_office": "Ev ofisi",
+      "education": "Eğitim",
+      "hardware": "Donanım",
+      "phone_internet": "Telefon/İnternet",
+      "other": "Diğer"
+    },
+    "notifications": {
+      "created": "Harcama oluşturuldu",
+      "updated": "Gider güncellendi",
+      "deleted": "Gider silindi",
+      "deleteFailed": "Gider silinemedi",
+      "saveFailed": "Gider kaydedilemedi",
+      "loadFailed": "Giderler yüklenemedi",
+      "transitioned": "Gider {{to}}'ye aktarıldı",
+      "transitionFailed": "Gider geçişi başarısız oldu",
+      "receiptAttachPartial": "{{successMessage}}, ancak {{count}} alındı dosyası/dosyaları eklenemedi"
+    },
+    "list": {
+      "subtitle": "Harcamalarınızı takip edin ve yönetin",
+      "noExpensesDescription": "Harcamaları takip etmek için ilk giderinizi oluşturun.",
+      "selectedCount": "{{count}} seçildi",
+      "deleteSelected": "Seçileni sil",
+      "deleteSelectedTitle": "Seçilen harcamaları sil",
+      "deleteSelectedDescription": "Bu, seçilen harcamaları arşivleyecektir.",
+      "selectAll": "Tümünü seç",
+      "selectExpense": "Gider seçin {{id}}",
+      "deductiblePercent": "İndirilebilir %",
+      "deleteExpenseTitle": "Gideri sil",
+      "deleteExpenseDescription": "Bu, harcamayı arşivleyecek ve listeden kaldıracaktır.",
+      "pageInfo": "{{totalPages}}'nin {{page}} Sayfası",
+      "dimensionLabel": "Boyut",
+      "customLabel": "Özel",
+      "ruleKind": {
+        "perDiem": "gündelik",
+        "mixedUse": "karma kullanım",
+        "gift": "hediye"
+      },
+      "sort": {
+        "dateNewest": "Tarih (En Yeni)",
+        "dateOldest": "Tarih (En eski)",
+        "amountHighLow": "Tutar (Yüksek-Düşük)",
+        "amountLowHigh": "Tutar (Düşük-Yüksek)",
+        "createdNewest": "Oluşturuldu (En Yeni)"
+      }
+    },
+    "detail": {
+      "overview": "Genel Bakış",
+      "taxDeductibility": "Vergi İndirimi (DE)",
+      "deductiblePercentLabel": "%{{percent}} düşülebilir",
+      "needsMoreInfo": "Daha fazla bilgiye ihtiyaç var",
+      "deductible": "İndirilebilir",
+      "nonDeductible": "İndirilemez",
+      "fillRequiredFields": "İndirilebilirliği hesaplamak için bu gideri düzenlerken gerekli alanları doldurun.",
+      "notComputed": "İndirim henüz hesaplanmadı. Hesaplamayı tetiklemek için bu gideri düzenleyin.",
+      "attachReceipts": "Burada görmek için makbuzları ekleyin.",
+      "auditTrail": "Denetim izi mevcut olduğunda burada görünecektir.",
+      "backToExpenses": "Giderlere geri dön",
+      "notFound": "Gider bulunamadı.",
+      "noNotes": "Hiçbir not eklenmedi.",
+      "transitionSoon": "{{to}}'ye geçiş yakında geliyor",
+      "actionSoon": "Aksiyon {{action}} çok yakında",
+      "ruleKind": {
+        "percent": "Sabit %",
+        "giftThreshold": "Hediye eşiği",
+        "perDiem": "Günlük",
+        "mixedUse": "Karma kullanım"
+      }
+    },
+    "form": {
+      "editTitle": "Gideri düzenle",
+      "create": "Gider oluştur",
+      "selectCategory": "Kategori seç",
+      "selectCategoryHint": "Muafiyet kurallarını görmek için bir kategori seçin.",
+      "merchantPlaceholder": "örneğin Restoran Zum Hirsch",
+      "taxDeductibilityTitle": "Vergi İndirimi (DE)",
+      "participants": "Katılımcılar",
+      "participantsPlaceholder": "örneğin Max Müller, Julia Schneider",
+      "participantsHint": "Müşteri yemeği kesintisi için gereklidir (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "İş Fırsatı",
+      "businessOccasionPlaceholder": "örneğin 1. Çeyrek proje başlangıcı, ortaklık müzakeresi",
+      "clientMealsHint": "%70 gelir vergisinden düşülebilir. KDV indirimi farklılık gösterebilir; vergi danışmanınızla görüşün.",
+      "giftRecipient": "Hediye Alıcısı",
+      "giftRecipientPlaceholder": "örneğin Acme Corp / Hans Muller",
+      "giftRecipientHint": "Aynı alıcıya takvim yılı başına 50 Euro'yu aşan hediyeler %0 indirime tabi olur (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "Ticari Kullanım %'si",
+      "businessUsePercentPlaceholder": "örneğin 60",
+      "businessUsePercentHint": "İş kullanımının yüzdesi",
+      "travelDetails": "Seyahat Detayları (günlük için - DE 2026)",
+      "travelDate": "Seyahat Tarihi",
+      "absenceHours": "Devamsızlık Saatleri",
+      "absenceHoursPlaceholder": "örneğin 10",
+      "travelHint": ">=8 saat devamsızlık: 14 Avro düşülebilir - 24 saat: 28 Avro düşülebilir (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Ev-ofis Günleri",
+      "homeOfficeDaysPlaceholder": "örneğin 30",
+      "days": "günler",
+      "homeOfficeHint": "6 Avro/gün - maksimum 1.260 Avro/yıl yıllık sınır (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "Bu gider kategorisi",
+      "nonDeductibleWarningStrong": "%0 gelir vergisinden düşülebilir",
+      "nonDeductibleWarningSuffix": "Alman vergi kanununa göre.",
+      "receiptOptional": "Makbuz (isteğe bağlı)",
+      "addReceiptFiles": "Makbuz dosyalarını ekleyin",
+      "uploadReceiptHint": "Şimdi resim veya PDF makbuzlarını yükleyin. Kaydettiğinizde eklenecekler.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: yalnızca resme ve PDF'ye izin verilir",
+        "fileTooLarge": "{{name}}: 10 MB sınırını aşıyor"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "%{{percent}} düşülebilir",
+        "mixedUse": "{{percent}}% indirimli (karma kullanım)",
+        "enterBusinessUse": "Ticari kullanım yüzdesini girin",
+        "perDiemServer": "Günlük (sunucu tarafında hesaplanan)",
+        "homeOfficeRate": "6 EUR/günlük sabit ücret",
+        "giftThreshold": "50 Euro/alıcı/yıl'a kadar - alıcı gerektirir"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Müşteri yemekleri (Bewirtung) - %70",
+        "MEALS_TEAM_EMPLOYEE": "Ekip/çalışan yemekleri - %100",
+        "GIFTS_BUSINESS_PARTNER": "İş hediyeleri - 50 Euro'ya kadar",
+        "GIFTS_PROMO_STREUARTIKEL": "Promosyon hediyeler (<=10 EUR) - %100",
+        "FINES_PENALTIES": "Para cezaları ve cezalar - %0",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Koruyucu / üniforma kıyafeti - %100",
+        "CLOTHING_CIVILIAN": "Sivil giyim - %0",
+        "TRAVEL_MEALS_PER_DIEM": "Günlük seyahat yemeği (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Ev-ofis sabit ücreti (6 EUR/gün)",
+        "PHONE_INTERNET": "Telefon / İnternet (karma kullanım)",
+        "CAR": "Araba (karma kullanım)",
+        "HOME_INTERNET": "Evde İnternet (karma kullanım)",
+        "office_supplies": "Ofis malzemeleri - %100",
+        "software": "Yazılım - %100",
+        "travel": "Seyahat - %100",
+        "meals": "Yemekler - %70",
+        "home_office": "Ev ofisi - %100",
+        "education": "Eğitim - %100",
+        "hardware": "Donanım - %100",
+        "phone_internet": "Telefon/İnternet (karma kullanım)",
+        "other": "Diğer"
+      }
+    }
+  },
+  "invoices": {
+    "title": "Faturalar",
+    "createInvoice": "Fatura oluştur",
+    "createNewInvoice": "Yeni Fatura Oluştur",
+    "noInvoices": "Henüz fatura yok",
+    "noInvoicesDescription": "Başlamak için ilk faturanızı oluşturun.",
+    "invoiceNumber": "Fatura #",
+    "invoiceNumberLabel": "Fatura numarası",
+    "customer": "Müşteri",
+    "billedTo": "Faturalandırılan kişi",
+    "date": "Tarih",
+    "invoiceDate": "Fatura tarihi",
+    "serviceDate": "Servis tarihi",
+    "dueDate": "Son tarih",
+    "amount": "Tutar",
+    "statusLabel": "Durum",
+    "items": "Öğeler",
+    "description": "Açıklama",
+    "quantity": "miktar",
+    "rate": "Oran",
+    "subtotal": "Ara toplam",
+    "vatAmount": "KDV",
+    "total": "Toplam",
+    "totalAmountNet": "Toplam tutar (Net)",
+    "totalAmountGross": "Toplam tutar (Brüt)",
+    "paymentTerms": "Ödeme koşulları",
+    "notes": "Notlar",
+    "notesPlaceholder": "Müşteri tarafından görülemeyen dahili notlar...",
+    "terms": "Ödeme Koşulları",
+    "termsPlaceholder": "örneğin Lütfen 14 gün içerisinde ödeme yapınız...",
+    "addLine": "Satır ekle",
+    "units": {
+      "h": "sa",
+      "day": "Gün",
+      "piece": "Parça",
+      "service": "Hizmet"
+    },
+    "generate": "Oluştur",
+    "creating": "Oluşturuluyor...",
+    "saving": "Kaydediliyor...",
+    "selectDate": "Tarih seçin",
+    "selectDateRange": "Tarih aralığını seçin",
+    "statuses": {
+      "draft": "Taslak",
+      "issued": "Yayınlandı",
+      "sent": "Gönderildi",
+      "paid": "Ücretli",
+      "overdue": "vadesi geçmiş",
+      "canceled": "İptal edildi"
+    },
+    "badges": {
+      "OVERDUE": "vadesi geçmiş",
+      "PARTIALLY_PAID": "Kısmen Ödendi",
+      "SENT_DELIVERY": "Gönderildi"
+    },
+    "transitions": {
+      "ISSUED": "Fatura Düzenleme",
+      "SENT": "Müşteriye Gönder",
+      "CANCELED": "Faturayı İptal Et"
+    },
+    "actions": {
+      "issue": "Fatura düzenle",
+      "send": "Gönder",
+      "resend": "Yeniden gönder",
+      "record_payment": "Ödemeyi Kaydet",
+      "download_pdf": "PDF'yi indir",
+      "send_reminder": "Hatırlatıcı gönder",
+      "duplicate": "Çoğalt",
+      "export": "İhracat",
+      "view_audit": "Denetim Günlüğünü Görüntüle",
+      "cancel": "Faturayı İptal Et"
+    },
+    "pdf": {
+      "pendingTitle": "PDF hazırlanıyor",
+      "pendingDescription": "PDF'yi oluşturmaya başladık. Lütfen kısa bir süre sonra tekrar deneyin.",
+      "stillGeneratingTitle": "PDF hâlâ oluşturuluyor",
+      "stillGeneratingDescription": "Bu işlem yük altında daha uzun sürebilir. Lütfen birkaç saniye sonra tekrar deneyin."
+    },
+    "notifications": {
+      "created": "Fatura oluşturuldu",
+      "updated": "Fatura güncellendi",
+      "deleted": "Fatura silindi",
+      "canceled": "Fatura iptal edildi",
+      "duplicateSoon": "Yinelenen özellik yakında geliyor",
+      "exportSoon": "Dışa aktarma özelliği yakında geliyor",
+      "reminderSoon": "Hatırlatma özelliği yakında geliyor"
+    },
+    "wizard": {
+      "selectCustomer": "Müşteri seçin",
+      "addItems": "Satır öğeleri ekleyin",
+      "review": "İncele ve oluştur"
+    },
+    "notFound": "Fatura bulunamadı",
+    "backToList": "Listeye geri dön",
+    "notFoundDescription": "Aradığınız fatura mevcut değil veya silinmiş.",
+    "titleWithNumber": "Fatura {{number}}",
+    "issued": "Fatura düzenlendi",
+    "canceled": "Fatura iptal edildi",
+    "updated": "Fatura başarıyla güncellendi",
+    "payments": {
+      "recordTitle": "Ödemeyi Kaydet",
+      "recordDescription": "Bu faturanın ödeme ayrıntılarını girin.",
+      "dueAmount": "Ödenecek tutar: {{amount}}",
+      "notePlaceholder": "Ödemeyi açıklayın (örn. Banka havalesi, Nakit, ...)",
+      "save": "Ödemeyi Kaydet",
+      "recordFailed": "Ödeme kaydedilemedi",
+      "saveFailed": "Ödeme kaydedilemedi"
+    },
+    "errors": {
+      "downloadFailed": "PDF indirilemedi",
+      "updateFailed": "Fatura güncellenemedi",
+      "invalidAmount": "Geçersiz tutar",
+      "actionFailed": "İşlem başarısız oldu"
+    },
+    "footer": {
+      "taxDetails": "Vergi Ayrıntıları",
+      "vatIdLabel": "KDV No",
+      "taxNumberLabel": "Vergi Numarası",
+      "addTaxDetails": "Vergi Ayrıntılarını Ekle",
+      "paymentMethod": "Ödeme Yöntemi",
+      "addPaymentMethod": "Ödeme Yöntemi Ekle",
+      "contactDetails": "İletişim Bilgileri",
+      "addContactDetails": "İletişim Detaylarını Ekle",
+      "taxDetailsDescription": "Faturada gösterilen işletme vergisi bilgileriniz.",
+      "contactDetailsDescription": "Altbilgide gösterilen işletme iletişim bilgileriniz.",
+      "selectPaymentMethod": "Ödeme yöntemini seçin",
+      "selectPaymentMethodTitle": "Ödeme yönteminizi seçin",
+      "addNewPaymentMethod": "Yeni ödeme yöntemi ekle",
+      "selectedBankAccount": "Seçilen Banka Hesabı"
+    },
+    "email": {
+      "title": "Fatura Gönder",
+      "subtitle": "Göndermeden önce alıcıyı ve mesajı inceleyin.",
+      "to": "Alıcı",
+      "toPlaceholder": "müşteri@example.com",
+      "subject": "{{brand}}'den {{number}} faturası",
+      "sendCopy": "Bana bir kopyasını gönder",
+      "savedForFuture": "Bu e-posta {{name}}'nin profili için kaydedilecek.",
+      "messagePlaceholder": "Kişisel bir not ekleyin...",
+      "deliveryLabel": "Teslimat",
+      "deliveryHint": "Bu faturayı e-postayla göndermeden önce alıcıyı onaylayın.",
+      "attachmentsHint": "PDF faturası otomatik olarak eklenecektir.",
+      "attachmentName": "Fatura-{{number}}.pdf",
+      "attachmentFallback": "Fatura.pdf",
+      "sendTest": "Test e-postası gönder",
+      "send": "E-posta Gönder",
+      "sending": "Gönderiliyor...",
+      "sent": "Fatura e-postası gönderildi",
+      "sendFailed": "Fatura e-postası gönderilemedi"
+    },
+    "status": {
+      "updateFailed": "Durum güncellenemedi"
+    },
+    "loading": "Fatura yükleniyor...",
+    "focused": {
+      "notFound": "Sayfa bulunamadı",
+      "notPart": "Bu sayfa Faturanın bir parçası değildir.",
+      "back": "Faturalara geri dön",
+      "setup": "Kurulumu tamamlanmadığından fatura kullanılamıyor. Lütfen çalışma alanı yöneticinizle iletişime geçin.",
+      "previous": "Önceki",
+      "duplicate": "Çoğalt",
+      "downloadPdf": "PDF'yi indir",
+      "selectInvoice": "Faturayı seçin {{id}}",
+      "unit": "Birim",
+      "removeLine": "Satırı kaldır",
+      "copilot": {
+        "intro": "İncelenmek üzere bir taslak e-posta oluşturun. Copilot e-postaları otomatik olarak göndermez.",
+        "language": "Dil",
+        "tone": "Hatırlatma sesi",
+        "de": "Almanca (de)",
+        "vi": "Vietnamca (vi)",
+        "en": "İngilizce (tr)",
+        "polite": "Kibar",
+        "normal": "Normal",
+        "firm": "Firma",
+        "drafting": "Taslak hazırlanıyor...",
+        "issue": "Taslak fatura e-postası",
+        "reminder": "Taslak hatırlatıcı",
+        "issueDisabled": "E-posta kopyasının taslağını hazırlamadan önce faturanın DÜZENLENMESİ veya GÖNDERİLMESİ gerekir.",
+        "reminderDisabled": "Hatırlatma taslağı yalnızca ödenmesi gereken tutar sıfırdan büyük olduğunda kullanılabilir.",
+        "review": "Taslağı gönderme akışınıza kopyalayıp yapıştırmadan önce inceleyin ve düzenleyin.",
+        "subject": "Konu",
+        "body": "Vücut",
+        "copySubject": "Konuyu kopyala",
+        "copyBody": "Gövdeyi kopyala",
+        "subjectCopied": "Konu kopyalandı",
+        "bodyCopied": "Gövde kopyalandı",
+        "copyError": "Panoya kopyalanamıyor",
+        "close": "Kapat"
+      }
+    }
+  },
+  "customers": {
+    "title": "Müşteriler",
+    "addCustomer": "Müşteri ekle",
+    "addNewClient": "Yeni müşteri ekle",
+    "noCustomers": "Henüz müşteri yok",
+    "noCustomersDescription": "Fatura oluşturmaya başlamak için ilk müşterinizi ekleyin.",
+    "name": "İsim",
+    "displayName": "Görünen Ad",
+    "company": "Şirket",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "address": "Adres",
+    "addressLine1": "Adres Satırı 1",
+    "addressLine2": "Adres Satırı 2",
+    "city": "Şehir",
+    "postalCode": "Posta Kodu",
+    "country": "Ülke",
+    "vatId": "KDV No",
+    "notes": "Notlar",
+    "invoiceHistory": "Fatura geçmişi",
+    "totalRevenue": "Toplam gelir",
+    "kindLabel": "Müşteri türü",
+    "kindIndividual": "Bireysel",
+    "kindOrganization": "Organizasyon",
+    "organizationName": "Kuruluş adı",
+    "basicInformation": "Temel Bilgiler",
+    "billingAddress": "Fatura Adresi",
+    "placeholders": {
+      "displayName": "Şirket veya kişi adı",
+      "email": "müşteri@example.com",
+      "phone": "+49 30 12345678",
+      "vatId": "DE123456789",
+      "addressLine1": "Sokak ve numara",
+      "addressLine2": "Apartman dairesi, süit vb. (isteğe bağlı)",
+      "city": "berlin",
+      "postalCode": "10115",
+      "country": "Almanya",
+      "notes": "Bu müşteri hakkında ek notlar",
+      "status": "Durum seç"
+    },
+    "createDescription": "Temel iletişim ve fatura bilgileri ile yeni bir müşteri oluşturun.",
+    "selectCustomer": "Bir müşteri seçin",
+    "searchCustomers": "Ada, e-postaya veya KDV'ye göre arayın...",
+    "searchOrAdd": "Müşterileri arayın veya yeni bir tane ekleyin",
+    "addNewCustomer": "Yeni Müşteri Ekle",
+    "noCustomersFound": "Müşteri bulunamadı.",
+    "selectExisting": "Mevcut müşterileri arayın veya yeni bir tane oluşturun.",
+    "social": {
+      "title": "Sosyal Profiller",
+      "add": "Profil ekle",
+      "empty": "Hiçbir sosyal profil eklenmedi."
+    },
+    "lookupFailed": "Müşteri arama kullanılamıyor veya erişim reddedildi. Tekrar deneyin veya yöneticinize sorun."
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "profile": "Profil",
+    "business": "iş",
+    "tax": "Vergi ayarları",
+    "invoiceSettings": "Fatura ayarları",
+    "language": "Dil",
+    "theme": "Tema",
+    "name": "İsim",
+    "email": "E-posta",
+    "businessName": "İşletme adı",
+    "address": "Adres",
+    "vatId": "KDV No",
+    "defaultVatRate": "Varsayılan KDV oranı",
+    "invoicePrefix": "Fatura öneki",
+    "invoiceNumberFormat": "Fatura numarası biçimi",
+    "paymentTermsDays": "Ödeme koşulları (gün)",
+    "themes": {
+      "light": "Işık",
+      "dark": "Karanlık",
+      "system": "Sistem"
+    },
+    "languages": {
+      "en": "İngilizce",
+      "de": "Almanca",
+      "vi": "Tiếng Việt"
+    }
+  },
+  "time": {
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "thisWeek": "Bu hafta",
+    "thisMonth": "Bu ay",
+    "lastMonth": "Geçen ay",
+    "thisYear": "Bu yıl",
+    "daysAgo": "{{count}} gün önce",
+    "tomorrow": "Yarın",
+    "inDays": "{{count}} gün içinde"
+  },
+  "dueDate": {
+    "today": "bugün vadesi dolacak",
+    "inDays": "{{count}} gün içinde",
+    "inDays_one": "1 gün içinde",
+    "overdue": "{{count}} gün gecikti",
+    "overdue_one": "1 gün gecikti",
+    "inDays_other": "{{count}} gün içinde",
+    "overdue_other": "{{count}} gün gecikti"
+  },
+  "errors": {
+    "loadMenuFailed": "Menü yüklenemedi",
+    "pageNotFound": "Sayfa bulunamadı",
+    "returnHome": "Eve dön"
+  },
+  "accounting": {
+    "entryStatus": {
+      "draft": "Taslak",
+      "posted": "Gönderildi",
+      "reversed": "Ters çevrilmiş"
+    },
+    "accountTypes": {
+      "asset": "Varlık",
+      "liability": "Sorumluluk",
+      "equity": "özsermaye",
+      "income": "Gelir",
+      "expense": "Gider"
+    },
+    "accountSelect": {
+      "placeholder": "Hesap seçin...",
+      "searchPlaceholder": "Hesapları ara...",
+      "empty": "Hesap bulunamadı."
+    },
+    "journalLines": {
+      "title": "Günlük Satırları",
+      "addLine": "Satır Ekle",
+      "emptyMessage": "Henüz satır yok. Başlamak için \"{{action}}\"ye tıklayın.",
+      "account": "Hesap",
+      "type": "Tür",
+      "debit": "Borç",
+      "credit": "Kredi",
+      "memo": "Not",
+      "memoOptional": "İsteğe bağlı not",
+      "minimumLines": "Minimum 2 satır gerekli",
+      "removeLine": "Satırı kaldır",
+      "totals": "Toplamlar",
+      "imbalance": "Dengesizlik",
+      "balanced": "✓ Dengeli"
+    },
+    "journalEntries": {
+      "title": "Günlük Girişleri",
+      "subtitle": "Tüm muhasebe işlemlerini görüntüleyin ve yönetin",
+      "newEntry": "Yeni Giriş",
+      "searchPlaceholder": "Not veya giriş numarasına göre arayın...",
+      "allStatuses": "Tüm Durumlar",
+      "entries": "Girişler",
+      "entriesFound": "{{count}} girişleri bulundu",
+      "entriesFound_one": "{{count}} girişi bulundu",
+      "entriesFound_other": "{{count}} girişleri bulundu",
+      "loading": "Girişler yükleniyor...",
+      "emptyTitle": "Günlük girişi bulunamadı",
+      "emptyAction": "İlk girişinizi oluşturun",
+      "entryNumber": "Giriş #",
+      "date": "Tarih",
+      "memo": "Not",
+      "amount": "Tutar",
+      "linesCount": "{{count}} hatları",
+      "linesCount_one": "{{count}} hattı",
+      "linesCount_other": "{{count}} hatları"
+    },
+    "chartOfAccounts": {
+      "title": "Hesap Planı",
+      "subtitle": "Defter hesaplarınızı yönetin",
+      "newAccount": "Yeni Hesap",
+      "searchPlaceholder": "Kod veya ada göre arayın...",
+      "allTypes": "Tüm Türler",
+      "allStatuses": "Tüm Durumlar",
+      "activeOnly": "Yalnızca Aktif",
+      "inactiveOnly": "Yalnızca Etkin Değil",
+      "accounts": "Hesaplar",
+      "accountsFound": "{{count}} hesapları bulundu",
+      "accountsFound_one": "{{count}} hesabı bulundu",
+      "accountsFound_other": "{{count}} hesapları bulundu",
+      "loading": "Hesaplar yükleniyor...",
+      "empty": "Kriterlerinize uygun hesap bulunamadı",
+      "code": "Kod",
+      "name": "İsim",
+      "type": "Tür",
+      "active": "Aktif",
+      "inactive": "Etkin değil"
+    },
+    "dashboard": {
+      "title": "Muhasebe",
+      "subtitle": "Mali kayıtlarınızı ve raporlarınızı yönetin",
+      "newEntry": "Yeni Giriş",
+      "newEntryDescription": "Günlük girişi oluştur",
+      "chartOfAccounts": "Hesap Planı",
+      "activeAccounts": "Aktif hesaplar",
+      "journalEntries": "Günlük Girişleri",
+      "totalEntries": "Toplam girişler",
+      "reports": "Raporlar",
+      "reportsDescription": "Mali raporları görüntüle",
+      "recentEntries": "Son Girişler",
+      "recentEntriesDescription": "En son günlük girişleri",
+      "noEntries": "Henüz giriş yok. Başlamak için ilk girişinizi oluşturun.",
+      "viewAllEntries": "Tüm Girişleri Görüntüle",
+      "quickLinks": "Hızlı Bağlantılar",
+      "quickLinksDescription": "Ortak muhasebe görevleri",
+      "viewTrialBalance": "Deneme Bakiyesini Görüntüle",
+      "viewProfitLoss": "Kar ve Zarar Raporu",
+      "settings": "Muhasebe Ayarları"
+    },
+    "reports": {
+      "title": "Mali Raporlar",
+      "subtitle": "Finansal verilerinizi analiz etmek için kapsamlı raporlara erişin",
+      "viewReport": "Raporu Görüntüle",
+      "aboutTitle": "Mali Raporlar Hakkında",
+      "aboutLine1": "Tüm raporlar, yayınlanan günlük girişlerinizden gerçek zamanlı olarak oluşturulur. Taslak girişler raporlara dahil edilmez.",
+      "aboutLine2": "Raporları PDF veya Excel formatlarına aktarabilir ve belirli dönemleri analiz etmek için tarih aralığı filtrelerini kullanabilirsiniz.",
+      "aboutLine3": "💡 Trendleri ve anormallikleri anlamanıza yardımcı olmak için her raporda yapay zeka destekli bilgiler mevcuttur.",
+      "trialBalance": {
+        "title": "Deneme Bakiyesi",
+        "description": "Borçların kredilere eşit olduğunu doğrulamak için tüm hesap bakiyelerinin özeti"
+      },
+      "generalLedger": {
+        "title": "Genel Muhasebe",
+        "description": "Bireysel hesaplar için ayrıntılı işlem geçmişi"
+      },
+      "profitLoss": {
+        "title": "Kâr ve Zarar",
+        "description": "Gelir, gider ve net geliri gösteren gelir tablosu"
+      },
+      "balanceSheet": {
+        "title": "Bilanço",
+        "description": "Belirli bir tarihte varlıkların, borçların ve özsermayenin anlık görüntüsü"
+      }
+    },
+    "setup": {
+      "title": "Muhasebeyi Ayarla",
+      "subtitle": "Başlamak için muhasebe ayarlarınızı ve hesap planınızı yapılandırın",
+      "basic": {
+        "title": "Temel Ayarlar",
+        "description": "Temel muhasebe tercihlerinizi yapılandırın"
+      },
+      "baseCurrency": "Baz Para Birimi",
+      "selectCurrency": "Para birimini seçin",
+      "baseCurrencyHelp": "Muhasebe kayıtlarınız için birincil para birimi",
+      "fiscalYearStart": "Mali Yıl Başlangıcı",
+      "selectFiscalStart": "Mali yıl başlangıcını seçin",
+      "fiscalStart": {
+        "jan1": "1 Ocak (Takvim Yılı)",
+        "apr1": "1 Nisan",
+        "jul1": "1 Temmuz",
+        "oct1": "1 Ekim"
+      },
+      "fiscalYearHelp": "Mali yılınız başladığında (dönem oluşumunu etkiler)",
+      "periodLocking": "Dönem Kilitlemeyi Etkinleştir",
+      "periodLockingHelp": "Girişlerin kapalı dönemlere gönderilmesini önleyin (üretimde kullanım için önerilir)",
+      "chartOfAccountsTitle": "Hesap Planı",
+      "chartOfAccountsDescription": "Başlamak için önceden oluşturulmuş bir şablon seçin (daha sonra daha fazla hesap ekleyebilirsiniz)",
+      "templates": {
+        "minimal": {
+          "label": "Minimum (5 hesap)",
+          "description": "Çok basit muhasebe ihtiyaçları için temel kurulum"
+        },
+        "freelancer": {
+          "label": "Serbest Çalışan (16 hesap)",
+          "description": "Bağımsız yükleniciler ve danışmanlar için ideal"
+        },
+        "smallBusiness": {
+          "label": "Küçük İşletme (35 hesap)",
+          "description": "Küçük işletmeler için kapsamlı kurulum"
+        },
+        "standard": {
+          "label": "Standart (79 hesap) (Önerilen)",
+          "description": "Çoğu işletme için tam özellikli hesap planı"
+        }
+      },
+      "next": {
+        "title": "Bundan Sonra Ne Olacak?",
+        "line1": "Seçtiğiniz hesap planı şablonunuz tüm önceden tanımlanmış hesaplarla oluşturulacak",
+        "line2": "Cari mali yıl için 12 aylık muhasebe dönemi oluşturulacak",
+        "line3": "Hesapları özelleştirebilir, yenilerini ekleyebilir ve günlük girişleri oluşturmaya başlayabilirsiniz.",
+        "line4": "Tüm mali raporlar anında hazır olacak"
+      },
+      "settingUp": "Kurulum...",
+      "complete": "Kurulumu Tamamla"
+    },
+    "validation": {
+      "accountRequired": "Hesap gerekli",
+      "amountPositive": "Tutar pozitif olmalıdır",
+      "invalidDate": "Geçersiz tarih biçimi",
+      "memoRequired": "Not gerekli",
+      "minimumLines": "En az 2 satır gereklidir",
+      "debitsEqualCredits": "Borçlar kredilere eşit olmalıdır",
+      "accountCodeRequired": "Hesap kodu gerekli",
+      "accountCodeMax": "Kod 20 karakter veya daha az olmalıdır",
+      "accountCodeFormat": "Kod yalnızca büyük harfler, sayılar ve kısa çizgiler içermelidir",
+      "accountNameRequired": "Hesap adı gerekli",
+      "accountNameMax": "Ad 100 karakter veya daha az olmalıdır"
+    },
+    "toasts": {
+      "accountCreated": "\"{{name}}\" hesabı başarıyla oluşturuldu",
+      "accountCreateFailed": "Hesap oluşturulamadı: {{message}}",
+      "accountUpdated": "\"{{name}}\" hesabı başarıyla güncellendi",
+      "accountUpdateFailed": "Hesap güncellenemedi: {{message}}",
+      "journalEntryDraftCreated": "Taslak yevmiye kaydı başarıyla oluşturuldu",
+      "journalEntryCreateFailed": "Günlük girişi oluşturulamadı: {{message}}",
+      "journalEntryDraftUpdated": "Taslak yevmiye girişi başarıyla güncellendi",
+      "journalEntryUpdateFailed": "Günlük girişi güncellenemedi: {{message}}",
+      "journalEntryPosted": "{{entryNumber}} günlük girişi başarıyla gönderildi",
+      "journalEntryPostFailed": "Günlük girişi gönderilemedi: {{message}}",
+      "journalEntryReversed": "Giriş tersine çevrildi. Orijinal: {{original}}, Geri Dönüş: {{reversal}}",
+      "journalEntryReverseFailed": "Günlük girişi geri alınamadı: {{message}}",
+      "setupCompleted": "Muhasebe kurulumu başarıyla tamamlandı",
+      "setupFailed": "Muhasebe kurulumu başarısız oldu: {{message}}",
+      "settingsUpdated": "Muhasebe ayarları başarıyla güncellendi",
+      "settingsUpdateFailed": "Ayarlar güncellenemedi: {{message}}",
+      "periodClosed": "{{name}} dönemi başarıyla kapatıldı",
+      "periodCloseFailed": "Dönem kapatılamadı: {{message}}",
+      "periodReopened": "{{name}} dönemi başarıyla yeniden açıldı",
+      "periodReopenFailed": "Dönem yeniden açılamadı: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "Hesabınızda oturum açın",
+      "subtitle": "Kayıtları ve günlük nakit işlemlerini yönetmek için oturum açın.",
+      "rememberMe": "Beni hatırla",
+      "forgotPassword": "Parolanızı mı unuttunuz?",
+      "cta": "Oturum aç",
+      "signingIn": "Oturum açılıyor...",
+      "noAccount": "Hesabınız yok mu?"
+    },
+    "signup": {
+      "title": "Hesabınızı oluşturun",
+      "subtitle": "Nakit iş akışlarını yönetmeye başlamak için kaydolun.",
+      "cta": "Kayıt ol",
+      "creating": "Hesap oluşturuluyor...",
+      "hasAccount": "Zaten bir hesabınız var mı?"
+    },
+    "forgot": {
+      "title": "Şifrenizi sıfırlayın",
+      "subtitle": "E-postanızı girin, size bir sıfırlama bağlantısı göndereceğiz.",
+      "cta": "Sıfırlama bağlantısını gönder",
+      "sending": "Bağlantı gönderiliyor...",
+      "successMessage": "{{email}} için bir hesap mevcutsa, bir şifre sıfırlama bağlantısı gönderdik.",
+      "backToLogin": "Oturum açmak için geri dön"
+    },
+    "reset": {
+      "title": "Yeni bir şifre belirleyin",
+      "cta": "Şifreyi güncelle",
+      "updating": "Şifre güncelleniyor...",
+      "successToast": "Şifre güncellendi",
+      "missingTokenTitle": "Sıfırlama jetonu eksik",
+      "missingTokenMessage": "Şifre sıfırlama bağlantısı geçersiz veya eksik.",
+      "requestNewLink": "Yeni bir bağlantı isteyin",
+      "confirmLabel": "Şifreyi onayla"
+    },
+    "fields": {
+      "fullName": "Tam ad",
+      "email": "E-posta adresi",
+      "password": "Şifre"
+    },
+    "placeholders": {
+      "fullName": "Tam ad",
+      "email": "E-posta adresi",
+      "password": "Şifre",
+      "passwordMin": "Minimum 6 karakter"
+    },
+    "help": {
+      "passwordMin": "Şifre en az 6 karakter uzunluğunda olmalıdır."
+    },
+    "errors": {
+      "loginFailed": "Geçersiz e-posta veya şifre",
+      "passwordLength": "Şifre en az 6 karakter olmalıdır",
+      "passwordMismatch": "Şifreler eşleşmiyor",
+      "missingResetToken": "Sıfırlama jetonu eksik",
+      "requestFailed": "Sıfırlama bağlantısı gönderilemiyor",
+      "resetFailed": "Şifre sıfırlanamıyor",
+      "signupFailed": "Hesap oluşturulamadı",
+      "networkError": "Ağ hatası. Lütfen sunucunun çalışıp çalışmadığını kontrol edin."
+    }
+  },
+  "forms": {
+    "submit": "Gönder",
+    "repeater": {
+      "missingItemFields": "Tekrarlayıcı öğe alanları eksik",
+      "empty": "Hiçbir satır eklenmedi",
+      "row": "Satır {{index}}",
+      "remove": "Kaldır",
+      "add": "Satır ekle"
+    },
+    "list": {
+      "title": "Formlar",
+      "subtitle": "Herkese açık formlar oluşturun ve yönetin",
+      "newForm": "Yeni form",
+      "noForms": "Henüz form yok",
+      "noFormsDescription": "Yanıtları toplamak için ilk formunuzu oluşturun.",
+      "createForm": "Form oluştur",
+      "columns": {
+        "name": "İsim",
+        "status": "Durum",
+        "updated": "Güncellendi"
+      },
+      "sort": {
+        "updatedNewest": "Güncellendi (En Yeni)",
+        "updatedOldest": "Güncellendi (En Eski)",
+        "createdNewest": "Oluşturuldu (En Yeni)",
+        "nameAz": "İsim (A'dan Z'ye)"
+      },
+      "filters": {
+        "status": "Durum"
+      },
+      "statuses": {
+        "DRAFT": "Taslak",
+        "PUBLISHED": "Yayınlandı"
+      },
+      "page": "{{total}}'nin {{page}} Sayfası",
+      "delete": {
+        "title": "Formu sil",
+        "description": "Bu, formu arşivleyecek ve listeden kaldıracaktır."
+      },
+      "errors": {
+        "loadFailed": "Formlar yüklenemedi"
+      },
+      "toast": {
+        "deleted": "Form silindi",
+        "deleteFailed": "Form silinemedi"
+      }
+    },
+    "detail": {
+      "subtitle": "Form oluşturucu ve gönderimler",
+      "backToForms": "Formlara geri dön",
+      "notFound": "Form bulunamadı.",
+      "tabs": {
+        "builder": "İnşaatçı",
+        "share": "Paylaş",
+        "submissions": "Gönderimler"
+      },
+      "builder": {
+        "formDetails": "Form ayrıntıları",
+        "save": "Kaydet",
+        "saving": "Kaydediliyor...",
+        "name": "İsim",
+        "description": "Açıklama",
+        "fields": "Alanlar",
+        "addField": "Alan ekle",
+        "emptyFields": "Formunuzu oluşturmaya başlamak için alanlar ekleyin.",
+        "columns": {
+          "label": "Etiket",
+          "type": "Tür",
+          "required": "Gerekli",
+          "order": "Sipariş"
+        },
+        "required": {
+          "yes": "Evet",
+          "no": "Hayır"
+        }
+      },
+      "share": {
+        "publishing": "Yayınlama",
+        "regenerateToken": "Jetonu yeniden oluştur",
+        "unpublish": "Yayından kaldır",
+        "publishForm": "Formu yayınla",
+        "publishHint": "Yayınlama, gönderimler için genel bir bağlantı ve erişim belirteci oluşturur.",
+        "publicUrl": "Genel URL",
+        "accessToken": "Erişim belirteci (bir kez gösterilir)",
+        "regenerateToView": "Görüntülemek için yeniden oluşturun",
+        "linkCopied": "Bağlantı kopyalandı",
+        "tokenCopied": "Jeton kopyalandı"
+      },
+      "submissions": {
+        "title": "Gönderimler",
+        "empty": "Henüz başvuru yok.",
+        "columns": {
+          "submitted": "Gönderildi",
+          "source": "Kaynak"
+        },
+        "view": "Görüntüle",
+        "detailTitle": "Gönderim ayrıntıları",
+        "notProvided": "(sağlanmadı)",
+        "noSubmissionSelected": "Hiçbir gönderi seçilmedi."
+      },
+      "fieldDialog": {
+        "addTitle": "Alan ekle",
+        "editTitle": "Alanı düzenle",
+        "label": "Etiket",
+        "type": "Tür",
+        "selectType": "Tür seçin",
+        "options": "Seçenekler (virgülle ayrılmış)",
+        "required": "Gerekli",
+        "helpText": "Yardım metni",
+        "cancel": "İptal etmek",
+        "saveField": "Alanı kaydet",
+        "labelRequired": "Alan etiketi gerekli"
+      },
+      "fieldTypes": {
+        "SHORT_TEXT": "Kısa metin",
+        "LONG_TEXT": "Uzun metin",
+        "NUMBER": "Sayı",
+        "DATE": "Tarih",
+        "BOOLEAN": "Boolean",
+        "SINGLE_SELECT": "Tek seçim",
+        "MULTI_SELECT": "Çoklu seçim",
+        "EMAIL": "E-posta"
+      },
+      "statuses": {
+        "DRAFT": "Taslak",
+        "PUBLISHED": "Yayınlandı"
+      },
+      "toast": {
+        "updated": "Form güncellendi",
+        "updateFailed": "Form güncellenemedi",
+        "fieldAdded": "Alan eklendi",
+        "fieldAddFailed": "Alan eklenemedi",
+        "fieldUpdated": "Alan güncellendi",
+        "fieldUpdateFailed": "Alan güncellenemedi",
+        "fieldRemoved": "Alan kaldırıldı",
+        "fieldRemoveFailed": "Alan kaldırılamadı",
+        "published": "Form yayınlandı",
+        "publishFailed": "Form yayınlanamadı",
+        "unpublished": "Form yayından kaldırıldı",
+        "unpublishFailed": "Form yayından kaldırılamadı"
+      }
+    },
+    "new": {
+      "title": "Yeni form oluştur",
+      "cancel": "İptal etmek",
+      "creating": "Oluşturuluyor...",
+      "createForm": "Form oluştur",
+      "formName": "Form adı",
+      "namePlaceholder": "Bize ulaşın",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Katılımcılara bu formun ne işe yaradığını söyleyin",
+      "toast": {
+        "created": "Form oluşturuldu",
+        "createFailed": "Form oluşturulamadı"
+      }
+    }
+  },
+  "portfolioPublic": {
+    "nav": {
+      "works": "Eserler",
+      "clients": "Müşteriler",
+      "services": "Hizmetler",
+      "team": "Takım",
+      "blog": "Blog"
+    },
+    "home": {
+      "welcome": "Hoş geldiniz",
+      "about": "Hakkında",
+      "featuredProjects": "Öne Çıkan Projeler",
+      "viewAll": "Tümünü görüntüle",
+      "trustedBy": "Güvenilir"
+    },
+    "works": {
+      "title": "Eserler",
+      "subtitle": "Son projelerimden bir seçki."
+    },
+    "project": {
+      "backToWorks": "İşlere Geri Dön",
+      "links": "Proje Bağlantıları",
+      "liveDemo": "Canlı Demo",
+      "sourceCode": "Kaynak Kodu",
+      "techStack": "Teknoloji Yığını"
+    },
+    "common": {
+      "contact": "İletişim",
+      "contactMe": "Bana Ulaşın",
+      "viewDetails": "Ayrıntıları Görüntüle"
+    },
+    "errors": {
+      "notFound": "Vitrin Bulunamadı",
+      "notFoundDesc": "Aradığınız portföy mevcut değil veya henüz yayınlanmadı.",
+      "error": "Bir şeyler ters gitti",
+      "errorDesc": "Bu portföyü yüklerken bir hatayla karşılaştık."
+    }
+  },
+  "crm": {
+    "dashboard": {
+      "title": "CRM Kontrol Paneli",
+      "pageTitle": "CRM Kontrol Paneli",
+      "subtitle": "AI + CRM çalışma alanı, satış hattına ve ilişkilere odaklandı.",
+      "breadcrumb": {
+        "crm": "CRM",
+        "dashboard": "Kontrol Paneli"
+      }
+    },
+    "activities": {
+      "title": "Faaliyetler",
+      "new": "Yeni Etkinlik",
+      "emptyTitle": "Hiçbir etkinlik bulunamadı",
+      "emptyDescription": "Etkileşimlerinizi ve görevlerinizi buradan takip edin."
+    },
+    "activity": {
+      "newTitle": "Yeni Etkinlik",
+      "newSubtitle": "CRM'nizi güncel tutmak için bir görevi, çağrıyı veya toplantıyı günlüğe kaydedin.",
+      "create": "Etkinlik Oluştur",
+      "created": "Etkinlik başarıyla oluşturuldu",
+      "createFailed": "Etkinlik oluşturulamadı",
+      "subject": "Konu",
+      "subjectPlaceholder": "örneğin Teklifin takibi",
+      "type": "Faaliyet Türü",
+      "selectType": "Tür seçin",
+      "dueAt": "Son Tarih ve Saat",
+      "dueDate": "Son Tarih",
+      "selectDate": "Tarih seçin",
+      "reminderHint": "Etkinlik bu süre için planlanacaktır.",
+      "dealIdOptional": "Anlaşma Bağlantısı (İsteğe Bağlı)",
+      "dealIdPlaceholder": "Anlaşma Kimliğini Girin",
+      "partyIdOptional": "İletişim Bağlantısı (İsteğe bağlı)",
+      "partyIdPlaceholder": "Kişi Kimliğini Girin",
+      "linkRequiredHint": "Daha iyi bir bağlam için bu etkinliği bir anlaşmaya veya kişiye bağlayın.",
+      "notesPlaceholder": "Ayrıntıları veya sonuçları buraya ekleyin...",
+      "tipTitle": "Etkinlik İpuçları",
+      "tipSubtitle": "Nasıl düzenli kalınır?",
+      "tipOne": "Verileri güncel tutmak için etkinlikleri hemen günlüğe kaydedin.",
+      "tipTwo": "Hızlı başvuru için açıklayıcı konuları kullanın.",
+      "tipThree": "Süreçteki tüm geçmişi görmek için anlaşmalara bağlantı verin.",
+      "subjectRequired": "Konu gerekli",
+      "linkRequired": "Bir anlaşmaya veya bir kişiye bağlı olmalıdır",
+      "due": "Vadesi {{date}}",
+      "statuses": {
+        "open": "Açık",
+        "completed": "Tamamlandı",
+        "canceled": "İptal edildi",
+        "scheduled": "planlanmış"
+      },
+      "channel": "Kanal",
+      "direction": "Yön",
+      "directionOutbound": "Giden",
+      "directionInbound": "Gelen",
+      "communicationStatus": "İletişim Durumu",
+      "communicationLogged": "Günlüğe kaydedildi",
+      "communicationDraft": "Taslak",
+      "types": {
+        "note": "Not",
+        "task": "Görev",
+        "call": "Ara",
+        "meeting": "Toplantı",
+        "communication": "İletişim",
+        "system_event": "Sistem Etkinliği"
+      },
+      "addTitle": "Etkinlik Ekle",
+      "addSubtitle": "Hızlı bir güncellemeyi veya görevi günlüğe kaydedin",
+      "pickDate": "Bir tarih seç",
+      "time": "Zaman",
+      "duration": "Süre (dakika)",
+      "durationPlaceholder": "Örnek: 15, 30, 60",
+      "outcome": "Sonuç",
+      "selectOutcome": "Sonucu seçin",
+      "location": "Konum",
+      "locationPlaceholder": "Yakınlaştırma bağlantısı veya fiziksel konum",
+      "outcomes": {
+        "connected": "Bağlı",
+        "voicemail": "Sesli mesaj",
+        "noanswer": "Cevap Yok",
+        "busy": "Meşgul",
+        "wrongnumber": "Yanlış Numara"
+      }
+    },
+    "timeline": {
+      "title": "Zaman çizelgesi",
+      "subtitle": "Bu anlaşmaya ilişkin etkinlik ve etkileşim geçmişi",
+      "empty": "Henüz kayıtlı bir aktivite yok.",
+      "due": "Vadesi {{date}}",
+      "stage": "{{stage}}'ye taşındı",
+      "channelMessage": "{{channel}} mesajı",
+      "filters": {
+        "all": "Hepsi",
+        "notes": "Notlar",
+        "calls": "Aramalar",
+        "meetings": "Toplantılar",
+        "tasks": "Görevler",
+        "communications": "İletişim",
+        "stage": "Aşamalar"
+      },
+      "duePrefix": "Vadesi: "
+    },
+    "deals": {
+      "title": "Fırsatlar",
+      "new": "Yeni Fırsat",
+      "emptyTitle": "Hiçbir fırsat bulunamadı",
+      "emptyDescription": "İlk anlaşmanızı oluşturarak satış hattınızı izlemeye başlayın.",
+      "noAmount": "Tutar yok",
+      "stage": "Sahne",
+      "status": {
+        "open": "Açık",
+        "won": "Kazanıldı",
+        "lost": "Kayıp"
+      },
+      "statuses": {
+        "open": "Açık",
+        "won": "Kazanıldı",
+        "lost": "Kayıp"
+      },
+      "newTitle": "Yeni Fırsat",
+      "newSubtitle": "Satış hattınızda takip edilecek yeni bir satış fırsatı yaratın.",
+      "create": "Fırsat Oluştur",
+      "created": "Anlaşma başarıyla oluşturuldu",
+      "createFailed": "Anlaşma oluşturulamadı",
+      "titleLabel": "Anlaşma Başlığı",
+      "titlePlaceholder": "örneğin Acme Corp için Web Sitesinin Yeniden Tasarımı",
+      "customer": "Müşteri",
+      "customerPlaceholder": "Müşteri arayın veya seçin",
+      "customersLoading": "Müşteriler yükleniyor...",
+      "customersHint": "Yalnızca etkin bir ilişkisi olan müşteriler anlaşmalara bağlanabilir.",
+      "stagePlaceholder": "Bir aşama seçin",
+      "expectedCloseLabel": "Beklenen Kapanış Tarihi",
+      "selectDate": "Bir tarih seçin",
+      "amount": "Fırsat Değeri",
+      "amountPlaceholder": "0,00",
+      "currency": "Para birimi",
+      "currencyPlaceholder": "Para birimini seçin",
+      "probabilityLabel": "Olasılık (%)",
+      "probabilityPlaceholder": "örneğin 50",
+      "notesPlaceholder": "Bu anlaşmayla ilgili dahili notları veya bağlamı ekleyin...",
+      "tagsPlaceholder": "örneğin acil, yüksek değerli (virgülle ayrılmış)",
+      "pipelineTitle": "Boru Hattı Durumu",
+      "pipelineDescription": "Bu anlaşma aşağıdaki boru hattı aşamalarında takip edilecektir.",
+      "tipsTitle": "Fırsat İpuçları",
+      "tipsSubtitle": "CRM için en iyi uygulamalar",
+      "tipsOne": "Anlaşma başlıklarınızı açıklayıcı ama kısa tutun.",
+      "tipsTwo": "Anlaşma aşamalar halinde ilerledikçe olasılığı güncelleyin.",
+      "tipsThree": "Daha iyi tahmin için gerçekçi bir beklenen kapanış tarihi belirleyin.",
+      "quickActions": "Hızlı Eylemler",
+      "message": "Mesaj",
+      "quickNote": "Hızlı Not",
+      "stages": {
+        "lead": "Kurşun",
+        "qualified": "Nitelikli",
+        "proposal": "Teklif",
+        "negotiation": "müzakere",
+        "won": "Kazanıldı",
+        "lost": "Kayıp"
+      },
+      "validation": {
+        "titleRequired": "Anlaşma başlığı gerekli",
+        "customerRequired": "Lütfen bir müşteri seçin",
+        "stageRequired": "Aşama seçimi gerekli",
+        "amountNumber": "Tutar geçerli bir sayı olmalıdır",
+        "currencyRequired": "Para birimi gerekli",
+        "probabilityRange": "Olasılık 0 ile 100 arasında olmalıdır",
+        "probabilityValidation": "Olasılık 0 ile 100 arasında olmalıdır"
+      },
+      "deletedReason": "Anlaşma silindi",
+      "loadFailed": "Anlaşma yüklenemedi",
+      "loadFailedHint": "Anlaşma ayrıntılarını alamadık. Lütfen tekrar deneyin.",
+      "backToDeals": "Fırsatlara Geri Dön",
+      "markLostTitle": "Fırsatı Kayıp Olarak İşaretle",
+      "markLostDescription": "Lütfen bu anlaşmanın kaybedilme nedenini belirtin.",
+      "markLostPlaceholder": "örneğin Rakip kazandı, bütçe kesildi...",
+      "channelsLoading": "Kanallar yükleniyor...",
+      "noChannels": "Kullanılabilir kanal yok",
+      "missingContactFields": "Eksik iletişim bilgileri: {{fields}}",
+      "noteSubject": "Konu",
+      "noteDetails": "Ayrıntıları not edin...",
+      "addNote": "Not Ekle",
+      "markLost": "Kayıp Olarak İşaretle",
+      "deleteTitle": "Fırsatı Sil",
+      "deleteDescription": "Bu anlaşmayı silmek istediğinizden emin misiniz? Bu eylem geri alınamaz.",
+      "delete": "Sil",
+      "noNotes": "Hiçbir not eklenmedi.",
+      "probability": "Olasılık. {{probability}}%",
+      "probabilityValue": "{{probability}}%",
+      "expectedClose": "Exp. {{date}}",
+      "expectedCloseTitle": "Beklenen Kapanış",
+      "markWon": "Mark Won",
+      "edit": "Fırsatı Düzenle",
+      "alreadyClosed": "Anlaşma zaten kapalı",
+      "relationships": "İlişkiler",
+      "party": "Bağlantılı Kişi",
+      "owner": "Anlaşma Sahibi",
+      "unassigned": "Atanmamış"
+    },
+    "channel": {
+      "messageVia": "{{channel}} yoluyla mesaj",
+      "template": "Şablon",
+      "chooseTemplate": "Bir şablon seçin",
+      "subject": "Konu",
+      "message": "Mesaj",
+      "log": "Günlük Mesajı",
+      "copySuccess": "Panoya kopyalandı",
+      "copyFailed": "Kopyalanamadı",
+      "draftCreated": "Taslak iletişim oluşturuldu",
+      "messageLogged": "Mesaj günlüğe kaydedildi",
+      "createDraftFailed": "Taslak oluşturulamadı",
+      "logFailed": "Mesaj günlüğe kaydedilemedi"
+    },
+    "accounts": {
+      "title": "Hesaplar",
+      "new": "Yeni Hesap",
+      "searchPlaceholder": "Hesapları ara...",
+      "emptyTitle": "Hesap bulunamadı",
+      "emptyDescription": "Başlamak için yeni bir hesap oluşturun.",
+      "noContactInfo": "İletişim bilgisi yok",
+      "status": {
+        "active": "Aktif",
+        "inactive": "Etkin değil",
+        "prospect": "potansiyel müşteri"
+      },
+      "type": {
+        "customer": "Müşteri",
+        "vendor": "Satıcı",
+        "partner": "Ortak",
+        "other": "Diğer"
+      }
+    },
+    "accountForm": {
+      "newTitle": "Yeni Hesap",
+      "editTitle": "Hesabı Düzenle",
+      "identityTitle": "Kimlik",
+      "identityDescription": "Parti kaydında saklanan iletişim bilgileri",
+      "accountNameRequired": "Hesap Adı *",
+      "websitePlaceholder": "https://...",
+      "industry": "Endüstri",
+      "profileTitle": "CRM Profili",
+      "profileDescription": "Satışa özel alanlar",
+      "accountType": "Hesap Türü",
+      "create": "Hesap Oluştur",
+      "update": "Hesabı Güncelle"
+    },
+    "contactForm": {
+      "newTitle": "Yeni Kişi",
+      "editTitle": "Kişiyi Düzenle",
+      "detailsTitle": "İletişim Bilgileri",
+      "create": "Kişi Oluştur",
+      "update": "Kişiyi Güncelle",
+      "createFailed": "Kişi oluşturulamadı",
+      "updateFailed": "Kişi güncellenemedi"
+    },
+    "sequences": {
+      "new": "Yeni Dizi",
+      "setupTitle": "Sıra Kurulumu",
+      "applyPreset": "Çivileri Uygula 3 adımlı ön ayar",
+      "created": "Sıra oluşturuldu",
+      "createFailed": "Sıra oluşturulamadı",
+      "nameRequired": "Sıra adı gerekli",
+      "addAtLeastOneStep": "En az bir adım ekleyin",
+      "stepTitle": "Adım {{step}}",
+      "removeStep": "{{step}} adımını kaldır",
+      "stepType": "Adım Türü",
+      "dayDelay": "Gün Gecikmesi",
+      "stepSubject": "Adım Konusu",
+      "stepBody": "Adım Gövdesi",
+      "addStep": "Adım Ekle",
+      "create": "Sıra Oluştur",
+      "creating": "Oluşturuluyor...",
+      "stepTypes": {
+        "task": "Görev",
+        "call": "Ara",
+        "emailManual": "E-posta Kılavuzu",
+        "emailAuto": "Otomatik E-posta"
+      },
+      "nailsPreset": {
+        "name": "Kazanmaya Giden Yol - Çiviler",
+        "description": "Tırnak adayları için otomatik gün 1/gün 3/gün 7 e-posta takibi."
+      }
+    },
+    "emailSettings": {
+      "title": "CRM E-posta Ayarları",
+      "subtitle": "Otomatik sıralı e-postalar ve gelen yanıtlar için Yeniden Gönder'i yapılandırın.",
+      "defaultDisplayName": "CRM Yeniden Gönder",
+      "saved": "CRM e-posta ayarları kaydedildi",
+      "connectionValid": "Yeniden gönderme bağlantısı geçerli",
+      "connectionTitle": "Bağlantıyı Yeniden Gönder",
+      "connectionDescription": "Giden iletiler yapılandırılmış göndereni kullanır. E-postaları varsayılan olarak sırala",
+      "connectionName": "Bağlantı adı",
+      "fromAddress": "Adresten",
+      "replyToAddress": "Yanıt adresi",
+      "apiKeyLabel": "API anahtarı",
+      "apiKeyLeaveBlank": "Geçerli anahtarı korumak için boş bırakın",
+      "apiKeyPlaceholder": "yeniden...",
+      "testConnection": "Bağlantıyı test edin",
+      "noWorkspace": "Aktif çalışma alanı seçilmedi.",
+      "inboundWebhookTitle": "Gelen Web Kancası",
+      "inboundWebhookDescription": "Bu URL'yi Gelen web kancası ayarlarını yeniden gönder bölümünde yapılandırın.",
+      "tenantResolution": "Kiracı otomatik olarak çözülür. İsteğe bağlı geri dönüş: ekle",
+      "setupGuideTitle": "Kurulum Kılavuzunu Yeniden Gönder",
+      "setupGuideDescription": "CRM yanıt takibi için tam olarak bu ayarları kullanın.",
+      "guide": {
+        "step1": "Yeniden Gönder Kontrol Panelini açın -> Web Kancaları -> Web Kancası Ekle.",
+        "step2": "Uç Nokta URL'sini yukarıdaki değere ayarlayın.",
+        "step3": "Etkinlik türleri'nde yalnızca",
+        "step4": "Bu CRM web kancası için kişi/etki alanı olaylarını seçmeyin.",
+        "localhostNotePrefix": "Localhost notu: Yeniden gönderme araması yapılamıyor",
+        "localhostNoteSuffix": "doğrudan. Yerel testler için API'nizi genel bir tünelle kullanıma açın ve bu HTTPS URL'sini web kancası uç noktası olarak kullanın."
+      },
+      "errors": {
+        "selectWorkspace": "E-posta ayarlarını kaydetmeden önce bir çalışma alanı seçin.",
+        "apiKeyRequired": "İlk kurulum için yeniden gönderme API anahtarı gereklidir.",
+        "saveFailed": "Ayarlar kaydedilemedi",
+        "saveConnectionFirst": "Önce bir Yeniden Gönder bağlantısını kaydedin.",
+        "connectionTestFailed": "Bağlantı testi başarısız oldu"
+      }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Oturumlar",
+      "subtitle": "Planlanan ve tamamlanan oturumları takip edin",
+      "new": "Yeni oturum",
+      "loading": "Oturumlar yükleniyor...",
+      "empty": "Oturum bulunamadı.",
+      "starts": "Başlangıçlar",
+      "topic": "Konu",
+      "status": "Durum",
+      "open": "Açık",
+      "markDone": "Tamamlandı olarak işaretle",
+      "cancel": "İptal etmek",
+      "updated": "Oturum güncellendi",
+      "updateFailed": "Oturum güncellenemedi",
+      "loadFailed": "Oturumlar yüklenemedi",
+      "confirmTitle": "Oturum durumu güncellensin mi?",
+      "confirmDescription": "Oturum {{status}} olarak ayarlansın mı?",
+      "filterClassGroup": "Sınıf grubu",
+      "filterStatus": "Durum",
+      "filterDateFrom": "Başlangıç tarihi",
+      "filterDateTo": "Tarih",
+      "monthLocked": "Ay kilitlendi",
+      "monthLockedDescription": "Bu ay zaten faturalandırıldı. Ayı yeniden açın veya bir düzenleme oluşturun.",
+      "billingLockedTooltip": "Faturalandırma oluşturulduğu için bu ay kilitlendi.",
+      "statusOptions": {
+        "planned": "Planlanan",
+        "done": "Bitti",
+        "cancelled": "İptal edildi"
+      },
+      "sortOptions": {
+        "newest": "Başlat (En Yeni)",
+        "oldest": "Başlangıç (En eski)"
+      }
+    },
+    "groups": {
+      "title": "Sınıf Grupları",
+      "subtitle": "Özel ders gruplarınızı ve fiyatlandırmanızı düzenleyin",
+      "new": "Yeni Sınıf Grubu",
+      "loading": "Sınıf grupları yükleniyor...",
+      "loadFailed": "Sınıf grupları yüklenemedi",
+      "emptyTitle": "Henüz sınıf grubu yok",
+      "emptyDescription": "Oturumları planlamaya başlamak için ilk grubunuzu oluşturun.",
+      "name": "İsim",
+      "subject": "Konu",
+      "level": "Seviye",
+      "pricePerSession": "Fiyat / seans",
+      "status": "Durum",
+      "updated": "Güncellendi",
+      "open": "Açık",
+      "edit": "Düzenle",
+      "statusOptions": {
+        "active": "Aktif",
+        "archived": "Arşivlendi"
+      },
+      "sortOptions": {
+        "newest": "Güncellendi (En Yeni)",
+        "oldest": "Güncellendi (En Eski)",
+        "name": "İsim (A'dan Z'ye)"
+      }
+    },
+    "students": {
+      "title": "Öğrenciler",
+      "subtitle": "Öğrenci kayıtlarını ve velilerini yönetin",
+      "createTitle": "Öğrenci Oluştur",
+      "add": "Öğrenci ekle",
+      "creating": "Oluşturuluyor...",
+      "created": "Öğrenci Oluşturuldu",
+      "createSuccess": "Öğrenci oluşturuldu. Artık velileri bağlayabilirsiniz.",
+      "createFailed": "Öğrenci oluşturulamadı. Lütfen tekrar deneyin.",
+      "createFirstTip": "Önce öğrenciyi oluşturun, ardından velileri bağlayın.",
+      "loading": "Öğrenciler yükleniyor...",
+      "loadFailed": "Öğrenciler yüklenemedi.",
+      "emptyTitle": "Henüz öğrenci yok",
+      "emptyDescription": "Velileri ve kayıtları izlemeye başlamak için ilk öğrencinizi oluşturun.",
+      "record": "Öğrenci",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "primaryPayer": "Birincil ödeyen",
+      "status": "Durum",
+      "updated": "Güncellendi",
+      "open": "Açık",
+      "edit": "Düzenle",
+      "archive": "Arşiv",
+      "archived": "Öğrenci arşivlendi",
+      "archiveFailed": "Öğrenci arşivlenemedi",
+      "archiveConfirmTitle": "Arşiv öğrencisi",
+      "archiveConfirmDescription": "Bu, öğrenciyi arşivleyecektir. Bunları daha sonra arşivden kaldırabilirsiniz.",
+      "statusOptions": {
+        "active": "Aktif",
+        "archived": "Arşivlendi"
+      },
+      "guardians": {
+        "title": "Muhafızlar",
+        "subtitle": "Ebeveynleri veya velileri bağlayın ve faturayı ödeyen kişiyi belirleyin.",
+        "link": "Bağlantı koruyucusu",
+        "empty": "Henüz bağlı bir veli yok. Faturalandırma sorumluluğunu yönetmek için bir tane ekleyin."
+      }
+    },
+    "billing": {
+      "title": "Sınıf Faturalandırma",
+      "subtitle": "Öğrenim ücretini önizleyin ve seçilen ay için faturalar oluşturun.",
+      "createInvoices": "Aylık faturalar oluşturun",
+      "billingMonth": "Fatura Ayı",
+      "refresh": "Yenile",
+      "invoicesCreated": "{{count}} faturaları oluşturuldu",
+      "sendInvoices": "Fatura gönder",
+      "invoicesSent": "Gönderilmek üzere sıraya alınan faturalar",
+      "sendFailed": "Faturalar gönderilemedi",
+      "alreadySent": "Zaten gönderildi",
+      "sendDialogTitle": "Faturalar oluşturuldu",
+      "sendDialogDescription": "{{count}} faturaları oluşturuldu. Bunları şimdi göndermek istiyor musunuz?",
+      "sendDialogYes": "Evet gönder",
+      "sendDialogNo": "Hayır",
+      "summaryCreated": "{{month}} için {{count}} faturaları oluşturuldu",
+      "loading": "Faturalandırma önizlemesi yükleniyor...",
+      "loadFailed": "Önizleme yüklenemedi",
+      "strategy": "Faturalandırma Stratejisi:",
+      "basis": "Faturalandırma Esası:",
+      "prepaid": "Ön ödemeli",
+      "arrears": "Borçlar",
+      "scheduledBasis": "Planlanmış Oturumlar",
+      "attendedBasis": "Katıldığımız Oturumlar",
+      "arrearsTip": "Yalnızca katılımın olduğu \"BİTTİ\" olarak işaretlenen oturumlar faturalandırılabilir",
+      "payerId": "Ödemeyi yapanın kimliği:",
+      "sessionsTotal": "toplam oturum",
+      "classGroup": "Sınıf Grubu",
+      "sessions": "Oturumlar",
+      "pricePerSession": "Fiyat / Oturum",
+      "subtotal": "Ara toplam",
+      "invoice": "Fatura",
+      "markSent": "Gönderildi Olarak İşaretle",
+      "markSentSuccess": "Fatura gönderildi olarak işaretlendi",
+      "markSentFailed": "Fatura gönderildi olarak işaretlenemedi",
+      "customerEmailRequired": "Müşteri e-postası gerekli",
+      "generatePrivateLink": "Bağlantı Oluştur",
+      "generateLinkSuccess": "Özel bağlantı oluşturuldu",
+      "generateLinkFailed": "Özel bağlantı oluşturulamadı",
+      "copyLink": "Bağlantıyı Kopyala",
+      "copyLinkSuccess": "Bağlantı panoya kopyalandı",
+      "copyLinkFailed": "Bağlantı kopyalanamadı",
+      "regenerateLink": "Bağlantıyı Yeniden Oluştur",
+      "regenerateLinkSuccess": "Özel bağlantı yeniden oluşturuldu",
+      "regenerateLinkConfirmTitle": "Özel bağlantı yeniden oluşturulsun mu?",
+      "regenerateLinkConfirmDescription": "Eski bağlantı hemen çalışmayı bırakacaktır.",
+      "regenerateLinkConfirmAction": "Yenile",
+      "linkRegenerated": "Bağlantı yeniden oluşturuldu",
+      "linkGenerationFailed": "Bağlantı oluşturulamadı",
+      "viewInvoice": "Faturayı görüntüle",
+      "invoiceNotCreated": "Oluşturulmadı",
+      "emptyTitle": "Faturalandırılabilir oturum yok",
+      "emptyDescription": "Seçilen ay için henüz faturalandırılmamış onaylanmış oturum yok.",
+      "attendedSessionsTip": "İpucu: \"Katılılan Oturumlar\" modunda, oturumları TAMAMLANDI olarak işaretlemeniz ve faturalandırılmadan önce katılımı kaydetmeniz gerekir.",
+      "regenerate": "Faturaları yeniden oluştur",
+      "regenerateConfirm": "Faturaları yeniden oluşturmak istediğinizden emin misiniz? Bu, bu aya ait mevcut taslak faturaları ayıracaktır.",
+      "allGroups": "Tüm gruplar",
+      "selectAllGroups": "Grup seç"
+    },
+    "settings": {
+      "title": "Sınıf Ayarları",
+      "description": "Bu çalışma alanı için sınıf faturalarının nasıl oluşturulacağını yapılandırın.",
+      "billingStrategy": "Faturalandırma Stratejisi",
+      "monthStrategy": "Fatura ayı stratejisi",
+      "billingBasis": "Faturalandırma esası",
+      "save": "Ayarları kaydet",
+      "updated": "Sınıf ayarları güncellendi",
+      "updateFailed": "Sınıf ayarları güncellenemedi",
+      "placeholderStrategy": "Faturalandırma stratejisini seçin",
+      "placeholderBasis": "Faturalandırma esasını seçin",
+      "strategies": {
+        "prepaid": {
+          "label": "İçinde bulunduğumuz ayın faturası (ön ödemeli)",
+          "description": "Planlanan oturumlar için faturalar ayın başında oluşturulur."
+        },
+        "arrears": {
+          "label": "Önceki aya ait fatura (gecikmiş)",
+          "description": "Katılan oturumlar için ay başında fatura kesilir."
+        }
+      },
+      "attendance": {
+        "title": "Katılım",
+        "description": "Katılım davranışını yapılandırma",
+        "mode": "Katılım Modu",
+        "manual": {
+          "label": "Manuel Katılım",
+          "description": "Öğretmenler oturum başına katılımı kaydetmelidir."
+        },
+        "autoFull": {
+          "label": "Otomatik Tam Katılım",
+          "description": "Bir oturum tamamlandı olarak işaretlendiğinde, kayıtlı tüm öğrenciler otomatik olarak mevcut olarak işaretlenir. Öğretmenler gerekirse düzenleme yapmaya devam edebilir."
+        }
+      },
+      "bases": {
+        "scheduled": {
+          "label": "Planlanmış oturumlar",
+          "description": "Fatura ayında planlanan/yapılan oturumları sayar."
+        },
+        "attended": {
+          "label": "Katıldığın oturumlar",
+          "description": "Yapılan oturumlarda faturalandırılabilir katılımı sayar."
+        }
+      }
+    }
+  },
+  "purchasing": {
+    "settings": {
+      "title": "Satın Alma Ayarları",
+      "save": "Ayarları Kaydet",
+      "defaultCurrency": "Varsayılan Para Birimi",
+      "defaultPaymentTerms": "Varsayılan Ödeme Koşulları",
+      "poNumberPrefix": "PO Numarası Öneki",
+      "defaultApAccount": "Varsayılan Borç Hesapları Hesabı",
+      "defaultExpenseAccount": "Varsayılan Gider Hesabı",
+      "defaultBankAccount": "Varsayılan Banka Hesabı",
+      "autoPostBill": "Bill Post'ta otomatik yayınlama",
+      "autoPostBillHelp": "Satıcı faturası gönderildiğinde otomatik olarak muhasebe girişleri oluşturun",
+      "autoPostPayment": "Ödemede Otomatik Gönderim",
+      "autoPostPaymentHelp": "Bir ödeme kaydedildiğinde otomatik olarak muhasebe girişleri oluşturun",
+      "duplicateDetection": "Mükerrer Fatura Tespiti",
+      "duplicateDetectionHelp": "Aynı satıcıya ve referansa sahip bir fatura zaten mevcut olduğunda uyar",
+      "approvalRequired": "Faturalar İçin Onay Gerekiyor",
+      "approvalRequiredHelp": "Satıcı faturalarının gönderilmeden önce onaylanması gerekir"
+    },
+    "copilot": {
+      "title": "Satın Alma Asistanı",
+      "purchaseOrderDraft": "Satınalma Siparişi Taslağı",
+      "vendorBillDraft": "Satıcı Fatura Taslağı",
+      "promptBill": "Satıcı faturası metninden veya görüntüsünden veri çıkarma",
+      "promptBillLabel": "Faturayı Çıkar",
+      "promptPo": "Dell'den 50 dizüstü bilgisayar için satın alma siparişi taslağı hazırlayın",
+      "promptPoLabel": "Taslak PO",
+      "placeholder": "Satın alma asistanına her şeyi sorun..."
+    }
+  },
+  "workspace": {
+    "create": "Çalışma Alanı Oluştur",
+    "setupDescription": "Kendi başınıza başlayın ve ihtiyaç duyduğunuzda ekip arkadaşlarınızı davet edin.",
+    "legalEntityType": "Tüzel kişilik türü",
+    "legalEntityPersonal": "Bireysel veya tek mal sahibi",
+    "legalEntityCompany": "Şirket",
+    "legalEntityHelp": "Bu, Corely'nin işletmeniz için hangi vergi bilgilerini göstereceğini belirler."
+  },
+  "tenants": {
+    "openAdminSession": "Kiracı yöneticisi olarak aç",
+    "openingAdminSession": "Açılıyor…",
+    "openAdminSessionError": "Kiracı yöneticisi oturumu açılamadı.",
+    "adminSessionTitle": "Kiracı yönetici oturumu",
+    "adminSessionBanner": "{{name}}'de kiracı yöneticisi olarak çalışma",
+    "returnToPlatform": "Platforma dön",
+    "endAdminSessionError": "Kiracı yöneticisi oturumu sonlandırılamadı. Tekrar deneyin.",
+    "title": "Kiracılar",
+    "description": "Kiracı yetkilerini ve ayarlarını yönetin.",
+    "listTitle": "Kiracı listesi",
+    "addTenant": "Kiracı ekle",
+    "noTenants": "Kiracı bulunamadı.",
+    "status": "Durum",
+    "slug": "Sümüklüböcek",
+    "tenantId": "Kiracı Kimliği",
+    "actions": "Eylemler",
+    "manage": "Yönet",
+    "confirmDeactivate": "Bu kiracıyı devre dışı bırakmak istediğinizden emin misiniz? Kullanıcılar artık giriş yapamayacak."
+  },
+  "billing": {
+    "title": "Planlar ve faturalandırma",
+    "subtitle": "Salonunuz için mevcut plan, nakit akışı kullanımı ve sonraki yükseltme seçenekleri.",
+    "currentPlan": "Mevcut plan",
+    "planStatus": "Plan durumu",
+    "billingActions": "Faturalandırma işlemleri",
+    "usage": "Bu süreyi kullanın",
+    "planCatalog": "Mevcut planlar",
+    "manageBilling": "Faturalandırmayı yönet",
+    "upgradePlan": "Yükseltme planı",
+    "currentPlanBadge": "Mevcut plan",
+    "noLimit": "Sınır yok",
+    "billedMonthly": "Aylık faturalandırılır",
+    "active": "Aktif",
+    "period": "Cari dönem",
+    "unavailable": "Bu planda mevcut değil",
+    "loading": "Fatura bilgileri yükleniyor...",
+    "loadFailed": "Faturalandırma şu anda yüklenemiyor.",
+    "openPortalDescription": "Ödeme ayrıntılarını güncellemek veya faturalamayı yönetmek için barındırılan müşteri portalını açın.",
+    "checkoutDescription": "Barındırılan Stripe Checkout aracılığıyla yükseltme yapın. Corely plan kataloğunu ve kullanım mantığını korur.",
+    "featureAccess": "Özellik erişimi",
+    "recommendedTitle": "Daha fazla sınıra mı ihtiyacınız var?",
+    "recommendedDescription": "Salonunuzun dışa aktarıma, yapay zeka yardımına veya birden fazla konuma ihtiyacı olduğunda yükseltme yapın.",
+    "startTrial": "30 günlük denemeyi başlat",
+    "trialTitle": "30 günlük tam erişim denemesini başlatın",
+    "noCardRequired": "Kart gerekmez",
+    "trialDescription": "Workspace, 30 gün boyunca Çoklu konum özelliklerinin tamamından yararlanır, ardından abone olunmadığı takdirde Ücretsiz'e döner.",
+    "trialActive": "Tam erişim denemesinde {{daysRemaining}} gün kaldı.",
+    "trialExpiring": "{{daysRemaining}} gün kaldı. Dışa aktarmayı, yapay zekayı ve ek konumları korumak için şimdi bir plan seçin.",
+    "trialExpired": "Tam erişim denemesi sona erdi",
+    "trialExpiredDescription": "Workspace Ücretsiz plana geri döndü. Eski veriler korunur ancak dışa aktarma, yapay zeka ve ek konumlar aboneliğe kadar kilitlenir.",
+    "upgradeNow": "Planı seçin",
+    "afterTrialTitle": "Denemeden sonra neler değişir?",
+    "afterTrialDescription": "Corely tüm eski verileri korur. 30 gün sonra çalışma alanı Ücretsiz'e geçer ve yeni kullanım, Ücretsiz'in aylık sınırlarına uyar.",
+    "trialStarted": "Deneme başladı",
+    "trialStartFailed": "Deneme şu anda başlatılamıyor.",
+    "pricePerMonth": "{{price}} / ay",
+    "remaining": "{{count}} sol",
+    "featuredPlanNameFallback": "Yükseltme",
+    "featuredTitleFree": "Dışa aktarımların, yapay zekanın ve sınırsız faturaların kilidini açmak için yükseltme yapın",
+    "featuredTitlePaid": "Tüm özelliklerle önde olun",
+    "featuredDescriptionFallback": "İhracat, yapay zeka yardımı ve çoklu konum desteğiyle tam nakit kontrolü.",
+    "featuredFootnoteFree": "Sınırsız giriş ve makbuz, dışa aktarma, yapay zeka asistanı ve çoklu konum.",
+    "featuredFootnotePaid": "Ekibiniz için dışa aktarmaları, yapay zekayı ve çoklu konumu hazır tutun.",
+    "statusLabels": {
+      "free": "Ücretsiz",
+      "active": "Aktif",
+      "trialing": "deneme",
+      "past_due": "Vadesi geçmiş",
+      "canceled": "İptal edildi",
+      "incomplete": "Tamamlanmamış",
+      "incomplete_expired": "Tamamlanmamış süresi dolmuş",
+      "unpaid": "ödenmemiş"
+    },
+    "usageMetrics": {
+      "entries": "Bu dönemde nakit girişleri",
+      "receipts": "Bu dönemdeki makbuzlar"
+    },
+    "usageNudges": {
+      "entries": "Sınırsız nakit girişi ve ihracatı için yükseltme yapın.",
+      "receipts": "Sınırsız makbuz ve ihracat için yükseltme yapın."
+    },
+    "plans": {
+      "free": {
+        "name": "Ücretsiz",
+        "summary": "Bir salon lokasyonu için temel günlük nakit kontrolüne başlıyoruz.",
+        "highlights": {
+          "0": "1 konum",
+          "1": "Ayda 30 giriş",
+          "2": "Ayda 10 makbuz",
+          "3": "Dışa aktarma yok",
+          "4": "Yapay zeka asistanı yok"
+        }
+      },
+      "starter-monthly": {
+        "name": "Başlangıç",
+        "summary": "Tek bir konum için sınırsız günlük kasa işlemleri.",
+        "highlights": {
+          "0": "1 konum",
+          "1": "Sınırsız giriş",
+          "2": "Sınırsız makbuz",
+          "3": "Günlük kapanış",
+          "4": "Aylık ihracat"
+        }
+      },
+      "pro-monthly": {
+        "name": "Profesyonel",
+        "summary": "Tek bir konum için yapay zeka yardımı ve gelişmiş sorun algılama özelliği ekler.",
+        "highlights": {
+          "0": "Starter'daki her şey",
+          "1": "Yapay zeka asistanı",
+          "2": "Çok dilli yapay zeka yardımı",
+          "3": "Sorun tespiti",
+          "4": "Kapanış kılavuzu"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Çoklu konum",
+        "summary": "Birden fazla konumu ve ekibi yöneten salon grupları için.",
+        "highlights": {
+          "0": "Pro'daki her şey",
+          "1": "Birden fazla konum",
+          "2": "Ekip erişimi",
+          "3": "Birleştirilmiş genel bakış"
+        }
+      }
+    },
+    "usageLabels": {
+      "usedOf": "İkinci el {{used}} / {{limit}}",
+      "currentPeriod": "Cari dönem"
+    },
+    "featureLabels": {
+      "maxLocations": "Konumlar",
+      "maxEntriesPerMonth": "Nakit girişleri",
+      "maxReceiptsPerMonth": "Makbuzlar",
+      "canExport": "Aylık ihracat",
+      "dailyClosing": "Günlük kapanış",
+      "aiAssistant": "Yapay zeka asistanı",
+      "multilingualAiHelp": "Çok dilli yapay zeka yardımı",
+      "issueDetection": "Sorun tespiti",
+      "closingGuidance": "Kapanış kılavuzu",
+      "teamAccess": "Ekip erişimi",
+      "consolidatedOverview": "Birleştirilmiş genel bakış"
+    }
+  },
+  "cashDashboard": {
+    "workspace": {
+      "register": "Kayıt ol",
+      "location": "Konum"
+    },
+    "registerSelector": {
+      "title": "Yazar kasa seçin",
+      "description": "Bu konuşma seçilen kaydı kullanacak.",
+      "binding": "Kayıt seçiliyor...",
+      "error": "Yazar kasa ayarlanamadı.",
+      "retry": "Tekrar dene"
+    },
+    "headerTitle": "Nakit kontrol paneli",
+    "headerSubtitle": "Salon katının günlük kasa ve makbuz kontrolü.",
+    "previewLabel": "Önizleme durumu",
+    "previewStates": {
+      "open": "Gün açık",
+      "ready": "Kapatmaya hazır",
+      "closed": "Kapalı ve ihracata hazır"
+    },
+    "banner": {
+      "open": "Bugünün kasa defteri hala açık",
+      "receiptsMissing": "{{count}} makbuzları eksik",
+      "closeNow": "Artık günü kapatabilirsiniz",
+      "monthReady": "Bu ay ihracata hazırız",
+      "closedToday": "Bugün kapatıldı",
+      "staleTitle": "Senkronize edilen son nakit anlık görüntüsü gösteriliyor",
+      "staleDescription": "Yeni bir senkronizasyon hâlâ çalışıyor. Günü kapatmadan önce en son girişleri inceleyin."
+    },
+    "actions": {
+      "addEntry": "Yeni nakit girişi",
+      "openEntries": "Girişleri aç",
+      "closeDay": "Bugünün kasa defterini kapat",
+      "exportMonth": "Steuerberater için ihracat",
+      "openRegister": "Kayıt aç",
+      "attachReceipt": "Makbuz ekle",
+      "reviewEntries": "Girişleri inceleyin",
+      "seeAll": "Tüm girişleri görün",
+      "edit": "Düzenle",
+      "reverse": "Ters",
+      "viewDetails": "Ayrıntılar",
+      "attachNow": "Şimdi ekle",
+      "createFirstEntry": "İlk girişi oluştur",
+      "openBilling": "Faturalandırmayı aç",
+      "upgradeToStarter": "Starter'a Yükselt",
+      "upgradeToPro": "Pro'ya yükseltin"
+    },
+    "labels": {
+      "openingBalance": "Açılış bakiyesi",
+      "cashInToday": "Bugün para yatır",
+      "cashOutToday": "Bugün nakit çıkışı",
+      "expectedBalance": "Beklenen bakiye",
+      "countedCash": "Sayılan nakit",
+      "difference": "Fark",
+      "missingReceipts": "Eksik makbuzlar",
+      "dailyClosing": "Günlük kapanış durumu",
+      "todaysCashStatus": "Bugünkü nakit durumu",
+      "actionRequired": "İşlem gerekli",
+      "recentEntries": "Son girişler",
+      "receiptStatus": "Makbuz durumu",
+      "closingWorkflow": "İş akışını kapatma",
+      "exportStatus": "Aylık ihracat durumu",
+      "trendOverview": "Operasyonel genel bakış",
+      "privateDeposits": "Özel mevduat",
+      "privateWithdrawals": "Özel para çekme işlemleri",
+      "lastClosedDate": "Son kapatılma tarihi",
+      "closedBy": "Kapatma tarihi:",
+      "responsibleToday": "Bugün sorumlu",
+      "currentMonth": "Geçerli ay",
+      "entriesCompleted": "Girişler tamamlandı",
+      "lastExport": "Son dışa aktarma",
+      "status": "Durum",
+      "time": "Zaman",
+      "type": "Tür",
+      "amount": "Tutar",
+      "note": "Not",
+      "receipt": "Makbuz",
+      "rowActions": "Eylemler",
+      "attachedToday": "Bugün eklendi",
+      "missingToday": "bugün kayıp",
+      "missingThisMonth": "Bu ay kayıp",
+      "weekIncome": "Bu haftaki nakit geliri",
+      "weekExpenses": "Bu haftaki nakit harcamaları",
+      "openDays": "Açık günler",
+      "monthVsLastMonth": "Bu ay vs geçen ay",
+      "exportChecklistDays": "Gerekli tüm günler kapalı",
+      "exportChecklistReceipts": "Gerekli tüm makbuzlar ektedir",
+      "exportChecklistReview": "Hiçbir kritik inceleme öğesi kalmadı",
+      "helperWidget": "Yardıma mı ihtiyacınız var?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "{{deposit}} özel para yatırma ve {{withdrawal}} özel para çekme işlemlerini içerir.",
+      "countNotEntered": "Henüz girilmedi",
+      "differenceBalanced": "Fark yok",
+      "differenceOver": "{{amount}} bitti",
+      "differenceShort": "{{amount}} kısa",
+      "statusOpen": "Açık",
+      "statusNeedsReview": "İncelenmesi gerekiyor",
+      "statusReadyToClose": "Kapatmaya hazır",
+      "statusClosed": "Kapalı",
+      "monthExportReady": "Dışa aktarıma hazır",
+      "exportBlockedReceipts": "Eksik makbuzlar nedeniyle engellendi",
+      "exportBlockedDays": "Kapatılmayan günler tarafından engellendi",
+      "exportBlockedReview": "İnceleme öğeleri tarafından engellendi",
+      "exportAlreadyGenerated": "Zaten dışa aktarıldı",
+      "receiptsComplete": "Bugünlük makbuz kontrolü tamamlandı.",
+      "receiptsIncomplete": "{{count}} fatura öğelerinin bugün hâlâ ilgilenilmesi gerekiyor.",
+      "noActionNeeded": "Şu anda acil bir işlem yok",
+      "noActionDescription": "Bugünün kasa defteri düzenli. Girişleri kaydetmeye devam edebilir veya ayı dışa aktarabilirsiniz.",
+      "noEntriesTitle": "Bugün henüz nakit hareketi yok",
+      "noEntriesDescription": "Açılış bakiyesiyle başlayın veya salondaki ilk nakit hareketini kaydedin.",
+      "loadingTitle": "Bugünün nakit genel görünümünü hazırlamak",
+      "loadingDescription": "Makbuzların, girişlerin ve kapanış sinyallerinin toplanması."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "{{count}} girişlerinde makbuzlar eksik",
+      "missingReceiptsDescription": "Güvenilir veya dışa aktarılabilir hale gelmeden önce makbuzları ekleyin.",
+      "closeDayTitle": "Bugünün kasa defteri henüz kapanmadı",
+      "closeDayDescription": "Çekmeceyi sayın ve bugün bitirmek için kapanış bakiyesini onaylayın.",
+      "missingNotesTitle": "{{count}} nakit gider notları eksik",
+      "missingNotesDescription": "Her harcamanın daha sonra anlaşılabilmesi için kısa bir not ekleyin.",
+      "openDaysTitle": "{{count}} günleri bu hafta hala açık",
+      "openDaysDescription": "Ayın, takip çalışması gerektirmeden dışa aktarılabilmesi için açık günleri kapatın.",
+      "reviewTitle": "{{count}} girişlerinin incelenmesi gerekiyor",
+      "reviewDescription": "Defteri kapatmadan önce olağandışı nakit hareketlerini kontrol edin.",
+      "exportTitle": "Aylık dışa aktarma hâlâ engelleniyor",
+      "exportDescription": "Verileri vergi danışmanına göndermeden önce kalan engelleyicileri çözün.",
+      "exportReadyTitle": "Aylık ihracat hazır",
+      "exportReadyDescription": "Ay artık eksik belgeler olmadan dışa aktarılabilir."
+    },
+    "entryTypes": {
+      "income": "Gelir",
+      "expense": "Gider",
+      "private-deposit": "Özel depozito",
+      "private-withdrawal": "Özel para çekme"
+    },
+    "entryStatus": {
+      "attached": "Ekli",
+      "missing": "Eksik",
+      "review": "İncelenmesi gerekiyor",
+      "ok": "tamam"
+    },
+    "assistant": {
+      "title": "Yardıma mı ihtiyacınız var?",
+      "description": "Asistanı ana iş akışı olarak değil, bir şeyin belirsiz olduğu durumlarda kullanın.",
+      "prompts": [
+        "Bugün neden kapanmaya hazır değil?",
+        "Hangi girişlerin hala makbuzlara ihtiyacı var?",
+        "Bakiyem neden kısa?",
+        "Privateinlage ne anlama geliyor?"
+      ],
+      "suggestions": [
+        {
+          "label": "Eksik makbuzları bulma",
+          "value": "Bugünden itibaren hangi nakit girişlerinin hala makbuzlara ihtiyacı var?"
+        },
+        {
+          "label": "Bugünkü nakit durumu",
+          "value": "Bana bugünün nakit durumunu ve günün kapanmaya hazır olup olmadığını göster."
+        },
+        {
+          "label": "Günü kapat",
+          "value": "Bugünkü nakit kapanışını engelleyen nedir?"
+        },
+        {
+          "label": "Bir terimi açıklayın",
+          "value": "Kasa defterinde Privateinlage ne anlama geliyor?"
+        }
+      ],
+      "capabilityCatalogTitle": "Nakit yönetimi görevleri",
+      "capabilityCatalogDescription": "Bu, nakit asistanının size yardımcı olabileceklerinin tam listesidir. İsteği önceden doldurmak ve daha hızlı başlamak için bir görev seçin.",
+      "capabilityGroups": [
+        {
+          "title": "Nakit girişleri",
+          "description": "Geçerli kayıt için kasa defteri girişlerini oluşturun, düzeltin ve gözden geçirin.",
+          "items": [
+            {
+              "title": "Nakit girişi oluşturma",
+              "description": "Gerekli ayrıntılarla yeni bir nakit girişi veya nakit çıkışı girişi başlatın.",
+              "prompt": "Mevcut kasa için kasa girişi oluşturun."
+            },
+            {
+              "title": "Açık bir girişi düzeltin",
+              "description": "Açık bir girişi ters çevirin ve düzeltilmiş yedek girişi oluşturun.",
+              "prompt": "Benim için açık bir nakit girişini düzelt."
+            },
+            {
+              "title": "Nakit girişlerini listeleyin",
+              "description": "Girişleri tarih aralığına, türe, kaynağa veya açıklamaya göre inceleyin.",
+              "prompt": "Bu kasanın kasa girişlerini listeleyin."
+            }
+          ]
+        },
+        {
+          "title": "Makbuzlar ve ekler",
+          "description": "Makbuzları yükleyin, girişlere ekleyin ve eksik belgeleri bulun.",
+          "items": [
+            {
+              "title": "Makbuz yükle",
+              "description": "Bu sohbetten bir veya daha fazla makbuz dosyası yükleyin.",
+              "prompt": "Bu sohbetten makbuz dosyalarını yükleyin."
+            },
+            {
+              "title": "Bir girişe makbuz ekleme",
+              "description": "Yüklenen makbuz belgelerini doğru nakit girişine bağlayın.",
+              "prompt": "Yüklenen makbuzu doğru nakit girişine ekleyin."
+            },
+            {
+              "title": "Eksik makbuzları bulma",
+              "description": "İncelemeden veya dışa aktarmadan önce hâlâ makbuz gerektiren girişleri gösterin.",
+              "prompt": "Hala makbuzları eksik olan nakit girişlerini bulun."
+            }
+          ]
+        },
+        {
+          "title": "Gün kapanışı",
+          "description": "Hazır olup olmadığınızı kontrol edin, sayılan paradan tasarruf edin ve günü doğru şekilde kapatın.",
+          "items": [
+            {
+              "title": "Bugünkü nakit durumu",
+              "description": "Beklenen bakiyeyi, tahsilat boşluklarını ve kapanışın hazır olup olmadığını görün.",
+              "prompt": "Bana bugünün nakit durumunu ve günün kapanmaya hazır olup olmadığını göster."
+            },
+            {
+              "title": "Sayılan parayı gönder",
+              "description": "Son kapanıştan önce sayılan nakit veya mezhep sayılarını kaydedin.",
+              "prompt": "Mevcut kayıt için bugünün sayılan parasını gönderin."
+            },
+            {
+              "title": "Günü kapat",
+              "description": "Tüm engelleyiciler temizlendikten sonra bugünkü nakit gününü sonlandırın.",
+              "prompt": "Mevcut kasa için bugünün kasa gününü kapatın."
+            },
+            {
+              "title": "Kapatılmayan günleri listele",
+              "description": "Hala kapatılması gereken açık veya taslak günleri bulun.",
+              "prompt": "Bu kayıt için hala kapatılmayan günleri listeleyin."
+            }
+          ]
+        },
+        {
+          "title": "Kontrol paneli ve dışa aktarma",
+          "description": "Operasyonel durumu takip edin ve aylık ihracat paketini hazırlayın.",
+          "items": [
+            {
+              "title": "Kontrol paneli özeti",
+              "description": "Nakit, makbuz, kapatma durumu ve ihracat hazırlığına ilişkin operasyonel özeti görüntüleyin.",
+              "prompt": "Bana bu yazar kasanın kontrol paneli özetini göster."
+            },
+            {
+              "title": "Gerekli işlemler",
+              "description": "Sahibin yapması gereken sonraki operasyonel eylemlere bakın.",
+              "prompt": "Nakit yönetiminde bundan sonra hangi eylemleri yapmam gerekiyor?"
+            },
+            {
+              "title": "Aylık ihracat oluştur",
+              "description": "Vergi danışmanı için aylık ihracat paketini hazırlayın.",
+              "prompt": "Bu kasa için aylık nakit ihracat paketini oluşturun."
+            }
+          ]
+        },
+        {
+          "title": "Rehberlik ve şartlar",
+          "description": "Kasa defteri koşullarının iş akışı rehberliğini ve sade dildeki açıklamalarını alın.",
+          "items": [
+            {
+              "title": "Kasa defteri terimini açıklayın",
+              "description": "Privateinlage gibi bir terimin sade bir dille açıklamasını edinin.",
+              "prompt": "Bana bir kasa defteri terimini açıkla."
+            },
+            {
+              "title": "İş akışı yardımı",
+              "description": "Gün kapanışı, eksik makbuzlar veya aylık dışa aktarma konusunda adım adım rehberlik alın.",
+              "prompt": "Bana nakit yönetimi için iş akışı yardımını göster."
+            }
+          ]
+        }
+      ],
+      "languages": "Almanca, İngilizce, Vietnamca",
+      "lockedTitle": "Yapay zeka yardımı bu planda kilitli",
+      "lockedDescription": "Nakit asistanın, çok dilli açıklamaların ve rehberli sorun incelemesinin kilidini açmak için Pro'ya yükseltin.",
+      "lockedBadge": "AI kilitlendi",
+      "emptyStateActions": {
+        "recordTransactions": {
+          "label": "Bugünkü işlemleri kaydedin",
+          "value": "Bugünkü nakit işlemlerini kaydetmek istiyorum."
+        },
+        "reviewMonth": {
+          "label": "Aylık raporu inceleyin",
+          "value": "Bu ayın nakit raporunu incelemek istiyorum."
+        },
+        "closeDay": {
+          "label": "Nakit gününü kapat",
+          "value": "Bugünlük kasayı kapatmak istiyorum."
+        },
+        "generalHelp": {
+          "label": "Genel bir soru sorun",
+          "value": "Nakit yönetimiyle ilgili genel bir sorum var."
+        }
+      }
+    },
+    "severity": {
+      "high": "Yüksek",
+      "medium": "Orta",
+      "low": "Düşük"
+    }
+  },
+  "cashAssistant": {
+    "kassenbericht": {
+      "title": "Kassenbericht",
+      "open": "Kassenbericht'i açın",
+      "openForDay": "{{day}} için Kassenbericht'i açın",
+      "invalidLink": "Kassenbericht bağlantısı oluşturulamadı."
+    }
+  }
+}

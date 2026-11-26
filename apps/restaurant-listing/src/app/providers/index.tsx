@@ -1,3 +1,4 @@
+import { BrowserLocaleProvider } from "@corely/web-shared/shared/i18n/browser-locale";
 import React, { useMemo } from "react";
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { computeBackoffDelayMs, defaultRetryPolicy } from "@corely/api-client";
@@ -30,7 +31,9 @@ const AppQueryProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const Providers = ({ children }: { children: React.ReactNode }) => (
-  <ToastProvider>
-    <AppQueryProvider>{children}</AppQueryProvider>
-  </ToastProvider>
+  <BrowserLocaleProvider storageKey="corely:directory:locale">
+    <ToastProvider>
+      <AppQueryProvider>{children}</AppQueryProvider>
+    </ToastProvider>
+  </BrowserLocaleProvider>
 );

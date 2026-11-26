@@ -5,6 +5,8 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "dependencies": {
+    "@corely/contracts": "workspace:*",
+    "@corely/web-shared": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^0.462.0",
     "posthog-js": "^1.335.2",

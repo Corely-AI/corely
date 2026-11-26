@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { usePeopleDraftGuard } from "./people-runtime";
 import { useState, useRef, type FormEvent } from "react";
 import { Button, Input, Label, Textarea, Badge } from "@corely/ui";
@@ -47,7 +48,7 @@ function AbsenceRecords({
 }) {
   const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
-  const t = absenceCopy[access.locale === "de" || access.locale === "vi" ? access.locale : "en"];
+  const t = absenceCopy[resolveCorelyLocale(access.locale)];
   const result = usePeopleLoad(
     (signal) => peopleApi.absences(id, signal),
     `${access.scope}:${id}:absences`

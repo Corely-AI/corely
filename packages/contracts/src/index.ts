@@ -406,3 +406,4 @@ export * from "./sign/template.schema";
 export * from "./sign/request.schema";
 export * from "./sign/ceremony.schema";
 export * from "./sign/field-placement";
+export * from "./localization";

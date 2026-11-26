@@ -1,0 +1,3960 @@
+{
+  "sign": {
+    "recipient": {
+      "openReviewedPdf": "Apri il PDF revisionato",
+      "reviewAndSign": "Rivedi e firma",
+      "signatureRecorded": "La tua firma è stata registrata.",
+      "requestDeclined": "Hai rifiutato questa richiesta.",
+      "openForReview": "Apri il documento per la revisione",
+      "openOriginalPdf": "Apri il PDF originale",
+      "typeSignature": "Digita la tua firma",
+      "confirmSignature": "Conferma la tua firma",
+      "drawnSignature": "Firma tracciata",
+      "editAnswers": "Modifica le risposte",
+      "progressSaved": "Progressi salvati.",
+      "saveProgress": "Salva i progressi",
+      "signAndSubmit": "Firma e invia",
+      "reviewAnswers": "Rivedi le risposte",
+      "confirmDecline": "Rifiutare questa richiesta di firma?",
+      "declineRequest": "Rifiuta richiesta",
+      "requestedBy": "Richiesto da",
+      "previousPage": "Pagina precedente",
+      "nextPage": "Pagina successiva",
+      "pageTitle": "Pagina",
+      "of": "di",
+      "useTypedSignature": "Usa la firma digitata",
+      "useDrawnSignature": "Usa la firma disegnata",
+      "clearDrawing": "Disegno chiaro",
+      "drawSignature": "Disegna la firma",
+      "signature": "firma",
+      "initials": "iniziali",
+      "date": "data",
+      "checkbox": "casella di controllo",
+      "text": "testo",
+      "page": "pagina",
+      "field": "campo",
+      "linkUnavailable": "Questo collegamento o sessione di firma non è disponibile.",
+      "requestFailed": "Non è stato possibile elaborare la richiesta. Controlla i campi e riprova.",
+      "documentUnavailable": "Impossibile visualizzare il documento. Utilizza il collegamento PDF originale per rivederlo.",
+      "pageRenderFailed": "Impossibile visualizzare questa pagina.",
+      "unableToSign": "Impossibile firmare."
+    },
+    "documentTitle": "Titolo del documento",
+    "selectedFieldType": "Tipo di campo selezionato",
+    "continueReview": "Richiesta di revisione",
+    "editFields": "Modifica campi",
+    "recipients": "Destinatari",
+    "continueRecipients": "Continua ai destinatari",
+    "requireSignatures": "Aggiungi un campo firma obbligatorio per ciascun firmatario prima di continuare.",
+    "staticCopy": "Importa questo PDF come immagini di pagina. Usalo per PDF con moduli o collegamenti. Nella copia per la firma è incluso solo il loro aspetto visibile.",
+    "useTemplate": "Utilizza un modello esistente",
+    "uploadInstructions": "Carica un PDF non firmato (fino a 10 MiB e 100 pagine), inserisci i campi nel documento, quindi scegli i destinatari.",
+    "workspaceRequired": "Per utilizzare Corely Sign è necessario uno spazio di lavoro attivo.",
+    "firstRequestHint": "Scegli un PDF o un modello per preparare la tua prima richiesta di firma.",
+    "resizeField": "Ridimensiona il campo",
+    "activity": "Richiedi attività",
+    "coachingAgreement": "Preparare un accordo per la firma",
+    "search": "Cerca",
+    "all": "Tutto",
+    "overview": "Panoramica",
+    "settings": "Impostazioni di firma",
+    "publicOrigin": "Origine della firma pubblica",
+    "invitationKeyConfigured": "Crittografia dell'invito configurata",
+    "certificateExpiresAt": "Il certificato di servizio scade",
+    "signerPinned": "Impronta digitale del certificato consentita",
+    "privateKeyReadable": "Chiave privata accessibile",
+    "trustFileReadable": "Negozio fiduciario accessibile",
+    "yes": "Sì",
+    "no": "No",
+    "states": {
+      "DRAFT": "Bozza",
+      "SENT": "In attesa delle firme",
+      "COLLECTED": "Firme raccolte",
+      "COMPLETED": "Completato",
+      "EXPIRED": "Scaduto",
+      "VOID": "Annullato",
+      "DECLINED": "Rifiutato",
+      "INVITED": "Invitato",
+      "WAITING": "In attesa",
+      "ACCEPTED": "Firmato"
+    },
+    "statusLabel": "Stato",
+    "needsAttention": "Firme raccolte. La verifica o l'archiviazione dei documenti richiede attenzione.",
+    "providerSent": " · E-mail consegnata al fornitore",
+    "sourceError": "PDF originale non disponibile",
+    "downloadError": "Impossibile scaricare l'artefatto verificato",
+    "confirmRemind": "Inviare un invito sostitutivo e revocare il collegamento precedente?",
+    "confirmVoid": "Annullare questa richiesta e revocare l'accesso del destinatario?",
+    "confirmSend": "Inviare inviti alla firma ai destinatari sopra elencati?",
+    "export": "Esporta pacchetto di prove",
+    "download": "Scarica il PDF sigillato",
+    "refresh": "Aggiorna stato",
+    "void": "Richiesta nulla",
+    "reminder": "Invia promemoria",
+    "reviewSend": "Rivedi e invia inviti",
+    "invitation": "Messaggio di invito",
+    "consentLabel": "Dichiarazione di consenso per i destinatari",
+    "expiry": "Scade il (UTC)",
+    "retryFinal": "Riprovare la finalizzazione",
+    "reviewOriginal": "Rivedi il PDF originale",
+    "progressTitle": "Firma dei progressi",
+    "requests": "Le mie richieste di firma",
+    "noRequests": "Nessuna richiesta di firma.",
+    "recipientError": "Inserisci un nome e un indirizzo email valido per ogni ruolo.",
+    "saveFailed": "Impossibile salvare la richiesta.",
+    "requestSaved": "Bozza della richiesta salvata. Gli inviti non sono stati inviati.",
+    "openRequest": "Apri la bozza della richiesta",
+    "prepareRequest": "Preparare una richiesta",
+    "routing": "Ordine di firma",
+    "parallel": "Parallelo",
+    "sequential": "Sequenziale",
+    "name": "Nome del destinatario",
+    "email": "E-mail del destinatario",
+    "earlier": "Muoviti prima",
+    "createRequestDraft": "Salva bozza della richiesta",
+    "loadingRequest": "Caricamento richiesta...",
+    "prepare": "Preparare un modello di firma",
+    "instructions": "Apri un PDF locale per posizionare i campi. Salva il layout per continuare a modificarlo in seguito.",
+    "pdf": "Documento PDF",
+    "opening": "Apertura del PDF...",
+    "title": "Titolo del modello",
+    "saveWorkspace": "Salva bozza dell'area di lavoro",
+    "saving": "Salvataggio…",
+    "signerRole": "Ruolo firmatario",
+    "addRole": "Aggiungi ruolo",
+    "fieldType": "Tipo di campo",
+    "addField": "Aggiungi campo",
+    "previewRole": "Anteprima del ruolo selezionato",
+    "assigned": "Ruolo assegnato",
+    "duplicate": "Duplicato",
+    "required": "Obbligatorio",
+    "remove": "Rimuovi",
+    "saveLayout": "Salva layout",
+    "restore": "Ripristina il layout",
+    "previous": "Precedente",
+    "next": "Avanti",
+    "zoom": "Zoom",
+    "templates": "Modelli di firma",
+    "newDraft": "Nuova bozza del modello",
+    "noDrafts": "Nessuna bozza di modello in questa pagina.",
+    "nextPage": "Pagina successiva",
+    "archive": "Archivio",
+    "archived": "Archiviato",
+    "retry": "Riprova",
+    "loading": "Caricamento modelli…",
+    "signer": "Firmatario",
+    "signature": "Firma",
+    "initials": "Iniziali",
+    "text": "Testo",
+    "date": "Data",
+    "checkbox": "Casella di controllo",
+    "width": "Larghezza",
+    "height": "Altezza",
+    "x": "X",
+    "y": "Y",
+    "publish": "Pubblica la revisione salvata",
+    "published": "Revisione pubblicata {{revision}}",
+    "openSaved": "Apri la revisione salvata {{revision}}",
+    "revision": "Revisione {{revision}}",
+    "placement": "Posizionamento {{type}}",
+    "page": "Pagina {{page}} di {{count}}",
+    "forRole": "{{type}} per {{role}}",
+    "publishConfirm": "Pubblicare questa revisione del modello per il riutilizzo?",
+    "discard": "Eliminare le modifiche al layout non salvate?",
+    "replace": "Sostituire le modifiche al layout non salvate?"
+  },
+  "common": {
+    "active": "Attivo",
+    "inactive": "Inattivo",
+    "suspended": "Sospeso",
+    "activate": "Attiva",
+    "deactivate": "Disattiva",
+    "lead": "Piombo",
+    "paused": "In pausa",
+    "archived": "Archiviato",
+    "appName": "Corely Un ERP",
+    "tagline": "Gestisci la tua attività, end-to-end.",
+    "loading": "Caricamento...",
+    "select": "Seleziona",
+    "optional": "Facoltativo",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "create": "Crea",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "export": "Esportazione",
+    "import": "Importa",
+    "back": "Indietro",
+    "next": "Avanti",
+    "confirm": "Conferma",
+    "close": "Chiudi",
+    "docs": "Documenti",
+    "logout": "Esci",
+    "viewAll": "Visualizza tutto",
+    "comingSoon": "Prossimamente",
+    "noResults": "Nessun risultato trovato",
+    "selectDate": "Seleziona la data",
+    "noTopic": "Nessun argomento",
+    "error": "Qualcosa è andato storto",
+    "success": "Successo",
+    "currency": "EUR",
+    "locale": "it-IT",
+    "view": "Visualizza",
+    "status": "Stato",
+    "unknown": "Sconosciuto",
+    "currencies": {
+      "eur": "Euro",
+      "usd": "Dollaro americano",
+      "gbp": "Sterlina britannica",
+      "chf": "Franco svizzero"
+    },
+    "reset": "Ripristina",
+    "name": "Nome",
+    "email": "E-mail",
+    "phone": "Telefono",
+    "notes": "Note",
+    "details": "Dettagli",
+    "open": "Aperto",
+    "closed": "Chiuso",
+    "tags": "Tag",
+    "noTags": "Nessun tag aggiunto.",
+    "for": "Per",
+    "draft": "Bozza",
+    "createdAt": "Creato {{date}}",
+    "empty": "Vuoto",
+    "amount": "Importo",
+    "copy": "Copia",
+    "type": "Digitare",
+    "description": "Descrizione",
+    "date": "Data",
+    "noteOptional": "Nota (facoltativo)",
+    "saveChanges": "Salva modifiche",
+    "saving": "Salvataggio...",
+    "subject": "Oggetto",
+    "message": "Messaggio",
+    "attachments": "Allegati",
+    "changeStatus": "Cambia stato",
+    "current": "Corrente",
+    "action": "Azione",
+    "statusAuditTrail": "Viene registrata la cronologia dei cambiamenti di stato.",
+    "confirmAction": "Conferma l'azione",
+    "confirmMessage": "Sei sicuro di voler procedere?",
+    "reason": "Motivo",
+    "reasonPlaceholder": "Inserisci il motivo...",
+    "badge": "Distintivo",
+    "actions": "Azioni",
+    "other": "Altro",
+    "moreActions": "Più azioni",
+    "dangerZone": "Zona pericolosa",
+    "goBack": "Torna indietro",
+    "phoneShort": "Telefono",
+    "emailShort": "E-mail",
+    "website": "Sito web",
+    "bank": "Banca",
+    "iban": "IBAN",
+    "default": "Predefinito",
+    "copyLink": "Copia collegamento",
+    "add": "Aggiungi",
+    "created": "Creato",
+    "updated": "Aggiornato",
+    "notSet": "Non impostato",
+    "done": "Fatto",
+    "customFields": "Campi personalizzati",
+    "trial": {
+      "activeTitle": "Prova con accesso completo attiva: {{days}} giorni rimanenti",
+      "expiringTitle": "{{days}} giorni rimasti nella tua prova ad accesso completo",
+      "description": "Nessuna carta richiesta. Scegli un piano a pagamento prima della fine del periodo di prova per mantenere l'esportazione, l'intelligenza artificiale e l'accesso multi-sede.",
+      "cta": "Fatturazione aperta",
+      "expiredTitle": "La tua prova di 30 giorni è terminata",
+      "expiredDescription": "Esegui ora l'upgrade per continuare a utilizzare tutte le funzionalità.",
+      "dismiss": "Ignora",
+      "modalTitle": "La tua prova di accesso completo di 30 giorni è terminata",
+      "modalDescription": "Il tuo spazio di lavoro ora utilizza il piano gratuito. I dati storici sono ancora disponibili, ma le funzionalità di esportazione, intelligenza artificiale e multi-sede sono bloccate finché non ti abboni.",
+      "modalLater": "Più tardi",
+      "choosePlan": "Scegli un piano"
+    },
+    "searching": "Ricerca...",
+    "retry": "Riprova",
+    "loadMore": "Carica di più"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "progressTitle": "Progresso",
+    "allSet": "È tutto pronto!",
+    "redirectingToDashboard": "Reindirizzamento alla dashboard...",
+    "saveAndExit": "Salva ed esci",
+    "goBack": "Torna indietro",
+    "skipForNow": "Salta per ora",
+    "skip": "Salta l'onboarding",
+    "loading": "Caricamento onboarding...",
+    "aiAssistant": "Assistente AI",
+    "aiTipTitle": "Assistente utile",
+    "aiHelpTitle": "Hai bisogno di aiuto con questo passaggio?",
+    "aiHelpPrompt": "Hai bisogno di aiuto con questo passaggio? Chiedi al nostro assistente AI di spiegare o suggerire cosa fare dopo.",
+    "askAssistant": "Chiedi all'assistente",
+    "sidebarHelpTitle": "Hai bisogno di aiuto?",
+    "sidebarHelpDescription": "Il nostro assistente AI è disponibile in ogni fase per aiutarti a configurare Corely in modo efficace.",
+    "businessName": "Nome dell'azienda",
+    "businessNamePlaceholder": "ad es. Studio di bellezza Bella",
+    "businessNameRequired": "Il nome dell'azienda è obbligatorio",
+    "businessType": "Tipo di attività",
+    "selectType": "Seleziona il tipo",
+    "businessTypeRequired": "La categoria è obbligatoria",
+    "currency": "Valuta",
+    "categories": {
+      "beauty": "Salone per unghie/bellezza",
+      "hair": "Parrucchiere/Barbiere",
+      "gastronomy": "Bar/Ristorante",
+      "retail": "Negozio al dettaglio",
+      "other": "Altro"
+    },
+    "workflowOptions": {
+      "paper": "Carta/taccuino",
+      "paperDesc": "Transizione dai quaderni manuali al digitale.",
+      "excel": "Excel/foglio di calcolo",
+      "excelDesc": "Niente più formule complesse o celle rotte.",
+      "pos": "Sistema POS",
+      "posDesc": "Unisci perfettamente il tuo POS e il registro di cassa.",
+      "software": "Altro software",
+      "softwareDesc": "Passa a una soluzione di cassa più moderna."
+    },
+    "workflow": {
+      "insightTitle": "Approfondimento personalizzato",
+      "selectHint": "Seleziona il flusso precedente"
+    },
+    "language": {
+      "defaultHint": "Lingua predefinita"
+    },
+    "welcome": {
+      "badge": "Nuova esperienza",
+      "footer": "Alimentato dall'intelligenza artificiale Corely"
+    },
+    "receipt": {
+      "errorUnsupported": "File non supportato. Carica un PDF, JPG o PNG inferiore a 10 MB.",
+      "uploadPrompt": "Fare clic per caricare o trascinare e rilasciare",
+      "uploadHint": "PDF, JPG, PNG (massimo 10MB)",
+      "skipLabel": "Lo farò più tardi",
+      "successTitle": "Ricevuta allegata!",
+      "successDesc": "Passando al passaggio successivo...",
+      "continueLabel": "Continua"
+    },
+    "openingBalance": {
+      "errorAmount": "È richiesto un importo valido",
+      "label": "Contanti reali attualmente in cassa",
+      "hint": "💡 Non includere pagamenti con carta o bonifici bancari. Solo contanti fisici.",
+      "importantTip": "Suggerimento importante"
+    },
+    "entries": {
+      "errorAmount": "È richiesto un importo valido",
+      "errorNote": "La nota è obbligatoria",
+      "ctaAdd": "Aggiungi voce",
+      "successTitle": "Voce salvata",
+      "successOne": "Ottimo! Hai aggiunto la tua prima voce. Facciamone un altro.",
+      "typeLabel": "Tipo di transazione",
+      "typeIncome": "Reddito in contanti",
+      "typeExpense": "Spese in contanti",
+      "amountLabel": "Importo ({{symbol}})",
+      "descLabel": "Descrizione",
+      "descPlaceholder": "ad es. Taglio di capelli o forniture di caffè",
+      "skipSecond": "Salta la seconda voce"
+    },
+    "status": {
+      "expectedLabel": "Contanti previsti nel cassetto",
+      "incomeLabel": "Il reddito di oggi",
+      "expenseLabel": "Le spese di oggi",
+      "receiptMissing": "Promemoria: manca ancora la tua prima ricevuta. È possibile allegarlo successivamente dall'elenco delle entrate di cassa.",
+      "workflowPaper": "Poiché hai utilizzato un taccuino, questa visualizzazione sostituisce il conteggio manuale.",
+      "workflowExcel": "Poiché hai utilizzato fogli di calcolo, ciò mantiene i tuoi totali in contanti in tempo reale senza formule.",
+      "workflowPos": "Poiché utilizzi un sistema POS, questo mantiene contanti e ricevute allineati in un unico posto.",
+      "workflowSoftware": "Poiché hai utilizzato un altro software, questo ti offre un'unica visualizzazione giornaliera della liquidità.",
+      "receiptReminder": "Promemoria ricevuta",
+      "tipTitle": "Questo è il tuo stato di cassa.",
+      "tipDesc": "Il saldo previsto viene aggiornato automaticamente ogni volta che aggiungi una voce. Niente più calcoli manuali alla fine della giornata.",
+      "cta": "Guarda cosa c'è dopo"
+    },
+    "closing": {
+      "watchTutorial": "Guarda il tutorial sugli anni '30",
+      "previewAlt": "Registro di chiusura",
+      "skipLabel": "Lo farò più tardi"
+    },
+    "errors": {
+      "missingStepComponent": "Componente gradino non trovato per il tipo: {{type}}"
+    },
+    "postValue": {
+      "inviteTitle": "Invita la tua squadra",
+      "inviteDesc": "Concedi ai tuoi dipendenti l'accesso per aggiungere registrazioni di cassa utilizzando l'app per tablet.",
+      "inviteAction": "Aggiungi membri",
+      "categoriesTitle": "Categorie personalizzate",
+      "categoriesDesc": "Imposta categorie di spese e entrate personalizzate per una migliore reportistica.",
+      "categoriesAction": "Modifica categorie",
+      "cta": "Vai alla dashboard"
+    }
+  },
+  "actions": {
+    "takeAttendance": "Prendi la partecipazione",
+    "markDone": "Marco Fatto",
+    "assignPayer": "Assegna pagatore",
+    "viewInvoice": "Visualizza"
+  },
+  "list": {
+    "searchPlaceholder": "Cerca...",
+    "sort": "Ordina",
+    "filters": "Filtri",
+    "filtersDescription": "Filtra l'elenco selezionando criteri specifici.",
+    "clearAll": "Cancella tutto",
+    "noActiveFilters": "Nessun filtro attivo",
+    "addFilter": "Aggiungi filtro",
+    "applyFilters": "Applica filtri",
+    "noResults": "Nessun articolo trovato."
+  },
+  "nav": {
+    "people": "Elenco del personale",
+    "peopleSelfService": "Il mio profilo",
+    "dashboard": "Cruscotto",
+    "portfolio": "Portafoglio",
+    "rentals": {
+      "properties": "Proprietà"
+    },
+    "quotes": "Citazioni",
+    "clients": "Clienti",
+    "tax": {
+      "overview": "Panoramica",
+      "filings": "Archiviazioni",
+      "payments": "Pagamenti",
+      "documents": "Documenti",
+      "settings": "Impostazioni fiscali",
+      "reports": "Rapporti",
+      "annualAssistant": "Assistente annuale"
+    },
+    "assistant": "Assistente",
+    "billing": "Fatturazione",
+    "expenses": "Spese",
+    "invoices": "Fatture",
+    "registers": "Registri",
+    "directory": {
+      "restaurants": "Ristoranti"
+    },
+    "tenants": "Inquilini",
+    "groups": {
+      "core": "Nucleo",
+      "freelancer": "Libero professionista",
+      "sales": "Vendite",
+      "purchasing": "Acquisto",
+      "inventory": "Inventario",
+      "finance": "Finanza",
+      "booking": "Prenotazione",
+      "settings": "Impostazioni",
+      "platform": "Piattaforma",
+      "tax": "Tassa",
+      "education": "Istruzione",
+      "other": "Altro"
+    },
+    "customers": "Clienti",
+    "students": "Studenti",
+    "salesQuotes": "Preventivi di vendita",
+    "salesOrders": "Ordini di vendita",
+    "salesInvoices": "Fatture di vendita",
+    "salesCopilot": "Copilota delle vendite",
+    "salesSettings": "Impostazioni di vendita",
+    "purchaseOrders": "Ordini di acquisto",
+    "vendorBills": "Fatture del venditore",
+    "purchasingSettings": "Impostazioni di acquisto",
+    "purchasingCopilot": "Acquistare Copilota",
+    "settings": "Impostazioni",
+    "projects": "Progetti",
+    "accounting": "Contabilità",
+    "inventory": "Inventario",
+    "inventoryProducts": "Inventario - Prodotti",
+    "inventoryWarehouses": "Inventario - Magazzini",
+    "inventoryStock": "Inventario - Magazzino",
+    "inventoryDocuments": "Inventario - Documenti",
+    "inventoryReorder": "Inventario - Riordina",
+    "inventoryCopilot": "Inventario - Copilota",
+    "catalogItems": "Articoli del catalogo",
+    "pos": {
+      "catalog": "Catalogo",
+      "catalogQuickAdd": "Aggiunta rapida articolo",
+      "transactions": "Transazioni"
+    },
+    "importShipments": "Spedizioni",
+    "suppliers": "Fornitori",
+    "automation": "Automazione",
+    "documents": "Documenti",
+    "cms": {
+      "posts": "Post CMS",
+      "comments": "Commenti CMS"
+    },
+    "hr": "risorse umane",
+    "workspace": "Impostazioni dell'area di lavoro",
+    "profile": "Profilo e account",
+    "members": "Gestione della squadra",
+    "roles": "Ruoli e autorizzazioni",
+    "paymentMethods": "Metodi di pagamento",
+    "taxSettings": "Impostazioni fiscali",
+    "cashManagement": "Gestione della cassa",
+    "issues": "Richieste",
+    "crmDashboard": "Cruscotto",
+    "crmDeals": "Offerte",
+    "crmLeads": "Conduce",
+    "crmActivities": "Attività",
+    "crmSequences": "Sequenze",
+    "crmEmailSettings": "Impostazioni e-mail",
+    "crmTemplates": "Modelli",
+    "classes": "Classi",
+    "booking": {
+      "appointments": "Appuntamenti",
+      "resources": "Risorse",
+      "services": "Servizi",
+      "bookingPage": "Pagina di prenotazione"
+    },
+    "coaching": {
+      "engagements": "Impegni di coaching",
+      "sessions": "Sessioni di coaching"
+    },
+    "programs": "Programmi",
+    "teacherDashboard": "Pannello di controllo dell'insegnante",
+    "classSessions": "Sessioni",
+    "classBilling": "Fatturazione delle lezioni",
+    "website": "Sito web",
+    "platform": "Piattaforma",
+    "forms": "Forme"
+  },
+  "coaching": {
+    "engagements": {
+      "title": "Impegni di coaching",
+      "subtitle": "Tieni traccia delle prenotazioni di coaching, dei prerequisiti, dei documenti e dei follow-up.",
+      "columns": {
+        "offer": "Offerta",
+        "client": "Cliente",
+        "status": "Stato",
+        "billing": "Fatturazione",
+        "updated": "Aggiornato"
+      }
+    },
+    "sessions": {
+      "title": "Sessioni di coaching",
+      "subtitle": "Monitorare le sessioni di coaching imminenti e completate.",
+      "columns": {
+        "engagement": "Coinvolgimento",
+        "start": "Inizia",
+        "status": "Stato",
+        "meeting": "Incontro"
+      },
+      "pendingMeeting": "Prerequisiti in sospeso"
+    },
+    "detail": {
+      "openCheckout": "Apri il pagamento",
+      "exportBundle": "Pacchetto di esportazione",
+      "exportQueued": "Richiesta di esportazione del pacchetto in coda.",
+      "exportError": "Impossibile richiedere il pacchetto di esportazione.",
+      "checkoutError": "Impossibile creare la sessione di pagamento.",
+      "sections": {
+        "overview": "Panoramica",
+        "workflow": "Stato del flusso di lavoro",
+        "sessions": "Preparazione e sessioni",
+        "documents": "Documenti",
+        "activity": "Attività e verifica",
+        "aiSummary": "Riepilogo dell'IA"
+      },
+      "noArtifacts": "Nessun artefatto ancora archiviato.",
+      "noAiSummary": "Nessun riepilogo AI ancora disponibile."
+    },
+    "empty": {
+      "engagements": "Nessun impegno di coaching trovato.",
+      "sessions": "Nessuna sessione di coaching trovata."
+    }
+  },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Nucleo"
+      },
+      "platform": {
+        "enabled": "Piattaforma"
+      },
+      "invoices": {
+        "enabled": "Fatture"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Portafoglio"
+      },
+      "issues": {
+        "enabled": "Problemi"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Spese"
+      },
+      "parties": {
+        "enabled": "Parti"
+      },
+      "ai-copilot": {
+        "enabled": "Copilota AI"
+      },
+      "tax": {
+        "enabled": "Tassa"
+      },
+      "cash-management": {
+        "enabled": "Gestione della cassa"
+      },
+      "sales": {
+        "enabled": "Vendite"
+      },
+      "workspaces": {
+        "enabled": "Spazi di lavoro"
+      },
+      "purchasing": {
+        "enabled": "Acquisto"
+      },
+      "rentals": {
+        "enabled": "Noleggi"
+      },
+      "booking": {
+        "enabled": "Prenotazione"
+      },
+      "website": {
+        "enabled": "Sito web"
+      }
+    }
+  },
+  "requests": {
+    "submit": "Invia una richiesta",
+    "whatDoYouNeed": "Di cosa hai bisogno?",
+    "problem": "Segnala un problema",
+    "service": "Richiedi un servizio",
+    "title": "Titolo",
+    "clientEmail": "E-mail del cliente (facoltativo)",
+    "submitFailed": "Non è stato possibile inviare la richiesta. Riprova.",
+    "back": "Torniamo alle richieste",
+    "queue": "Coda",
+    "mine": "Le mie richieste",
+    "assign": "Assegnare",
+    "assignFailed": "Impossibile assegnare la richiesta.",
+    "internalNote": "Aggiungi nota interna",
+    "clientUpdate": "Aggiornamento del cliente",
+    "summary": "Riepilogo del completamento",
+    "confirmRecipient": "Ho confermato il destinatario",
+    "retry": "Riprovare l'aggiornamento del client",
+    "send": "Invia aggiornamento cliente",
+    "sendFailed": "Impossibile inviare l'aggiornamento. Controlla lo stato della consegna e riprova.",
+    "resolved": "Richiesta risolta",
+    "reference": "Rif. {{reference}}",
+    "saveNote": "Salva nota interna",
+    "internalNotes": "Note interne",
+    "empty": "Nessuna richiesta trovata",
+    "emptyDescription": "Invia una richiesta per iniziare a monitorarne l'avanzamento.",
+    "delivery": {
+      "QUEUED": "In coda",
+      "SENT": "Inviato",
+      "FAILED": "Invio non riuscito",
+      "NEEDS_REVIEW": "Controlla la consegna prima di inviare nuovamente"
+    }
+  },
+  "issues": {
+    "title": "Problemi",
+    "reportTitle": "Segnala un nuovo problema",
+    "unassigned": "Non assegnato",
+    "description": {
+      "empty": "Nessuna descrizione fornita."
+    },
+    "createdAt": "Creato {{date}}",
+    "status": {
+      "change": "Cambia stato",
+      "update": "Aggiorna stato",
+      "updated": "Stato aggiornato con successo",
+      "updateFailed": "Impossibile aggiornare lo stato",
+      "resolved": "Problema risolto",
+      "resolveFailed": "Impossibile risolvere il problema",
+      "reopened": "La questione è stata riaperta",
+      "reopenFailed": "Impossibile riaprire il problema"
+    },
+    "actions": {
+      "resolve": "Risolvi",
+      "reopen": "Riaprire"
+    },
+    "fields": {
+      "title": "Titolo",
+      "priority": "Priorità",
+      "description": "Descrizione",
+      "siteType": "Tipo di sito",
+      "siteIdOptional": "ID sito (facoltativo)",
+      "customerIdOptional": "ID cliente (facoltativo)",
+      "manufacturerIdOptional": "ID produttore (facoltativo)",
+      "transcriptOptional": "Trascrizione della nota vocale (facoltativa)",
+      "site": "Sito",
+      "assignee": "Assegnatario"
+    },
+    "placeholders": {
+      "priority": "Seleziona la priorità",
+      "siteType": "Seleziona il tipo di sito"
+    },
+    "priority": {
+      "low": "Basso",
+      "medium": "Medio",
+      "high": "Alto",
+      "urgent": "Urgente"
+    },
+    "siteTypes": {
+      "field": "Campo",
+      "customer": "Cliente",
+      "manufacturer": "Produttore"
+    },
+    "statuses": {
+      "NEW": "Nuovo",
+      "TRIAGED": "Triage",
+      "IN_PROGRESS": "In corso",
+      "WAITING": "In attesa",
+      "RESOLVED": "Risolto",
+      "CLOSED": "Chiuso",
+      "REOPENED": "Riaperto"
+    },
+    "attachments": {
+      "title": "Allegati",
+      "images": "Immagini",
+      "addImages": "Aggiungi immagini",
+      "takePicture": "Scatta una foto",
+      "audio": "Registrazioni audio",
+      "voiceNote": "Nota vocale",
+      "uploaded": "Allegati caricati:",
+      "empty": "Nessun allegato.",
+      "transcript": "Trascrizione: {{transcript}}"
+    },
+    "voiceNote": "Nota vocale",
+    "startRecording": "Inizia a registrare",
+    "stopRecording": "Interrompi la registrazione",
+    "submitting": "Invio...",
+    "submit": "Invia problema",
+    "speech": {
+      "liveTranscription": "Trascrizione live abilitata",
+      "notAvailable": "Riconoscimento vocale non disponibile in questo browser"
+    },
+    "comments": {
+      "title": "Commenti",
+      "addTitle": "Aggiungi commento",
+      "add": "Aggiungi commento",
+      "added": "Commento aggiunto",
+      "addFailed": "Impossibile aggiungere il commento",
+      "placeholder": "Scrivi un commento...",
+      "empty": "Nessun commento ancora"
+    },
+    "activity": {
+      "title": "Cronologia delle attività",
+      "empty": "Nessuna attività registrata."
+    },
+    "errors": {
+      "microphoneDenied": "Accesso al microfono negato",
+      "cameraDenied": "Accesso alla telecamera negato",
+      "loadFailed": "Impossibile caricare i dettagli del problema"
+    }
+  },
+  "tax": {
+    "title": "Centro fiscale",
+    "subtitle": "Gestisci il tuo profilo fiscale, le dichiarazioni e la conformità",
+    "loading": "Caricamento dati fiscali...",
+    "profile": {
+      "title": "Profilo fiscale",
+      "vatEnabled": "IVA/imposta sulle vendite registrata",
+      "vatEnabledHelp": "Abilita questa opzione se la tua azienda è registrata ai fini IVA o imposta sulle vendite",
+      "country": "Giurisdizione fiscale",
+      "countryHelp": "Seleziona il Paese principale in cui la tua attività è registrata ai fini fiscali",
+      "regime": "Regime IVA",
+      "usesAdvisor": "Utilizzare il consulente fiscale/contabile",
+      "usesAdvisorHelp": "Abilita se lavori con un professionista esterno per la dichiarazione dei redditi",
+      "vatIdOptional": "Partita IVA/Codice fiscale (facoltativo)",
+      "filingFrequency": "Frequenza di archiviazione",
+      "accountingMethod": "Metodo contabile",
+      "effectiveFrom": "Efficace da",
+      "effectiveFromHelp": "Scegli una data corrispondente o precedente alle transazioni in contanti che questo profilo fiscale deve coprire.",
+      "taxYearStartMonth": "Mese di inizio anno fiscale",
+      "localTaxOffice": "Ufficio tributario locale",
+      "save": "Salva profilo fiscale",
+      "saveSuccess": "Profilo fiscale salvato",
+      "saveFailed": "Impossibile salvare il profilo fiscale",
+      "vatExemption": "Paragrafo Esenzione IVA",
+      "vatExemptionHelp": "Seleziona il paragrafo di esenzione pertinente per la tua attività"
+    },
+    "countries": {
+      "de": "Germania"
+    },
+    "regimes": {
+      "smallBusiness": "Piccole imprese (Kleinunternehmer)",
+      "standardVat": "IVA normale",
+      "vatExempt": "IVA esente"
+    },
+    "exemptions": {
+      "exportDeliveries": "§ 4 n. 1a UStG - Consegne all'esportazione",
+      "intraCommunityDeliveries": "§ 4 n. 1b UStG - Consegne intracomunitarie",
+      "financialServices": "§ 4 n. 8 UStG - Servizi finanziari",
+      "insuranceServices": "§ 4 n. 11 UStG - Servizi assicurativi",
+      "lettingLeasing": "§ 4 n. 12 UStG - Locazioni e leasing",
+      "medicalServices": "§ 4 n. 14 UStG - Servizi medici",
+      "educationalServices": "§ 4 n. 21 UStG - Servizi educativi"
+    },
+    "filing": {
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
+      "yearly": "Annuale"
+    },
+    "accounting": {
+      "cashBasis": "Base in contanti (Ist-Versteuerung)",
+      "accrualBasis": "Base di competenza (Soll-Versteuerung)",
+      "cashBasisHelp": "I ricavi vengono registrati quando viene ricevuto denaro",
+      "accrualBasisHelp": "I ricavi vengono registrati quando guadagnati, indipendentemente da quando vengono ricevuti i contanti"
+    },
+    "placeholders": {
+      "country": "Seleziona il paese",
+      "regime": "Seleziona regime",
+      "vatExemption": "Seleziona il paragrafo di esenzione",
+      "filingFrequency": "Seleziona la frequenza",
+      "accountingMethod": "Seleziona il metodo",
+      "vatId": "Inserisci la tua partita IVA (es. DE123456789)",
+      "month": "Seleziona il mese",
+      "localTaxOffice": "Inserisci il nome dell'ufficio delle imposte locale"
+    },
+    "consultant": {
+      "title": "Consulente fiscale",
+      "save": "Salva informazioni sul consulente",
+      "saveSuccess": "Informazioni sul consulente salvate",
+      "saveFailed": "Impossibile salvare le informazioni sul consulente"
+    },
+    "submitStep": {
+      "methods": {
+        "manual": "Manuale",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Esportazione per ELSTER",
+        "description": "Scarica i dati di archiviazione da caricare in Mein ELSTER. Dopo l'invio in ELSTER, incolla l'ID di trasferimento/riferimento di seguito.",
+        "actions": {
+          "elsterXml": "Esporta ELSTER XML",
+          "kennzifferCsv": "Esporta CSV (mappatura Kennziffer)",
+          "loading": "Esportazione..."
+        },
+        "unavailable": "L'esportazione ELSTER non è disponibile per questo archivio.",
+        "success": {
+          "elsterXml": "ELSTER XML scaricato",
+          "kennzifferCsv": "Scaricato Kennziffer CSV"
+        },
+        "errors": {
+          "generic": "Impossibile esportare il file."
+        }
+      },
+      "connection": {
+        "title": "Metodo di invio",
+        "connected": "La tua connessione per l'invio automatico è configurata.",
+        "notConfigured": "La connessione di invio non è configurata.",
+        "manageIn": "Gestisci le impostazioni di invio in",
+        "settingsLink": "Impostazioni fiscali",
+        "enableDirectFiling": "per consentire l'archiviazione diretta."
+      },
+      "confirmation": {
+        "title": "Conferma di invio",
+        "method": "Metodo",
+        "reference": "Riferimento per la presentazione",
+        "referencePlaceholder": "Inserisci l'ID/riferimento di invio",
+        "submittedAt": "Inviato a",
+        "notes": "Note (facoltativo)",
+        "notesPlaceholder": "Aggiungi una nota per i tuoi record",
+        "submit": "Invia deposito"
+      }
+    },
+    "attachments": {
+      "title": "Allegati",
+      "attachFromDocuments": "Allegare da documenti fiscali",
+      "uploadAttachment": "Carica allegato",
+      "loading": "Caricamento allegati...",
+      "error": "Impossibile caricare gli allegati.",
+      "empty": "Carica documenti giustificativi come ricevute o conferme di invio.",
+      "untitled": "Documento senza titolo",
+      "type": "Tipo: {{type}}",
+      "uploadedAt": "Caricato {{date}}",
+      "uploader": "Utente che ha caricato: {{name}}",
+      "remove": "Rimuovi",
+      "dialog": {
+        "title": "Allega ricevuta",
+        "description": "Carica la prova di pagamento per questa registrazione.",
+        "replace": "Sostituisci la ricevuta",
+        "choose": "Scegli la ricevuta",
+        "noFile": "Nessun file selezionato",
+        "uploading": "Caricamento...",
+        "submit": "Allega ricevuta"
+      },
+      "messages": {
+        "uploadSuccess": "Allegato caricato",
+        "uploadError": "Impossibile caricare l'allegato",
+        "selectFile": "Seleziona una ricevuta da caricare"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "Dichiarazione IVA",
+        "vat-annual": "Dichiarazione annuale IVA",
+        "income-annual": "Dichiarazione dei redditi",
+        "trade": "Dichiarazione fiscale commerciale",
+        "payroll": "Dichiarazione dei redditi",
+        "corporate-annual": "Dichiarazione fiscale sulle società",
+        "year-end": "Presentazione di fine anno",
+        "other": "Dichiarazione fiscale"
+      },
+      "status": {
+        "draft": "Bozza",
+        "needsFix": "Ha bisogno di attenzione",
+        "readyForReview": "Pronto per la revisione",
+        "submitted": "Inviato",
+        "paid": "Pagato",
+        "archived": "Archiviato"
+      },
+      "actions": {
+        "review": "Recensione",
+        "continueReview": "Continua la revisione",
+        "markPaid": "Marco ha pagato",
+        "view": "Visualizza",
+        "previousPeriod": "Periodo precedente",
+        "nextPeriod": "Prossimo periodo",
+        "recalculate": "Ricalcolare",
+        "exportPdf": "Esporta PDF",
+        "exportCsv": "Esporta CSV",
+        "delete": "Elimina archiviazione",
+        "deleteConfirmTitle": "Eliminare l'archiviazione?",
+        "deleteConfirmMessage": "Questa azione non può essere annullata."
+      },
+      "due": "Scadenza {{date}}",
+      "dueWithDays": "Scadenza {{date}} • {{count}} giorno rimasto",
+      "dueWithDays_plural": "Scadenza {{date}} • {{count}} giorni rimasti"
+    },
+    "activity": {
+      "title": "Attività",
+      "loading": "Caricamento attività...",
+      "error": "Impossibile caricare l'attività.",
+      "noActivity": "Nessuna attività ancora",
+      "by": "Di {{name}}",
+      "types": {
+        "created": "Archiviazione creata",
+        "recalculated": "Ricalcolato",
+        "submitted": "Inviato",
+        "paid": "Contrassegnato come pagato",
+        "attachmentAdded": "Allegato aggiunto",
+        "issuesDetected": "Problemi rilevati",
+        "issuesResolved": "Problemi risolti",
+        "deleted": "Eliminato"
+      }
+    },
+    "center": {
+      "title": "Centro fiscale",
+      "myTaxes": "Le mie tasse",
+      "freelancerSubtitle": "Gestisci gli obblighi fiscali del tuo libero professionista.",
+      "companySubtitle": "Panoramica degli adempimenti fiscali e delle dichiarazioni fiscali delle società.",
+      "errorLoading": "Errore durante il caricamento del Centro Fiscale",
+      "errorDescription": "Non è stato possibile caricare la panoramica delle tasse. Per favore riprova.",
+      "retry": "Riprova",
+      "reviewNext": "Rivedi la prossima presentazione",
+      "settings": "Impostazioni",
+      "nextUp": {
+        "title": "Il prossimo passo",
+        "allCaughtUp": "Siete tutti presi!",
+        "noUpcoming": "Nessun documento imminente trovato.",
+        "createFiling": "Creare un'archiviazione",
+        "dueDate": "Data di scadenza",
+        "estimatedAmount": "Importo stimato",
+        "reviewFiling": "Esaminare l'archiviazione",
+        "viewAll": "Visualizza tutti i documenti",
+        "overdue": "IN RITARDO",
+        "vat": "IVA",
+        "tax": "Tassa"
+      },
+      "annual": {
+        "title": "Archiviazioni annuali",
+        "yearendTitle": "Documentazioni di fine anno e annuali",
+        "viewAll": "Visualizza tutto",
+        "createForYear": "Crea per {{year}}",
+        "noFilings": "Nessuna documentazione annuale per {{year}}",
+        "obligations": "Obblighi annuali.",
+        "status": {
+          "draft": "Bozza",
+          "needsFix": "Ha bisogno di attenzione",
+          "readyForReview": "Pronto per la revisione",
+          "submitted": "Inviato",
+          "paid": "Pagato",
+          "archived": "Archiviato",
+          "openForSubmission": "Aperto per la presentazione",
+          "yearInProgress": "Anno in corso"
+        },
+        "year": "Anno {{year}}",
+        "estimatedTaxToPay": "Tassa stimata da pagare",
+        "reviewAndSubmit": "Rivedi e invia",
+        "preview": "Anteprima"
+      },
+      "issues": {
+        "title": "Problemi aperti",
+        "noIssues": "Nessun problema rilevato. La tua contabilità sembra pulita!",
+        "items": "elementi",
+        "affected": "colpito",
+        "fix": "Correggi",
+        "blocking": "BLOCKIEREND"
+      },
+      "shortcuts": {
+        "title": "Scorciatoie",
+        "createFiling": "Crea archiviazione",
+        "exportReport": "Rapporto sull'esportazione",
+        "payTaxes": "Pagare le tasse",
+        "documents": "Documenti"
+      },
+      "snapshot": {
+        "title": "Istantanea da inizio anno ({{year}})",
+        "updated": "{{date}} aggiornato",
+        "noData": "Nessun dato ancora disponibile."
+      }
+    },
+    "reports": {
+      "title": "Rapporti fiscali",
+      "subtitle": "Tieni traccia delle prossime dichiarazioni e invii.",
+      "tabs": {
+        "upcoming": "Prossimi resoconti",
+        "submitted": "Inviato"
+      },
+      "groups": {
+        "vat": "Dichiarazioni IVA anticipate",
+        "compliance": "Conformità (vendite UE e Intrastat)",
+        "submitted": "Rapporti inviati"
+      },
+      "actions": {
+        "markSubmitted": "Contrassegna come inviato",
+        "downloadPdf": "Scarica PDF",
+        "generatingPdf": "Generazione PDF...",
+        "downloadStarted": "Download avviato",
+        "pdfPrepared": "Il PDF è in preparazione. Riprova a breve.",
+        "downloadFailed": "Impossibile scaricare il PDF"
+      },
+      "status": {
+        "loading": "Caricamento rapporti...",
+        "empty": "Nessun rapporto trovato."
+      },
+      "types": {
+        "vatAdvance": "Dichiarazione IVA anticipata",
+        "vatAnnual": "Dichiarazione IVA annuale",
+        "incomeTax": "Imposta sul reddito",
+        "euSales": "Elenco vendite UE (ZM)",
+        "intrastat": "Dichiarazione Intrastat",
+        "tradeTax": "Imposta sul commercio (Gewerbesteuer)",
+        "profitLoss": "Dichiarazione P&L (EUR)",
+        "payrollTax": "Imposta sui salari"
+      },
+      "eur": {
+        "title": "Anlage EÜR (profitti e perdite)",
+        "subtitle": "Dichiarazione annuale in contanti per la dichiarazione dei redditi personali DE.",
+        "status": {
+          "loadingCapabilities": "Caricamento funzionalità fiscali...",
+          "loadingStatement": "Caricamento estratto conto EUR..."
+        },
+        "unsupported": {
+          "title": "EUR non è disponibile",
+          "description": "Questo report è attualmente supportato solo per le aree di lavoro DE personali."
+        },
+        "errors": {
+          "capabilitiesTitle": "Impossibile caricare le funzionalità fiscali",
+          "capabilitiesDescription": "Riprova una volta che il contesto dell'area di lavoro è disponibile.",
+          "statementTitle": "Impossibile caricare l'estratto conto EÜR",
+          "generic": "Impossibile caricare l'istruzione EÜR."
+        },
+        "summary": {
+          "income": "Reddito",
+          "expenses": "Spese",
+          "profit": "Profitto"
+        },
+        "lines": {
+          "title": "Linee di dichiarazione",
+          "columns": {
+            "line": "Linea",
+            "group": "Gruppo",
+            "amount": "Importo"
+          },
+          "groups": {
+            "income": "Reddito",
+            "expense": "Spesa"
+          }
+        },
+        "lineLabels": {
+          "income": {
+            "sales": "Ricavi delle vendite",
+            "other": "Altri proventi operativi"
+          },
+          "expense": {
+            "rent": "Costi dei locali (affitto/utenze)",
+            "software": "Software e abbonamenti",
+            "travel": "Spese di viaggio",
+            "marketing": "Pubblicità e marketing",
+            "professional": "Servizi professionali ed esterni",
+            "taxes": "Tasse, tasse e oneri",
+            "other": "Altre spese di gestione interamente deducibili"
+          }
+        },
+        "generatedAt": "{{date}} generato"
+      }
+    },
+    "documents": {
+      "title": "Documenti fiscali",
+      "subtitle": "Repository di tutti i documenti relativi alle tasse."
+    },
+    "payments": {
+      "title": "Pagamenti",
+      "subtitle": "Tieni traccia delle dichiarazioni pagate e dovute durante l'anno.",
+      "exportCsv": "Esporta CSV",
+      "status": {
+        "due": "Dovuto",
+        "overdue": "In ritardo",
+        "paid": "Pagato"
+      },
+      "types": {
+        "vat": "IVA",
+        "vatAnnual": "IVA annuale",
+        "incomeAnnual": "Imposta sul reddito",
+        "trade": "Tassa commerciale",
+        "payroll": "Libro paga",
+        "corporateAnnual": "Imposta sulle società",
+        "yearEnd": "Fine anno",
+        "other": "Altro"
+      },
+      "columns": {
+        "filing": "Archiviazione",
+        "dueDate": "Data di scadenza",
+        "amount": "Importo",
+        "status": "Stato",
+        "paidDate": "Data pagata",
+        "method": "Metodo",
+        "payable": "Pagabile",
+        "receivable": "Creditibile"
+      },
+      "actions": {
+        "markPaid": "Marco ha pagato",
+        "attachReceipt": "Allega ricevuta",
+        "markedPaid": "Contrassegnato come pagato",
+        "markPaidFailed": "Impossibile contrassegnare come pagato",
+        "receiptAttached": "Allegata ricevuta",
+        "attachReceiptFailed": "Impossibile allegare la ricevuta",
+        "exportFailed": "Impossibile esportare i pagamenti"
+      },
+      "empty": {
+        "title": "Nessun pagamento da monitorare",
+        "description": "I pagamenti verranno visualizzati qui una volta inviati i documenti.",
+        "goToFilings": "Vai ai documenti"
+      },
+      "error": {
+        "title": "Impossibile caricare i pagamenti",
+        "description": "Controlla la connessione e riprova."
+      },
+      "sort": {
+        "dueDateSoonest": "Data di scadenza (il più presto possibile)",
+        "dueDateLatest": "Data di scadenza (più recente)",
+        "paidDateNewest": "Data di pagamento (più recente)",
+        "paidDateOldest": "Data di pagamento (più vecchia)",
+        "amountHighLow": "Importo (Alto-Basso)",
+        "amountLowHigh": "Importo (Basso-Alto)"
+      }
+    },
+    "overview": {
+      "title": "Tasse",
+      "greeting": "Buonasera, {{name}}!",
+      "yourTaxes": "Le tue tasse nella tua regione",
+      "localOffice": "Ufficio locale: {{name}}",
+      "annualAssistant": "Assistente annuale",
+      "viewReports": "Visualizza rapporti",
+      "taxSettings": "Impostazioni fiscali",
+      "currentVatPeriod": "Periodo IVA corrente: {{period}} {{year}}",
+      "estimatedVatDue": "IVA stimata dovuta",
+      "notConfigured": "Non configurato",
+      "viewDetails": "Visualizza i dettagli",
+      "kpis": {
+        "taxesToBePaid": "Tasse da pagare",
+        "income": "Reddito",
+        "expenses": "Spese",
+        "vatNotApplicable": "IVA non applicabile",
+        "completeSetup": "Configurazione fiscale completa",
+        "seeOverview": "Vedi la panoramica delle tasse",
+        "unpaidInvoices": "{{count}} fatture non pagate",
+        "itemsToReview": "{{count}} articoli da rivedere"
+      },
+      "headsUp": "Attenzione",
+      "settingsIncomplete": "Impostazioni fiscali incomplete",
+      "settingsIncompleteDescription": "Configura il tuo profilo fiscale per stimare ciò che devi.",
+      "goToSettings": "Vai alle impostazioni fiscali",
+      "expenseHelper": {
+        "title": "Cosa posso spendere?",
+        "description": "Scopri quali acquisti puoi classificare come spese aziendali.",
+        "learnMore": "Scopri di più"
+      },
+      "yourReports": "I tuoi resoconti fiscali",
+      "reportsDescription": "In base ai tuoi dati, questi sono i rapporti che sei attualmente tenuto a inviare...",
+      "submitReports": "Invia rapporti",
+      "upcomingDeadline": "{{count}} prossima scadenza",
+      "upcomingDeadline_plural": "{{count}} prossime scadenze",
+      "noUpcoming": "Nessun rapporto in arrivo.",
+      "localTaxOffice": "Ufficio delle imposte locale",
+      "addLocalOffice": "Aggiungi il tuo ufficio delle imposte locale per mantenere i tuoi registri completi.",
+      "updateSettings": "Aggiorna le impostazioni",
+      "errorLoading": "Impossibile caricare le tasse",
+      "errorDescription": "Qualcosa è andato storto durante il recupero della panoramica fiscale."
+    },
+    "annualAssistant": {
+      "threadTitle": "Imposta annuale sul reddito {{year}}",
+      "loading": "Preparazione della sessione annuale di assistente fiscale...",
+      "placeholder": "Chiedimi di creare la tua bozza, generare EUR o guidare il tuo prossimo passo",
+      "emptyStateTitle": "Imposta annuale sul reddito {{year}}",
+      "emptyStateDescription": "Completa la tua presentazione annuale in chat: crea bozze, genera EÜR, rispondi alle domande del colloquio ed esporta PDF.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Creare una bozza annuale",
+          "value": "Crea la mia tratta annuale dell'imposta sul reddito per {{year}}."
+        },
+        "checklist": {
+          "label": "Mostra lista di controllo",
+          "value": "Mostra bozza di checklist e blocchi."
+        },
+        "export": {
+          "label": "Esporta PDF",
+          "value": "Esporta la mia bozza annuale in PDF."
+        }
+      },
+      "errors": {
+        "createTitle": "Impossibile avviare l'assistente annuale",
+        "createDescription": "Impossibile creare il thread dell'assistente. Riprova per continuare."
+      }
+    },
+    "history": {
+      "title": "Periodi IVA",
+      "year": "Anno",
+      "overdueAlert": "Azione richiesta: {{count}} periodi IVA scaduti",
+      "overdueDescription": "Il periodo scaduto più vecchio è preselezionato. Puoi ancora lavorare sul periodo corrente.",
+      "submitOverdue": "Invia periodi scaduti",
+      "noData": "Nessun dato per quest'anno.",
+      "noPeriods": "Nessun periodo trovato.",
+      "quarter": "Quarto",
+      "selectQuarter": "Seleziona trimestre",
+      "viewDetails": "Visualizza i dettagli del periodo",
+      "selectedPeriod": "Periodo selezionato: {{label}} ({{range}})",
+      "taxDue": "Tassa dovuta",
+      "salesVat": "IVA sulle vendite",
+      "purchaseVat": "Acquisto IVA",
+      "submittedOn": "Inserito il {{date}}",
+      "reference": "Riferimento: {{ref}}",
+      "notes": "Note: {{notes}}",
+      "archiveReason": "Motivo dell'archivio: {{reason}}",
+      "downloadPdf": "Scarica PDF",
+      "markSubmitted": "Contrassegna come inviato",
+      "markNil": "Segna come zero",
+      "archive": "Archivio",
+      "tabs": {
+        "upcoming": "Prossimi resoconti",
+        "submitted": "Rapporti inviati"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Contrassegna il periodo come inviato",
+          "date": "Data di invio",
+          "reference": "Riferimento (facoltativo)",
+          "notes": "Note (facoltativo)",
+          "submit": "Periodo di invio"
+        },
+        "nil": {
+          "title": "Contrassegnare il periodo come zero",
+          "date": "Data di invio",
+          "notes": "Note (facoltativo)",
+          "submit": "Segna zero"
+        },
+        "archive": {
+          "title": "Periodo di archivio",
+          "reason": "Motivo",
+          "notes": "Note (facoltativo)",
+          "submit": "Periodo di archivio"
+        },
+        "cancel": "Annulla"
+      },
+      "periodCombobox": {
+        "placeholder": "Seleziona o digita un periodo...",
+        "searchPlaceholder": "Cerca o digita il periodo...",
+        "useCustom": "Usa \"{{value}}\"",
+        "customHint": "Premi Invio o fai clic per utilizzare questo periodo personalizzato",
+        "noPeriods": "Nessun periodo trovato.",
+        "customHeading": "Personalizzato",
+        "customPeriod": "Periodo personalizzato",
+        "quartersHeading": "Quarti",
+        "monthlyHeading": "Mensile",
+        "footerHint": "Digita {{qExample}} o {{mExample}} per un periodo personalizzato",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterMonths": {
+          "1": "Gennaio – marzo",
+          "2": "aprile – giugno",
+          "3": "Luglio – settembre",
+          "4": "Ottobre – Dicembre"
+        }
+      },
+      "navigator": {
+        "prevYear": "L'anno precedente",
+        "nextYear": "L'anno prossimo",
+        "failedToLoad": "Impossibile caricare i periodi IVA.",
+        "retry": "Riprova",
+        "notStarted": "Non iniziato",
+        "noFilingYet": "Nessun file ancora per {{period}} {{year}}.",
+        "createFiling": "Creare un'archiviazione",
+        "status": {
+          "draft": "Bozza",
+          "needsFix": "Ha bisogno di attenzione",
+          "readyForReview": "Pronto",
+          "submitted": "Inviato",
+          "paid": "Pagato",
+          "archived": "Archiviato"
+        }
+      },
+      "attachments": {
+        "title": "Allegati",
+        "attachFromDocuments": "Allegare da documenti fiscali",
+        "uploadAttachment": "Carica allegato",
+        "loading": "Caricamento allegati...",
+        "error": "Impossibile caricare gli allegati.",
+        "empty": "Carica documenti giustificativi come ricevute o conferme di invio.",
+        "untitled": "Documento senza titolo",
+        "type": "Tipo: {{type}}",
+        "uploadedAt": "Caricato {{date}}",
+        "uploader": "Utente che ha caricato: {{name}}",
+        "remove": "Rimuovi",
+        "dialog": {
+          "title": "Allega ricevuta",
+          "description": "Carica la prova di pagamento per questa registrazione.",
+          "replace": "Sostituisci la ricevuta",
+          "choose": "Scegli la ricevuta",
+          "noFile": "Nessun file selezionato",
+          "uploading": "Caricamento...",
+          "submit": "Allega ricevuta"
+        },
+        "messages": {
+          "uploadSuccess": "Allegato caricato",
+          "uploadError": "Impossibile caricare l'allegato",
+          "selectFile": "Seleziona una ricevuta da caricare"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "Dichiarazione IVA",
+          "vat-annual": "Dichiarazione annuale IVA",
+          "income-annual": "Dichiarazione dei redditi",
+          "trade": "Dichiarazione fiscale commerciale",
+          "payroll": "Dichiarazione dei redditi",
+          "corporate-annual": "Dichiarazione fiscale sulle società",
+          "year-end": "Presentazione di fine anno",
+          "other": "Dichiarazione fiscale"
+        },
+        "status": {
+          "draft": "Bozza",
+          "needsFix": "Ha bisogno di attenzione",
+          "readyForReview": "Pronto per la revisione",
+          "submitted": "Inviato",
+          "paid": "Pagato",
+          "archived": "Archiviato"
+        },
+        "actions": {
+          "review": "Recensione",
+          "continueReview": "Continua la revisione",
+          "markPaid": "Marco ha pagato",
+          "view": "Visualizza",
+          "previousPeriod": "Periodo precedente",
+          "nextPeriod": "Prossimo periodo",
+          "recalculate": "Ricalcolare",
+          "exportPdf": "Esporta PDF",
+          "exportCsv": "Esporta CSV",
+          "delete": "Elimina archiviazione",
+          "deleteConfirmTitle": "Eliminare l'archiviazione?",
+          "deleteConfirmMessage": "Questa azione non può essere annullata."
+        },
+        "due": "Scadenza {{date}}",
+        "dueWithDays": "Scadenza {{date}} • {{count}} giorno rimasto",
+        "dueWithDays_plural": "Scadenza {{date}} • {{count}} giorni rimasti"
+      },
+      "activity": {
+        "title": "Attività",
+        "loading": "Caricamento attività...",
+        "error": "Impossibile caricare l'attività.",
+        "noActivity": "Nessuna attività ancora",
+        "by": "Di {{name}}",
+        "types": {
+          "created": "Archiviazione creata",
+          "recalculated": "Ricalcolato",
+          "submitted": "Inviato",
+          "paid": "Contrassegnato come pagato",
+          "attachmentAdded": "Allegato aggiunto",
+          "issuesDetected": "Problemi rilevati",
+          "issuesResolved": "Problemi risolti",
+          "deleted": "Eliminato"
+        }
+      },
+      "createFiling": {
+        "title": "Nuova dichiarazione dei redditi",
+        "subtitle": "Scegli il tipo di deposito e il periodo per creare un nuovo obbligo.",
+        "form": {
+          "details": "Dettagli di archiviazione",
+          "type": "Tipo di archiviazione",
+          "selectType": "Seleziona il tipo",
+          "types": {
+            "vat": "Dichiarazione IVA",
+            "income-annual": "Imposta sul reddito (annuale)",
+            "vat-annual": "IVA annuale",
+            "other": "Altro"
+          },
+          "year": "Anno fiscale",
+          "period": "Periodo",
+          "cancel": "Annulla",
+          "submit": "Crea archiviazione",
+          "errors": {
+            "periodRequired": "Il periodo è richiesto per la dichiarazione IVA",
+            "yearRequired": "L'anno è richiesto per le dichiarazioni annuali"
+          }
+        },
+        "messages": {
+          "successTitle": "Archiviazione creata",
+          "successDescription": "Reindirizzamento ai dettagli di archiviazione...",
+          "errorTitle": "Errore durante la creazione dell'archiviazione"
+        }
+      },
+      "filingItems": {
+        "error": "Impossibile caricare gli elementi.",
+        "emptyTitle": "Nessun articolo {{type}}",
+        "emptyDescription": "Non abbiamo trovato nessun articolo {{type}} per questo periodo.",
+        "table": {
+          "date": "Data",
+          "counterparty": "Controparte",
+          "description": "Descrizione",
+          "net": "netto",
+          "tax": "Tassa",
+          "gross": "Lordo"
+        }
+      },
+      "includedItems": {
+        "title": "Articoli inclusi",
+        "emptyTitle": "Nessun articolo incluso",
+        "emptyDescription": "Non abbiamo ancora trovato elementi di origine per questo archivio.",
+        "table": {
+          "type": "Digitare",
+          "date": "Data",
+          "counterparty": "Controparte",
+          "category": "Categoria",
+          "vatTreatment": "Trattamento IVA",
+          "net": "netto",
+          "tax": "Tassa",
+          "gross": "Lordo",
+          "flags": "Bandiere"
+        },
+        "badges": {
+          "needsAttention": "Ha bisogno di attenzione",
+          "ok": "Va bene",
+          "noCategory": "Nessuna categoria",
+          "noVatTreatment": "Nessun trattamento IVA"
+        },
+        "error": "Impossibile caricare gli elementi inclusi.",
+        "retry": "Riprova"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Contrassegna come pagato",
+          "description": "Registra i dettagli del pagamento e facoltativamente allega una ricevuta."
+        },
+        "form": {
+          "paidAt": "Pagato a",
+          "method": "Metodo",
+          "methods": {
+            "bank-transfer": "Bonifico bancario",
+            "direct-debit": "Addebito diretto",
+            "other": "Altro"
+          },
+          "amount": "Importo",
+          "receipt": "Ricevuta",
+          "replace": "Sostituisci la ricevuta",
+          "upload": "Carica ricevuta",
+          "optional": "Facoltativo",
+          "uploading": "Caricamento...",
+          "submit": "Marco ha pagato"
+        },
+        "messages": {
+          "uploadError": "Impossibile caricare la ricevuta"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "Periodo IVA contrassegnato come inviato",
+        "submittedError": "Impossibile contrassegnare il periodo IVA come inviato",
+        "nilSuccess": "Periodo IVA contrassegnato come zero",
+        "nilError": "Impossibile contrassegnare il periodo IVA come pari a zero",
+        "archiveSuccess": "Periodo IVA archiviato",
+        "archiveError": "Impossibile archiviare il periodo IVA",
+        "generatingPdf": "Generazione PDF...",
+        "downloadStarted": "Download avviato",
+        "pdfPrepared": "Il PDF è in preparazione. Riprova a breve.",
+        "downloadFailed": "Impossibile scaricare il PDF"
+      }
+    }
+  },
+  "cashManagement": {
+    "title": "Gestione della cassa",
+    "registers": "Registri",
+    "newRegister": "Nuovo registro",
+    "addEntry": "Aggiungi voce",
+    "dailyClose": "Chiusura giornaliera"
+  },
+  "cash": {
+    "title": "Gestione della cassa",
+    "subtitle": "Tieni traccia dei registri, delle voci e della chiusura giornaliera",
+    "registers": {
+      "add": "Aggiungi Registrati",
+      "addTitle": "Crea registro",
+      "namePlaceholder": "Registra il nome",
+      "noLocation": "Nessuna posizione",
+      "currentBalance": "Saldo attuale",
+      "empty": "Nessun registratore di cassa ancora",
+      "created": "Registro creato",
+      "createFailed": "Impossibile creare il registro"
+    },
+    "detail": {
+      "cashIn": "Incassare",
+      "cashOut": "Incassare",
+      "dailyCloses": "Chiusura giornaliera",
+      "updatedBalance": "Saldo aggiornato",
+      "noEntriesFound": "Nessuna voce trovata",
+      "noDailyCloses": "Nessuna chiusura giornaliera ancora",
+      "addCashIn": "Aggiungi incassi",
+      "addCashOut": "Aggiungi incasso",
+      "reasonPlaceholder": "Motivo dell'ingresso...",
+      "confirmIn": "Conferma ingresso",
+      "confirmOut": "Conferma uscita",
+      "entryAdded": "Voce aggiunta",
+      "entryAddFailed": "Impossibile aggiungere la voce",
+      "invalidAmount": "Importo non valido"
+    },
+    "dailyClose": {
+      "title": "Chiusura giornaliera",
+      "reconcile": "Riconciliare: {{register}}",
+      "businessDate": "Data lavorativa",
+      "expectedBalance": "Saldo previsto",
+      "countedBalance": "Saldo contato",
+      "countedCash": "Contanti conteggiati ({{currency}})",
+      "difference": "Differenza",
+      "perfectMatch": "Abbinamento perfetto",
+      "discrepancyDetected": "Rilevata discrepanza",
+      "differenceEntryNote": "Verrà creata automaticamente una voce di differenza",
+      "notesPlaceholder": "Eventuali note su questa chiusura...",
+      "submitClose": "Invia Chiudi",
+      "submitting": "Invio...",
+      "submitted": "Chiusura giornaliera inviata",
+      "submitFailed": "Impossibile chiudere",
+      "enterCountedAmount": "Inserisci l'importo conteggiato"
+    },
+    "ui": {
+      "common": {
+        "loadingRegister": "Caricamento registro...",
+        "registerNotFound": "Registratore di cassa non trovato.",
+        "noLocation": "Nessuna posizione",
+        "cancel": "Annulla"
+      },
+      "registers": {
+        "title": "Registratori di cassa",
+        "subtitle": "Gestisci registri, saldi e operazioni quotidiane.",
+        "newRegister": "Nuovo registro",
+        "searchPlaceholder": "Cerca il nome del registro",
+        "locationPlaceholder": "Filtra per posizione",
+        "currencyPlaceholder": "Valuta (ad esempio EUR)",
+        "loading": "Caricamento registri...",
+        "loadFailed": "Impossibile caricare i registri.",
+        "empty": "Nessun registratore di cassa trovato.",
+        "open": "Aperto",
+        "table": {
+          "name": "Nome",
+          "location": "Posizione",
+          "currency": "Valuta",
+          "currentBalance": "Saldo attuale",
+          "actions": "Azioni"
+        }
+      },
+      "registerDetail": {
+        "newCashEntry": "Nuova entrata in cassa",
+        "closeDay": "Giorno di chiusura (Kassensturz)",
+        "kassenbericht": "Kassenbericht",
+        "export": "Esportazione",
+        "edit": "Modifica",
+        "currentBalance": "Saldo attuale",
+        "lastClosedDay": "Ultimo giorno chiuso",
+        "noSubmittedClose": "Nessun giorno di chiusura ancora inviato",
+        "tabs": {
+          "overview": "Panoramica",
+          "entriesPreview": "Anteprima delle iscrizioni",
+          "activityAudit": "Attività/Verifica",
+          "unclosedDays": "Giorni non chiusi"
+        },
+        "registerId": "Registrati ID",
+        "negativeBalancePolicy": "Politica del saldo negativo",
+        "policyBlocked": "Bloccato",
+        "policyAllowed": "Consentito",
+        "noEntriesYet": "Nessuna voce ancora.",
+        "openFullEntries": "Apri l'elenco completo delle voci",
+        "activityPrefix": "Registri di controllo ed esportati",
+        "auditPack": "pacchetti di audit",
+        "activitySuffix": "appaiono qui una volta disponibili.",
+        "unclosedDaysModal": {
+          "title": "Giorni non chiusi",
+          "description": "Prima di visitare il Kassenbericht tutti i giorni precedenti devono essere chiusi. Il primo giorno di chiusura è:",
+          "cancel": "Annulla",
+          "goClose": "Vai alla chiusura del giorno",
+          "viewLastKassenbericht": "Visualizza l'ultimo Kassenbericht"
+        },
+        "unclosedDays": {
+          "draft": "Bozza",
+          "open": "Non chiuso",
+          "close": "Chiudi adesso →"
+        }
+      },
+      "registerForm": {
+        "newTitle": "Creare un registratore di cassa",
+        "editTitle": "Modifica registratore di cassa",
+        "name": "Nome",
+        "namePlaceholder": "Registro principale",
+        "location": "Posizione",
+        "locationPlaceholder": "Vetrina",
+        "currency": "Valuta",
+        "disallowNegativeBalance": "Non consentire saldo di cassa negativo",
+        "createFailed": "Impossibile creare il registratore di cassa.",
+        "updateFailed": "Impossibile aggiornare il registratore di cassa.",
+        "create": "Crea registro",
+        "saveChanges": "Salva modifiche"
+      },
+      "entries": {
+        "title": "Voci · {{register}}",
+        "subtitle": "Elenco cassa con filtri, storni e allegati beleg.",
+        "newCashEntry": "Nuova entrata in cassa",
+        "backToRegister": "Torna alla registrazione",
+        "filters": {
+          "dayFrom": "Giorno da",
+          "dayTo": "Giorno a",
+          "allTypes": "Tutti i tipi",
+          "allSources": "Tutte le fonti",
+          "allPayments": "Tutti i pagamenti",
+          "searchDescription": "Descrizione della ricerca"
+        },
+        "loading": "Caricamento voci...",
+        "loadFailed": "Impossibile caricare le voci.",
+        "empty": "Nessuna voce trovata.",
+        "table": {
+          "dateTime": "Data/ora",
+          "entryNo": "Voce n.",
+          "description": "Descrizione",
+          "type": "Digitare",
+          "direction": "ENTRATA/USCITA",
+          "amount": "Importo",
+          "tax": "IVA",
+          "source": "Fonte",
+          "balanceAfter": "Saldo dopo",
+          "beleg": "Beleg",
+          "actions": "Azioni"
+        },
+        "rowActions": {
+          "viewRegister": "Visualizza il registro",
+          "reverse": "Inverso",
+          "addBeleg": "Aggiungi beleg",
+          "downloadBeleg": "Scarica beleg"
+        },
+        "camera": {
+          "title": "Fotocamera",
+          "description": "Utilizza la fotocamera del tuo dispositivo per acquisire direttamente la ricevuta.",
+          "capture": "Cattura foto",
+          "switchCamera": "Cambia fotocamera",
+          "unavailable": "La fotocamera non è disponibile in questo browser.",
+          "permissionDenied": "L'accesso alla telecamera è stato negato."
+        },
+        "createDialog": {
+          "title": "Creare un'entrata in cassa",
+          "description": "Registra un movimento Kassenbuch solo in contanti con importo lordo, prova e IVA, ove applicabile.",
+          "grossAmount": "Importo lordo",
+          "type": "Digitare",
+          "taxCodeRequired": "Codice IVA",
+          "taxCodeOptional": "Partita IVA (facoltativo)",
+          "noVat": "Nessuna IVA",
+          "taxProfileRequiredTitle": "È richiesta la configurazione fiscale",
+          "taxProfileRequiredDescription": "Scegli come questo registratore di cassa deve trattare l'IVA prima di registrare le vendite in contanti imponibili.",
+          "configureTaxSettings": "Configura tasse e IVA",
+          "setupStandardVat": "Utilizza l'IVA tedesca standard",
+          "setupSmallBusiness": "Utilizza Kleinunternehmer (senza IVA)",
+          "taxSummary": "Riepilogo IVA",
+          "netAmount": "Importo netto",
+          "taxAmount": "Importo IVA",
+          "outputVat": "IVA a valle",
+          "inputVat": "IVA a monte",
+          "salesVatRequiredHint": "Seleziona il codice IVA utilizzato per questa vendita in contanti.",
+          "salesVatOptionalHint": "Seleziona un codice IVA quando questa vendita in contanti è imponibile.",
+          "expenseVatHint": "Selezionare un codice IVA a monte solo quando questa spesa ha una ricevuta deducibile.",
+          "bookingText": "Testo della prenotazione",
+          "documentReference": "Riferimento ricevuta / Eigenbeleg",
+          "documentReferencePlaceholder": "N. ricevuta, n. fattura o motivo",
+          "documentReferenceHint": "Aggiungi un riferimento alla ricevuta o carica un beleg. Il galleggiante di apertura può rimanere senza.",
+          "occurredAt": "Si è verificato a",
+          "attachBeleg": "Allega beleg (facoltativo)",
+          "chooseAttachment": "Scegli file",
+          "takePicture": "Scatta una foto",
+          "replaceAttachment": "Sostituisci file",
+          "noAttachment": "Nessun file selezionato",
+          "projectedBalance": "Saldo previsto dopo il salvataggio",
+          "failed": "Impossibile creare la voce.",
+          "save": "Salva la voce",
+          "uploading": "Caricamento..."
+        },
+        "reverseDialog": {
+          "title": "Inserimento inverso",
+          "description": "Stornare questa voce di cassa registrata con un motivo sicuro per la verifica.",
+          "reason": "Motivo",
+          "failed": "Impossibile invertire l'immissione.",
+          "confirm": "Conferma l'inversione"
+        },
+        "attachmentDialog": {
+          "title": "Aggiungi beleg alla voce",
+          "description": "Carica un file di ricevuta o scatta una foto per allegare prove giustificative a questa registrazione di cassa.",
+          "file": "File di ricevuta",
+          "uploadFile": "Carica file",
+          "replaceFile": "Sostituisci file",
+          "takePicture": "Scatta una foto",
+          "noFile": "Nessun file selezionato",
+          "failed": "Impossibile allegare beleg.",
+          "attach": "Allega"
+        }
+      },
+      "dayClose": {
+        "title": "Giorno di chiusura (Kassensturz)",
+        "backToRegister": "Torna alla registrazione",
+        "addCorrectionEntry": "Aggiungi voce di correzione",
+        "viewReport": "Visualizza Kassenbericht",
+        "closeDayFor": "Giorno di chiusura per {{register}}",
+        "day": "Giorno",
+        "expectedBalance": "Saldo atteso (Soll)",
+        "countedBalance": "Totale contante conteggiato (Ist)",
+        "countedBalanceHelp": "Contare tutti i contanti appartenenti allo stesso fondo di cassa aziendale, compresi i contanti nel cassetto, nella cassaforte o nella scatola.",
+        "denomination": "Denominazione",
+        "count": "Conte",
+        "subtotal": "Totale parziale",
+        "difference": "Differenza",
+        "differenceNoteRequired": "Una nota è necessaria quando la differenza non è zero.",
+        "note": "Nota",
+        "notePlaceholder": "Facoltativo per differenza zero; richiesto altrimenti.",
+        "submitFailed": "Impossibile inviare il giorno di chiusura.",
+        "submitAndLock": "Invia e blocca il giorno",
+        "lockedInfo": "Questo giorno è bloccato. Utilizzare solo voci di correzione.",
+        "loadExistingFailed": "Impossibile caricare la chiusura giornaliera esistente.",
+        "expected": "Previsto",
+        "counted": "Contato",
+        "confirmClose": "Conferma chiusura",
+        "countByDenomination": "Contare per denominazione",
+        "dayCalculatedTitle": "Giorno calcolato",
+        "dayCalculatedDesc": "Il contante fisico non è stato conteggiato. Il report utilizza il saldo contabile previsto.",
+        "expectedClosingCash": "Prevista chiusura di cassa",
+        "physicalCount": "Conteggio fisico",
+        "notPerformed": "Non eseguito",
+        "notAvailable": "Non disponibile",
+        "tageslosung": "Entrate giornaliere in contanti (Tageslosung)",
+        "countMatched": "Conteggio abbinato",
+        "countDifference": "Conteggio della differenza"
+      },
+      "kassenbericht": {
+        "title": "Kassenbericht quotidiano",
+        "subtitle": "Layout cartaceo tedesco con spiegazioni in linguaggio semplice da verificare o copiare a mano.",
+        "back": "Torna alla registrazione",
+        "download": "Scarica PDF",
+        "downloading": "Generazione PDF...",
+        "loading": "Caricamento Kassenbericht...",
+        "loadFailed": "Impossibile caricare il Kassenbericht per questo giorno.",
+        "explanations": {
+          "date": "Data",
+          "number": "Numero",
+          "currency": "Valuta",
+          "closingCash": "Chiusura del saldo di cassa",
+          "bookNote": "Nota del libro",
+          "outflows": "Spese durante il giorno",
+          "taxAmount": "Importo fiscale",
+          "netGrossAmount": "Importo netto/lordo",
+          "purchases": "1. Acquisti di beni e costi",
+          "expenses": "2. Spese aziendali",
+          "withdrawals": "3. Prelievi privati",
+          "otherOutflows": "4. Altre spese (es. Depositi bancari)",
+          "total": "Totale",
+          "previousClosingCash": "meno la liquidità di chiusura del giorno precedente",
+          "cashReceived": "= Contanti ricevuti",
+          "otherIncome": "meno altri redditi",
+          "cashSales": "= Vendite in contanti del giorno",
+          "customerCount": "Conteggio dei clienti",
+          "signature": "Firma"
+        }
+      },
+      "exports": {
+        "title": "Esportazioni · {{register}}",
+        "backToRegister": "Torna alla registrazione",
+        "generateTitle": "Genera esportazione del libretto di cassa",
+        "month": "Mese",
+        "format": "Formato",
+        "includeAttachmentFiles": "Includi file allegati nel pacchetto di controllo",
+        "generating": "Generazione...",
+        "generate": "Genera esportazione",
+        "failed": "Impossibile generare l'esportazione.",
+        "latestTitle": "Ultima esportazione",
+        "file": "Archivio",
+        "type": "Digitare",
+        "size": "Dimensioni",
+        "bytes": "byte",
+        "download": "Scarica esportazione",
+        "formatOptions": {
+          "CSV": "CSV",
+          "PDF": "PDF",
+          "DATEV": "DATAV",
+          "AUDIT_PACK": "Pacchetto di verifica"
+        }
+      },
+      "enums": {
+        "direction": {
+          "IN": "NEL",
+          "OUT": "FUORI"
+        },
+        "paymentMethod": {
+          "CASH": "Contanti",
+          "CARD": "Carta",
+          "TRANSFER": "Trasferimento",
+          "OTHER": "Altro"
+        },
+        "entrySource": {
+          "MANUAL": "Manuale",
+          "SALES": "Vendite",
+          "EXPENSE": "Spesa",
+          "DIFFERENCE": "Differenza",
+          "IMPORT": "Importa",
+          "INTEGRATION": "Integrazione"
+        },
+        "entryType": {
+          "SALE_CASH": "Vendita in contanti",
+          "REFUND_CASH": "Rimborso in contanti",
+          "EXPENSE_CASH": "Spesa in contanti",
+          "OWNER_DEPOSIT": "Deposito privato",
+          "OWNER_WITHDRAWAL": "Ritiro privato",
+          "BANK_DEPOSIT": "Deposito bancario",
+          "BANK_WITHDRAWAL": "Prelievo bancario",
+          "CORRECTION": "Correzione",
+          "OPENING_FLOAT": "Galleggiante di apertura",
+          "CLOSING_ADJUSTMENT": "Regolazione della chiusura",
+          "IN": "NEL",
+          "OUT": "FUORI"
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Cruscotto",
+    "welcome": "Bentornato",
+    "revenueThisMonth": "Entrate questo mese",
+    "outstandingInvoices": "Fatture in sospeso",
+    "expensesThisMonth": "Le spese di questo mese",
+    "quickActions": "Azioni rapide",
+    "recentActivity": "Attività recente",
+    "addExpense": "Aggiungi spesa",
+    "createInvoice": "Crea fattura",
+    "createQuote": "Crea preventivo",
+    "openAssistant": "Assistente aperto",
+    "fromLastMonth": "dal mese scorso",
+    "invoicesPending": "fatture pendenti",
+    "expensesCount": "spese di questo mese",
+    "uploadReceipt": "Carica la ricevuta con l'intelligenza artificiale",
+    "generateWithAi": "Genera con l'intelligenza artificiale",
+    "createNew": "Crea nuovo",
+    "askAnything": "Chiedi qualsiasi cosa",
+    "manageTeam": "Gestisci la squadra",
+    "inviteMembers": "Invita membri",
+    "noInvoices": "Ancora nessuna fattura",
+    "noExpenses": "Nessuna spesa ancora",
+    "teacher": {
+      "welcome": "Pannello di controllo dell'insegnante",
+      "subtitle": "Le tue lezioni e le tue attività per oggi",
+      "allClasses": "Tutte le classi",
+      "sessionsToday": "Sessioni di oggi",
+      "sessionsThisWeek": "Sessioni questa settimana",
+      "missingAttendance": "Presenze mancanti",
+      "actionRequired": "Azione richiesta",
+      "unfinished": "Sessioni incompiute",
+      "studentsMissingPayer": "Studenti mancanti del pagamento",
+      "unpaidInvoices": "Fatture non pagate",
+      "overdue": "In ritardo",
+      "upcomingSessions": "Prossime sessioni",
+      "noUpcoming": "Nessuna sessione imminente in questo intervallo",
+      "needsAttention": "Ha bisogno di attenzione",
+      "unfinishedSessions": "Sessioni incompiute",
+      "allCaughtUp": "Tutti presi!",
+      "noActions": "Nessuna azione in sospeso richiede la tua attenzione."
+    }
+  },
+  "assistant": {
+    "title": "Assistente",
+    "subtitle": "Chiedi qualsiasi cosa, estrai ricevute, genera fatture o richiedi rapidi riepiloghi.",
+    "placeholder": "Chiedi qualsiasi cosa, estrai ricevute, crea bozze di fatture o richiedi rapidi riepiloghi.",
+    "emptyStateTitle": "Come posso aiutarti?",
+    "emptyStateDescription": "Chiedi qualsiasi cosa, estrai ricevute, genera fatture o richiedi rapidi riepiloghi.",
+    "awaitingInputs": "In attesa del tuo contributo...",
+    "approvalRequired": "Approvazione richiesta ({{toolName}})",
+    "approvalDescription": "L'assistente desidera utilizzare lo strumento \"{{toolName}}\". Vuoi consentire questo?",
+    "toolResult": "Risultato da {{toolName}}",
+    "toolFailed": "Strumento {{toolName}} non riuscito: {{reason}}",
+    "denied": "Negato dall'utente",
+    "toolCall": "Esecuzione di {{toolName}}...",
+    "send": "Invia",
+    "sending": "Invio...",
+    "attachments": {
+      "add": "Aggiungi file",
+      "remove": "Rimuovi file",
+      "invalidType": "{{name}} non è supportato. Sono ammessi solo file immagine e PDF.",
+      "tooLarge": "{{name}} è troppo grande. La dimensione massima è {{maxSize}}."
+    },
+    "suggestions": {
+      "extractReceipt": {
+        "label": "Estrai una ricevuta e crea una spesa",
+        "value": "Ho caricato una ricevuta. Estraetela e redigete una spesa."
+      },
+      "invoiceDraft": {
+        "label": "Genera una bozza di fattura",
+        "value": "Genera una bozza di fattura per ACME GmbH per questo mese."
+      },
+      "summarizeExpenses": {
+        "label": "Riepiloga le mie spese",
+        "value": "Riepiloga le mie spese degli ultimi 30 giorni."
+      },
+      "taxGuidance": {
+        "label": "Guida fiscale",
+        "value": "Cosa posso detrarre come libero professionista in Germania?"
+      }
+    },
+    "toolCards": {
+      "extractingReceipt": "Estrazione dati ricevuta...",
+      "creatingExpense": "Creazione spesa...",
+      "generatingInvoice": "Generazione bozza fattura in corso...",
+      "issuingInvoice": "Emissione fattura..."
+    },
+    "disclaimer": "Questa non è una consulenza legale o fiscale. Si prega di consultare un professionista fiscale per indicazioni specifiche.",
+    "confirmExpense": "Conferma i dettagli della spesa",
+    "invoicePreview": "Anteprima della fattura",
+    "openExpense": "Spesa aperta",
+    "openInvoice": "Fattura aperta",
+    "issueInvoice": "Emettere fattura",
+    "userRole": "Tu",
+    "assistantRole": "Assistente",
+    "systemRole": "Sistema",
+    "searchAction": "Cerca",
+    "newChat": "Nuova chiacchierata",
+    "recentChats": "Chat recenti",
+    "recentChatsDescription": "Sfoglia le conversazioni precedenti o avviane una nuova.",
+    "loadingChats": "Caricamento chat...",
+    "noChats": "Nessuna chat ancora",
+    "noChatsDescription": "Avvia una conversazione e apparirà qui.",
+    "loadingPreview": "Caricamento anteprima...",
+    "loadingMonthlyReport": "Caricamento rapporto mensile...",
+    "cashConfirmation": {
+      "title": "Bozza pronta per la conferma",
+      "description": "Rivedi il riepilogo per {{date}}, quindi conferma per salvare le registrazioni di cassa.",
+      "confirm": "Conferma e salva",
+      "confirming": "Confermando...",
+      "confirmPrompt": "Confermo e autorizzo esplicitamente il salvataggio della presente cambiale in contanti.",
+      "savedTitle": "Bozza giornaliera salvata",
+      "savedDescription": "I movimenti di contanti confermati sono stati salvati con successo.",
+      "taxProfileRequiredTitle": "Profilo fiscale richiesto prima del salvataggio",
+      "taxProfileRequiredDescription": "Scegli se l'azienda utilizza l'IVA tedesca standard o il regime Kleinunternehmer. L'app non deve indovinare questa impostazione fiscale.",
+      "configureTaxSettings": "Configura tasse e IVA"
+    },
+    "search": {
+      "title": "Cerca chat",
+      "placeholder": "Cerca messaggi...",
+      "minLength": "Digita almeno 2 caratteri per la ricerca.",
+      "noResults": "Nessun messaggio corrispondente trovato.",
+      "noPreview": "(Nessuna anteprima)"
+    },
+    "groups": {
+      "today": "Oggi",
+      "needsAttention": "Ha bisogno di attenzione",
+      "previousDays": "Giorni precedenti",
+      "monthlyReviews": "Revisioni mensili",
+      "generalQuestions": "Domande generali",
+      "yesterday": "Ieri",
+      "week": "Questa settimana",
+      "older": "Più vecchio"
+    }
+  },
+  "copilot": {
+    "title": "Assistente",
+    "placeholder": "Chiedimi qualsiasi cosa...",
+    "confirmation": {
+      "title": "Approvazione richiesta",
+      "subtitle": "L'assistente desidera utilizzare '{{toolName}}'. Vuoi consentire questo?"
+    },
+    "toolResult": "Risultato da {{toolName}}",
+    "toolFailed": "Strumento {{toolName}} non riuscito: {{reason}}",
+    "denied": "Negato dall'utente",
+    "toolCall": "Esecuzione di {{toolName}}...",
+    "roles": {
+      "user": "Tu",
+      "assistant": "Assistente"
+    },
+    "confidence": "Confidenza pari al {{percent}}%.",
+    "noStructuredOutput": "Nessun dato strutturato disponibile",
+    "allowTool": "L'assistente desidera utilizzare '{{toolName}}'. Vuoi consentire questo?"
+  },
+  "expenses": {
+    "title": "Spese",
+    "addExpense": "Aggiungi spesa",
+    "noExpenses": "Nessuna spesa ancora",
+    "noExpensesDescription": "Inizia aggiungendo la tua prima spesa o carica una ricevuta nell'assistente.",
+    "merchant": "Mercante",
+    "date": "Data",
+    "amount": "Importo",
+    "category": "Categoria",
+    "vat": "IVA",
+    "project": "Progetto",
+    "receipt": "Ricevuta",
+    "notes": "Note",
+    "categories": {
+      "office_supplies": "Forniture per ufficio",
+      "software": "Software",
+      "travel": "Viaggio",
+      "meals": "Pasti",
+      "home_office": "Ufficio a casa",
+      "education": "Istruzione",
+      "hardware": "Hardware",
+      "phone_internet": "Telefono/Internet",
+      "other": "Altro"
+    },
+    "notifications": {
+      "created": "Spesa creata",
+      "updated": "Spese aggiornate",
+      "deleted": "Spesa eliminata",
+      "deleteFailed": "Impossibile eliminare la spesa",
+      "saveFailed": "Impossibile risparmiare sulle spese",
+      "loadFailed": "Impossibile caricare le spese",
+      "transitioned": "Le spese sono passate a {{to}}",
+      "transitionFailed": "Spese di transizione non riuscite",
+      "receiptAttachPartial": "{{successMessage}}, ma non è stato possibile allegare i file di ricevuta {{count}}"
+    },
+    "list": {
+      "subtitle": "Tieni traccia e gestisci la tua spesa",
+      "noExpensesDescription": "Crea la tua prima spesa per tenere traccia delle spese.",
+      "selectedCount": "{{count}} selezionato",
+      "deleteSelected": "Elimina selezionato",
+      "deleteSelectedTitle": "Elimina le spese selezionate",
+      "deleteSelectedDescription": "Questo archivierà le spese selezionate.",
+      "selectAll": "Seleziona tutto",
+      "selectExpense": "Seleziona la spesa {{id}}",
+      "deductiblePercent": "% deducibile",
+      "deleteExpenseTitle": "Elimina spesa",
+      "deleteExpenseDescription": "Ciò archivierà la spesa e la rimuoverà dall'elenco.",
+      "pageInfo": "Pagina {{page}} di {{totalPages}}",
+      "dimensionLabel": "Dimensione",
+      "customLabel": "Personalizzato",
+      "ruleKind": {
+        "perDiem": "al giorno",
+        "mixedUse": "uso misto",
+        "gift": "regalo"
+      },
+      "sort": {
+        "dateNewest": "Data (più recente)",
+        "dateOldest": "Data (più vecchia)",
+        "amountHighLow": "Importo (Alto-Basso)",
+        "amountLowHigh": "Importo (Basso-Alto)",
+        "createdNewest": "Creato (più recente)"
+      }
+    },
+    "detail": {
+      "overview": "Panoramica",
+      "taxDeductibility": "Deducibilità fiscale (DE)",
+      "deductiblePercentLabel": "{{percent}}% di franchigia",
+      "needsMoreInfo": "Ha bisogno di più informazioni",
+      "deductible": "Deducibile",
+      "nonDeductible": "Non deducibile",
+      "fillRequiredFields": "Compila i campi obbligatori quando modifichi questa spesa per calcolare la deducibilità.",
+      "notComputed": "Deducibilità non ancora calcolata. Modifica questa spesa per attivare il calcolo.",
+      "attachReceipts": "Allega le ricevute per vederle qui.",
+      "auditTrail": "La traccia di controllo verrà visualizzata qui una volta disponibile.",
+      "backToExpenses": "Torniamo alle spese",
+      "notFound": "Spesa non trovata.",
+      "noNotes": "Nessuna nota aggiunta.",
+      "transitionSoon": "La transizione a {{to}} sarà presto disponibile",
+      "actionSoon": "Azione {{action}} in arrivo",
+      "ruleKind": {
+        "percent": "% fissa",
+        "giftThreshold": "Soglia regalo",
+        "perDiem": "Al giorno",
+        "mixedUse": "Uso misto"
+      }
+    },
+    "form": {
+      "editTitle": "Modifica spesa",
+      "create": "Crea spesa",
+      "selectCategory": "Seleziona categoria",
+      "selectCategoryHint": "Seleziona una categoria per visualizzare le regole di deducibilità.",
+      "merchantPlaceholder": "ad es. Ristorante Zum Hirsch",
+      "taxDeductibilityTitle": "Deducibilità fiscale (DE)",
+      "participants": "Partecipanti",
+      "participantsPlaceholder": "ad es. Max Muller, Julia Schneider",
+      "participantsHint": "Obbligatorio per la detrazione del pasto del cliente (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Occasione d'affari",
+      "businessOccasionPlaceholder": "ad es. Avvio del progetto Q1, negoziazione della partnership",
+      "clientMealsHint": "Deducibilità fiscale al 70%. La detrazione dell'IVA può differire; verifica con il tuo consulente fiscale.",
+      "giftRecipient": "Destinatario del regalo",
+      "giftRecipientPlaceholder": "ad es. Acme Corp / Hans Muller",
+      "giftRecipientHint": "I regali allo stesso destinatario superiori a 50,00 EUR per anno civile diventano deducibili allo 0% (§ 4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "% utilizzo aziendale",
+      "businessUsePercentPlaceholder": "ad es. 60",
+      "businessUsePercentHint": "% dell'uso aziendale",
+      "travelDetails": "Dettagli di viaggio (per diaria - DE 2026)",
+      "travelDate": "Data del viaggio",
+      "absenceHours": "Ore di assenza",
+      "absenceHoursPlaceholder": "ad es. 10",
+      "travelHint": ">=8 ore di assenza: 14 EUR di franchigia - 24 ore: 28 EUR di franchigia (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Giornate di lavoro a casa",
+      "homeOfficeDaysPlaceholder": "ad es. 30",
+      "days": "giorni",
+      "homeOfficeHint": "6 EUR/giorno - massimo 1.260 EUR/anno limite massimo annuo (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "Questa categoria di spesa è",
+      "nonDeductibleWarningStrong": "0% deducibile dall'imposta sul reddito",
+      "nonDeductibleWarningSuffix": "secondo la normativa fiscale tedesca.",
+      "receiptOptional": "Ricevuta (facoltativa)",
+      "addReceiptFiles": "Aggiungi file di ricevute",
+      "uploadReceiptHint": "Carica subito immagini o ricevute in PDF. Verranno allegati al salvataggio.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: sono consentiti solo immagini e PDF",
+        "fileTooLarge": "{{name}}: supera il limite di 10 MB"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "{{percent}}% di franchigia",
+        "mixedUse": "{{percent}}% di franchigia (uso misto)",
+        "enterBusinessUse": "Inserisci la percentuale di utilizzo aziendale",
+        "perDiemServer": "Giornaliero (calcolato lato server)",
+        "homeOfficeRate": "Forfait 6 EUR al giorno",
+        "giftThreshold": "Fino a 50 EUR/destinatario/anno - è richiesto il destinatario"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Pasti per i clienti (Bewirtung) - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Pasti per team/dipendenti - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Regali aziendali - fino a 50 EUR",
+        "GIFTS_PROMO_STREUARTIKEL": "Regali promozionali (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Multe e sanzioni - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Abbigliamento protettivo/uniforme - 100%",
+        "CLOTHING_CIVILIAN": "Abbigliamento civile - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Pasto giornaliero di viaggio (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Tariffa forfettaria per l'home office (6 EUR al giorno)",
+        "PHONE_INTERNET": "Telefono / Internet (uso misto)",
+        "CAR": "Auto (uso misto)",
+        "HOME_INTERNET": "Internet domestico (uso misto)",
+        "office_supplies": "Forniture per ufficio - 100%",
+        "software": "Software - 100%",
+        "travel": "Viaggi - 100%",
+        "meals": "Pasti - 70%",
+        "home_office": "Ufficio in casa - 100%",
+        "education": "Istruzione - 100%",
+        "hardware": "Ferramenta - 100%",
+        "phone_internet": "Telefono/Internet (uso misto)",
+        "other": "Altro"
+      }
+    }
+  },
+  "invoices": {
+    "title": "Fatture",
+    "createInvoice": "Crea fattura",
+    "createNewInvoice": "Crea nuova fattura",
+    "noInvoices": "Ancora nessuna fattura",
+    "noInvoicesDescription": "Crea la tua prima fattura per iniziare.",
+    "invoiceNumber": "Fattura n.",
+    "invoiceNumberLabel": "Numero della fattura",
+    "customer": "Cliente",
+    "billedTo": "Fatturato a",
+    "date": "Data",
+    "invoiceDate": "Data della fattura",
+    "serviceDate": "Data del servizio",
+    "dueDate": "Data di scadenza",
+    "amount": "Importo",
+    "statusLabel": "Stato",
+    "items": "Articoli",
+    "description": "Descrizione",
+    "quantity": "Quantità",
+    "rate": "Vota",
+    "subtotal": "Totale parziale",
+    "vatAmount": "IVA",
+    "total": "Totale",
+    "totalAmountNet": "Importo totale (netto)",
+    "totalAmountGross": "Importo totale (lordo)",
+    "paymentTerms": "Termini di pagamento",
+    "notes": "Note",
+    "notesPlaceholder": "Note interne, non visibili al cliente...",
+    "terms": "Termini di pagamento",
+    "termsPlaceholder": "ad es. Si prega di pagare entro 14 giorni...",
+    "addLine": "Aggiungi una riga",
+    "units": {
+      "h": "h",
+      "day": "Giorno",
+      "piece": "Pezzo",
+      "service": "Servizio"
+    },
+    "generate": "Genera",
+    "creating": "Creazione...",
+    "saving": "Salvataggio...",
+    "selectDate": "Seleziona la data",
+    "selectDateRange": "Seleziona l'intervallo di date",
+    "statuses": {
+      "draft": "Bozza",
+      "issued": "Rilasciato",
+      "sent": "Inviato",
+      "paid": "Pagato",
+      "overdue": "In ritardo",
+      "canceled": "Annullato"
+    },
+    "badges": {
+      "OVERDUE": "In ritardo",
+      "PARTIALLY_PAID": "Parzialmente pagato",
+      "SENT_DELIVERY": "Inviato"
+    },
+    "transitions": {
+      "ISSUED": "Emettere fattura",
+      "SENT": "Invia al cliente",
+      "CANCELED": "Annulla fattura"
+    },
+    "actions": {
+      "issue": "Emettere fattura",
+      "send": "Invia",
+      "resend": "Invia nuovamente",
+      "record_payment": "Registra il pagamento",
+      "download_pdf": "Scarica PDF",
+      "send_reminder": "Invia promemoria",
+      "duplicate": "Duplicato",
+      "export": "Esportazione",
+      "view_audit": "Visualizza traccia di controllo",
+      "cancel": "Annulla fattura"
+    },
+    "pdf": {
+      "pendingTitle": "Il PDF è in preparazione",
+      "pendingDescription": "Abbiamo iniziato a generare il PDF. Per favore riprova tra poco.",
+      "stillGeneratingTitle": "Il PDF è ancora in fase di generazione",
+      "stillGeneratingDescription": "Questa operazione può richiedere più tempo sotto carico. Riprova tra qualche secondo."
+    },
+    "notifications": {
+      "created": "Fattura creata",
+      "updated": "Fattura aggiornata",
+      "deleted": "Fattura eliminata",
+      "canceled": "Fattura annullata",
+      "duplicateSoon": "Funzionalità duplicata in arrivo",
+      "exportSoon": "Funzionalità di esportazione in arrivo",
+      "reminderSoon": "Funzionalità di promemoria in arrivo"
+    },
+    "wizard": {
+      "selectCustomer": "Seleziona cliente",
+      "addItems": "Aggiungi elementi pubblicitari",
+      "review": "Rivedi e crea"
+    },
+    "notFound": "Fattura non trovata",
+    "backToList": "Torna all'elenco",
+    "notFoundDescription": "La fattura che stai cercando non esiste o è stata cancellata.",
+    "titleWithNumber": "Fattura {{number}}",
+    "issued": "Fattura emessa",
+    "canceled": "Fattura annullata",
+    "updated": "Fattura aggiornata correttamente",
+    "payments": {
+      "recordTitle": "Registra il pagamento",
+      "recordDescription": "Inserisci i dettagli di pagamento per questa fattura.",
+      "dueAmount": "Importo dovuto: {{amount}}",
+      "notePlaceholder": "Descrivere il pagamento (es. Bonifico bancario, Contanti, ...)",
+      "save": "Registra il pagamento",
+      "recordFailed": "Impossibile registrare il pagamento",
+      "saveFailed": "Impossibile salvare il pagamento"
+    },
+    "errors": {
+      "downloadFailed": "Impossibile scaricare il PDF",
+      "updateFailed": "Impossibile aggiornare la fattura",
+      "invalidAmount": "Importo non valido",
+      "actionFailed": "Azione fallita"
+    },
+    "footer": {
+      "taxDetails": "Dettagli fiscali",
+      "vatIdLabel": "Partita IVA",
+      "taxNumberLabel": "Codice Fiscale",
+      "addTaxDetails": "Aggiungi dettagli fiscali",
+      "paymentMethod": "Metodo di pagamento",
+      "addPaymentMethod": "Aggiungi metodo di pagamento",
+      "contactDetails": "Dettagli di contatto",
+      "addContactDetails": "Aggiungi dettagli di contatto",
+      "taxDetailsDescription": "I tuoi dati fiscali aziendali riportati sulla fattura.",
+      "contactDetailsDescription": "Le informazioni di contatto della tua attività visualizzate nel piè di pagina.",
+      "selectPaymentMethod": "Seleziona il metodo di pagamento",
+      "selectPaymentMethodTitle": "Seleziona il tuo metodo di pagamento",
+      "addNewPaymentMethod": "Aggiungi un nuovo metodo di pagamento",
+      "selectedBankAccount": "Conto bancario selezionato"
+    },
+    "email": {
+      "title": "Invia fattura",
+      "subtitle": "Controlla il destinatario e il messaggio prima dell'invio.",
+      "to": "Destinatario",
+      "toPlaceholder": "cliente@esempio.com",
+      "subject": "Fattura {{number}} da {{brand}}",
+      "sendCopy": "Mandami una copia",
+      "savedForFuture": "Questa email verrà salvata per il profilo di {{name}}.",
+      "messagePlaceholder": "Aggiungi una nota personale...",
+      "deliveryLabel": "Consegna",
+      "deliveryHint": "Conferma il destinatario prima di inviare questa fattura via e-mail.",
+      "attachmentsHint": "La fattura in formato PDF verrà allegata automaticamente.",
+      "attachmentName": "Fattura-{{number}}.pdf",
+      "attachmentFallback": "Fattura.pdf",
+      "sendTest": "Invia e-mail di prova",
+      "send": "Invia e-mail",
+      "sending": "Invio...",
+      "sent": "E-mail di fattura inviata",
+      "sendFailed": "Impossibile inviare l'e-mail di fattura"
+    },
+    "status": {
+      "updateFailed": "Impossibile aggiornare lo stato"
+    },
+    "loading": "Caricamento fattura...",
+    "focused": {
+      "notFound": "Pagina non trovata",
+      "notPart": "Questa pagina non fa parte di Fattura.",
+      "back": "Torniamo alle fatture",
+      "setup": "La fattura non è disponibile perché la sua configurazione è incompleta. Contatta l'amministratore dell'area di lavoro.",
+      "previous": "Precedente",
+      "duplicate": "Duplicato",
+      "downloadPdf": "Scarica PDF",
+      "selectInvoice": "Seleziona la fattura {{id}}",
+      "unit": "Unità",
+      "removeLine": "Rimuovi riga",
+      "copilot": {
+        "intro": "Genera una bozza di email per la revisione. Copilot non invia e-mail automaticamente.",
+        "language": "Lingua",
+        "tone": "Tono di promemoria",
+        "de": "tedesco (de)",
+        "vi": "Vietnamita (vi)",
+        "en": "inglese (it)",
+        "polite": "Educato",
+        "normal": "Normale",
+        "firm": "Fermo",
+        "drafting": "Redazione...",
+        "issue": "Bozza di fattura e-mail",
+        "reminder": "Bozza di promemoria",
+        "issueDisabled": "La fattura deve essere EMESSA o INVIATA prima di redigere la copia via email.",
+        "reminderDisabled": "La bozza di sollecito è disponibile solo quando l'importo dovuto è maggiore di zero.",
+        "review": "Rivedi e modifica la bozza prima di copiarla/incollarla nel flusso di invio.",
+        "subject": "Oggetto",
+        "body": "Corpo",
+        "copySubject": "Copia oggetto",
+        "copyBody": "Copia corpo",
+        "subjectCopied": "Oggetto copiato",
+        "bodyCopied": "Corpo copiato",
+        "copyError": "Impossibile copiare negli appunti",
+        "close": "Chiudi"
+      }
+    }
+  },
+  "customers": {
+    "title": "Clienti",
+    "addCustomer": "Aggiungi cliente",
+    "addNewClient": "Aggiungi nuovo cliente",
+    "noCustomers": "Nessun cliente ancora",
+    "noCustomersDescription": "Aggiungi il tuo primo cliente per iniziare a creare fatture.",
+    "name": "Nome",
+    "displayName": "Nome visualizzato",
+    "company": "Compagnia",
+    "email": "E-mail",
+    "phone": "Telefono",
+    "address": "Indirizzo",
+    "addressLine1": "Riga indirizzo 1",
+    "addressLine2": "Riga indirizzo 2",
+    "city": "Città",
+    "postalCode": "Codice postale",
+    "country": "Paese",
+    "vatId": "Partita IVA",
+    "notes": "Note",
+    "invoiceHistory": "Storico fatture",
+    "totalRevenue": "Entrate totali",
+    "kindLabel": "Tipologia cliente",
+    "kindIndividual": "Individuale",
+    "kindOrganization": "Organizzazione",
+    "organizationName": "Nome dell'organizzazione",
+    "basicInformation": "Informazioni di base",
+    "billingAddress": "Indirizzo di fatturazione",
+    "placeholders": {
+      "displayName": "Nome dell'azienda o della persona",
+      "email": "cliente@esempio.com",
+      "phone": "+49 30 12345678",
+      "vatId": "DE123456789",
+      "addressLine1": "Via e numero",
+      "addressLine2": "Appartamento, suite, ecc. (facoltativo)",
+      "city": "Berlino",
+      "postalCode": "10115",
+      "country": "Germania",
+      "notes": "Note aggiuntive su questo cliente",
+      "status": "Seleziona lo stato"
+    },
+    "createDescription": "Crea un nuovo cliente con informazioni di contatto e fatturazione di base.",
+    "selectCustomer": "Seleziona un cliente",
+    "searchCustomers": "Cerca per nome, email o partita IVA...",
+    "searchOrAdd": "Cerca clienti o aggiungine uno nuovo",
+    "addNewCustomer": "Aggiungi nuovo cliente",
+    "noCustomersFound": "Nessun cliente trovato.",
+    "selectExisting": "Cerca clienti esistenti o creane uno nuovo.",
+    "social": {
+      "title": "Profili sociali",
+      "add": "Aggiungi profilo",
+      "empty": "Nessun profilo social aggiunto."
+    },
+    "lookupFailed": "La ricerca del cliente non è disponibile o l'accesso è stato negato. Riprova o chiedi al tuo amministratore."
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "profile": "Profilo",
+    "business": "Affari",
+    "tax": "Impostazioni fiscali",
+    "invoiceSettings": "Impostazioni della fattura",
+    "language": "Lingua",
+    "theme": "Tema",
+    "name": "Nome",
+    "email": "E-mail",
+    "businessName": "Nome dell'azienda",
+    "address": "Indirizzo",
+    "vatId": "Partita IVA",
+    "defaultVatRate": "Aliquota IVA predefinita",
+    "invoicePrefix": "Prefisso fattura",
+    "invoiceNumberFormat": "Formato del numero della fattura",
+    "paymentTermsDays": "Termini di pagamento (giorni)",
+    "themes": {
+      "light": "Luce",
+      "dark": "Buio",
+      "system": "Sistema"
+    },
+    "languages": {
+      "en": "Inglese",
+      "de": "Tedesco",
+      "vi": "Tiếng Việt"
+    }
+  },
+  "time": {
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "thisWeek": "Questa settimana",
+    "thisMonth": "Questo mese",
+    "lastMonth": "Il mese scorso",
+    "thisYear": "Quest'anno",
+    "daysAgo": "{{count}} giorni fa",
+    "tomorrow": "Domani",
+    "inDays": "tra {{count}} giorni"
+  },
+  "dueDate": {
+    "today": "dovuto oggi",
+    "inDays": "tra {{count}} giorni",
+    "inDays_one": "tra 1 giorno",
+    "overdue": "{{count}} giorni di ritardo",
+    "overdue_one": "1 giorno di ritardo",
+    "inDays_other": "tra {{count}} giorni",
+    "inDays_many": "tra {{count}} giorni",
+    "overdue_other": "{{count}} giorni di ritardo",
+    "overdue_many": "{{count}} giorni di ritardo"
+  },
+  "errors": {
+    "loadMenuFailed": "Impossibile caricare il menu",
+    "pageNotFound": "Pagina non trovata",
+    "returnHome": "Ritorno a casa"
+  },
+  "accounting": {
+    "entryStatus": {
+      "draft": "Bozza",
+      "posted": "Pubblicato",
+      "reversed": "Invertito"
+    },
+    "accountTypes": {
+      "asset": "Risorsa",
+      "liability": "Responsabilità",
+      "equity": "Equità",
+      "income": "Reddito",
+      "expense": "Spesa"
+    },
+    "accountSelect": {
+      "placeholder": "Seleziona conto...",
+      "searchPlaceholder": "Cerca account...",
+      "empty": "Nessun account trovato."
+    },
+    "journalLines": {
+      "title": "Linee di diario",
+      "addLine": "Aggiungi linea",
+      "emptyMessage": "Nessuna linea ancora. Fare clic su \"{{action}}\" per iniziare.",
+      "account": "Conto",
+      "type": "Digitare",
+      "debit": "Addebito",
+      "credit": "Credito",
+      "memo": "Promemoria",
+      "memoOptional": "Nota facoltativa",
+      "minimumLines": "Sono richieste minimo 2 righe",
+      "removeLine": "Rimuovi riga",
+      "totals": "Totali",
+      "imbalance": "Squilibrio",
+      "balanced": "✓ Equilibrato"
+    },
+    "journalEntries": {
+      "title": "Voci del diario",
+      "subtitle": "Visualizza e gestisci tutte le transazioni contabili",
+      "newEntry": "Nuova voce",
+      "searchPlaceholder": "Cerca per promemoria o numero di voce...",
+      "allStatuses": "Tutti gli stati",
+      "entries": "Voci",
+      "entriesFound": "{{count}} voci trovate",
+      "entriesFound_one": "Voce {{count}} trovata",
+      "entriesFound_other": "{{count}} voci trovate",
+      "loading": "Caricamento voci...",
+      "emptyTitle": "Nessuna voce di diario trovata",
+      "emptyAction": "Crea la tua prima voce",
+      "entryNumber": "Voce n.",
+      "date": "Data",
+      "memo": "Promemoria",
+      "amount": "Importo",
+      "linesCount": "Linee {{count}}",
+      "linesCount_one": "Linea {{count}}",
+      "linesCount_other": "Linee {{count}}",
+      "entriesFound_many": "{{count}} voci trovate",
+      "linesCount_many": "Linee {{count}}"
+    },
+    "chartOfAccounts": {
+      "title": "Piano dei conti",
+      "subtitle": "Gestisci i tuoi conti contabili",
+      "newAccount": "Nuovo conto",
+      "searchPlaceholder": "Cerca per codice o nome...",
+      "allTypes": "Tutti i tipi",
+      "allStatuses": "Tutti gli stati",
+      "activeOnly": "Solo attivo",
+      "inactiveOnly": "Solo inattivo",
+      "accounts": "Conti",
+      "accountsFound": "Account {{count}} trovati",
+      "accountsFound_one": "Account {{count}} trovato",
+      "accountsFound_other": "Account {{count}} trovati",
+      "loading": "Caricamento account...",
+      "empty": "Nessun account trovato corrispondente ai tuoi criteri",
+      "code": "Codice",
+      "name": "Nome",
+      "type": "Digitare",
+      "active": "Attivo",
+      "inactive": "Inattivo",
+      "accountsFound_many": "Account {{count}} trovati"
+    },
+    "dashboard": {
+      "title": "Contabilità",
+      "subtitle": "Gestisci i tuoi documenti e resoconti finanziari",
+      "newEntry": "Nuova voce",
+      "newEntryDescription": "Crea una voce del diario",
+      "chartOfAccounts": "Piano dei conti",
+      "activeAccounts": "Conti attivi",
+      "journalEntries": "Voci del diario",
+      "totalEntries": "Voci totali",
+      "reports": "Rapporti",
+      "reportsDescription": "Visualizza i rapporti finanziari",
+      "recentEntries": "Voci recenti",
+      "recentEntriesDescription": "Ultime voci del diario",
+      "noEntries": "Nessuna voce ancora. Crea la tua prima voce per iniziare.",
+      "viewAllEntries": "Visualizza tutte le voci",
+      "quickLinks": "Collegamenti rapidi",
+      "quickLinksDescription": "Compiti contabili comuni",
+      "viewTrialBalance": "Visualizza bilancio di verifica",
+      "viewProfitLoss": "Rapporto profitti e perdite",
+      "settings": "Impostazioni contabili"
+    },
+    "reports": {
+      "title": "Rapporti finanziari",
+      "subtitle": "Accedi a report completi per analizzare i tuoi dati finanziari",
+      "viewReport": "Visualizza rapporto",
+      "aboutTitle": "Informazioni sui rapporti finanziari",
+      "aboutLine1": "Tutti i report vengono generati in tempo reale dalle voci del diario pubblicate. Le bozze delle voci non sono incluse nei rapporti.",
+      "aboutLine2": "Puoi esportare report in formati PDF o Excel e utilizzare filtri di intervallo di date per analizzare periodi specifici.",
+      "aboutLine3": "💡 In ogni report sono disponibili approfondimenti basati sull'intelligenza artificiale per aiutarti a comprendere tendenze e anomalie.",
+      "trialBalance": {
+        "title": "Bilancio di verifica",
+        "description": "Riepilogo di tutti i saldi dei conti per verificare i debiti uguali ai crediti"
+      },
+      "generalLedger": {
+        "title": "Registro generale",
+        "description": "Cronologia dettagliata delle transazioni per i singoli conti"
+      },
+      "profitLoss": {
+        "title": "Profitti e perdite",
+        "description": "Conto economico che mostra entrate, spese e utile netto"
+      },
+      "balanceSheet": {
+        "title": "Bilancio",
+        "description": "Istantanea di attività, passività e patrimonio netto a una data specifica"
+      }
+    },
+    "setup": {
+      "title": "Imposta la contabilità",
+      "subtitle": "Configura le impostazioni contabili e il piano dei conti per iniziare",
+      "basic": {
+        "title": "Impostazioni di base",
+        "description": "Configura le tue preferenze contabili fondamentali"
+      },
+      "baseCurrency": "Valuta di base",
+      "selectCurrency": "Seleziona valuta",
+      "baseCurrencyHelp": "La valuta principale per i tuoi documenti contabili",
+      "fiscalYearStart": "Inizio anno fiscale",
+      "selectFiscalStart": "Selezionare l'inizio dell'anno fiscale",
+      "fiscalStart": {
+        "jan1": "1 gennaio (anno solare)",
+        "apr1": "1 aprile",
+        "jul1": "1 luglio",
+        "oct1": "1 ottobre"
+      },
+      "fiscalYearHelp": "Quando inizia l'anno fiscale (influisce sulla generazione del periodo)",
+      "periodLocking": "Abilita il blocco del periodo",
+      "periodLockingHelp": "Impedire la registrazione di movimenti in periodi chiusi (consigliato per l'uso in produzione)",
+      "chartOfAccountsTitle": "Piano dei conti",
+      "chartOfAccountsDescription": "Scegli un modello predefinito con cui iniziare (puoi aggiungere più account in seguito)",
+      "templates": {
+        "minimal": {
+          "label": "Minimo (5 account)",
+          "description": "Configurazione di base per esigenze contabili molto semplici"
+        },
+        "freelancer": {
+          "label": "Libero professionista (16 account)",
+          "description": "Ideale per appaltatori e consulenti indipendenti"
+        },
+        "smallBusiness": {
+          "label": "Piccole imprese (35 account)",
+          "description": "Configurazione completa per le piccole imprese"
+        },
+        "standard": {
+          "label": "Standard (79 account) (consigliato)",
+          "description": "Piano dei conti completo per la maggior parte delle aziende"
+        }
+      },
+      "next": {
+        "title": "Cosa succede dopo",
+        "line1": "Il modello del piano dei conti selezionato verrà creato con tutti i conti predefiniti",
+        "line2": "Verranno generati 12 periodi contabili mensili per l'anno fiscale corrente",
+        "line3": "Puoi personalizzare gli account, aggiungerne di nuovi e iniziare a creare voci di diario",
+        "line4": "Tutti i report finanziari saranno immediatamente disponibili"
+      },
+      "settingUp": "Impostazione...",
+      "complete": "Configurazione completa"
+    },
+    "validation": {
+      "accountRequired": "L'account è obbligatorio",
+      "amountPositive": "L'importo deve essere positivo",
+      "invalidDate": "Formato data non valido",
+      "memoRequired": "Il promemoria è obbligatorio",
+      "minimumLines": "Sono necessarie almeno 2 righe",
+      "debitsEqualCredits": "I debiti devono essere uguali ai crediti",
+      "accountCodeRequired": "È richiesto il codice conto",
+      "accountCodeMax": "Il codice deve contenere massimo 20 caratteri",
+      "accountCodeFormat": "Il codice deve contenere solo lettere maiuscole, numeri e trattini",
+      "accountNameRequired": "Il nome dell'account è obbligatorio",
+      "accountNameMax": "Il nome deve contenere massimo 100 caratteri"
+    },
+    "toasts": {
+      "accountCreated": "Account \"{{name}}\" creato correttamente",
+      "accountCreateFailed": "Impossibile creare l'account: {{message}}",
+      "accountUpdated": "Account \"{{name}}\" aggiornato correttamente",
+      "accountUpdateFailed": "Impossibile aggiornare l'account: {{message}}",
+      "journalEntryDraftCreated": "Bozza di registrazione del diario creata correttamente",
+      "journalEntryCreateFailed": "Impossibile creare la voce del diario: {{message}}",
+      "journalEntryDraftUpdated": "Bozza di registrazione del diario aggiornata correttamente",
+      "journalEntryUpdateFailed": "Impossibile aggiornare la voce del diario: {{message}}",
+      "journalEntryPosted": "La voce del diario {{entryNumber}} è stata pubblicata correttamente",
+      "journalEntryPostFailed": "Impossibile registrare la voce del diario: {{message}}",
+      "journalEntryReversed": "Inserimento invertito. Originale: {{original}}, Inversione: {{reversal}}",
+      "journalEntryReverseFailed": "Impossibile stornare la registrazione a giornale: {{message}}",
+      "setupCompleted": "Configurazione della contabilità completata correttamente",
+      "setupFailed": "Impossibile impostare la contabilità: {{message}}",
+      "settingsUpdated": "Impostazioni contabili aggiornate correttamente",
+      "settingsUpdateFailed": "Impossibile aggiornare le impostazioni: {{message}}",
+      "periodClosed": "Il periodo {{name}} si è chiuso con successo",
+      "periodCloseFailed": "Impossibile chiudere il periodo: {{message}}",
+      "periodReopened": "Il periodo {{name}} è stato riaperto con successo",
+      "periodReopenFailed": "Impossibile riaprire il periodo: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "Accedi al tuo account",
+      "subtitle": "Accedi per gestire le casse e le operazioni di cassa giornaliere.",
+      "rememberMe": "Ricordati di me",
+      "forgotPassword": "Ha dimenticato la password?",
+      "cta": "Accedi",
+      "signingIn": "Accesso...",
+      "noAccount": "Non hai un account?"
+    },
+    "signup": {
+      "title": "Crea il tuo account",
+      "subtitle": "Iscriviti per iniziare a gestire i flussi di cassa.",
+      "cta": "Iscriviti",
+      "creating": "Creazione dell'account...",
+      "hasAccount": "Hai già un account?"
+    },
+    "forgot": {
+      "title": "Reimposta la tua password",
+      "subtitle": "Inserisci la tua email e ti invieremo un link per reimpostare.",
+      "cta": "Invia collegamento di reimpostazione",
+      "sending": "Invio collegamento...",
+      "successMessage": "Se esiste un account per {{email}}, abbiamo inviato un collegamento per la reimpostazione della password.",
+      "backToLogin": "Torna per accedere"
+    },
+    "reset": {
+      "title": "Imposta una nuova password",
+      "cta": "Aggiorna password",
+      "updating": "Aggiornamento password...",
+      "successToast": "Password aggiornata",
+      "missingTokenTitle": "Token di ripristino mancante",
+      "missingTokenMessage": "Il collegamento per la reimpostazione della password non è valido o è incompleto.",
+      "requestNewLink": "Richiedi un nuovo collegamento",
+      "confirmLabel": "Conferma la password"
+    },
+    "fields": {
+      "fullName": "Nome completo",
+      "email": "Indirizzo e-mail",
+      "password": "Parola d'ordine"
+    },
+    "placeholders": {
+      "fullName": "Nome completo",
+      "email": "Indirizzo e-mail",
+      "password": "Parola d'ordine",
+      "passwordMin": "Minimo 6 caratteri"
+    },
+    "help": {
+      "passwordMin": "La password deve contenere almeno 6 caratteri."
+    },
+    "errors": {
+      "loginFailed": "E-mail o password non valide",
+      "passwordLength": "La password deve contenere almeno 6 caratteri",
+      "passwordMismatch": "Le password non corrispondono",
+      "missingResetToken": "Manca il token di reimpostazione",
+      "requestFailed": "Impossibile inviare il collegamento di reimpostazione",
+      "resetFailed": "Impossibile reimpostare la password",
+      "signupFailed": "Impossibile creare l'account",
+      "networkError": "Errore di rete. Controlla se il server è in esecuzione."
+    }
+  },
+  "forms": {
+    "submit": "Invia",
+    "repeater": {
+      "missingItemFields": "Campi elemento ripetitore mancanti",
+      "empty": "Nessuna riga aggiunta",
+      "row": "Riga {{index}}",
+      "remove": "Rimuovi",
+      "add": "Aggiungi riga"
+    },
+    "list": {
+      "title": "Forme",
+      "subtitle": "Creare e gestire moduli pubblici",
+      "newForm": "Nuova forma",
+      "noForms": "Nessun modulo ancora",
+      "noFormsDescription": "Crea il tuo primo modulo per raccogliere le risposte.",
+      "createForm": "Crea modulo",
+      "columns": {
+        "name": "Nome",
+        "status": "Stato",
+        "updated": "Aggiornato"
+      },
+      "sort": {
+        "updatedNewest": "Aggiornato (più recente)",
+        "updatedOldest": "Aggiornato (il più vecchio)",
+        "createdNewest": "Creato (più recente)",
+        "nameAz": "Nome (A-Z)"
+      },
+      "filters": {
+        "status": "Stato"
+      },
+      "statuses": {
+        "DRAFT": "Bozza",
+        "PUBLISHED": "Pubblicato"
+      },
+      "page": "Pagina {{page}} di {{total}}",
+      "delete": {
+        "title": "Elimina modulo",
+        "description": "Ciò archivierà il modulo e lo rimuoverà dall'elenco."
+      },
+      "errors": {
+        "loadFailed": "Impossibile caricare i moduli"
+      },
+      "toast": {
+        "deleted": "Modulo eliminato",
+        "deleteFailed": "Impossibile eliminare il modulo"
+      }
+    },
+    "detail": {
+      "subtitle": "Generatore di moduli e invii",
+      "backToForms": "Torniamo ai moduli",
+      "notFound": "Modulo non trovato.",
+      "tabs": {
+        "builder": "Costruttore",
+        "share": "Condividi",
+        "submissions": "Presentazioni"
+      },
+      "builder": {
+        "formDetails": "Dettagli del modulo",
+        "save": "Salva",
+        "saving": "Salvataggio...",
+        "name": "Nome",
+        "description": "Descrizione",
+        "fields": "Campi",
+        "addField": "Aggiungi campo",
+        "emptyFields": "Aggiungi campi per iniziare a creare il tuo modulo.",
+        "columns": {
+          "label": "Etichetta",
+          "type": "Digitare",
+          "required": "Obbligatorio",
+          "order": "Ordine"
+        },
+        "required": {
+          "yes": "Sì",
+          "no": "No"
+        }
+      },
+      "share": {
+        "publishing": "Editoria",
+        "regenerateToken": "Rigenera gettone",
+        "unpublish": "Annulla pubblicazione",
+        "publishForm": "Pubblica modulo",
+        "publishHint": "La pubblicazione genera un collegamento pubblico e un token di accesso per gli invii.",
+        "publicUrl": "URL pubblico",
+        "accessToken": "Token di accesso (mostrato una volta)",
+        "regenerateToView": "Rigenera per visualizzare",
+        "linkCopied": "Collegamento copiato",
+        "tokenCopied": "Gettone copiato"
+      },
+      "submissions": {
+        "title": "Presentazioni",
+        "empty": "Nessuna presentazione ancora.",
+        "columns": {
+          "submitted": "Inviato",
+          "source": "Fonte"
+        },
+        "view": "Visualizza",
+        "detailTitle": "Dettagli di invio",
+        "notProvided": "(non fornito)",
+        "noSubmissionSelected": "Nessun invio selezionato."
+      },
+      "fieldDialog": {
+        "addTitle": "Aggiungi campo",
+        "editTitle": "Modifica campo",
+        "label": "Etichetta",
+        "type": "Digitare",
+        "selectType": "Seleziona il tipo",
+        "options": "Opzioni (separate da virgole)",
+        "required": "Obbligatorio",
+        "helpText": "Testo di aiuto",
+        "cancel": "Annulla",
+        "saveField": "Salva campo",
+        "labelRequired": "L'etichetta del campo è obbligatoria"
+      },
+      "fieldTypes": {
+        "SHORT_TEXT": "Breve testo",
+        "LONG_TEXT": "Testo lungo",
+        "NUMBER": "Numero",
+        "DATE": "Data",
+        "BOOLEAN": "Booleano",
+        "SINGLE_SELECT": "Selezione singola",
+        "MULTI_SELECT": "Selezione multipla",
+        "EMAIL": "E-mail"
+      },
+      "statuses": {
+        "DRAFT": "Bozza",
+        "PUBLISHED": "Pubblicato"
+      },
+      "toast": {
+        "updated": "Modulo aggiornato",
+        "updateFailed": "Impossibile aggiornare il modulo",
+        "fieldAdded": "Campo aggiunto",
+        "fieldAddFailed": "Impossibile aggiungere il campo",
+        "fieldUpdated": "Campo aggiornato",
+        "fieldUpdateFailed": "Impossibile aggiornare il campo",
+        "fieldRemoved": "Campo rimosso",
+        "fieldRemoveFailed": "Impossibile rimuovere il campo",
+        "published": "Modulo pubblicato",
+        "publishFailed": "Impossibile pubblicare il modulo",
+        "unpublished": "Forma inedita",
+        "unpublishFailed": "Impossibile annullare la pubblicazione del modulo"
+      }
+    },
+    "new": {
+      "title": "Crea un nuovo modulo",
+      "cancel": "Annulla",
+      "creating": "Creazione...",
+      "createForm": "Crea modulo",
+      "formName": "Nome del modulo",
+      "namePlaceholder": "Contattaci",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Spiega agli intervistati a cosa serve questo modulo",
+      "toast": {
+        "created": "Modulo creato",
+        "createFailed": "Impossibile creare il modulo"
+      }
+    }
+  },
+  "portfolioPublic": {
+    "nav": {
+      "works": "Funziona",
+      "clients": "Clienti",
+      "services": "Servizi",
+      "team": "Squadra",
+      "blog": "Blog"
+    },
+    "home": {
+      "welcome": "Benvenuto a",
+      "about": "Circa",
+      "featuredProjects": "Progetti in primo piano",
+      "viewAll": "Visualizza tutto",
+      "trustedBy": "Affidabile da"
+    },
+    "works": {
+      "title": "Funziona",
+      "subtitle": "Una selezione dei miei progetti recenti."
+    },
+    "project": {
+      "backToWorks": "Torniamo ai Lavori",
+      "links": "Collegamenti al progetto",
+      "liveDemo": "Dimostrazione dal vivo",
+      "sourceCode": "Codice sorgente",
+      "techStack": "Pila tecnologica"
+    },
+    "common": {
+      "contact": "Contatto",
+      "contactMe": "Contattami",
+      "viewDetails": "Visualizza dettagli"
+    },
+    "errors": {
+      "notFound": "Vetrina non trovata",
+      "notFoundDesc": "Il portfolio che stai cercando non esiste o non è stato ancora pubblicato.",
+      "error": "Qualcosa è andato storto",
+      "errorDesc": "Si è verificato un errore durante il caricamento di questo portfolio."
+    }
+  },
+  "crm": {
+    "dashboard": {
+      "title": "Pannello di controllo CRM",
+      "pageTitle": "Pannello di controllo CRM",
+      "subtitle": "Spazio di lavoro AI + CRM focalizzato su pipeline e relazioni.",
+      "breadcrumb": {
+        "crm": "CRM",
+        "dashboard": "Cruscotto"
+      }
+    },
+    "activities": {
+      "title": "Attività",
+      "new": "Nuova attività",
+      "emptyTitle": "Nessuna attività trovata",
+      "emptyDescription": "Tieni traccia delle tue interazioni e attività qui."
+    },
+    "activity": {
+      "newTitle": "Nuova attività",
+      "newSubtitle": "Registra un'attività, una chiamata o una riunione per mantenere aggiornato il tuo CRM.",
+      "create": "Crea attività",
+      "created": "Attività creata con successo",
+      "createFailed": "Impossibile creare l'attività",
+      "subject": "Oggetto",
+      "subjectPlaceholder": "ad es. Seguire la proposta",
+      "type": "Tipo di attività",
+      "selectType": "Seleziona il tipo",
+      "dueAt": "Data e ora di scadenza",
+      "dueDate": "Data di scadenza",
+      "selectDate": "Seleziona la data",
+      "reminderHint": "L'attività sarà programmata per questo orario.",
+      "dealIdOptional": "Link all'offerta (facoltativo)",
+      "dealIdPlaceholder": "Inserisci l'ID offerta",
+      "partyIdOptional": "Collegamento al contatto (facoltativo)",
+      "partyIdPlaceholder": "Inserisci l'ID del contatto",
+      "linkRequiredHint": "Collega questa attività a un'offerta o a un contatto per un contesto migliore.",
+      "notesPlaceholder": "Aggiungi eventuali dettagli o risultati qui...",
+      "tipTitle": "Suggerimenti per le attività",
+      "tipSubtitle": "Come rimanere organizzati",
+      "tipOne": "Registra immediatamente le attività per mantenere aggiornati i dati.",
+      "tipTwo": "Utilizza argomenti descrittivi per una rapida consultazione.",
+      "tipThree": "Link alle offerte per vedere la cronologia completa in cantiere.",
+      "subjectRequired": "L'oggetto è obbligatorio",
+      "linkRequired": "Deve essere collegato a un'offerta o a un contatto",
+      "due": "Scadenza {{date}}",
+      "statuses": {
+        "open": "Aperto",
+        "completed": "Completato",
+        "canceled": "Annullato",
+        "scheduled": "Programmato"
+      },
+      "channel": "Canale",
+      "direction": "Direzione",
+      "directionOutbound": "In uscita",
+      "directionInbound": "In entrata",
+      "communicationStatus": "Stato della comunicazione",
+      "communicationLogged": "Registrato",
+      "communicationDraft": "Bozza",
+      "types": {
+        "note": "Nota",
+        "task": "Compito",
+        "call": "Chiama",
+        "meeting": "Incontro",
+        "communication": "Comunicazione",
+        "system_event": "Evento di sistema"
+      },
+      "addTitle": "Aggiungi attività",
+      "addSubtitle": "Registra un aggiornamento o un'attività rapida",
+      "pickDate": "Scegli una data",
+      "time": "Tempo",
+      "duration": "Durata (minuti)",
+      "durationPlaceholder": "Esempio: 15, 30, 60",
+      "outcome": "Risultato",
+      "selectOutcome": "Seleziona il risultato",
+      "location": "Posizione",
+      "locationPlaceholder": "Collegamento Zoom o posizione fisica",
+      "outcomes": {
+        "connected": "Connesso",
+        "voicemail": "Segreteria telefonica",
+        "noanswer": "Nessuna risposta",
+        "busy": "Occupato",
+        "wrongnumber": "Numero sbagliato"
+      }
+    },
+    "timeline": {
+      "title": "Cronologia",
+      "subtitle": "Cronologia delle attività e delle interazioni per questo deal",
+      "empty": "Nessuna attività ancora registrata.",
+      "due": "Scadenza {{date}}",
+      "stage": "Spostato in {{stage}}",
+      "channelMessage": "Messaggio {{channel}}",
+      "filters": {
+        "all": "Tutto",
+        "notes": "Note",
+        "calls": "Chiamate",
+        "meetings": "Incontri",
+        "tasks": "Compiti",
+        "communications": "Comunicazioni",
+        "stage": "Fasi"
+      },
+      "duePrefix": "Dovuto: "
+    },
+    "deals": {
+      "title": "Offerte",
+      "new": "Nuovo accordo",
+      "emptyTitle": "Nessuna offerta trovata",
+      "emptyDescription": "Inizia a monitorare la tua pipeline di vendita creando il tuo primo accordo.",
+      "noAmount": "Nessun importo",
+      "stage": "Palcoscenico",
+      "status": {
+        "open": "Aperto",
+        "won": "Ha vinto",
+        "lost": "Perso"
+      },
+      "statuses": {
+        "open": "Aperto",
+        "won": "Ha vinto",
+        "lost": "Perso"
+      },
+      "newTitle": "Nuovo accordo",
+      "newSubtitle": "Crea una nuova opportunità di vendita da monitorare nella tua pipeline.",
+      "create": "Crea offerta",
+      "created": "Offerta creata correttamente",
+      "createFailed": "Impossibile creare l'offerta",
+      "titleLabel": "Titolo dell'affare",
+      "titlePlaceholder": "ad es. Riprogettazione del sito web per Acme Corp",
+      "customer": "Cliente",
+      "customerPlaceholder": "Cerca o seleziona un cliente",
+      "customersLoading": "Caricamento clienti...",
+      "customersHint": "Solo i clienti con una relazione attiva possono essere collegati alle offerte.",
+      "stagePlaceholder": "Seleziona una fase",
+      "expectedCloseLabel": "Data di chiusura prevista",
+      "selectDate": "Seleziona una data",
+      "amount": "Valore dell'affare",
+      "amountPlaceholder": "0,00",
+      "currency": "Valuta",
+      "currencyPlaceholder": "Seleziona valuta",
+      "probabilityLabel": "Probabilità (%)",
+      "probabilityPlaceholder": "ad es. 50",
+      "notesPlaceholder": "Aggiungi eventuali note interne o contesto su questo accordo...",
+      "tagsPlaceholder": "ad es. urgente, di alto valore (separati da virgole)",
+      "pipelineTitle": "Stato della pipeline",
+      "pipelineDescription": "L'accordo verrà seguito nelle fasi successive della pipeline.",
+      "tipsTitle": "Suggerimenti per l'affare",
+      "tipsSubtitle": "Migliori pratiche per il CRM",
+      "tipsOne": "Mantieni i titoli delle tue offerte descrittivi ma concisi.",
+      "tipsTwo": "Aggiorna la probabilità man mano che l'affare avanza attraverso le fasi.",
+      "tipsThree": "Imposta una data di chiusura prevista realistica per una migliore previsione.",
+      "quickActions": "Azioni rapide",
+      "message": "Messaggio",
+      "quickNote": "Nota veloce",
+      "stages": {
+        "lead": "Piombo",
+        "qualified": "Qualificato",
+        "proposal": "Proposta",
+        "negotiation": "Negoziazione",
+        "won": "Ha vinto",
+        "lost": "Perso"
+      },
+      "validation": {
+        "titleRequired": "Il titolo dell'offerta è obbligatorio",
+        "customerRequired": "Seleziona un cliente",
+        "stageRequired": "È richiesta la selezione della fase",
+        "amountNumber": "L'importo deve essere un numero valido",
+        "currencyRequired": "La valuta è richiesta",
+        "probabilityRange": "La probabilità deve essere compresa tra 0 e 100",
+        "probabilityValidation": "La probabilità deve essere compresa tra 0 e 100"
+      },
+      "deletedReason": "Offerta eliminata",
+      "loadFailed": "Impossibile caricare l'offerta",
+      "loadFailedHint": "Non siamo riusciti a recuperare i dettagli dell'offerta. Per favore riprova.",
+      "backToDeals": "Torna alle offerte",
+      "markLostTitle": "Contrassegna l'affare come perduto",
+      "markLostDescription": "Fornisci un motivo per cui l'accordo è andato perso.",
+      "markLostPlaceholder": "ad es. Il concorrente ha vinto, il budget è stato tagliato...",
+      "channelsLoading": "Caricamento canali...",
+      "noChannels": "Nessun canale disponibile",
+      "missingContactFields": "Informazioni di contatto mancanti: {{fields}}",
+      "noteSubject": "Oggetto",
+      "noteDetails": "Nota i dettagli...",
+      "addNote": "Aggiungi nota",
+      "markLost": "Marco Perduto",
+      "deleteTitle": "Elimina offerta",
+      "deleteDescription": "Sei sicuro di voler eliminare questa offerta? Questa azione non può essere annullata.",
+      "delete": "Elimina",
+      "noNotes": "Nessuna nota aggiunta.",
+      "probability": "Prob. {{probability}}%",
+      "probabilityValue": "{{probability}}%",
+      "expectedClose": "Esp. {{date}}",
+      "expectedCloseTitle": "Chiusura prevista",
+      "markWon": "Marco ha vinto",
+      "edit": "Modifica offerta",
+      "alreadyClosed": "L'affare è già chiuso",
+      "relationships": "Relazioni",
+      "party": "Contatto collegato",
+      "owner": "Proprietario dell'affare",
+      "unassigned": "Non assegnato"
+    },
+    "channel": {
+      "messageVia": "Messaggio tramite {{channel}}",
+      "template": "Modello",
+      "chooseTemplate": "Scegli un modello",
+      "subject": "Oggetto",
+      "message": "Messaggio",
+      "log": "Messaggio di registro",
+      "copySuccess": "Copiato negli appunti",
+      "copyFailed": "Impossibile copiare",
+      "draftCreated": "Bozza di comunicazione creata",
+      "messageLogged": "Messaggio registrato",
+      "createDraftFailed": "Impossibile creare la bozza",
+      "logFailed": "Impossibile registrare il messaggio"
+    },
+    "accounts": {
+      "title": "Conti",
+      "new": "Nuovo conto",
+      "searchPlaceholder": "Cerca account...",
+      "emptyTitle": "Nessun account trovato",
+      "emptyDescription": "Crea un nuovo account per iniziare.",
+      "noContactInfo": "Nessuna informazione di contatto",
+      "status": {
+        "active": "Attivo",
+        "inactive": "Inattivo",
+        "prospect": "Prospettiva"
+      },
+      "type": {
+        "customer": "Cliente",
+        "vendor": "Venditore",
+        "partner": "Socio",
+        "other": "Altro"
+      }
+    },
+    "accountForm": {
+      "newTitle": "Nuovo conto",
+      "editTitle": "Modifica account",
+      "identityTitle": "Identità",
+      "identityDescription": "Informazioni di contatto archiviate nel record del partito",
+      "accountNameRequired": "Nome dell'account *",
+      "websitePlaceholder": "https://...",
+      "industry": "Industria",
+      "profileTitle": "Profilo CRM",
+      "profileDescription": "Campi specifici delle vendite",
+      "accountType": "Tipo di conto",
+      "create": "Crea account",
+      "update": "Aggiorna conto"
+    },
+    "contactForm": {
+      "newTitle": "Nuovo contatto",
+      "editTitle": "Modifica contatto",
+      "detailsTitle": "Dettagli di contatto",
+      "create": "Crea contatto",
+      "update": "Aggiorna contatto",
+      "createFailed": "Impossibile creare il contatto",
+      "updateFailed": "Impossibile aggiornare il contatto"
+    },
+    "sequences": {
+      "new": "Nuova sequenza",
+      "setupTitle": "Impostazione della sequenza",
+      "applyPreset": "Applica la preimpostazione Nails in 3 fasi",
+      "created": "Sequenza creata",
+      "createFailed": "Impossibile creare la sequenza",
+      "nameRequired": "Il nome della sequenza è obbligatorio",
+      "addAtLeastOneStep": "Aggiungi almeno un passaggio",
+      "stepTitle": "Passo {{step}}",
+      "removeStep": "Rimuovere il passaggio {{step}}",
+      "stepType": "Tipo di passaggio",
+      "dayDelay": "Giorno di ritardo",
+      "stepSubject": "Oggetto del passaggio",
+      "stepBody": "Passo Corpo",
+      "addStep": "Aggiungi passaggio",
+      "create": "Crea sequenza",
+      "creating": "Creazione...",
+      "stepTypes": {
+        "task": "Compito",
+        "call": "Chiama",
+        "emailManual": "Manuale di posta elettronica",
+        "emailAuto": "E-mail automatica"
+      },
+      "nailsPreset": {
+        "name": "Porta a Won - Nails",
+        "description": "Follow-up e-mail automatizzato giorno 1/giorno 3/giorno 7 per i lead dei chiodi."
+      }
+    },
+    "emailSettings": {
+      "title": "Impostazioni e-mail CRM",
+      "subtitle": "Configura il nuovo invio per le email in sequenza automatizzata e le risposte in entrata.",
+      "defaultDisplayName": "CRM rinviato",
+      "saved": "Impostazioni e-mail CRM salvate",
+      "connectionValid": "La connessione di nuovo invio è valida",
+      "connectionTitle": "Reinvia connessione",
+      "connectionDescription": "I messaggi in uscita utilizzano il mittente configurato. Le email in sequenza sono predefinite per",
+      "connectionName": "Nome della connessione",
+      "fromAddress": "Dall'indirizzo",
+      "replyToAddress": "Indirizzo per le risposte",
+      "apiKeyLabel": "Chiave API",
+      "apiKeyLeaveBlank": "lasciare vuoto per mantenere la chiave corrente",
+      "apiKeyPlaceholder": "ri_...",
+      "testConnection": "Testare la connessione",
+      "noWorkspace": "Nessuna area di lavoro attiva selezionata.",
+      "inboundWebhookTitle": "Webhook in entrata",
+      "inboundWebhookDescription": "Configura questo URL nelle impostazioni del webhook in entrata di nuovo invio.",
+      "tenantResolution": "L'inquilino viene risolto automaticamente. Fallback facoltativo: aggiungi",
+      "setupGuideTitle": "Invia nuovamente la guida di installazione",
+      "setupGuideDescription": "Utilizza queste impostazioni esatte per il monitoraggio delle risposte CRM.",
+      "guide": {
+        "step1": "Apri nuovamente la dashboard di rinvio -> Webhook -> Aggiungi webhook.",
+        "step2": "Imposta l'URL dell'endpoint sul valore riportato sopra.",
+        "step3": "In Tipi di eventi, seleziona solo",
+        "step4": "Non selezionare eventi di contatto/dominio per questo webhook CRM.",
+        "localhostNotePrefix": "Nota sull'host locale: il nuovo invio non può chiamare",
+        "localhostNoteSuffix": "direttamente. Per i test locali, esponi la tua API con un tunnel pubblico e utilizza l'URL HTTPS come endpoint webhook."
+      },
+      "errors": {
+        "selectWorkspace": "Seleziona un'area di lavoro prima di salvare le impostazioni e-mail.",
+        "apiKeyRequired": "Per la prima configurazione è necessario inviare nuovamente la chiave API.",
+        "saveFailed": "Impossibile salvare le impostazioni",
+        "saveConnectionFirst": "Salvare prima una connessione di rinvio.",
+        "connectionTestFailed": "Il test di connessione è fallito"
+      }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Sessioni",
+      "subtitle": "Tieni traccia delle sessioni pianificate e completate",
+      "new": "Nuova sessione",
+      "loading": "Caricamento sessioni...",
+      "empty": "Nessuna sessione trovata.",
+      "starts": "Inizia",
+      "topic": "Argomento",
+      "status": "Stato",
+      "open": "Aperto",
+      "markDone": "Marco fatto",
+      "cancel": "Annulla",
+      "updated": "Sessione aggiornata",
+      "updateFailed": "Impossibile aggiornare la sessione",
+      "loadFailed": "Impossibile caricare le sessioni",
+      "confirmTitle": "Aggiornare lo stato della sessione?",
+      "confirmDescription": "Impostare la sessione su {{status}}?",
+      "filterClassGroup": "Gruppo di classe",
+      "filterStatus": "Stato",
+      "filterDateFrom": "Data da",
+      "filterDateTo": "Data a",
+      "monthLocked": "Il mese è bloccato",
+      "monthLockedDescription": "Questo mese è già stato fatturato. Riapri il mese o crea una rettifica.",
+      "billingLockedTooltip": "Questo mese è bloccato perché è stata creata la fatturazione.",
+      "statusOptions": {
+        "planned": "Pianificato",
+        "done": "Fatto",
+        "cancelled": "Annullato"
+      },
+      "sortOptions": {
+        "newest": "Inizio (più recente)",
+        "oldest": "Inizio (più vecchio)"
+      }
+    },
+    "groups": {
+      "title": "Gruppi di classe",
+      "subtitle": "Organizza i tuoi gruppi di tutoraggio e i prezzi",
+      "new": "Nuovo gruppo di classe",
+      "loading": "Caricamento gruppi di classi...",
+      "loadFailed": "Impossibile caricare i gruppi di classi",
+      "emptyTitle": "Nessun gruppo di classe ancora",
+      "emptyDescription": "Crea il tuo primo gruppo per iniziare a programmare le sessioni.",
+      "name": "Nome",
+      "subject": "Oggetto",
+      "level": "Livello",
+      "pricePerSession": "Prezzo/sessione",
+      "status": "Stato",
+      "updated": "Aggiornato",
+      "open": "Aperto",
+      "edit": "Modifica",
+      "statusOptions": {
+        "active": "Attivo",
+        "archived": "Archiviato"
+      },
+      "sortOptions": {
+        "newest": "Aggiornato (più recente)",
+        "oldest": "Aggiornato (il più vecchio)",
+        "name": "Nome (A-Z)"
+      }
+    },
+    "students": {
+      "title": "Studenti",
+      "subtitle": "Gestire i registri e i tutori degli studenti",
+      "createTitle": "Crea studente",
+      "add": "Aggiungi studente",
+      "creating": "Creazione...",
+      "created": "Studente creato",
+      "createSuccess": "Studente creato. Ora puoi collegare i tutori.",
+      "createFailed": "Impossibile creare lo studente. Per favore riprova.",
+      "createFirstTip": "Crea prima lo studente, quindi collega i tutori.",
+      "loading": "Caricamento studenti...",
+      "loadFailed": "Impossibile caricare gli studenti.",
+      "emptyTitle": "Ancora nessuno studente",
+      "emptyDescription": "Crea il tuo primo studente per iniziare a monitorare i tutori e le iscrizioni.",
+      "record": "Studente",
+      "email": "E-mail",
+      "phone": "Telefono",
+      "primaryPayer": "Pagatore principale",
+      "status": "Stato",
+      "updated": "Aggiornato",
+      "open": "Aperto",
+      "edit": "Modifica",
+      "archive": "Archivio",
+      "archived": "Studente archiviato",
+      "archiveFailed": "Impossibile archiviare lo studente",
+      "archiveConfirmTitle": "Studente d'archivio",
+      "archiveConfirmDescription": "Questo archivierà lo studente. Puoi annullarli dall'archivio in seguito.",
+      "statusOptions": {
+        "active": "Attivo",
+        "archived": "Archiviato"
+      },
+      "guardians": {
+        "title": "Guardiani",
+        "subtitle": "Collega genitori o tutori e imposta il pagatore della fatturazione.",
+        "link": "Guardiano del collegamento",
+        "empty": "Nessun tutore ancora collegato. Aggiungine uno per gestire la responsabilità della fatturazione."
+      }
+    },
+    "billing": {
+      "title": "Fatturazione delle lezioni",
+      "subtitle": "Visualizza l'anteprima delle lezioni e crea fatture per il mese selezionato.",
+      "createInvoices": "Crea fatture per mese",
+      "billingMonth": "Mese di fatturazione",
+      "refresh": "Aggiorna",
+      "invoicesCreated": "Fatture {{count}} create",
+      "sendInvoices": "Invia fatture",
+      "invoicesSent": "Fatture in coda per l'invio",
+      "sendFailed": "Impossibile inviare le fatture",
+      "alreadySent": "Già inviato",
+      "sendDialogTitle": "Fatture create",
+      "sendDialogDescription": "Fatture {{count}} create. Vuoi inviarli adesso?",
+      "sendDialogYes": "Sì, invia",
+      "sendDialogNo": "No",
+      "summaryCreated": "Fatture {{count}} create per {{month}}",
+      "loading": "Caricamento anteprima di fatturazione...",
+      "loadFailed": "Impossibile caricare l'anteprima",
+      "strategy": "Strategia di fatturazione:",
+      "basis": "Base di fatturazione:",
+      "prepaid": "Prepagato",
+      "arrears": "Arretrati",
+      "scheduledBasis": "Sessioni programmate",
+      "attendedBasis": "Sessioni frequentate",
+      "arrearsTip": "Sono fatturabili solo le sessioni contrassegnate come \"FINE\" con partecipazione",
+      "payerId": "ID pagatore:",
+      "sessionsTotal": "sessioni totali",
+      "classGroup": "Gruppo di classe",
+      "sessions": "Sessioni",
+      "pricePerSession": "Prezzo/Sessione",
+      "subtotal": "Totale parziale",
+      "invoice": "Fattura",
+      "markSent": "Marco inviato",
+      "markSentSuccess": "Fattura contrassegnata come inviata",
+      "markSentFailed": "Impossibile contrassegnare la fattura come inviata",
+      "customerEmailRequired": "L'e-mail del cliente è obbligatoria",
+      "generatePrivateLink": "Genera collegamento",
+      "generateLinkSuccess": "Collegamento privato generato",
+      "generateLinkFailed": "Impossibile generare il collegamento privato",
+      "copyLink": "Copia collegamento",
+      "copyLinkSuccess": "Link copiato negli appunti",
+      "copyLinkFailed": "Impossibile copiare il collegamento",
+      "regenerateLink": "Rigenera collegamento",
+      "regenerateLinkSuccess": "Collegamento privato rigenerato",
+      "regenerateLinkConfirmTitle": "Rigenerare il collegamento privato?",
+      "regenerateLinkConfirmDescription": "Il vecchio collegamento smetterà di funzionare immediatamente.",
+      "regenerateLinkConfirmAction": "Rigenerarsi",
+      "linkRegenerated": "Collegamento rigenerato",
+      "linkGenerationFailed": "Impossibile generare il collegamento",
+      "viewInvoice": "Visualizza fattura",
+      "invoiceNotCreated": "Non creato",
+      "emptyTitle": "Nessuna sessione fatturabile",
+      "emptyDescription": "Non sono presenti sessioni confermate per il mese selezionato che non siano state ancora fatturate.",
+      "attendedSessionsTip": "Suggerimento: nella modalità \"Sessioni con partecipazione\", è necessario contrassegnare le sessioni come FATTE e registrare la partecipazione prima che possano essere fatturate.",
+      "regenerate": "Rigenerare fatture",
+      "regenerateConfirm": "Sei sicuro di voler rigenerare le fatture? Ciò scollegherà le bozze di fattura esistenti per questo mese.",
+      "allGroups": "Tutti i gruppi",
+      "selectAllGroups": "Seleziona gruppo"
+    },
+    "settings": {
+      "title": "Impostazioni delle classi",
+      "description": "Configura la modalità di generazione delle fatture dei corsi per questa area di lavoro.",
+      "billingStrategy": "Strategia di fatturazione",
+      "monthStrategy": "Strategia del mese di fatturazione",
+      "billingBasis": "Base di fatturazione",
+      "save": "Salva impostazioni",
+      "updated": "Impostazioni delle lezioni aggiornate",
+      "updateFailed": "Impossibile aggiornare le impostazioni delle classi",
+      "placeholderStrategy": "Seleziona la strategia di fatturazione",
+      "placeholderBasis": "Seleziona la base di fatturazione",
+      "strategies": {
+        "prepaid": {
+          "label": "Fattura del mese corrente (prepagata)",
+          "description": "Le fatture vengono generate all'inizio del mese per le sessioni pianificate."
+        },
+        "arrears": {
+          "label": "Fattura del mese precedente (arretrati)",
+          "description": "Le fatture vengono generate all'inizio del mese per le sessioni frequentate."
+        }
+      },
+      "attendance": {
+        "title": "Partecipazione",
+        "description": "Configurare il comportamento di partecipazione",
+        "mode": "Modalità di presenza",
+        "manual": {
+          "label": "Frequenza manuale",
+          "description": "Gli insegnanti devono registrare le presenze per sessione."
+        },
+        "autoFull": {
+          "label": "Partecipazione completa automatica",
+          "description": "Quando una sessione viene contrassegnata come completata, tutti gli studenti iscritti vengono contrassegnati automaticamente come presenti. Gli insegnanti possono comunque apportare modifiche, se necessario."
+        }
+      },
+      "bases": {
+        "scheduled": {
+          "label": "Sessioni programmate",
+          "description": "Conta le sessioni pianificate/effettuate nel mese di fatturazione."
+        },
+        "attended": {
+          "label": "Sessioni partecipate",
+          "description": "Conta le presenze fatturabili nelle sessioni effettuate."
+        }
+      }
+    }
+  },
+  "purchasing": {
+    "settings": {
+      "title": "Impostazioni di acquisto",
+      "save": "Salva impostazioni",
+      "defaultCurrency": "Valuta predefinita",
+      "defaultPaymentTerms": "Termini di pagamento predefiniti",
+      "poNumberPrefix": "Prefisso numero PO",
+      "defaultApAccount": "Conto fornitori predefinito",
+      "defaultExpenseAccount": "Conto spese predefinito",
+      "defaultBankAccount": "Conto bancario predefinito",
+      "autoPostBill": "Pubblicazione automatica su Bill Post",
+      "autoPostBillHelp": "Crea automaticamente voci contabili quando viene registrata una fattura fornitore",
+      "autoPostPayment": "Pubblicazione automatica al pagamento",
+      "autoPostPaymentHelp": "Crea automaticamente registrazioni contabili quando viene registrato un pagamento",
+      "duplicateDetection": "Rilevamento fatture duplicate",
+      "duplicateDetectionHelp": "Avvisa quando esiste già una fattura con lo stesso fornitore e riferimento",
+      "approvalRequired": "Approvazione richiesta per le fatture",
+      "approvalRequiredHelp": "Le fatture fornitore devono essere approvate prima di poter essere registrate"
+    },
+    "copilot": {
+      "title": "Assistente agli acquisti",
+      "purchaseOrderDraft": "Bozza dell'ordine di acquisto",
+      "vendorBillDraft": "Bozza fattura fornitore",
+      "promptBill": "Estrai i dati dal testo o dall'immagine di una fattura fornitore",
+      "promptBillLabel": "Estrai fattura",
+      "promptPo": "Redigere un ordine di acquisto per 50 laptop da Dell",
+      "promptPoLabel": "Progetto di PO",
+      "placeholder": "Chiedi qualsiasi cosa all'assistente agli acquisti..."
+    }
+  },
+  "workspace": {
+    "create": "Crea spazio di lavoro",
+    "setupDescription": "Inizia da solo e invita i compagni di squadra ogni volta che ne hai bisogno.",
+    "legalEntityType": "Tipo di persona giuridica",
+    "legalEntityPersonal": "Ditta individuale o individuale",
+    "legalEntityCompany": "Compagnia",
+    "legalEntityHelp": "Ciò determina quali informazioni fiscali Corely mostra per la tua attività."
+  },
+  "tenants": {
+    "openAdminSession": "Apri come amministratore del tenant",
+    "openingAdminSession": "Apertura…",
+    "openAdminSessionError": "Impossibile aprire la sessione di amministrazione del tenant.",
+    "adminSessionTitle": "Sessione di amministrazione dell'inquilino",
+    "adminSessionBanner": "Lavorare come amministratore del tenant in {{name}}",
+    "returnToPlatform": "Ritorno alla piattaforma",
+    "endAdminSessionError": "Impossibile terminare la sessione di amministrazione del tenant. Riprova.",
+    "title": "Inquilini",
+    "description": "Gestire i diritti e le impostazioni del tenant.",
+    "listTitle": "Elenco degli inquilini",
+    "addTenant": "Aggiungi inquilino",
+    "noTenants": "Nessun inquilino trovato.",
+    "status": "Stato",
+    "slug": "Lumaca",
+    "tenantId": "ID inquilino",
+    "actions": "Azioni",
+    "manage": "Gestisci",
+    "confirmDeactivate": "Sei sicuro di voler disattivare questo tenant? Gli utenti non potranno più accedere."
+  },
+  "billing": {
+    "title": "Piani e fatturazione",
+    "subtitle": "Piano attuale, utilizzo del flusso di cassa e opzioni di aggiornamento successivo per il tuo salone.",
+    "currentPlan": "Piano attuale",
+    "planStatus": "Stato del piano",
+    "billingActions": "Azioni di fatturazione",
+    "usage": "Utilizzare questo periodo",
+    "planCatalog": "Piani disponibili",
+    "manageBilling": "Gestisci la fatturazione",
+    "upgradePlan": "Piano di aggiornamento",
+    "currentPlanBadge": "Piano attuale",
+    "noLimit": "Nessun limite",
+    "billedMonthly": "Fatturazione mensile",
+    "active": "Attivo",
+    "period": "Periodo attuale",
+    "unavailable": "Non disponibile in questo piano",
+    "loading": "Caricamento dati di fatturazione...",
+    "loadFailed": "Impossibile caricare la fatturazione in questo momento.",
+    "openPortalDescription": "Apri il portale clienti ospitato per aggiornare i dettagli di pagamento o gestire la fatturazione.",
+    "checkoutDescription": "Esegui l'upgrade tramite Stripe Checkout ospitato. Corely mantiene il catalogo dei piani e la logica di utilizzo.",
+    "featureAccess": "Accesso alle funzionalità",
+    "recommendedTitle": "Hai bisogno di più limiti?",
+    "recommendedDescription": "Esegui l'upgrade quando il tuo salone necessita di esportazione, aiuto dell'intelligenza artificiale o più sedi.",
+    "startTrial": "Inizia la prova di 30 giorni",
+    "trialTitle": "Inizia la prova con accesso completo di 30 giorni",
+    "noCardRequired": "Nessuna carta richiesta",
+    "trialDescription": "Workspace ottiene funzionalità multisede complete per 30 giorni, quindi torna alla versione gratuita se non sei abbonato.",
+    "trialActive": "{{daysRemaining}} giorni rimanenti per la prova ad accesso completo.",
+    "trialExpiring": "{{daysRemaining}} giorni rimasti. Scegli subito un piano per mantenere l'esportazione, l'intelligenza artificiale e posizioni aggiuntive.",
+    "trialExpired": "La prova ad accesso completo è terminata",
+    "trialExpiredDescription": "Workspace è tornato al piano gratuito. I vecchi dati vengono conservati, ma l'esportazione, l'intelligenza artificiale e le posizioni aggiuntive sono bloccate fino all'abbonamento.",
+    "upgradeNow": "Scegli il piano",
+    "afterTrialTitle": "Cosa cambia dopo il processo",
+    "afterTrialDescription": "Corely conserva tutti i vecchi dati. Dopo 30 giorni, l'area di lavoro passa a Gratuito e il nuovo utilizzo segue i limiti mensili di Gratuito.",
+    "trialStarted": "Il processo è iniziato",
+    "trialStartFailed": "Impossibile avviare la prova in questo momento.",
+    "pricePerMonth": "{{price}} / mese",
+    "remaining": "{{count}} a sinistra",
+    "featuredPlanNameFallback": "Aggiorna",
+    "featuredTitleFree": "Esegui l'upgrade per sbloccare esportazioni, intelligenza artificiale e ricevute illimitate",
+    "featuredTitlePaid": "Resta al passo con le funzionalità complete",
+    "featuredDescriptionFallback": "Controllo completo del contante con esportazioni, assistenza AI e supporto multi-sede.",
+    "featuredFootnoteFree": "Ingressi e ricevute illimitati, esportazioni, assistente AI e multi-ubicazione.",
+    "featuredFootnotePaid": "Mantieni esportazioni, intelligenza artificiale e multisede pronte per il tuo team.",
+    "statusLabels": {
+      "free": "Gratuito",
+      "active": "Attivo",
+      "trialing": "Prova",
+      "past_due": "Scaduto",
+      "canceled": "Annullato",
+      "incomplete": "Incompleto",
+      "incomplete_expired": "Incompleto scaduto",
+      "unpaid": "Non pagato"
+    },
+    "usageMetrics": {
+      "entries": "Registrazioni di cassa in questo periodo",
+      "receipts": "Ricevute in questo periodo"
+    },
+    "usageNudges": {
+      "entries": "Upgrade per entrate ed esportazioni di contanti illimitate.",
+      "receipts": "Upgrade per entrate ed esportazioni illimitate."
+    },
+    "plans": {
+      "free": {
+        "name": "Gratuito",
+        "summary": "Per una sede del salone, iniziare con il controllo giornaliero di cassa di base.",
+        "highlights": {
+          "0": "1 posizione",
+          "1": "30 iscrizioni al mese",
+          "2": "10 ricevute al mese",
+          "3": "Nessuna esportazione",
+          "4": "Nessun assistente AI"
+        }
+      },
+      "starter-monthly": {
+        "name": "Antipasto",
+        "summary": "Operazioni giornaliere illimitate sul libretto di cassa per una sede.",
+        "highlights": {
+          "0": "1 posizione",
+          "1": "Ingressi illimitati",
+          "2": "Ricevute illimitate",
+          "3": "Chiusura giornaliera",
+          "4": "Esportazione mensile"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pro",
+        "summary": "Aggiunge l'aiuto dell'intelligenza artificiale e il rilevamento avanzato dei problemi per una posizione.",
+        "highlights": {
+          "0": "Tutto in Starter",
+          "1": "Assistente AI",
+          "2": "Aiuto AI multilingue",
+          "3": "Rilevamento dei problemi",
+          "4": "Guida alla chiusura"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Multisede",
+        "summary": "Per gruppi di saloni che gestiscono più sedi e team.",
+        "highlights": {
+          "0": "Tutto nel professionista",
+          "1": "Posizioni multiple",
+          "2": "Accesso alla squadra",
+          "3": "Panoramica consolidata"
+        }
+      }
+    },
+    "usageLabels": {
+      "usedOf": "Usato {{used}} / {{limit}}",
+      "currentPeriod": "Periodo attuale"
+    },
+    "featureLabels": {
+      "maxLocations": "Posizioni",
+      "maxEntriesPerMonth": "Entrate in contanti",
+      "maxReceiptsPerMonth": "Ricevute",
+      "canExport": "Esportazione mensile",
+      "dailyClosing": "Chiusura giornaliera",
+      "aiAssistant": "Assistente AI",
+      "multilingualAiHelp": "Aiuto AI multilingue",
+      "issueDetection": "Rilevamento dei problemi",
+      "closingGuidance": "Guida alla chiusura",
+      "teamAccess": "Accesso alla squadra",
+      "consolidatedOverview": "Panoramica consolidata"
+    }
+  },
+  "cashDashboard": {
+    "workspace": {
+      "register": "Registrati",
+      "location": "Posizione"
+    },
+    "registerSelector": {
+      "title": "Scegli un registratore di cassa",
+      "description": "Questa conversazione utilizzerà il registro selezionato.",
+      "binding": "Selezione registrazione...",
+      "error": "Impossibile impostare il registratore di cassa.",
+      "retry": "Riprova"
+    },
+    "headerTitle": "Cruscotto di controllo cassa",
+    "headerSubtitle": "Controllo giornaliero di contanti e ricevute per il salone.",
+    "previewLabel": "Stato di anteprima",
+    "previewStates": {
+      "open": "Giorno aperto",
+      "ready": "Pronti a chiudere",
+      "closed": "Chiuso e pronto per l'esportazione"
+    },
+    "banner": {
+      "open": "Il libretto di cassa di oggi è ancora aperto",
+      "receiptsMissing": "Mancano le ricevute {{count}}",
+      "closeNow": "Puoi chiudere la giornata adesso",
+      "monthReady": "Questo mese è pronto per l'esportazione",
+      "closedToday": "Oggi è stato chiuso",
+      "staleTitle": "Mostra l'ultima istantanea di contanti sincronizzata",
+      "staleDescription": "È ancora in corso una nuova sincronizzazione. Rivedi le ultime voci prima di chiudere la giornata."
+    },
+    "actions": {
+      "addEntry": "Nuova entrata in cassa",
+      "openEntries": "Iscrizioni aperte",
+      "closeDay": "Chiudi il libretto di cassa di oggi",
+      "exportMonth": "Esportazione per Steuerberater",
+      "openRegister": "Registro aperto",
+      "attachReceipt": "Allega ricevuta",
+      "reviewEntries": "Esaminare le voci",
+      "seeAll": "Vedi tutte le voci",
+      "edit": "Modifica",
+      "reverse": "Inverso",
+      "viewDetails": "Dettagli",
+      "attachNow": "Allega ora",
+      "createFirstEntry": "Crea la prima voce",
+      "openBilling": "Fatturazione aperta",
+      "upgradeToStarter": "Passa a Starter",
+      "upgradeToPro": "Passa a Pro"
+    },
+    "labels": {
+      "openingBalance": "Saldo di apertura",
+      "cashInToday": "Incassa oggi",
+      "cashOutToday": "Incassa oggi",
+      "expectedBalance": "Saldo atteso",
+      "countedCash": "Contanti contati",
+      "difference": "Differenza",
+      "missingReceipts": "Ricevute mancanti",
+      "dailyClosing": "Stato di chiusura giornaliera",
+      "todaysCashStatus": "Stato di cassa di oggi",
+      "actionRequired": "Azione richiesta",
+      "recentEntries": "Voci recenti",
+      "receiptStatus": "Stato della ricevuta",
+      "closingWorkflow": "Chiusura del flusso di lavoro",
+      "exportStatus": "Stato dell'esportazione mensile",
+      "trendOverview": "Panoramica operativa",
+      "privateDeposits": "Depositi privati",
+      "privateWithdrawals": "Prelievi privati",
+      "lastClosedDate": "Ultima data di chiusura",
+      "closedBy": "Chiuso da",
+      "responsibleToday": "Responsabile oggi",
+      "currentMonth": "Mese corrente",
+      "entriesCompleted": "Iscrizioni completate",
+      "lastExport": "Ultima esportazione",
+      "status": "Stato",
+      "time": "Tempo",
+      "type": "Digitare",
+      "amount": "Importo",
+      "note": "Nota",
+      "receipt": "Ricevuta",
+      "rowActions": "Azioni",
+      "attachedToday": "In allegato oggi",
+      "missingToday": "Manca oggi",
+      "missingThisMonth": "Manca questo mese",
+      "weekIncome": "Entrate in contanti questa settimana",
+      "weekExpenses": "Spese in contanti questa settimana",
+      "openDays": "Giornate aperte",
+      "monthVsLastMonth": "Questo mese rispetto al mese scorso",
+      "exportChecklistDays": "Tutti i giorni richiesti sono chiusi",
+      "exportChecklistReceipts": "Si allegano tutte le ricevute richieste",
+      "exportChecklistReview": "Non rimangono elementi di revisione critica",
+      "helperWidget": "Hai bisogno di aiuto?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Include depositi privati {{deposit}} e prelievi privati {{withdrawal}}.",
+      "countNotEntered": "Non ancora inserito",
+      "differenceBalanced": "Nessuna differenza",
+      "differenceOver": "{{amount}} finito",
+      "differenceShort": "{{amount}} corto",
+      "statusOpen": "Aperto",
+      "statusNeedsReview": "Necessita di revisione",
+      "statusReadyToClose": "Pronti a chiudere",
+      "statusClosed": "Chiuso",
+      "monthExportReady": "Esportazione pronta",
+      "exportBlockedReceipts": "Bloccato per ricevute mancanti",
+      "exportBlockedDays": "Bloccato da giorni non chiusi",
+      "exportBlockedReview": "Bloccato dagli elementi di revisione",
+      "exportAlreadyGenerated": "Già esportato",
+      "receiptsComplete": "Il controllo delle ricevute è completo per oggi.",
+      "receiptsIncomplete": "Gli articoli delle ricevute {{count}} necessitano ancora di attenzione oggi.",
+      "noActionNeeded": "Nessuna azione urgente al momento",
+      "noActionDescription": "Il libretto di cassa di oggi è in ordine. Puoi continuare a registrare le voci o esportare il mese.",
+      "noEntriesTitle": "Nessuna attività in contanti ancora oggi",
+      "noEntriesDescription": "Inizia con il saldo di apertura o registra il primo movimento di cassa dal salone.",
+      "loadingTitle": "Preparazione della panoramica della liquidità di oggi",
+      "loadingDescription": "Raccolta ricevute, iscrizioni e segnali di chiusura."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "Nelle voci {{count}} mancano le ricevute",
+      "missingReceiptsDescription": "Allega le ricevute prima che il giorno possa essere considerato attendibile o esportato.",
+      "closeDayTitle": "Il libretto di cassa di oggi non è ancora chiuso",
+      "closeDayDescription": "Conta il cassetto e conferma il saldo di chiusura per terminare oggi.",
+      "missingNotesTitle": "{{count}} alle spese in contanti mancano le note",
+      "missingNotesDescription": "Aggiungi una breve nota in modo che ogni spesa possa essere compresa in seguito.",
+      "openDaysTitle": "I giorni {{count}} sono ancora aperti questa settimana",
+      "openDaysDescription": "Chiudi gli open day in modo che il mese possa essere esportato senza lavoro di follow-up.",
+      "reviewTitle": "Le voci {{count}} necessitano di revisione",
+      "reviewDescription": "Controlla i movimenti di cassa insoliti prima di chiudere il libro.",
+      "exportTitle": "L'esportazione mensile è ancora bloccata",
+      "exportDescription": "Risolvi i restanti blocchi prima di inviare i dati al consulente fiscale.",
+      "exportReadyTitle": "L'esportazione mensile è pronta",
+      "exportReadyDescription": "Ora il mese può essere esportato senza documenti mancanti."
+    },
+    "entryTypes": {
+      "income": "Reddito",
+      "expense": "Spesa",
+      "private-deposit": "Deposito privato",
+      "private-withdrawal": "Ritiro privato"
+    },
+    "entryStatus": {
+      "attached": "In allegato",
+      "missing": "Mancante",
+      "review": "Necessita di revisione",
+      "ok": "Va bene"
+    },
+    "assistant": {
+      "title": "Hai bisogno di aiuto?",
+      "description": "Utilizza l'assistente quando qualcosa non è chiaro, non come flusso di lavoro principale.",
+      "prompts": [
+        "Perché oggi non è pronto per la chiusura?",
+        "Quali voci necessitano ancora di ricevute?",
+        "Perché il mio saldo è basso?",
+        "Cosa significa Privateinlage?"
+      ],
+      "suggestions": [
+        {
+          "label": "Trova le ricevute mancanti",
+          "value": "Quali registrazioni di cassa da oggi necessitano ancora di ricevuta?"
+        },
+        {
+          "label": "Stato di cassa di oggi",
+          "value": "Mostrami lo stato della cassa di oggi e se la giornata è pronta per chiudersi."
+        },
+        {
+          "label": "Chiudi la giornata",
+          "value": "Cosa sta bloccando la chiusura del contante di oggi?"
+        },
+        {
+          "label": "Spiegare un termine",
+          "value": "Cosa significa Privateinlage nel libretto cassa?"
+        }
+      ],
+      "capabilityCatalogTitle": "Compiti di gestione della cassa",
+      "capabilityCatalogDescription": "Questo è l'elenco completo di ciò che l'assistente di cassa può aiutarti a fare. Scegli un'attività per precompilare la richiesta e iniziare più velocemente.",
+      "capabilityGroups": [
+        {
+          "title": "Entrate in contanti",
+          "description": "Creare, correggere e rivedere le voci del libro cassa per il registro corrente.",
+          "items": [
+            {
+              "title": "Creare una voce di cassa",
+              "description": "Avvia una nuova voce di incasso o prelievo con i dettagli richiesti.",
+              "prompt": "Creare una voce di cassa per il registro corrente."
+            },
+            {
+              "title": "Correggere una voce aperta",
+              "description": "Stornare una voce aperta e creare la voce sostitutiva corretta.",
+              "prompt": "Correggimi una voce di cassa aperta."
+            },
+            {
+              "title": "Elenca le entrate di cassa",
+              "description": "Esamina le voci per intervallo di date, tipo, fonte o descrizione.",
+              "prompt": "Elenca le registrazioni di cassa per questo registro."
+            }
+          ]
+        },
+        {
+          "title": "Ricevute e allegati",
+          "description": "Carica le ricevute, allegale alle voci e trova i documenti mancanti.",
+          "items": [
+            {
+              "title": "Carica una ricevuta",
+              "description": "Carica uno o più file di ricevute da questa chat.",
+              "prompt": "Carica i file delle ricevute da questa chat."
+            },
+            {
+              "title": "Allega una ricevuta a una voce",
+              "description": "Collega i documenti di ricevuta caricati alla registrazione cassa corretta.",
+              "prompt": "Allega la ricevuta caricata alla voce di cassa corretta."
+            },
+            {
+              "title": "Trova le ricevute mancanti",
+              "description": "Mostra le voci che richiedono ancora una ricevuta prima della revisione o dell'esportazione.",
+              "prompt": "Trova le voci di cassa a cui mancano ancora le ricevute."
+            }
+          ]
+        },
+        {
+          "title": "Chiusura giornaliera",
+          "description": "Controlla la disponibilità, risparmia i contanti contati e chiudi la giornata correttamente.",
+          "items": [
+            {
+              "title": "Stato di cassa di oggi",
+              "description": "Visualizza il saldo previsto, le lacune nelle entrate e se la chiusura è pronta.",
+              "prompt": "Mostrami lo stato della cassa di oggi e se la giornata è pronta per chiudersi."
+            },
+            {
+              "title": "Invia contanti contati",
+              "description": "Salvare il conteggio dei contanti o dei tagli prima della chiusura finale.",
+              "prompt": "Invia il contante conteggiato oggi per il registro corrente."
+            },
+            {
+              "title": "Chiudi la giornata",
+              "description": "Concludi la giornata di cassa di oggi una volta eliminati tutti i blocchi.",
+              "prompt": "Chiudi la giornata di cassa di oggi per il registro corrente."
+            },
+            {
+              "title": "Elenca i giorni non chiusi",
+              "description": "Trova giorni aperti o bozze che devono ancora essere chiusi.",
+              "prompt": "Elenca i giorni ancora non chiusi per questo registro."
+            }
+          ]
+        },
+        {
+          "title": "Cruscotto ed esportazione",
+          "description": "Monitorare lo stato operativo e preparare il pacchetto di esportazione mensile.",
+          "items": [
+            {
+              "title": "Riepilogo del dashboard",
+              "description": "Visualizza il riepilogo operativo per contanti, ricevute, stato di chiusura e disponibilità all'esportazione.",
+              "prompt": "Mostrami il riepilogo della dashboard per questo registratore di cassa."
+            },
+            {
+              "title": "Azioni richieste",
+              "description": "Visualizza le prossime azioni operative che il proprietario dovrebbe intraprendere.",
+              "prompt": "Quali azioni devo intraprendere successivamente nella gestione della liquidità?"
+            },
+            {
+              "title": "Genera esportazione mensile",
+              "description": "Preparare il pacchetto di esportazione mensile per il consulente fiscale.",
+              "prompt": "Genera il pacchetto di esportazione di contanti mensile per questo registro."
+            }
+          ]
+        },
+        {
+          "title": "Guida e termini",
+          "description": "Ottieni indicazioni sul flusso di lavoro e spiegazioni in linguaggio semplice dei termini del libro cassa.",
+          "items": [
+            {
+              "title": "Spiegare un termine del libro cassa",
+              "description": "Ottieni una spiegazione in linguaggio semplice di un termine come Privateinlage.",
+              "prompt": "Spiegami un termine da usare nel libretto di cassa."
+            },
+            {
+              "title": "Aiuto per il flusso di lavoro",
+              "description": "Ottieni indicazioni dettagliate per la chiusura giornaliera, le ricevute mancanti o l'esportazione mensile.",
+              "prompt": "Mostrami la guida del flusso di lavoro per la gestione della liquidità."
+            }
+          ]
+        }
+      ],
+      "languages": "Tedesco, inglese, vietnamita",
+      "lockedTitle": "L'aiuto dell'IA è bloccato su questo piano",
+      "lockedDescription": "Passa a Pro per sbloccare l'assistente di cassa, spiegazioni multilingue e revisione guidata dei problemi.",
+      "lockedBadge": "IA bloccata",
+      "emptyStateActions": {
+        "recordTransactions": {
+          "label": "Registra le transazioni di oggi",
+          "value": "Voglio registrare le transazioni in contanti di oggi."
+        },
+        "reviewMonth": {
+          "label": "Esaminare il rapporto mensile",
+          "value": "Voglio rivedere il resoconto di cassa di questo mese."
+        },
+        "closeDay": {
+          "label": "Chiudi la giornata di cassa",
+          "value": "Voglio chiudere il registratore di cassa per oggi."
+        },
+        "generalHelp": {
+          "label": "Fai una domanda generale",
+          "value": "Ho una domanda generale sulla gestione della liquidità."
+        }
+      }
+    },
+    "severity": {
+      "high": "Alto",
+      "medium": "Medio",
+      "low": "Basso"
+    }
+  },
+  "cashAssistant": {
+    "kassenbericht": {
+      "title": "Kassenbericht",
+      "open": "Apri Kassenbericht",
+      "openForDay": "Apri Kassenbericht per {{day}}",
+      "invalidLink": "Impossibile creare il collegamento Kassenbericht."
+    }
+  }
+}

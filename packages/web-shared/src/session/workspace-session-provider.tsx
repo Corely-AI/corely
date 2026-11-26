@@ -1,3 +1,4 @@
+import { type CorelyLocale } from "@corely/contracts";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useBlocker, useBeforeUnload, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -25,7 +26,7 @@ export interface WorkspaceSessionProvidersProps {
   appKey: SsoAppKey;
   /** Local app-owned landing route used after an explicit workspace selection. */
   homePath?: string;
-  locale?: "en" | "de" | "vi";
+  locale?: CorelyLocale;
   retireLegacyStorage?: boolean;
   fetchFn?: typeof fetch;
   navigateToLogin?: SessionProvidersProps["navigate"];

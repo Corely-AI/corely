@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Input } from "@corely/ui";
@@ -29,7 +30,7 @@ export function RecurringChecklists({
   locale?: string;
   backHref?: string;
 }) {
-  const t = checklistsCopy[locale === "de" || locale === "vi" ? locale : "en"];
+  const t = checklistsCopy[resolveCorelyLocale(locale)];
   const [data, setData] = useState<ChecklistTemplateList>();
   const [assignees, setAssignees] = useState<TaskAssignee[]>([]);
   const [editing, setEditing] = useState<ChecklistTemplateView | "new" | null>(null);

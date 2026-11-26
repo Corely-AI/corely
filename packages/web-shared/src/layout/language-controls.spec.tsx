@@ -32,5 +32,20 @@ describe("shared language choice", () => {
   it("accepts only supported navigation language hints", () => {
     expect(resolveFocusedLocale("en", "en-US", "vi")).toBe("vi");
     expect(resolveFocusedLocale("de", "en-US", "javascript:bad")).toBe("de");
+    expect(resolveFocusedLocale("de", "en-US", "pt-PT")).toBe("pt-PT");
+    expect(resolveFocusedLocale(null, "pt-PT")).toBe("pt-PT");
+  });
+
+  it("keeps an explicit navigation language in sync with the picker", async () => {
+    window.history.replaceState({}, "", "/?lang=fr&workspaceId=studio");
+    const user = userEvent.setup();
+    const view = render(<Harness />);
+    await user.click(screen.getByRole("button", { name: "Langue" }));
+    await user.click(screen.getByRole("menuitem", { name: "Português (Portugal)" }));
+    expect(document.documentElement.lang).toBe("pt-PT");
+    expect(window.location.search).toBe("?lang=pt-PT&workspaceId=studio");
+    view.unmount();
+    render(<Harness />);
+    expect(screen.getByRole("button", { name: "Idioma" })).toBeTruthy();
   });
 });

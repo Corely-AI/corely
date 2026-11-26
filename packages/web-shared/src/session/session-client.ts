@@ -1,3 +1,4 @@
+import { type CorelyLocale } from "@corely/contracts";
 import { observeFocused } from "./focused-observation";
 import {
   focusedRequestEvent,
@@ -36,7 +37,7 @@ export interface SessionSurfaceConfig {
   workspaceId?: string;
   /** Only enable when explicitly retiring a former legacy browser origin. */
   retireLegacyStorage?: boolean;
-  locale?: "en" | "de" | "vi";
+  locale?: CorelyLocale;
 }
 export type SessionRequestOptions = Omit<RequestInit, "credentials" | "redirect" | "mode"> & {
   idempotencyKey?: string;
