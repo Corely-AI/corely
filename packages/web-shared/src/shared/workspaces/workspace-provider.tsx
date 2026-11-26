@@ -18,6 +18,7 @@ interface WorkspaceContextValue {
   activeWorkspace: WorkspaceDto | null;
   activeWorkspaceId: string | null;
   isLoading: boolean;
+  isInitialLoading: boolean;
   isHostScope: boolean;
   setWorkspace: (workspaceId: string) => void;
   refresh: () => Promise<void>;
@@ -41,6 +42,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const {
     data: workspaces = [],
     isFetching,
+    isLoading: isInitialLoading,
     isSuccess,
     refetch,
   } = useQuery<WorkspaceDto[]>({
@@ -119,6 +121,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     activeWorkspace,
     activeWorkspaceId: activeId,
     isLoading: isFetching,
+    isInitialLoading,
     isHostScope,
     setWorkspace,
     refresh: async () => {

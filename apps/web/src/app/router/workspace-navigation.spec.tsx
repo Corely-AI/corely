@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { WorkspaceDto } from "@corely/contracts";
 import { AppShell } from "@corely/web-shared/layout/app-shell";
 import { WorkspaceProvider } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { setActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces/screens/WorkspaceOnboardingPage";
+import { RequireAuth } from "./require-auth";
 
 const fixture = vi.hoisted(() => ({ list: vi.fn(), create: vi.fn() }));
 vi.mock("@corely/web-shared/lib/auth-provider", () => ({
@@ -37,6 +38,7 @@ let client: QueryClient;
 afterEach(() => {
   cleanup();
   client.clear();
+  focusManager.setFocused(undefined);
   setActiveWorkspaceId(null);
   fixture.list.mockReset();
   fixture.create.mockReset();
@@ -62,17 +64,19 @@ function renderApp(path: string) {
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/public-booking" element={<PublicJourney />} />
-            <Route
-              element={
-                <AppShell
-                  navigationGroups={[]}
-                  includeWorkspaceQuickActions={false}
-                  renderSidebar={() => null}
-                />
-              }
-            >
-              <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
-              <Route path="/dashboard" element={<h1>Dashboard reached</h1>} />
+            <Route element={<RequireAuth />}>
+              <Route
+                element={
+                  <AppShell
+                    navigationGroups={[]}
+                    includeWorkspaceQuickActions={false}
+                    renderSidebar={() => null}
+                  />
+                }
+              >
+                <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
+                <Route path="/dashboard" element={<h1>Dashboard reached</h1>} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>
@@ -80,6 +84,41 @@ function renderApp(path: string) {
     </QueryClientProvider>
   );
 }
+
+it("preserves step two and its draft during a workspace refetch on tab return", async () => {
+  let finish: (value: WorkspaceDto[]) => void = () => {
+    throw new Error("Focus refetch did not start");
+  };
+  fixture.list.mockImplementation(
+    () =>
+      new Promise<WorkspaceDto[]>((resolve) => {
+        finish = resolve;
+      })
+  );
+  renderApp("/onboarding");
+  fireEvent.change(screen.getByTestId("onboarding-name"), { target: { value: "Synthetic" } });
+  fireEvent.click(screen.getByTestId("onboarding-next"));
+  const legalName = screen.getByTestId("onboarding-legal-name");
+  fireEvent.change(legalName, { target: { value: "Synthetic GmbH" } });
+
+  const queryKey = ["workspaces", "tenant-a"];
+  await act(async () => {
+    client.setQueryData(queryKey, [], { updatedAt: Date.now() - 60_000 });
+    focusManager.setFocused(false);
+    focusManager.setFocused(true);
+  });
+  await waitFor(() => expect(fixture.list).toHaveBeenCalledOnce());
+  expect(client.isFetching({ queryKey })).toBe(1);
+  expect(screen.getByTestId("onboarding-legal-name")).toBe(legalName);
+
+  await act(async () => {
+    finish([]);
+  });
+  await waitFor(() => expect(client.isFetching({ queryKey })).toBe(0));
+  expect(screen.getByTestId("onboarding-legal-name")).toHaveValue("Synthetic GmbH");
+  fireEvent.click(screen.getByTestId("onboarding-back"));
+  expect(screen.getByTestId("onboarding-name")).toHaveValue("Synthetic");
+});
 
 it("renders the dashboard after workspace creation waits for delayed discovery", async () => {
   setActiveWorkspaceId(null);
