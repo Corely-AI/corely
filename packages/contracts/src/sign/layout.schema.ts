@@ -1,4 +1,3 @@
-// Field and role provenance is recorded in docs/devops/sign-notices/NOTICE.md.
 import { z } from "zod";
 
 const identifier = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);

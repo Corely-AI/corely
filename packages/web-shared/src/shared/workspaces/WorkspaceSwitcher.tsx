@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronsUpDown, PlusCircle, Building2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useWorkspace } from "./workspace-provider";
 import {
@@ -26,6 +26,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
 }) => {
   const { workspaces, activeWorkspaceId, setWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -33,7 +34,9 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
   }
 
   if (!workspaces.length) {
-    if (!allowCreate) {return null;}
+    if (!allowCreate) {
+      return null;
+    }
     return (
       <Button
         variant="secondary"
@@ -80,7 +83,15 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
         {workspaces.map((ws) => (
           <DropdownMenuItem
             key={ws.id}
-            onClick={() => setWorkspace(ws.id)}
+            onClick={() => {
+              if (searchParams.has("workspaceId")) {
+                const next = new URLSearchParams(searchParams);
+                next.set("workspaceId", ws.id);
+                setSearchParams(next, { replace: true });
+                return;
+              }
+              setWorkspace(ws.id);
+            }}
             className={ws.id === active.id ? "font-medium" : ""}
             data-testid={`workspace-option-${ws.id}`}
           >

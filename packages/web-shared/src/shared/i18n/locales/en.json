@@ -37,7 +37,6 @@
       "requestFailed": "The request could not be processed. Check your fields and try again.",
       "documentUnavailable": "Could not display the document. Use the original PDF link to review it.",
       "pageRenderFailed": "Could not render this page.",
-      "downloadSource": "Download corresponding source",
       "unableToSign": "Unable to sign."
     },
     "documentTitle": "Document title",

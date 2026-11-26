@@ -59,13 +59,16 @@ describe("staff launch projection", () => {
       {
         appId: "crm",
         dependencies: [],
-        directory: { destination: { origin: "http://localhost:5173", path: "/crm/deals" } },
+        directory: {
+          path: "/crm/deals",
+          destination: { origin: "http://localhost:5173", path: "/crm/deals" },
+        },
       },
     ]);
     expect(menus.execute).toHaveBeenCalledWith({ ...input, launchId: undefined });
-    expect(
-      (await new ListAppLaunchesUseCase(catalog, menus).execute(input))[0]?.directory?.destination
-    ).toBeUndefined();
+    const [sameOrigin] = await new ListAppLaunchesUseCase(catalog, menus).execute(input);
+    expect(sameOrigin?.directory).toMatchObject({ path: "/crm/deals" });
+    expect(sameOrigin?.directory?.destination).toBeUndefined();
     catalog.execute.mockResolvedValue([app]); // Missing dependency.
     expect(await service.execute(input)).toEqual([]);
     catalog.execute.mockResolvedValue([{ ...app, dependencies: [], enabled: false }]);
@@ -79,6 +82,14 @@ describe("staff launch projection", () => {
       groups: [{ appId: "other", defaultLabel: "Other", items: [menuItem] }],
     });
     expect(await service.execute(input)).toEqual([]); // An unrelated menu cannot grant the app.
+    menus.execute.mockResolvedValue({
+      ...base,
+      items: [],
+      groups: [
+        { appId: "crm", defaultLabel: "CRM", items: [{ ...menuItem, route: "//other.example" }] },
+      ],
+    });
+    expect(await service.execute(input)).toEqual([]);
   });
   it("only projects apps with granted navigation, retaining unavailable reasons and trusted scope", async () => {
     const catalog = mockDeep<ListAppCatalogUseCase>();

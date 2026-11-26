@@ -17,12 +17,14 @@ export const AppDirectoryDescriptorSchema = z.object({
   category: AppDirectoryCategorySchema,
 });
 // Static implemented entry routes only; no parameters, queries or redirect targets.
+export const AppDirectoryPathSchema = z
+  .string()
+  .regex(/^\/(?!auth(?:\/|$)|sso(?:\/|$)|api(?:\/|$))[a-zA-Z0-9]+(?:[/-][a-zA-Z0-9]+)*$/);
 export const AppDirectoryDestinationSchema = z.object({
   origin: AppLaunchOriginSchema,
-  path: z
-    .string()
-    .regex(/^\/(?!auth(?:\/|$)|sso(?:\/|$)|api(?:\/|$))[a-zA-Z0-9]+(?:[/-][a-zA-Z0-9]+)*$/),
+  path: AppDirectoryPathSchema,
 });
 export const AppDirectoryEntrySchema = AppDirectoryDescriptorSchema.extend({
+  path: AppDirectoryPathSchema.optional(),
   destination: AppDirectoryDestinationSchema.optional(),
 });

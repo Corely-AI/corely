@@ -3,12 +3,11 @@ import { getRequestContext } from "@/lib/request-context";
 import { Button, Card, CardContent, CardHeader } from "@/components/ui";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
 import {
-  BOOKING_REVALIDATE,
   getPublicBookingMetadata,
   getPublicBookingSummaryData,
 } from "@/app/(booking)/book/_shared";
 
-export const revalidate = BOOKING_REVALIDATE;
+export const revalidate = 60;
 
 const formatDateTime = (iso: string): string =>
   new Intl.DateTimeFormat("en-US", {
