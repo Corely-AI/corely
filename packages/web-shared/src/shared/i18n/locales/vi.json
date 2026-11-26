@@ -37,7 +37,6 @@
       "requestFailed": "Không thể xử lý yêu cầu. Hãy kiểm tra các trường và thử lại.",
       "documentUnavailable": "Không thể hiển thị tài liệu. Hãy mở PDF gốc để xem.",
       "pageRenderFailed": "Không thể hiển thị trang này.",
-      "downloadSource": "Tải mã nguồn tương ứng",
       "unableToSign": "Không thể ký."
     },
     "documentTitle": "Tên tài liệu",

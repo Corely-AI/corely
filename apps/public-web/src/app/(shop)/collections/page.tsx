@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { CollectionsScreen } from "@/modules/ecommerce";
 
 export default function CollectionsPage() {
-  return <CollectionsScreen />;
+  return (
+    <Suspense fallback={null}>
+      <CollectionsScreen />
+    </Suspense>
+  );
 }

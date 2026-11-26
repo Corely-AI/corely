@@ -1,13 +1,9 @@
 import { getRequestContext } from "@/lib/request-context";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { PublicBookingClient } from "@/components/pages/public-booking-client";
-import {
-  BOOKING_REVALIDATE,
-  getPublicBookingMetadata,
-  getPublicBookingPageData,
-} from "@/app/(booking)/book/_shared";
+import { getPublicBookingMetadata, getPublicBookingPageData } from "@/app/(booking)/book/_shared";
 
-export const revalidate = BOOKING_REVALIDATE;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const ctx = await getRequestContext();

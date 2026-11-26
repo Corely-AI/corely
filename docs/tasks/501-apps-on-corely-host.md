@@ -30,4 +30,4 @@ The browser check covered the canonical root, the four enabled app routes, an In
 
 ## Rollout
 
-The API must expose `directory.path` before the new web build serves `app.corely.one`. A session from the old focused launcher may require a fresh sign-in. Corely Sign uses the release's source archive setting. Production verification remains pending.
+The API must expose `directory.path` before the new web build serves `app.corely.one`. A session from the old focused launcher may require a fresh sign-in. Production verification remains pending.
