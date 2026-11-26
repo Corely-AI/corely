@@ -154,28 +154,23 @@ export const appShellRoutes = (
           }
         />
       ))}
-      {(import.meta.env.DEV ||
-        /^\/source\/corely-sign-[a-f0-9]{40}\.zip$/.test(
-          import.meta.env.VITE_SIGN_SOURCE_URL ?? ""
-        )) && (
-        <Route element={<SignWorkspace />}>
-          {["/sign", "/sign/settings"].map((path) => (
-            <Route key={path} path={path} element={<SignOverviewPage />} />
-          ))}
-          {["/sign/requests", "/sign/requests/:id"].map((path) => (
-            <Route key={path} path={path} element={<SignRequestPage />} />
-          ))}
-          {[
-            "/sign/requests/new",
-            "/sign/templates",
-            "/sign/templates/new",
-            "/sign/templates/:id",
-            "/sign/templates/:id/edit",
-          ].map((path) => (
-            <Route key={path} path={path} element={<SignTemplateEditor />} />
-          ))}
-        </Route>
-      )}
+      <Route element={<SignWorkspace />}>
+        {["/sign", "/sign/settings"].map((path) => (
+          <Route key={path} path={path} element={<SignOverviewPage />} />
+        ))}
+        {["/sign/requests", "/sign/requests/:id"].map((path) => (
+          <Route key={path} path={path} element={<SignRequestPage />} />
+        ))}
+        {[
+          "/sign/requests/new",
+          "/sign/templates",
+          "/sign/templates/new",
+          "/sign/templates/:id",
+          "/sign/templates/:id/edit",
+        ].map((path) => (
+          <Route key={path} path={path} element={<SignTemplateEditor />} />
+        ))}
+      </Route>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route
         path="/tasks"

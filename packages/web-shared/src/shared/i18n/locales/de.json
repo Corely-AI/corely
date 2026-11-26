@@ -37,7 +37,6 @@
       "requestFailed": "Die Anfrage konnte nicht verarbeitet werden. Prüfen Sie Ihre Eingaben.",
       "documentUnavailable": "Dokumentanzeige fehlgeschlagen. Öffnen Sie das Original-PDF.",
       "pageRenderFailed": "Diese Seite konnte nicht angezeigt werden.",
-      "downloadSource": "Zugehörigen Quellcode herunterladen",
       "unableToSign": "Unterschreiben nicht möglich."
     },
     "documentTitle": "Dokumenttitel",

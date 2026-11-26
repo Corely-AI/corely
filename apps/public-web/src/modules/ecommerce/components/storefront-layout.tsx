@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { CartDrawer } from "./cart-drawer";
 import { StorefrontHeader } from "./header";
 
@@ -14,7 +14,9 @@ export function StorefrontLayout({ children, workspaceSlug }: StorefrontLayoutPr
 
   return (
     <div className="min-h-screen bg-background">
-      <StorefrontHeader workspaceSlug={workspaceSlug} onOpenCart={() => setIsCartOpen(true)} />
+      <Suspense fallback={null}>
+        <StorefrontHeader workspaceSlug={workspaceSlug} onOpenCart={() => setIsCartOpen(true)} />
+      </Suspense>
       <main className="mx-auto w-full max-w-7xl space-y-10 px-4 py-8 sm:px-6">{children}</main>
       <CartDrawer open={isCartOpen} onOpenChange={setIsCartOpen} workspaceSlug={workspaceSlug} />
     </div>
