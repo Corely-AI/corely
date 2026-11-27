@@ -1,13 +1,16 @@
+// @ts-check
 import { Buffer } from "node:buffer";
 
 const actions = new Set(["exchange", "review", "progress", "prepare", "accept", "decline"]);
 const signerCookie = /(?:^|;\s*)corely_sign_session=([A-Za-z0-9_-]{43})(?:;|$)/;
 
-export async function proxySigningRequest(
-  request: Request,
-  action: string,
-  { publicOrigin, apiBaseUrl }: { publicOrigin?: string; apiBaseUrl?: string }
-): Promise<Response> {
+/**
+ * @param {Request} request
+ * @param {string} action
+ * @param {import("./signing-proxy.mjs").SigningProxyOptions} options
+ * @returns {Promise<Response>}
+ */
+export async function proxySigningRequest(request, action, { publicOrigin, apiBaseUrl }) {
   const headers = new Headers({
     "Cache-Control": "private, no-store",
     "Referrer-Policy": "no-referrer",
@@ -33,7 +36,8 @@ export async function proxySigningRequest(
     return new Response(null, { status: 400, headers });
   }
 
-  const chunks: Uint8Array[] = [];
+  /** @type {Uint8Array[]} */
+  const chunks = [];
   let size = 0;
   while (true) {
     const chunk = await reader.read();
@@ -51,8 +55,8 @@ export async function proxySigningRequest(
   const session = signerCookie.exec(request.headers.get("cookie") ?? "")?.[1];
   const forwarded = {
     method: "POST",
-    cache: "no-store" as const,
-    redirect: "error" as const,
+    cache: /** @type {const} */ ("no-store"),
+    redirect: /** @type {const} */ ("error"),
     headers: {
       "Content-Type": "application/json",
       "X-Sign-Action": "1",
@@ -61,7 +65,8 @@ export async function proxySigningRequest(
     },
     body: Buffer.concat(chunks).toString("utf8"),
   };
-  let result: Response;
+  /** @type {Response} */
+  let result;
   try {
     result = await fetch(`${apiBaseUrl.replace(/\/$/, "")}/public/signing/${action}`, forwarded);
   } catch {
