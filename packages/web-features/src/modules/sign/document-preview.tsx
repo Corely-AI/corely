@@ -4,6 +4,7 @@ import type { SignRecipientMessages } from "@corely/web-shared/shared/i18n/sign-
 import type * as PDFJS from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { PDFDocumentProxy } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { signFieldPosition, type SignField } from "@corely/contracts";
+import { Button, LoadingSkeleton, Skeleton } from "@corely/ui";
 
 export interface SigningPdfAssets {
   moduleUrl: string;
@@ -24,13 +25,24 @@ export function DocumentPreview({
   const [doc, setDoc] = useState<PDFDocumentProxy>(),
     [page, setPage] = useState(1),
     [error, setError] = useState<"documentUnavailable" | "pageRenderFailed">();
+  const [rendered, setRendered] = useState<{ doc: PDFDocumentProxy; page: number }>();
+  const [attempt, setAttempt] = useState(0);
+  const ready = Boolean(doc && rendered?.doc === doc && rendered.page === page);
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     let closed = false,
       dispose = () => {};
+    setDoc(undefined);
+    setRendered(undefined);
+    setError(undefined);
     async function load() {
+      const module = new URL(moduleUrl, location.origin);
+      if (attempt) {
+        // Retry module fetches that the browser may have cached as failures.
+        module.searchParams.set("retry", String(attempt));
+      }
       const { getDocument, GlobalWorkerOptions } = (await import(
-        /* @vite-ignore */ /* webpackIgnore: true */ moduleUrl
+        /* @vite-ignore */ /* webpackIgnore: true */ module.href
       )) as typeof PDFJS;
       if (closed) {
         return;
@@ -42,7 +54,7 @@ export function DocumentPreview({
         stopAtErrors: true,
       });
       dispose = () => {
-        void task.destroy();
+        void task.destroy().catch(() => {});
       };
       const pdf = await task.promise;
       if (!closed) {
@@ -58,15 +70,16 @@ export function DocumentPreview({
       closed = true;
       dispose();
     };
-  }, [source, moduleUrl, workerUrl]);
+  }, [source, moduleUrl, workerUrl, attempt]);
   useEffect(() => {
     if (!doc) {
       return;
     }
+    const document = doc;
     let closed = false,
       stop = () => {};
     async function render() {
-      const pdfPage = await doc!.getPage(page);
+      const pdfPage = await document.getPage(page);
       if (closed || !canvas.current) {
         return;
       }
@@ -77,6 +90,9 @@ export function DocumentPreview({
       const render = pdfPage.render({ canvas: canvas.current, viewport });
       stop = () => render.cancel();
       await render.promise;
+      if (!closed) {
+        setRendered({ doc: document, page });
+      }
     }
     void render().catch(() => {
       if (!closed) {
@@ -89,23 +105,84 @@ export function DocumentPreview({
     };
   }, [doc, page]);
   return (
-    <section aria-label="Document preview" className="space-y-2">
-      {error && <p role="alert">{messages[error]}</p>}
-      <div className="relative">
+    <div className="space-y-3">
+      {doc && (
+        <nav
+          aria-label={messages.documentPages}
+          className="flex flex-wrap items-center justify-between gap-2"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            disabled={page <= 1}
+            onClick={() => {
+              setError(undefined);
+              setPage(page - 1);
+            }}
+          >
+            {messages.previousPage}
+          </Button>
+          <span className="text-sm tabular-nums text-muted-foreground">
+            {messages.pageTitle} {page} {messages.of} {doc.numPages}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={page >= doc.numPages}
+            onClick={() => {
+              setError(undefined);
+              setPage(page + 1);
+            }}
+          >
+            {messages.nextPage}
+          </Button>
+        </nav>
+      )}
+      <div className="relative overflow-hidden rounded-lg border bg-white">
+        {error ? (
+          <div className="space-y-3 bg-card p-4">
+            <p role="alert" className="text-sm text-foreground">
+              {error === "documentUnavailable"
+                ? messages.previewUnavailable
+                : messages.pageRenderFailed}
+            </p>
+            <Button type="button" variant="outline" onClick={() => setAttempt((n) => n + 1)}>
+              {messages.retryPreview}
+            </Button>
+          </div>
+        ) : !ready ? (
+          <LoadingSkeleton
+            label={doc ? messages.loadingPage : messages.loadingDocument}
+            className="aspect-[8.5/11] bg-background p-5 sm:p-8"
+          >
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-3/5" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-5/6" />
+              <Skeleton className="h-3 w-4/6" />
+            </div>
+          </LoadingSkeleton>
+        ) : null}
         <canvas
-          aria-label={"Document page " + page}
+          aria-label={messages.pageTitle + " " + page}
           ref={canvas}
-          className="block h-auto w-full border bg-white"
+          className={ready && !error ? "block h-auto w-full" : "sr-only"}
+          aria-hidden={!ready || Boolean(error)}
         />
-        {doc &&
+        {ready &&
+          !error &&
           fields
             .filter((f) => f.pageIndex === page - 1 && f.rect)
             .map((f) => (
               <button
                 type="button"
                 key={f.id}
-                onClick={() => document.getElementById("field-" + f.id)?.focus()}
-                aria-label={"Go to " + f.type + " field"}
+                onClick={() => {
+                  const field = document.getElementById("field-" + f.id);
+                  (field?.querySelector("input") ?? field)?.focus();
+                }}
+                aria-label={messages.goToField + " · " + messages[f.type]}
+                className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 style={{
                   position: "absolute",
                   ...signFieldPosition(f.rect),
@@ -115,19 +192,6 @@ export function DocumentPreview({
               />
             ))}
       </div>
-      {doc && (
-        <nav aria-label="Document pages" className="flex justify-between">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            {messages.previousPage}
-          </button>
-          <span>
-            {messages.pageTitle} {page} {messages.of} {doc.numPages}
-          </span>
-          <button disabled={page >= doc.numPages} onClick={() => setPage(page + 1)}>
-            {messages.nextPage}
-          </button>
-        </nav>
-      )}
-    </section>
+    </div>
   );
 }
