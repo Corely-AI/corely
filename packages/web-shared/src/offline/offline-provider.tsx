@@ -114,7 +114,9 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ queryClient, c
       buster: "workspace-scope-v2",
       dehydrateOptions: {
         shouldDehydrateQuery: (query) =>
-          query.state.status === "success" && query.queryKey[0] !== "permissions",
+          query.state.status === "success" &&
+          query.queryKey[0] !== "permissions" &&
+          query.meta?.persist !== false,
       },
     });
     restorePromise.catch((err) => consoleLogger.warn("Failed to restore query cache", err));

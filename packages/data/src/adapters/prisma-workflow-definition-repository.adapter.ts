@@ -79,8 +79,8 @@ export class WorkflowDefinitionRepository {
     });
   }
 
-  async findLatestByKey(tenantId: string, key: string) {
-    return this.prisma.workflowDefinition.findFirst({
+  async findLatestByKey(tenantId: string, key: string, tx?: TransactionContext) {
+    return getPrismaClient(this.prisma, tx).workflowDefinition.findFirst({
       where: { tenantId, key },
       orderBy: { version: "desc" },
     });
