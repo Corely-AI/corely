@@ -10,7 +10,7 @@ type Category = "all" | "finance" | "people" | "sales" | "operations" | "content
 const categories = ["finance", "people", "sales", "operations", "content"] as const;
 const appGridClassName = "grid gap-4 sm:grid-cols-2 xl:grid-cols-3";
 const appCardClassName =
-  "flex min-w-0 flex-col items-start gap-5 rounded-xl border bg-card p-6 text-card-foreground shadow-sm";
+  "flex min-w-0 flex-col items-start gap-5 rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm";
 
 export interface AppDirectoryProps {
   apps: AppCatalogItem[];

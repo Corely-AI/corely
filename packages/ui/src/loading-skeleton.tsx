@@ -15,7 +15,7 @@ function PlaceholderContent({ variant }: { variant: SkeletonVariant }) {
   switch (variant) {
     case "list":
       return (
-        <div className="divide-y rounded-lg border bg-card">
+        <div className="divide-y divide-border rounded-lg border border-border bg-card">
           {[0, 1, 2, 3].map((row) => (
             <div key={row} className="grid grid-cols-[2fr_1fr_1fr] items-center gap-4 px-4 py-4">
               <Skeleton className="h-4 w-4/5" />
@@ -27,7 +27,7 @@ function PlaceholderContent({ variant }: { variant: SkeletonVariant }) {
       );
     case "detail":
       return (
-        <div className="space-y-4 rounded-lg border bg-card p-4 sm:p-6">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-4 sm:p-6">
           <Skeleton className="h-5 w-40 max-w-full" />
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
@@ -36,7 +36,7 @@ function PlaceholderContent({ variant }: { variant: SkeletonVariant }) {
       );
     case "form":
       return (
-        <div className="grid gap-5 rounded-lg border bg-card p-4 sm:grid-cols-2 sm:p-6">
+        <div className="grid gap-5 rounded-lg border border-border bg-card p-4 sm:grid-cols-2 sm:p-6">
           {[0, 1, 2, 3].map((field) => (
             <div key={field} className="space-y-2">
               <Skeleton className="h-4 w-24 max-w-full" />
@@ -49,7 +49,7 @@ function PlaceholderContent({ variant }: { variant: SkeletonVariant }) {
       return (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {[0, 1, 2].map((card) => (
-            <div key={card} className="space-y-4 rounded-lg border bg-card p-4">
+            <div key={card} className="space-y-4 rounded-lg border border-border bg-card p-4">
               <Skeleton className="h-9 w-9" />
               <Skeleton className="h-5 w-2/3" />
               <Skeleton className="h-8 w-full" />
@@ -59,7 +59,7 @@ function PlaceholderContent({ variant }: { variant: SkeletonVariant }) {
       );
     case "calendar":
       return (
-        <div className="grid grid-cols-7 gap-1 rounded-lg border bg-card p-2 sm:gap-2 sm:p-4">
+        <div className="grid grid-cols-7 gap-1 rounded-lg border border-border bg-card p-2 sm:gap-2 sm:p-4">
           {Array.from({ length: 21 }, (_, day) => (
             <Skeleton key={day} className="h-9 sm:h-14" />
           ))}
@@ -108,7 +108,7 @@ export function TableLoadingSkeleton({ columns, label }: { columns: number; labe
         </td>
       </tr>
       {[0, 1, 2, 3].map((row) => (
-        <tr key={row} aria-hidden="true" className="border-b last:border-b-0">
+        <tr key={row} aria-hidden="true" className="border-b border-border last:border-b-0">
           {Array.from({ length: columns }, (_, column) => (
             <td key={column} className="px-4 py-4">
               <Skeleton className={column === 0 ? "h-4 w-4/5" : "h-4 w-3/5"} />

@@ -8,6 +8,7 @@ import {
   CardTitle,
   Input,
   Label,
+  LoadingSkeleton,
   Switch,
   useToast,
 } from "@corely/ui";
@@ -52,7 +53,9 @@ export function InvoiceEmailSettingsCard({ workspaceId }: { workspaceId: string 
         <CardTitle>{t("purchasing.invoiceEmail.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {settings.isPending && <p role="status">{t("purchasing.invoiceEmail.loading")}</p>}
+        {settings.isLoading && (
+          <LoadingSkeleton label={t("purchasing.invoiceEmail.loading")} variant="form" />
+        )}
         {settings.isError && (
           <div className="space-y-2">
             <p role="alert">{t("purchasing.invoiceEmail.loadFailed")}</p>
