@@ -2419,6 +2419,13 @@
     "lookupFailed": "La ricerca del cliente non è disponibile o l'accesso è stato negato. Riprova o chiedi al tuo amministratore."
   },
   "settings": {
+    "emailForwarding": "Inoltro delle e-mail",
+    "navigation": {
+      "myAccount": "Il mio account",
+      "myAccountDescription": "Profilo, lingua e aspetto",
+      "workspace": "Area di lavoro",
+      "workspaceDescription": "Informazioni condivise e inoltro delle e-mail"
+    },
     "title": "Impostazioni",
     "profile": "Profilo",
     "business": "Affari",

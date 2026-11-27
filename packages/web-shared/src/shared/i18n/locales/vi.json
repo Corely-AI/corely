@@ -2429,6 +2429,13 @@
     "lookupFailed": "Không thể tìm khách hàng hoặc quyền truy cập bị từ chối. Hãy thử lại hoặc liên hệ quản trị viên."
   },
   "settings": {
+    "emailForwarding": "Chuyển tiếp email",
+    "navigation": {
+      "myAccount": "Tài khoản của tôi",
+      "myAccountDescription": "Hồ sơ, ngôn ngữ và giao diện",
+      "workspace": "Không gian làm việc",
+      "workspaceDescription": "Thông tin dùng chung và chuyển tiếp email"
+    },
     "title": "Cài đặt",
     "profile": "Hồ sơ",
     "business": "Doanh nghiệp",

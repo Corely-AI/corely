@@ -1,5 +1,6 @@
 import type { WorkspaceNavigationGroup } from "@corely/contracts";
 import { describe, expect, it } from "vitest";
+import { settingsDestinations } from "../modules/settings/settings-navigation";
 import { resolveBackofficeNavigation } from "./backoffice-navigation";
 
 const groups: WorkspaceNavigationGroup[] = [
@@ -172,5 +173,50 @@ describe("Backoffice app navigation", () => {
       groups: [],
       scope: "app",
     });
+  });
+
+  it.each(["/settings/workspace", "/accounting/setup"])(
+    "shows one Settings entry on %s when the workspace menu already has settings links",
+    (path) => {
+      const group: WorkspaceNavigationGroup = {
+        id: "workspaces",
+        labelKey: "nav.groups.workspaces",
+        defaultLabel: "Workspaces",
+        order: 90,
+        items: [
+          {
+            id: "workspace-settings",
+            route: "/settings/workspace",
+            label: "Workspace Settings",
+            icon: "Building",
+            section: "workspace",
+            order: 90,
+          },
+          {
+            id: "profile-settings",
+            route: "/settings",
+            label: "Account & Profile",
+            labelKey: "nav.profile",
+            icon: "User",
+            section: "profile",
+            order: 95,
+          },
+        ],
+      };
+
+      const navigation = resolveBackofficeNavigation(path, [group]);
+      expect(navigation.groups[0].items).toEqual([
+        expect.objectContaining({ route: "/settings", labelKey: "nav.settings", exact: true }),
+      ]);
+      expect(group.items).toHaveLength(2);
+    }
+  );
+
+  it("offers workspace settings only when a workspace is active", () => {
+    expect(settingsDestinations(false).map(({ to }) => to)).toEqual(["/settings#my-account"]);
+    expect(settingsDestinations(true).map(({ to }) => to)).toEqual([
+      "/settings#my-account",
+      "/settings/workspace",
+    ]);
   });
 });

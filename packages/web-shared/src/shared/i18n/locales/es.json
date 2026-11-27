@@ -2419,6 +2419,13 @@
     "lookupFailed": "La búsqueda de clientes no está disponible o se denegó el acceso. Inténtalo de nuevo o consulta con tu administrador."
   },
   "settings": {
+    "emailForwarding": "Reenvío de correo electrónico",
+    "navigation": {
+      "myAccount": "Mi cuenta",
+      "myAccountDescription": "Perfil, idioma y apariencia",
+      "workspace": "Espacio de trabajo",
+      "workspaceDescription": "Datos compartidos y reenvío de correo"
+    },
     "title": "Configuración",
     "profile": "Perfil",
     "business": "Negocios",

@@ -2419,6 +2419,13 @@
     "lookupFailed": "Wyszukiwanie klientów jest niedostępne lub odmówiono dostępu. Spróbuj ponownie lub zapytaj administratora."
   },
   "settings": {
+    "emailForwarding": "Przekazywanie e-maili",
+    "navigation": {
+      "myAccount": "Moje konto",
+      "myAccountDescription": "Profil, język i wygląd",
+      "workspace": "Obszar roboczy",
+      "workspaceDescription": "Wspólne dane i przekazywanie e-maili"
+    },
     "title": "Ustawienia",
     "profile": "Profil",
     "business": "Biznes",
