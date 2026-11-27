@@ -439,6 +439,7 @@
   "nav": {
     "people": "Каталог сотрудников",
     "peopleSelfService": "Мой профиль",
+    "knowledge": "Знания",
     "dashboard": "Панель управления",
     "portfolio": "Портфолио",
     "rentals": {

@@ -4,6 +4,10 @@ export {
 } from "../application/ports/personnel-documents.port";
 export { isPersonnelDocumentId } from "../domain/personnel-document";
 export { TemplateDocuments } from "../application/ports/template-documents.port";
+export {
+  PROCEDURE_DOCUMENTS,
+  type ProcedureDocuments,
+} from "../application/ports/procedure-documents.port";
 
 export {
   VENDOR_BILL_DOCUMENTS,

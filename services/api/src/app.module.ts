@@ -39,6 +39,7 @@ import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
 import { BookingModule } from "./modules/booking";
 import { TasksModule } from "./modules/tasks/tasks.module";
+import { KnowledgeModule } from "./modules/knowledge/knowledge.module";
 import { PeopleModule } from "./modules/people/people.module";
 import { PortalModule } from "./modules/portal/portal.module";
 import { CashManagementModule } from "./modules/cash-management/cash-management.module";
@@ -115,6 +116,7 @@ import { SignModule } from "./modules/sign/sign.module";
     BookingModule,
     PeopleModule,
     TasksModule,
+    KnowledgeModule,
     CoachingEngagementsModule,
     RestaurantModule,
     PortalModule,

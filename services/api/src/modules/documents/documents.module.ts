@@ -1,5 +1,11 @@
 import { PersonnelDocumentsAdapter } from "./infrastructure/prisma/personnel-documents.adapter";
-import { EXPENSE_RECEIPT_DOCUMENTS, PERSONNEL_DOCUMENTS, VENDOR_BILL_DOCUMENTS } from "./public";
+import {
+  EXPENSE_RECEIPT_DOCUMENTS,
+  PERSONNEL_DOCUMENTS,
+  PROCEDURE_DOCUMENTS,
+  VENDOR_BILL_DOCUMENTS,
+} from "./public";
+import { ProcedureDocumentsAdapter } from "./infrastructure/prisma/procedure-documents.adapter";
 import { ExpenseReceiptDocumentsAdapter } from "./infrastructure/prisma/expense-receipt-documents.adapter";
 import { PrivateEmailOriginalsAdapter } from "./infrastructure/prisma/private-email-originals.adapter";
 import { VendorBillDocumentsAdapter } from "./infrastructure/prisma/vendor-bill-documents.adapter";
@@ -58,6 +64,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     { provide: EXPENSE_RECEIPT_DOCUMENTS, useClass: ExpenseReceiptDocumentsAdapter },
     { provide: VENDOR_BILL_DOCUMENTS, useExisting: VendorBillDocumentsAdapter },
     { provide: PERSONNEL_DOCUMENTS, useExisting: PersonnelDocumentsAdapter },
+    { provide: PROCEDURE_DOCUMENTS, useClass: ProcedureDocumentsAdapter },
     { provide: TemplateDocuments, useClass: PrismaTemplateDocuments },
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
@@ -364,6 +371,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     EXPENSE_RECEIPT_DOCUMENTS,
     VENDOR_BILL_DOCUMENTS,
     PERSONNEL_DOCUMENTS,
+    PROCEDURE_DOCUMENTS,
     TemplateDocuments,
     DocumentsApplication,
     GcsObjectStorageAdapter,
