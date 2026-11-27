@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Plus, Trash2, Check, CreditCard, Banknote, DollarSign } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@corely/ui";
@@ -51,7 +51,7 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
   const activeMethods = methods.filter((m) => m.isActive);
 
   if (isLoading) {
-    return <div className="text-muted-foreground">{uiCopy("loading-payment-methods")}</div>;
+    return <LoadingSkeleton variant="list" label={uiCopy("loading-payment-methods")} />;
   }
 
   const getBankAccountLabel = (bankAccountId: string | null | undefined) => {

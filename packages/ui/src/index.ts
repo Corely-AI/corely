@@ -38,6 +38,7 @@ export * from "./separator";
 export * from "./sheet";
 export * from "./sidebar";
 export * from "./skeleton";
+export * from "./loading-skeleton";
 export * from "./slider";
 export { Toaster as SonnerToaster, toast as sonnerToast } from "./sonner";
 export * from "./switch";

@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { RolePermissionsEditor } from "../components/RolePermissionsEditor";
@@ -142,7 +142,7 @@ export default function RolePermissionsPage() {
         </CardHeader>
         <CardContent>
           {isLoading || !data ? (
-            <div className="text-sm text-muted-foreground">{uiCopy("loading-permissions")}</div>
+            <LoadingSkeleton variant="form" label={uiCopy("loading-permissions")} />
           ) : (
             <RolePermissionsEditor
               catalog={data.catalog}

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { bookingApi } from "@/lib/booking-api";
 import { bookingServiceKeys } from "../queries";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Label } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent, Label } from "@corely/ui";
 
 export default function ServiceDetailPage() {
   const uiCopy = useUiCopy("ui.booking-servicedetailpage");
@@ -96,11 +96,7 @@ export default function ServiceDetailPage() {
       </div>
 
       {serviceQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-service")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="detail" label={uiCopy("loading-service")} />
       ) : null}
 
       {serviceQuery.isError ? (

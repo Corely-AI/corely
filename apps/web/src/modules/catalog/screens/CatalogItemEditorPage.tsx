@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
 import { toast } from "sonner";
 import type { CreateCatalogItemInput, UpdateCatalogItemInput } from "@corely/contracts";
 
@@ -222,11 +222,7 @@ export default function CatalogItemEditorPage() {
       </div>
 
       {!isNew && itemQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-catalog-item")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-catalog-item")} />
       ) : null}
 
       {!isNew && itemQuery.isError ? (

@@ -1,13 +1,17 @@
 import { localizedValue } from "@corely/contracts";
 import React, { useState } from "react";
 import type { AppCatalogItem } from "@corely/contracts";
-import { Button, Input } from "@corely/ui";
+import { Button, Input, LoadingSkeleton, Skeleton } from "@corely/ui";
 import { catalogEntryUrl, catalogMetadata } from "./catalog-entry";
 import { AppLogo } from "@corely/web-shared/layout/app-logo";
 import { copy, type Locale } from "./copy";
 
 type Category = "all" | "finance" | "people" | "sales" | "operations" | "content";
 const categories = ["finance", "people", "sales", "operations", "content"] as const;
+const appGridClassName = "grid gap-4 sm:grid-cols-2 xl:grid-cols-3";
+const appCardClassName =
+  "flex min-w-0 flex-col items-start gap-5 rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm";
+
 export interface AppDirectoryProps {
   apps: AppCatalogItem[];
   workspaceId: string;
@@ -86,7 +90,20 @@ export function AppDirectory({
         </div>
       )}
       {loading ? (
-        <p role="status">{text.loading}</p>
+        <LoadingSkeleton label={text.loading}>
+          <div className="space-y-3">
+            <Skeleton className="h-7 w-24" />
+            <div className={appGridClassName}>
+              {[0, 1, 2].map((card) => (
+                <div key={card} className={appCardClassName}>
+                  <Skeleton className="h-11 w-11 rounded-lg" />
+                  <Skeleton className="h-7 w-2/3 max-w-40" />
+                  <Skeleton className="h-11 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </LoadingSkeleton>
       ) : error ? (
         <div role="alert" className="space-y-3 rounded-lg border p-6">
           <p>{text.error}</p>
@@ -107,12 +124,9 @@ export function AppDirectory({
             return entries.length ? (
               <section key={group} aria-label={text[group]} className="space-y-3">
                 <h2 className="text-lg font-semibold">{text[group]}</h2>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className={appGridClassName}>
                   {entries.map(({ app, metadata }) => (
-                    <article
-                      key={app.appId}
-                      className="flex min-w-0 flex-col items-start gap-5 rounded-xl border bg-card p-6 text-card-foreground shadow-sm"
-                    >
+                    <article key={app.appId} className={appCardClassName}>
                       <AppLogo logo={app.directory?.logo} iconKey={app.launch?.iconKey} />
                       <h3 className="break-words text-xl font-semibold">
                         {localizedValue(metadata.displayName, locale, app.appId)}
@@ -133,7 +147,7 @@ export function AppDirectory({
           })}
         </div>
       )}
-      {launching && <p role="status">{text.opening}</p>}
+      {!loading && launching && <p role="status">{text.opening}</p>}
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -15,7 +16,7 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: product } = useQuery({
+  const { data: product, isLoading } = useQuery({
     queryKey: inventoryQueryKeys.products.detail(id || ""),
     queryFn: () => inventoryApi.getProduct(id || ""),
     enabled: Boolean(id),
@@ -36,6 +37,10 @@ export default function ProductDetailPage() {
       void queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.products.details() });
     },
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
 
   if (!product) {
     return null;

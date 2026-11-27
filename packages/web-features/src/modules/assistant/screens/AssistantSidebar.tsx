@@ -2,6 +2,7 @@ import React from "react";
 import { format } from "date-fns";
 import { ChevronDown, Loader2, Menu, Plus } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Sheet,
   SheetContent,
@@ -70,9 +71,7 @@ export function AssistantSidebar({
 
       <div className="flex-1 overflow-y-auto px-6 py-4 lg:px-8">
         {threadsQuery.isLoading ? (
-          <div className="py-2 text-sm text-muted-foreground">
-            {t("assistant.loadingChats", "Loading chats...")}
-          </div>
+          <LoadingSkeleton variant="list" label={t("assistant.loadingChats", "Loading chats...")} />
         ) : null}
 
         {!threadsQuery.isLoading && groupedThreads.length === 0 ? (

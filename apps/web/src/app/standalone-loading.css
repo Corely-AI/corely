@@ -1,0 +1,44 @@
+.standalone-loading {
+  --placeholder-fill: hsl(var(--muted));
+}
+
+.openbuk-surface .standalone-loading {
+  --placeholder-fill: var(--soft);
+}
+
+.standalone-loading > .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.standalone-loading-calendar,
+.standalone-loading-form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.standalone-loading-calendar {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.standalone-loading-cell,
+.standalone-loading-label,
+.standalone-loading-control {
+  min-width: 0;
+  border-radius: 0.375rem;
+  background: var(--placeholder-fill);
+}
+
+.standalone-loading-label {
+  width: 6rem;
+  height: 1rem;
+}
+
+.standalone-loading-cell,
+.standalone-loading-control {
+  height: 2.75rem;
+}

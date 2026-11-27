@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
@@ -7,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Alert, AlertDescription } from "@corely/ui";
-import { CreditCard, Loader2, AlertCircle, Power, PowerOff } from "lucide-react";
+import { CreditCard, AlertCircle, Power, PowerOff } from "lucide-react";
 import { useTenants } from "../../hooks/useTenants";
 import { useUpdateTenant } from "../../hooks/useUpdateTenant";
 import type { TenantDto, UpdateTenantInput } from "@corely/contracts";
@@ -128,11 +129,7 @@ export function TenantsListPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="list" />;
   }
 
   if (error) {

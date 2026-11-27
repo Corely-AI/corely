@@ -1,3 +1,4 @@
+import { StandaloneLoading } from "../../app/standalone-loading";
 import { corelyLocaleDetails, corelyLocales, normalizeCorelyLocale } from "@corely/contracts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button, Input, Logo } from "@corely/ui/auth-primitives";
@@ -269,16 +270,12 @@ export function LoginPage() {
             <p>{copy.security}</p>
           </div>
         </section>
-        <section
-          className="login-card"
-          aria-label={copy.attention}
-          aria-busy={busy || (!context && !failure)}
-        >
+        <section className="login-card" aria-label={copy.attention} aria-busy={busy}>
           <div className="card-marker" aria-hidden="true">
             C
           </div>
           <h2>{context ? `${copy.continuing} ${appNames[context.appKey]}` : copy.attention}</h2>
-          {!context && !failure && <p role="status">{copy.loading}</p>}
+          {!context && !failure && <StandaloneLoading label={copy.loading} />}
           {failure && (
             <p className="login-error" role="alert" tabIndex={-1} ref={errorRef}>
               {failure === "invalid" && mode === "code" ? copy.codeInvalid : copy[failure]}

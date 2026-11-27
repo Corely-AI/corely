@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -8,6 +9,7 @@ import { ListToolbar, useListUrlState } from "@/shared/list-kit";
 import { coachingApi } from "@/lib/coaching-api";
 import { coachingOfferKeys } from "../queries";
 import {
+  TableLoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -31,6 +33,7 @@ const getLocalizedValue = (
 };
 
 export const CoachingOffersPage = () => {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.coaching-engagements-coachingofferspage");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [state, setUrlState] = useListUrlState(
@@ -48,7 +51,7 @@ export const CoachingOffersPage = () => {
     [state.page, state.pageSize, state.q]
   );
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: coachingOfferKeys.list(queryParams),
     queryFn: () => coachingApi.listOffers(queryParams),
     placeholderData: keepPreviousData,
@@ -96,6 +99,15 @@ export const CoachingOffersPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {isLoading ? (
+                <TableLoadingSkeleton columns={7} label={t("common.loading")} />
+              ) : isError && !data ? (
+                <TableRow>
+                  <TableCell colSpan={7}>
+                    <p role="alert">{t("common.error")}</p>
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {(data?.items ?? []).map((offer) => (
                 <TableRow key={offer.id}>
                   <TableCell>
@@ -125,7 +137,7 @@ export const CoachingOffersPage = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (data?.items?.length ?? 0) === 0 ? (
+              {!isLoading && (!isError || data) && (data?.items?.length ?? 0) === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7}>{uiCopy("no-coaching-offers-yet")}</TableCell>
                 </TableRow>

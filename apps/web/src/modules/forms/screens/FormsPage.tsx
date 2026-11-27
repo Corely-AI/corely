@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
@@ -24,6 +25,7 @@ import {
   type FilterFieldDef,
 } from "@/shared/list-kit";
 import {
+  LoadingSkeleton,
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -41,6 +43,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function FormsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.forms-formspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -148,11 +151,16 @@ export default function FormsPage() {
         <Card>
           <CardContent className="p-0" data-testid="forms-list">
             {isLoading ? (
-              <div className="space-y-4 p-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-12 w-full animate-pulse rounded bg-muted/20" />
-                ))}
-              </div>
+              <LoadingSkeleton label={t("common.loading")}>
+                <div className="space-y-4 p-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-12 w-full animate-pulse motion-reduce:animate-none rounded bg-muted/20"
+                    />
+                  ))}
+                </div>
+              </LoadingSkeleton>
             ) : forms.length === 0 ? (
               <EmptyState
                 icon={ExternalLink}

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckSquare, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@corely/ui";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import { ActivityCard } from "../components/ActivityCard";
@@ -13,7 +13,11 @@ export default function ActivitiesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data: activitiesData } = useQuery({
+  const {
+    data: activitiesData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["activities"],
     queryFn: () => crmApi.listActivities(),
   });
@@ -36,7 +40,13 @@ export default function ActivitiesPage() {
         </Button>
       </div>
 
-      {activities.length === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton variant="list" label={t("common.loading")} />
+      ) : isError && !activitiesData ? (
+        <p className="p-4 text-sm text-destructive" role="alert">
+          {t("common.error")}
+        </p>
+      ) : activities.length === 0 ? (
         <Card>
           <CardContent className="p-0">
             <EmptyState

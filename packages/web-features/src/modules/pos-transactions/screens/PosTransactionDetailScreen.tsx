@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
+  LoadingSkeleton,
   Badge,
   Card,
   CardContent,
@@ -60,9 +61,12 @@ export function PosTransactionDetailScreen() {
 
   if (transactionQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">
-        {uiCopy("loading-transaction-detail")}
-      </div>
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-transaction-detail")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

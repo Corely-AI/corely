@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Plus, Edit } from "lucide-react";
-import { Badge, Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
 import {
@@ -136,7 +136,7 @@ export default function ClassGroupsListPage() {
         }
       >
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground">{t("classes.groups.loading")}</div>
+          <LoadingSkeleton variant="list" label={t("classes.groups.loading")} />
         ) : items.length === 0 ? (
           <EmptyState
             title={t("classes.groups.emptyTitle")}

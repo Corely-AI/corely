@@ -1,5 +1,5 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
-import { Button, EmptyState } from "@corely/ui";
+import { LoadingSkeleton, Button, EmptyState } from "@corely/ui";
 import { CrudListPageLayout } from "@corely/web-shared/shared/crud/CrudListPageLayout";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
 import { useTranslation } from "react-i18next";
@@ -238,11 +238,7 @@ export function WorkspaceTemplates({
     );
   }
   if (!list && !ready) {
-    return (
-      <p className="p-6 text-muted-foreground" role="status">
-        {t("sign.loading")}
-      </p>
-    );
+    return <LoadingSkeleton label={t("sign.loading")} variant="form" className="p-6" withHeading />;
   }
   if (!list) {
     return (
@@ -278,9 +274,7 @@ export function WorkspaceTemplates({
           </Button>
         </div>
       ) : !ready ? (
-        <p role="status" className="p-4 text-muted-foreground">
-          {t("sign.loading")}
-        </p>
+        <LoadingSkeleton label={t("sign.loading")} variant="list" className="p-4" />
       ) : items.length === 0 ? (
         <EmptyState icon={getIconByName("FileStack")} title={t("sign.noDrafts")} />
       ) : (

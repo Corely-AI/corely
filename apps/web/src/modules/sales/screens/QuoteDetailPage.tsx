@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { normalizeError } from "@corely/api-client";
@@ -21,7 +22,7 @@ export default function QuoteDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: quoteData } = useQuery({
+  const { data: quoteData, isLoading } = useQuery({
     queryKey: salesQueryKeys.quotes.detail(quoteId ?? ""),
     queryFn: () => salesApi.getQuote(quoteId ?? ""),
     enabled: Boolean(quoteId),
@@ -142,6 +143,10 @@ export default function QuoteDetailPage() {
     },
     onError: () => toast.error(uiCopy("failed-to-convert-quote")),
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
 
   if (!quote) {
     return (

@@ -4,6 +4,7 @@ import { Link, useSearchParams, useParams, useNavigate } from "react-router-dom"
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -115,7 +116,12 @@ export function DailyCloseScreen() {
 
   if (registerQuery.isLoading || previewQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+      <LoadingSkeleton
+        variant="form"
+        label={t("cash.ui.common.loadingRegister")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

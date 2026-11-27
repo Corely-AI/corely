@@ -18,6 +18,7 @@ import {
 } from "@corely/web-shared/shared/workspaces/navigation-labels";
 import { useTranslation } from "react-i18next";
 import { AppSidebar, type AppSidebarProps, type WorkspaceSwitcherMode } from "./app-sidebar";
+import { PageLoadingSkeleton } from "../shared/components/page-loading-skeleton";
 import { filterSidebarNavigation } from "./sidebar-navigation";
 
 interface QuickActionConfig {
@@ -347,7 +348,7 @@ export function AppShell({
             className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
           >
             {topContent}
-            <React.Suspense fallback={<p role="status">{t("common.loading")}</p>}>
+            <React.Suspense fallback={<PageLoadingSkeleton />}>
               <Outlet />
             </React.Suspense>
           </div>

@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ export default function PurchaseOrderDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["purchaseOrders", id],
     queryFn: () => purchasingApi.getPurchaseOrder(id || ""),
     enabled: Boolean(id),
@@ -80,6 +81,10 @@ export default function PurchaseOrderDetailPage() {
     mutationFn: () => purchasingApi.cancelPurchaseOrder(id || ""),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["purchaseOrders", id] }),
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
 
   if (!data) {
     return null;

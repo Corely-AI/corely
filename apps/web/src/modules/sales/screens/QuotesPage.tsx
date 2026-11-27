@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -5,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus, Sparkles } from "lucide-react";
 import { Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import { LoadingSkeleton, Badge } from "@corely/ui";
 import { salesApi } from "@/lib/sales-api";
 import { customersApi } from "@/lib/customers-api";
 import { formatMoney } from "@/shared/lib/formatters";
@@ -31,10 +32,15 @@ const getStatusVariant = (status: QuoteDto["status"]) => {
 };
 
 export default function QuotesPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.sales-quotespage");
   const navigate = useNavigate();
 
-  const { data: quotesData } = useQuery({
+  const {
+    data: quotesData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: salesQueryKeys.quotes.list(),
     queryFn: () => salesApi.listQuotes(),
   });
@@ -70,7 +76,13 @@ export default function QuotesPage() {
 
       <Card>
         <CardContent className="p-0">
-          {quotes.length === 0 ? (
+          {isLoading ? (
+            <LoadingSkeleton variant="list" label={t("common.loading")} />
+          ) : isError && !quotesData ? (
+            <p className="p-4 text-sm text-destructive" role="alert">
+              {t("common.error")}
+            </p>
+          ) : quotes.length === 0 ? (
             <EmptyState
               title={uiCopy("no-quotes-yet")}
               description={uiCopy("create-your-first-quote")}

@@ -1,6 +1,6 @@
 import { usePeopleDraftGuard } from "./people-runtime";
 import { useState, type FormEvent } from "react";
-import { Button, Input, Label, Textarea } from "@corely/ui";
+import { LoadingSkeleton, Button, Input, Label, Textarea } from "@corely/ui";
 import { type StaffPrivate } from "@corely/contracts";
 import { usePeopleApi } from "./people-runtime";
 import { usePeopleLoad, usePeopleMounted } from "./use-people";
@@ -34,7 +34,7 @@ export function StaffPrivateDetails({
       <h2 className="text-lg font-semibold">{t.private}</h2>
       <p className="text-sm text-muted-foreground">{t.privateHint}</p>
       {result.loading ? (
-        <p role="status">{t.loading}</p>
+        <LoadingSkeleton variant="form" label={t.loading} />
       ) : result.error ? (
         <div role="alert">
           {t.error}

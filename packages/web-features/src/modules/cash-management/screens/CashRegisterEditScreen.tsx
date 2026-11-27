@@ -2,7 +2,16 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@corely/ui";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 import { cashKeys } from "../queries";
 import { useQueryClient } from "@tanstack/react-query";
@@ -57,7 +66,12 @@ export function CashRegisterEditScreen() {
 
   if (registerQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+      <LoadingSkeleton
+        variant="form"
+        label={t("cash.ui.common.loadingRegister")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

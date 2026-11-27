@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { List, Mail, Play, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, Button } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, CardHeader, CardTitle, Button } from "@corely/ui";
 import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 
@@ -13,7 +13,11 @@ export default function SequencesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data: sequences } = useQuery({
+  const {
+    data: sequences,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["sequences"],
     queryFn: () => crmApi.listSequences(),
   });
@@ -42,7 +46,13 @@ export default function SequencesPage() {
         </div>
       </div>
 
-      {sequenceList.length === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton variant="cards" label={t("common.loading")} />
+      ) : isError && !sequences ? (
+        <p className="p-4 text-sm text-destructive" role="alert">
+          {t("common.error")}
+        </p>
+      ) : sequenceList.length === 0 ? (
         <Card data-testid="crm-sequences-empty">
           <CardContent className="p-0">
             <EmptyState

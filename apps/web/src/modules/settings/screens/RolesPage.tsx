@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Badge } from "@corely/ui";
+import { TableLoadingSkeleton, Badge } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
@@ -66,11 +66,7 @@ export default function RolesPage() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    {uiCopy("loading-roles")}
-                  </TableCell>
-                </TableRow>
+                <TableLoadingSkeleton columns={4} label={uiCopy("loading-roles")} />
               ) : sortedRoles.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">

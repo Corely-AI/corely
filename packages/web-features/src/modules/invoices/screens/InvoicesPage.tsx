@@ -35,7 +35,7 @@ import {
 } from "@corely/web-shared/shared/list-kit";
 
 import type { InvoiceStatus } from "@corely/web-shared/shared/types";
-import { Pagination, PaginationContent, PaginationItem } from "@corely/ui";
+import { TableLoadingSkeleton, Pagination, PaginationContent, PaginationItem } from "@corely/ui";
 
 export default function InvoicesPage() {
   const uiCopy = useUiCopy("ui.invoices-invoicespage");
@@ -340,94 +340,92 @@ export default function InvoicesPage() {
               </thead>
               <tbody>
                 {/* Loader or items */}
-                {isLoading
-                  ? Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i} className="border-b border-border">
-                        <td colSpan={7} className="h-16 animate-pulse bg-muted/20" />
-                      </tr>
-                    ))
-                  : invoices.map((invoice) => (
-                      <tr
-                        key={invoice.id}
-                        data-testid={`invoice-row-${invoice.id}`}
-                        className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <Checkbox
-                            checked={selectedIds.has(invoice.id)}
-                            onCheckedChange={() => toggleSelection(invoice.id)}
-                            aria-label={t("invoices.focused.selectInvoice", { id: invoice.id })}
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium">
-                          {invoice.number || t("invoices.statuses.draft")}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {getCustomerName(invoice.customerPartyId, invoice.billToName)}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {formatDate(invoice.issuedAt || invoice.createdAt, locale)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant={invoice.status.toLowerCase() as InvoiceStatus}
-                            data-testid={`invoice-status-${invoice.status}`}
-                          >
-                            {t(`invoices.statuses.${invoice.status.toLowerCase()}`)}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right font-medium">
-                          {formatMoney(invoice.totals.totalCents, locale, invoice.currency)}
-                        </td>
-                        <td className="px-2 py-3">
-                          <CrudRowActions
-                            primaryAction={{
-                              label: t("common.view"),
+                {isLoading ? (
+                  <TableLoadingSkeleton columns={7} label={t("common.loading")} />
+                ) : (
+                  invoices.map((invoice) => (
+                    <tr
+                      key={invoice.id}
+                      data-testid={`invoice-row-${invoice.id}`}
+                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <Checkbox
+                          checked={selectedIds.has(invoice.id)}
+                          onCheckedChange={() => toggleSelection(invoice.id)}
+                          aria-label={t("invoices.focused.selectInvoice", { id: invoice.id })}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        {invoice.number || t("invoices.statuses.draft")}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {getCustomerName(invoice.customerPartyId, invoice.billToName)}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {formatDate(invoice.issuedAt || invoice.createdAt, locale)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant={invoice.status.toLowerCase() as InvoiceStatus}
+                          data-testid={`invoice-status-${invoice.status}`}
+                        >
+                          {t(`invoices.statuses.${invoice.status.toLowerCase()}`)}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-medium">
+                        {formatMoney(invoice.totals.totalCents, locale, invoice.currency)}
+                      </td>
+                      <td className="px-2 py-3">
+                        <CrudRowActions
+                          primaryAction={{
+                            label: t("common.view"),
+                            href:
+                              runtime?.route(`/invoices/${invoice.id}`) ??
+                              `/invoices/${invoice.id}`,
+                            "data-testid": `view-invoice-${invoice.id}`,
+                          }}
+                          secondaryActions={[
+                            {
+                              label: t("common.edit"),
                               href:
-                                runtime?.route(`/invoices/${invoice.id}`) ??
-                                `/invoices/${invoice.id}`,
-                              "data-testid": `view-invoice-${invoice.id}`,
-                            }}
-                            secondaryActions={[
-                              {
-                                label: t("common.edit"),
-                                href:
-                                  runtime?.route(`/invoices/${invoice.id}/edit`) ??
-                                  `/invoices/${invoice.id}/edit`,
-                                icon: <Edit className="h-4 w-4" />,
-                              },
-                              {
-                                label: t("invoices.focused.duplicate"),
-                                onClick: () => duplicateInvoice.mutate(invoice.id),
-                                icon: <Copy className="h-4 w-4" />,
-                              },
-                              {
-                                label: t("common.email"),
-                                onClick: () => void send.openSendDialog(invoice.id),
-                                disabled: send.isFetching || send.isSending,
-                                icon: <Mail className="h-4 w-4" />,
-                              },
-                              {
-                                label: t("invoices.focused.downloadPdf"),
-                                onClick: () =>
-                                  downloadPdf.mutate({
-                                    invoiceId: invoice.id,
-                                    status: invoice.status,
-                                  }),
-                                icon: <Download className="h-4 w-4" />,
-                                disabled: downloadPdf.isPending,
-                              },
-                              {
-                                label: t("common.delete"),
-                                onClick: () => cancelInvoice.mutate(invoice.id),
-                                icon: <Trash2 className="h-4 w-4" />,
-                                destructive: true,
-                              },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                                runtime?.route(`/invoices/${invoice.id}/edit`) ??
+                                `/invoices/${invoice.id}/edit`,
+                              icon: <Edit className="h-4 w-4" />,
+                            },
+                            {
+                              label: t("invoices.focused.duplicate"),
+                              onClick: () => duplicateInvoice.mutate(invoice.id),
+                              icon: <Copy className="h-4 w-4" />,
+                            },
+                            {
+                              label: t("common.email"),
+                              onClick: () => void send.openSendDialog(invoice.id),
+                              disabled: send.isFetching || send.isSending,
+                              icon: <Mail className="h-4 w-4" />,
+                            },
+                            {
+                              label: t("invoices.focused.downloadPdf"),
+                              onClick: () =>
+                                downloadPdf.mutate({
+                                  invoiceId: invoice.id,
+                                  status: invoice.status,
+                                }),
+                              icon: <Download className="h-4 w-4" />,
+                              disabled: downloadPdf.isPending,
+                            },
+                            {
+                              label: t("common.delete"),
+                              onClick: () => cancelInvoice.mutate(invoice.id),
+                              icon: <Trash2 className="h-4 w-4" />,
+                              destructive: true,
+                            },
+                          ]}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

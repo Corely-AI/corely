@@ -2,6 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  TableLoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -208,11 +209,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
             </TableHeader>
             <TableBody>
               {packagesQuery.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    {uiCopy("loading-packages")}
-                  </TableCell>
-                </TableRow>
+                <TableLoadingSkeleton columns={6} label={uiCopy("loading-packages")} />
               ) : packagesQuery.isError ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-destructive">
@@ -275,11 +272,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
                   </TableCell>
                 </TableRow>
               ) : usageQuery.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    {uiCopy("loading-usage-history")}
-                  </TableCell>
-                </TableRow>
+                <TableLoadingSkeleton columns={4} label={uiCopy("loading-usage-history")} />
               ) : usageQuery.isError ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-destructive">

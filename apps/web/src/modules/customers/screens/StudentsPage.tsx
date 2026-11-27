@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Mail, Phone, Plus, Trash2, Users } from "lucide-react";
-import { Card, CardContent, Badge, Button } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, Badge, Button } from "@corely/ui";
 import { customersApi } from "@/lib/customers-api";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
@@ -87,9 +87,7 @@ export default function StudentsPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {t("classes.students.loading")}
-            </div>
+            <LoadingSkeleton variant="list" label={t("classes.students.loading")} />
           ) : isError ? (
             <div className="p-8 text-center text-destructive">
               {t("classes.students.loadFailed")}

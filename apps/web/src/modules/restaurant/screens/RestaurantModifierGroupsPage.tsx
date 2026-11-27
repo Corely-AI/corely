@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import {
@@ -15,7 +16,7 @@ import {
   SelectValue,
   Textarea,
 } from "@corely/ui";
-import { sonnerToast } from "@corely/ui";
+import { LoadingSkeleton, sonnerToast } from "@corely/ui";
 import type { ModifierSelectionMode, UpsertRestaurantModifierGroupInput } from "@corely/contracts";
 import {
   useRestaurantModifierGroups,
@@ -38,6 +39,7 @@ function parseOptions(optionsText: string): UpsertRestaurantModifierGroupInput["
 }
 
 export default function RestaurantModifierGroupsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.restaurant-restaurantmodifiergroupspage");
   const groupsQuery = useRestaurantModifierGroups();
   const saveGroup = useUpsertRestaurantModifierGroup();
@@ -171,7 +173,13 @@ export default function RestaurantModifierGroupsPage() {
               </CardContent>
             </Card>
           ))}
-          {!groupsQuery.isLoading && (groupsQuery.data?.items.length ?? 0) === 0 ? (
+          {groupsQuery.isLoading ? (
+            <LoadingSkeleton label={t("common.loading")} variant="list" />
+          ) : groupsQuery.isError && !groupsQuery.data ? (
+            <p role="alert" className="text-destructive">
+              {t("common.error")}
+            </p>
+          ) : (groupsQuery.data?.items.length ?? 0) === 0 ? (
             <Card>
               <CardContent className="p-6 text-sm text-muted-foreground">
                 {uiCopy("no-modifier-groups-configured")}

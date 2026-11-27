@@ -1,16 +1,18 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
 import { Card, CardHeader, CardTitle, CardContent } from "@corely/ui";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { ArrowLeft, Printer } from "lucide-react";
 import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import { useReactToPrint } from "react-to-print";
 
 export function VatPeriodDetailsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.tax-vatperioddetailspage");
   const { key } = useParams<{ key: string }>();
   const navigate = useNavigate();
@@ -29,10 +31,12 @@ export function VatPeriodDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-64" />
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-64" />
+        </div>
+      </LoadingSkeleton>
     );
   }
 

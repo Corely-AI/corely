@@ -2,7 +2,7 @@ import { resolveCorelyLocale } from "@corely/contracts";
 import { PeopleLink as Link } from "./people-runtime";
 import { useCallback, useState, useRef } from "react";
 
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import type { StaffJourneyClient } from "./staff-journey-client";
 import { staffJourneyCopy } from "./staff-journey-copy";
 import { useStaffJourney } from "./use-staff-journey";
@@ -41,7 +41,7 @@ export function StaffLifecycle({
     }
   }
   return (
-    <section className="staff-journey" aria-busy={state.loading || state.busy}>
+    <section className="staff-journey" aria-busy={state.busy}>
       <Link to={`/people/staff/${encodeURIComponent(staffId)}`}>← {t.back}</Link>
       <header>
         <h1 ref={heading} tabIndex={-1}>
@@ -75,7 +75,7 @@ export function StaffLifecycle({
         </div>
       )}
       {state.loading ? (
-        <p role="status">{t.loading}</p>
+        <LoadingSkeleton variant="list" label={t.loading} />
       ) : (
         data && (
           <>

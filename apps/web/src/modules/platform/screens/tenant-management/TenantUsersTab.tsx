@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -90,11 +91,7 @@ export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-48 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="list" />;
   }
 
   return (

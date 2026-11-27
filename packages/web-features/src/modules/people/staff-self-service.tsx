@@ -3,7 +3,7 @@ import { usePeopleDraftGuard } from "./people-runtime";
 import { PeopleLink as Link } from "./people-runtime";
 import { useCallback, useRef, useState, useEffect, type FormEvent } from "react";
 
-import { Button, Input } from "@corely/ui";
+import { LoadingSkeleton, Button, Input } from "@corely/ui";
 import type { StaffSelfView } from "@corely/contracts";
 import type { StaffJourneyClient } from "./staff-journey-client";
 import { staffJourneyCopy, type StaffJourneyCopy } from "./staff-journey-copy";
@@ -115,7 +115,7 @@ export function StaffSelfService({
     }
   }
   return (
-    <section className="staff-journey" aria-busy={state.loading || state.busy}>
+    <section className="staff-journey" aria-busy={state.busy}>
       <header>
         <h1 ref={heading} tabIndex={-1}>
           {t.title}
@@ -143,7 +143,7 @@ export function StaffSelfService({
         </div>
       )}
       {state.loading ? (
-        <p role="status">{t.loading}</p>
+        <LoadingSkeleton variant="list" label={t.loading} />
       ) : (
         data && (
           <>

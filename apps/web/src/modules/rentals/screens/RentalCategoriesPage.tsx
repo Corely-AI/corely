@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit2, Trash2 } from "lucide-react";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -109,9 +109,7 @@ export default function RentalCategoriesPage() {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">
-                {uiCopy("loading-categories")}
-              </div>
+              <LoadingSkeleton variant="list" label={uiCopy("loading-categories")} />
             ) : categories.length === 0 ? (
               <EmptyState
                 title={uiCopy("no-categories")}

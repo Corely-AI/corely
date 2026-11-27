@@ -1,7 +1,7 @@
 import { resolveCorelyLocale } from "@corely/contracts";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Input } from "@corely/ui";
+import { LoadingSkeleton, Button, Input } from "@corely/ui";
 import type {
   ChecklistTemplateList,
   ChecklistTemplateView,
@@ -136,7 +136,7 @@ export function RecurringChecklists({
     }
   }
   return (
-    <section className="daily-work" aria-busy={busy || loading}>
+    <section className="daily-work" aria-busy={busy}>
       <Link className="checklist-back" to={backHref}>
         ← {t.back}
       </Link>
@@ -197,7 +197,7 @@ export function RecurringChecklists({
         />
       )}
       {loading ? (
-        <p role="status">{t.loading}</p>
+        <LoadingSkeleton variant="list" label={t.loading} />
       ) : (
         data && (
           <>

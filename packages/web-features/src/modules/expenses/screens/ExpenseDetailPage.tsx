@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Badge } from "@corely/ui";
-import { Separator } from "@corely/ui";
+import { LoadingSkeleton, Separator } from "@corely/ui";
 import { expensesApi } from "@corely/web-shared/lib/expenses-api";
 import { expenseKeys } from "../queries";
 import { formatDate, formatMoney } from "@corely/web-shared/shared/lib/formatters";
@@ -166,10 +166,12 @@ export const ExpenseDetailPage = ({
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-32 w-full" />
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </LoadingSkeleton>
     );
   }
 

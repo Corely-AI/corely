@@ -2,6 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -207,9 +208,7 @@ export default function RestaurantFloorPlanPage() {
 
         <div className="space-y-4">
           {floorPlan.isLoading ? (
-            <Card>
-              <CardContent className="p-6">{uiCopy("loading-floor-plan")}</CardContent>
-            </Card>
+            <LoadingSkeleton variant="cards" label={uiCopy("loading-floor-plan")} />
           ) : null}
           {!floorPlan.isLoading && rooms.length === 0 ? (
             <Card>

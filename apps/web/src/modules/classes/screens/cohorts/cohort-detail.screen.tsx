@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -365,7 +366,14 @@ export default function CohortDetailScreen() {
   };
 
   if (cohortQuery.isLoading) {
-    return <div className="p-6 text-sm text-muted-foreground">{uiCopy("loading-cohort")}</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-cohort")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (cohortQuery.isError || !cohort) {
@@ -546,12 +554,11 @@ export default function CohortDetailScreen() {
 
         <TabsContent value="sessions" className="space-y-4 pt-4">
           {sessionsQuery.isLoading ? (
-            <div
-              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+            <LoadingSkeleton
+              variant="list"
+              label={uiCopy("loading-sessions")}
               data-testid="classes-cohort-sessions-loading"
-            >
-              {uiCopy("loading-sessions")}
-            </div>
+            />
           ) : sessions.length === 0 ? (
             <div
               className="rounded-md border border-border p-4 text-sm text-muted-foreground"
@@ -684,12 +691,11 @@ export default function CohortDetailScreen() {
           </div>
 
           {learnersQuery.isLoading ? (
-            <div
-              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+            <LoadingSkeleton
+              variant="list"
+              label={uiCopy("loading-learners")}
               data-testid="classes-cohort-learners-loading"
-            >
-              {uiCopy("loading-learners")}
-            </div>
+            />
           ) : learners.length === 0 ? (
             <div
               className="rounded-md border border-border p-4 text-sm text-muted-foreground"
@@ -926,7 +932,7 @@ export default function CohortDetailScreen() {
                 </Button>
               </div>
               {milestonesQuery.isLoading ? (
-                <div className="text-sm text-muted-foreground">{uiCopy("loading-milestones")}</div>
+                <LoadingSkeleton variant="list" label={uiCopy("loading-milestones")} />
               ) : milestones.length === 0 ? (
                 <div className="text-sm text-muted-foreground">{uiCopy("no-milestones-yet")}</div>
               ) : (
@@ -1072,12 +1078,11 @@ export default function CohortDetailScreen() {
           </Card>
 
           {resourcesQuery.isLoading ? (
-            <div
-              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+            <LoadingSkeleton
+              variant="list"
+              label={uiCopy("loading-resources")}
               data-testid="classes-cohort-resources-loading"
-            >
-              {uiCopy("loading-resources")}
-            </div>
+            />
           ) : (
             groupedResources.map((group) => (
               <Card key={group.type} data-testid={`classes-cohort-resources-group-${group.type}`}>

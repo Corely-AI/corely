@@ -3,7 +3,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search, Store } from "lucide-react";
-import { Badge, Button, Card, CardContent, Input } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent, Input } from "@corely/ui";
 import {
   ConfirmDeleteDialog,
   CrudListPageLayout,
@@ -176,9 +176,7 @@ export default function RestaurantsListScreen() {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">
-                {uiCopy("loading-restaurants")}
-              </div>
+              <LoadingSkeleton variant="list" label={uiCopy("loading-restaurants")} />
             ) : isError ? (
               <div className="space-y-3 p-8 text-center">
                 <p className="text-sm text-destructive">{getApiErrorDetail(error)}</p>

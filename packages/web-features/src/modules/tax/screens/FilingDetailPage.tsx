@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -6,7 +7,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { Button } from "@corely/ui";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
 import type { VatPeriodItem } from "@corely/contracts";
 import { FilingDetailHeader } from "../components/filing-detail-header";
@@ -31,6 +32,7 @@ import { downloadTaxPdfWithPolling } from "../lib/download-tax-pdf-with-polling"
 import { buildFilingFlow, getDefaultStep } from "../lib/filing-flow-config";
 
 export const FilingDetailPage = () => {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.tax-filingdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -192,11 +194,13 @@ export const FilingDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <Skeleton className="h-10 w-2/3" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <Skeleton className="h-10 w-2/3" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </LoadingSkeleton>
     );
   }
 

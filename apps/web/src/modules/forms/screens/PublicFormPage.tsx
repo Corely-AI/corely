@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -73,11 +74,7 @@ export default function PublicFormPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="h-12 w-12 animate-pulse rounded-full bg-muted/20" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="form" />;
   }
 
   if (isError || !form) {

@@ -1,8 +1,8 @@
 import React from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { Alert, AlertDescription, AlertTitle, Button, Card, CardContent } from "@corely/ui";
-import { Loader2, Sigma, ListChecks, FileCheck } from "lucide-react";
+import { LoadingSkeleton, Alert, AlertDescription, AlertTitle, Button } from "@corely/ui";
+import { Sigma, ListChecks, FileCheck } from "lucide-react";
 import { createCopilotThread } from "@corely/web-shared/lib/copilot-api";
 import { Chat } from "@corely/web-shared/shared/components/Chat";
 import { getActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
@@ -42,26 +42,18 @@ export default function TaxAnnualAssistantPage() {
   });
 
   React.useEffect(() => {
-    if (threadId || createThreadMutation.isPending || createThreadMutation.isSuccess) {
+    if (threadId || !createThreadMutation.isIdle) {
       return;
     }
     createThreadMutation.mutate();
-  }, [
-    threadId,
-    createThreadMutation.isPending,
-    createThreadMutation.isSuccess,
-    createThreadMutation.mutate,
-  ]);
+  }, [threadId, createThreadMutation.isIdle, createThreadMutation.mutate]);
 
   if (!threadId) {
     return (
       <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-        <Card>
-          <CardContent className="py-10 text-sm text-muted-foreground flex items-center gap-3">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {t("tax.annualAssistant.loading")}
-          </CardContent>
-        </Card>
+        {!createThreadMutation.isError && (
+          <LoadingSkeleton variant="thread" label={t("tax.annualAssistant.loading")} withHeading />
+        )}
         {createThreadMutation.isError ? (
           <Alert variant="destructive">
             <AlertTitle>{t("tax.annualAssistant.errors.createTitle")}</AlertTitle>

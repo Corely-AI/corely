@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -11,7 +12,6 @@ import {
 } from "@/lib/platform-entitlements-api";
 import { apiClient } from "@/lib/api-client";
 import { type AppCatalogItem } from "@corely/contracts";
-import { Loader2 } from "lucide-react";
 
 export function TenantEntitlementsPage() {
   const uiCopy = useUiCopy("ui.platform-tenant-management-tenantentitlementspage");
@@ -70,11 +70,7 @@ export function TenantEntitlementsPage() {
   }, [loadData]);
 
   if (loading || (loadedTenantId !== tenantId && !loadError)) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="form" />;
   }
 
   if (!entitlements || !tenantId) {

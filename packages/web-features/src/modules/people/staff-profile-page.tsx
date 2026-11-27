@@ -4,7 +4,7 @@ import { PeopleLink as Link } from "./people-runtime";
 import { staffJourneyCopy } from "./staff-journey-copy";
 import { StaffAbsences } from "./staff-absences";
 import { useLocation, useParams } from "react-router-dom";
-import { Button, Badge } from "@corely/ui";
+import { LoadingSkeleton, Button, Badge } from "@corely/ui";
 import type { StaffProfile } from "@corely/contracts";
 import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad } from "./use-people";
@@ -32,7 +32,9 @@ export function StaffProfilePage({
   const profile = result.data;
   const journey = staffJourneyCopy[resolveCorelyLocale(access.locale)];
   if (access.loading) {
-    return <p role="status">{t.loading}</p>;
+    return (
+      <LoadingSkeleton variant="detail" label={t.loading} className="p-6 lg:p-8" withHeading />
+    );
   }
   if (!access.can("directory.read") || (editing && !manage)) {
     return <p role="alert">{t.denied}</p>;
@@ -60,7 +62,7 @@ export function StaffProfilePage({
       {create ? (
         <StaffProfileForm copy={t} onReload={() => window.location.reload()} />
       ) : result.loading ? (
-        <p role="status">{t.loading}</p>
+        <LoadingSkeleton variant="detail" label={t.loading} />
       ) : result.error ? (
         <div role="alert">
           {t.error}

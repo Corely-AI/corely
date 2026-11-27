@@ -3,7 +3,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Ban, AlertTriangle } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -120,9 +120,7 @@ export default function CmsCommentsPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {uiCopy("loading-comments")}
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-comments")} />
           ) : comments.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               {uiCopy("no-comments-found")}

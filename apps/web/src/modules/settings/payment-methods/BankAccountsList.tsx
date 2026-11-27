@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Plus, Trash2, Check, X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@corely/ui";
@@ -40,7 +40,7 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
   const activeAccounts = accounts.filter((a) => a.isActive);
 
   if (isLoading) {
-    return <div className="text-muted-foreground">{uiCopy("loading-bank-accounts")}</div>;
+    return <LoadingSkeleton variant="list" label={uiCopy("loading-bank-accounts")} />;
   }
 
   return (

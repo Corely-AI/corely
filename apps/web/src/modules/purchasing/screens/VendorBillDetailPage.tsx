@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,7 +42,7 @@ export default function VendorBillDetailPage() {
   });
   const [dirty, setDirty] = useState(false);
 
-  const { data, isError, isPending } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: billQueryKey,
     queryFn: () => purchasingApi.getVendorBill(id || ""),
     enabled: Boolean(id && activeWorkspaceId),
@@ -140,10 +141,14 @@ export default function VendorBillDetailPage() {
       void queryClient.invalidateQueries({ queryKey: ["vendorBills", activeWorkspaceId] }),
   });
 
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
+
   if (!data) {
     return (
-      <p className="p-6" role={isError ? "alert" : "status"}>
-        {isPending ? t("purchasing.invoiceEmail.loading") : t("purchasing.invoiceEmail.billFailed")}
+      <p className="p-6" role="alert">
+        {t("purchasing.invoiceEmail.billFailed")}
       </p>
     );
   }

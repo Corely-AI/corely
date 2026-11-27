@@ -13,7 +13,17 @@ import { bookingApi } from "@/lib/booking-api";
 import { bookingKeys } from "../queries";
 import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-errors";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Checkbox, Input, Label, Textarea } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Input,
+  Label,
+  Textarea,
+} from "@corely/ui";
 
 const bookingFormSchema = z
   .object({
@@ -304,11 +314,7 @@ export default function BookingEditorPage() {
       </div>
 
       {isEdit && bookingQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-booking")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-booking")} />
       ) : null}
 
       {isEdit && bookingQuery.isError ? (

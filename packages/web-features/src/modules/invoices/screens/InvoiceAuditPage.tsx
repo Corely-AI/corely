@@ -4,8 +4,7 @@ import { useInvoiceKeys } from "../invoice-runtime";
 import React, { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, Button } from "@corely/ui";
-import { Loader2 } from "lucide-react";
+import { LoadingSkeleton, Card, CardContent, Button } from "@corely/ui";
 
 type AuditEntry = {
   title: string;
@@ -107,12 +106,12 @@ export default function InvoiceAuditPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {uiCopy("loading-audit-trail")}
-        </div>
-      </div>
+      <LoadingSkeleton
+        variant="list"
+        label={uiCopy("loading-audit-trail")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

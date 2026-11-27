@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,13 +13,14 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { purchasingApi } from "@/lib/purchasing-api";
 
 export default function RecordBillPaymentPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.purchasing-recordbillpaymentpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { activeWorkspaceId } = useWorkspace();
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["vendorBills", activeWorkspaceId, id],
     queryFn: () => purchasingApi.getVendorBill(id || ""),
     enabled: Boolean(id && activeWorkspaceId),
@@ -53,6 +56,18 @@ export default function RecordBillPaymentPage() {
 
   if (!data) {
     return null;
+  }
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
   }
 
   return (

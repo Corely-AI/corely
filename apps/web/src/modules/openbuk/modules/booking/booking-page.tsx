@@ -187,7 +187,7 @@ export default function BookingPage() {
               </Field>
               <h3>{t("available")}</h3>
               {loading ? (
-                <Loading />
+                <Loading variant="calendar" />
               ) : slots.length === 0 ? (
                 <p className="muted">{t("noSlots")}</p>
               ) : (

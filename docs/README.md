@@ -87,6 +87,7 @@ Frontend guidelines and specific docs.
 - [Brand](./frontend/BRAND.md)
 - [Menu](./menu/)
 - [CRUD and operational entry-point standard](./frontend/crud-ui-standard.md)
+- [Skeleton loading for new features](./frontend/crud-ui-standard.md#skeleton-loading-for-new-features)
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
 - [Localization and catalog ownership](./frontend/localization.md)

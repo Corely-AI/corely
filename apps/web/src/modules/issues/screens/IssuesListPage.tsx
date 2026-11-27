@@ -20,6 +20,7 @@ import {
   type FilterFieldDef,
 } from "@/shared/list-kit";
 import {
+  LoadingSkeleton,
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -228,11 +229,16 @@ export default function IssuesListPage() {
         <Card>
           <CardContent className="p-0" data-testid="issues-list">
             {isLoading ? (
-              <div className="space-y-4 p-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-12 w-full animate-pulse rounded bg-muted/20" />
-                ))}
-              </div>
+              <LoadingSkeleton label={t("common.loading")}>
+                <div className="space-y-4 p-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-12 w-full animate-pulse motion-reduce:animate-none rounded bg-muted/20"
+                    />
+                  ))}
+                </div>
+              </LoadingSkeleton>
             ) : issues.length === 0 ? (
               <EmptyState
                 icon={Plus}

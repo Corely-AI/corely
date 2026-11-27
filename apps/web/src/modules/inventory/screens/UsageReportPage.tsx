@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, CardContent, Input, Label } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 
@@ -181,9 +181,7 @@ export default function UsageReportPage() {
       <Card>
         <CardContent className="p-6">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {uiCopy("loading-usage-report")}
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-usage-report")} />
           ) : isError ? (
             <div className="text-center py-8 text-destructive">
               {uiCopy("failed-to-load-usage")}

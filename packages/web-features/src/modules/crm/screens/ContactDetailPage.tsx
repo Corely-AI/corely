@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -10,11 +11,15 @@ export default function ContactDetailPage() {
   const uiCopy = useUiCopy("ui.crm-contactdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: contact } = useQuery({
+  const { data: contact, isLoading } = useQuery({
     queryKey: ["crm-contact", id],
     queryFn: () => customersApi.getCustomer(id!, "CONTACT"),
     enabled: Boolean(id),
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
 
   if (!contact) {
     return <div className="p-6 lg:p-8">{uiCopy("contact-not-found")}</div>;

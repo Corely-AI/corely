@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Package, Filter } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
@@ -142,7 +142,7 @@ export default function LotsPage() {
       <Card>
         <CardContent className="p-6">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">{uiCopy("loading-lots")}</div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-lots")} />
           ) : !data?.lots.length ? (
             <div className="text-center py-8 text-muted-foreground">
               {uiCopy("no-lots-found-create")}

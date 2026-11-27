@@ -1,52 +1,76 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { UserPlus, Shield, Mail, Loader2 } from "lucide-react";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableLoadingSkeleton,
+  TableRow,
+} from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { getActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 import { useToast } from "@corely/ui";
 import type { WorkspaceMemberDto } from "@corely/contracts";
 
 export const WorkspaceMembersPage: React.FC = () => {
   const uiCopy = useUiCopy("ui.workspaces-workspacememberspage");
+  const { t } = useTranslation();
   const { activeWorkspaceId } = useWorkspace();
   const { toast } = useToast();
-  const [members, setMembers] = useState<WorkspaceMemberDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [memberList, setMemberList] = useState<{
+    workspaceId: string;
+    members: WorkspaceMemberDto[];
+    failed?: true;
+  }>();
+  const currentList = memberList?.workspaceId === activeWorkspaceId ? memberList : undefined;
+  const isMembersLoading = Boolean(activeWorkspaceId && !currentList);
+  const [isInviting, setIsInviting] = useState(false);
   const [inviteForm, setInviteForm] = useState({ email: "", role: "MEMBER" });
 
   useEffect(() => {
+    if (!activeWorkspaceId) {
+      return;
+    }
+    let current = true;
     const load = async () => {
-      if (!activeWorkspaceId) {
-        return;
-      }
-      setIsLoading(true);
       try {
         const result = await workspacesApi.listMembers(activeWorkspaceId);
-        setMembers(result.members ?? []);
+        if (current) {
+          setMemberList({ workspaceId: activeWorkspaceId, members: result.members ?? [] });
+        }
       } catch (error) {
+        if (!current) {
+          return;
+        }
+        setMemberList({ workspaceId: activeWorkspaceId, members: [], failed: true });
         toast({
           title: "Unable to load members",
           description: error instanceof Error ? error.message : "Please try again.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     };
     void load();
+    return () => {
+      current = false;
+    };
   }, [activeWorkspaceId, toast]);
 
   const sendInvite = async () => {
     if (!activeWorkspaceId || !inviteForm.email) {
       return;
     }
-    setIsLoading(true);
+    setIsInviting(true);
     try {
       await workspacesApi.inviteMember(activeWorkspaceId, {
         email: inviteForm.email,
@@ -55,7 +79,9 @@ export const WorkspaceMembersPage: React.FC = () => {
       toast({ title: "Invite sent", description: inviteForm.email });
       setInviteForm({ email: "", role: "MEMBER" });
       const result = await workspacesApi.listMembers(activeWorkspaceId);
-      setMembers(result.members ?? []);
+      if (getActiveWorkspaceId() === activeWorkspaceId) {
+        setMemberList({ workspaceId: activeWorkspaceId, members: result.members ?? [] });
+      }
     } catch (error) {
       toast({
         title: "Invite failed",
@@ -63,7 +89,7 @@ export const WorkspaceMembersPage: React.FC = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsInviting(false);
     }
   };
 
@@ -112,10 +138,10 @@ export const WorkspaceMembersPage: React.FC = () => {
           </div>
           <Button
             onClick={sendInvite}
-            disabled={isLoading || !inviteForm.email}
+            disabled={isMembersLoading || isInviting || !inviteForm.email}
             className="md:col-span-3"
           >
-            {isLoading ? (
+            {isInviting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Mail className="h-4 w-4 mr-2" />
@@ -140,7 +166,7 @@ export const WorkspaceMembersPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {members.map((member) => (
+              {currentList?.members.map((member) => (
                 <TableRow key={member.membershipId}>
                   <TableCell>{member.name ?? uiCopy("pending-invite")}</TableCell>
                   <TableCell>{member.email ?? "—"}</TableCell>
@@ -150,13 +176,21 @@ export const WorkspaceMembersPage: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {!members.length && (
+              {isMembersLoading ? (
+                <TableLoadingSkeleton columns={4} label={uiCopy("loading-members")} />
+              ) : currentList?.failed ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-muted-foreground text-center">
-                    {isLoading ? uiCopy("loading-members") : uiCopy("no-members-yet")}
+                  <TableCell colSpan={4}>
+                    <p role="alert">{t("common.error")}</p>
                   </TableCell>
                 </TableRow>
-              )}
+              ) : !currentList?.members.length ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-muted-foreground text-center">
+                    {uiCopy("no-members-yet")}
+                  </TableCell>
+                </TableRow>
+              ) : null}
             </TableBody>
           </Table>
         </CardContent>

@@ -15,6 +15,10 @@ This document defines how shared UI components and tokens are owned and used acr
 - Apps import tokens via `@import "@corely/ui/tokens.css";` in their `index.css` before Tailwind directives.
 - Theme switching (if needed) should be implemented in the app layer and only manipulate CSS classes or variables.
 
+## Loading states
+
+Use `LoadingSkeleton` for unfinished page sections and `TableLoadingSkeleton` inside a table body. Use `Skeleton` to compose placeholders for a custom layout. Pass a localized status label to the composed components. See the [frontend loading standard](./crud-ui-standard.md#skeleton-loading-for-new-features).
+
 ## Adding a Shared Component
 
 1. Add the component to `packages/ui/src` using `kebab-case` filenames.

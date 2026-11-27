@@ -1,4 +1,4 @@
-import { Button, EmptyState } from "@corely/ui";
+import { LoadingSkeleton, Button, EmptyState } from "@corely/ui";
 import { CrudListPageLayout } from "@corely/web-shared/shared/crud/CrudListPageLayout";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
 import React, { useEffect, useState } from "react";
@@ -12,7 +12,9 @@ export default function OverviewPage({ focused = false }: { focused?: boolean } 
   const { user } = useAuth(),
     { activeWorkspaceId } = useWorkspace(),
     { pathname } = useLocation();
-  if (!user?.activeTenantId || !activeWorkspaceId) return null;
+  if (!user?.activeTenantId || !activeWorkspaceId) {
+    return null;
+  }
   return (
     <Content
       key={JSON.stringify([user.userId, user.activeTenantId, activeWorkspaceId, pathname])}
@@ -47,12 +49,17 @@ function Content({
       )
       .then((data) => {
         if (!controller.signal.aborted) {
-          if (settings) setConfig(SignRuntimeSettingsSchema.parse(data));
-          else setCounts(SignOverviewSchema.parse(data));
+          if (settings) {
+            setConfig(SignRuntimeSettingsSchema.parse(data));
+          } else {
+            setCounts(SignOverviewSchema.parse(data));
+          }
         }
       })
       .catch((e) => {
-        if (!controller.signal.aborted) setError(String(e));
+        if (!controller.signal.aborted) {
+          setError(String(e));
+        }
       });
     return () => controller.abort();
   }, [workspace, settings, attempt]);
@@ -103,9 +110,7 @@ function Content({
             ))}
           </dl>
         ) : (
-          <p className="p-5 text-muted-foreground" role="status">
-            {t("common.loading")}
-          </p>
+          <LoadingSkeleton label={t("common.loading")} variant="list" className="p-5" />
         )
       ) : counts ? (
         <>
@@ -145,9 +150,7 @@ function Content({
           )}
         </>
       ) : (
-        <p className="p-5 text-muted-foreground" role="status">
-          {t("common.loading")}
-        </p>
+        <LoadingSkeleton label={t("common.loading")} variant="cards" className="p-5" />
       )}
     </CrudListPageLayout>
   );

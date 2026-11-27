@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog, CrudListPageLayout, CrudRowActions } from "@/shared/crud";
 import { EmptyState } from "@/shared/components/EmptyState";
@@ -39,9 +39,7 @@ export default function ProgramsListScreen() {
     >
       <div data-testid="classes-programs-list">
         {isLoading ? (
-          <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-combos")}
-          </div>
+          <LoadingSkeleton variant="list" label={uiCopy("loading-combos")} />
         ) : isError ? (
           <div className="rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm">
             <div className="mb-3 text-destructive">{uiCopy("failed-to-load-combos")}</div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -22,7 +23,7 @@ import { Badge } from "@corely/ui";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Switch } from "@corely/ui";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@corely/ui";
+import { LoadingSkeleton, Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@corely/ui";
 import { formsApi, buildFormPublicLink } from "@/lib/forms-api";
 import { formKeys } from "../queries";
 import type {
@@ -54,6 +55,7 @@ const EMPTY_FIELD: AddFieldInput = {
 
 export default function FormDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -233,10 +235,12 @@ export default function FormDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-4">
-        <div className="h-8 w-64 animate-pulse rounded bg-muted/20" />
-        <div className="h-40 w-full animate-pulse rounded bg-muted/20" />
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-4">
+          <div className="h-8 w-64 animate-pulse motion-reduce:animate-none rounded bg-muted/20" />
+          <div className="h-40 w-full animate-pulse motion-reduce:animate-none rounded bg-muted/20" />
+        </div>
+      </LoadingSkeleton>
     );
   }
 

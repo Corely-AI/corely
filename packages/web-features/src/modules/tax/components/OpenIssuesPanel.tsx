@@ -4,7 +4,7 @@ import { type TaxCenterIssue } from "@corely/contracts";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@corely/ui";
-import { badgeVariants } from "@corely/ui";
+import { LoadingSkeleton, badgeVariants } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 
 interface OpenIssuesPanelProps {
@@ -21,7 +21,7 @@ export const OpenIssuesPanel = ({ issues, isLoading }: OpenIssuesPanelProps) => 
           <CardTitle>{t("tax.center.issues.title")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-24 bg-muted/20 animate-pulse rounded" />
+          <LoadingSkeleton label={t("common.loading")} variant="list" />
         </CardContent>
       </Card>
     );

@@ -1,16 +1,18 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import { Badge, Button, Card, CardContent } from "@corely/ui";
 import { Input } from "@corely/ui";
-import { Label } from "@corely/ui";
+import { TableLoadingSkeleton, Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 export default function ReorderDashboardPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.inventory-reorderdashboardpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -21,7 +23,11 @@ export default function ReorderDashboardPage() {
     queryFn: () => inventoryApi.listWarehouses(),
   });
 
-  const { data: suggestions } = useQuery({
+  const {
+    data: suggestions,
+    isLoading: suggestionsLoading,
+    isError: suggestionsError,
+  } = useQuery({
     queryKey: inventoryQueryKeys.reorder.suggestions({
       warehouseId: warehouseIdFilter || undefined,
     }),
@@ -29,7 +35,11 @@ export default function ReorderDashboardPage() {
       inventoryApi.getReorderSuggestions({ warehouseId: warehouseIdFilter || undefined }),
   });
 
-  const { data: lowStock } = useQuery({
+  const {
+    data: lowStock,
+    isLoading: lowStockLoading,
+    isError: lowStockError,
+  } = useQuery({
     queryKey: inventoryQueryKeys.reorder.lowStock({ warehouseId: warehouseIdFilter || undefined }),
     queryFn: () => inventoryApi.getLowStock({ warehouseId: warehouseIdFilter || undefined }),
   });
@@ -199,21 +209,33 @@ export default function ReorderDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {lowStock?.items.map((item) => (
-                <tr
-                  key={`${item.productId}-${item.warehouseId}`}
-                  className="border-t border-border"
-                >
-                  <td className="py-2 font-medium">{item.productId}</td>
-                  <td>{item.warehouseId}</td>
-                  <td className="font-medium text-rose-600">{item.availableQty}</td>
-                  <td>{item.reorderPoint ?? item.minQty ?? "-"}</td>
-                  <td>{item.suggestedQty}</td>
-                  <td>
-                    <Badge variant="outline">{uiCopy("low-stock")}</Badge>
+              {lowStockLoading ? (
+                <TableLoadingSkeleton columns={6} label={t("common.loading")} />
+              ) : lowStockError && !lowStock ? (
+                <tr>
+                  <td colSpan={6} className="p-4 text-sm text-destructive">
+                    <p role="alert">{t("common.error")}</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                <>
+                  {lowStock?.items.map((item) => (
+                    <tr
+                      key={`${item.productId}-${item.warehouseId}`}
+                      className="border-t border-border"
+                    >
+                      <td className="py-2 font-medium">{item.productId}</td>
+                      <td>{item.warehouseId}</td>
+                      <td className="font-medium text-rose-600">{item.availableQty}</td>
+                      <td>{item.reorderPoint ?? item.minQty ?? "-"}</td>
+                      <td>{item.suggestedQty}</td>
+                      <td>
+                        <Badge variant="outline">{uiCopy("low-stock")}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
           </table>
         </CardContent>
@@ -232,17 +254,29 @@ export default function ReorderDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {suggestions?.items.map((item) => (
-                <tr
-                  key={`${item.productId}-${item.warehouseId}`}
-                  className="border-t border-border"
-                >
-                  <td className="py-2 font-medium">{item.productId}</td>
-                  <td>{item.warehouseId}</td>
-                  <td>{item.availableQty}</td>
-                  <td>{item.suggestedQty}</td>
+              {suggestionsLoading ? (
+                <TableLoadingSkeleton columns={4} label={t("common.loading")} />
+              ) : suggestionsError && !suggestions ? (
+                <tr>
+                  <td colSpan={4} className="p-4 text-sm text-destructive">
+                    <p role="alert">{t("common.error")}</p>
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                <>
+                  {suggestions?.items.map((item) => (
+                    <tr
+                      key={`${item.productId}-${item.warehouseId}`}
+                      className="border-t border-border"
+                    >
+                      <td className="py-2 font-medium">{item.productId}</td>
+                      <td>{item.warehouseId}</td>
+                      <td>{item.availableQty}</td>
+                      <td>{item.suggestedQty}</td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
           </table>
         </CardContent>

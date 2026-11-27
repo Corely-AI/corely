@@ -1,10 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
-import { Label } from "@corely/ui";
+import { TableLoadingSkeleton, Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { PartyPicker } from "@/shared/components";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
@@ -12,11 +13,16 @@ import { useNavigate } from "react-router-dom";
 import type { InventoryDocumentType } from "@corely/contracts";
 
 export default function DocumentsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.inventory-documentspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const {
+    data,
+    isLoading: documentsLoading,
+    isError: documentsError,
+  } = useQuery({
     queryKey: inventoryQueryKeys.documents.list(),
     queryFn: () => inventoryApi.listDocuments(),
   });
@@ -149,23 +155,35 @@ export default function DocumentsPage() {
               </tr>
             </thead>
             <tbody>
-              {data?.items.map((doc) => (
-                <tr key={doc.id} className="border-t border-border">
-                  <td className="py-2 font-medium">{doc.documentNumber || uiCopy("draft")}</td>
-                  <td>{doc.documentType}</td>
-                  <td>{doc.status}</td>
-                  <td>{doc.postingDate || "-"}</td>
-                  <td className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/inventory/documents/${doc.id}`)}
-                    >
-                      {uiCopy("view")}
-                    </Button>
+              {documentsLoading ? (
+                <TableLoadingSkeleton columns={5} label={t("common.loading")} />
+              ) : documentsError && !data ? (
+                <tr>
+                  <td colSpan={5} className="p-4 text-sm text-destructive">
+                    <p role="alert">{t("common.error")}</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                <>
+                  {data?.items.map((doc) => (
+                    <tr key={doc.id} className="border-t border-border">
+                      <td className="py-2 font-medium">{doc.documentNumber || uiCopy("draft")}</td>
+                      <td>{doc.documentType}</td>
+                      <td>{doc.status}</td>
+                      <td>{doc.postingDate || "-"}</td>
+                      <td className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/inventory/documents/${doc.id}`)}
+                        >
+                          {uiCopy("view")}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
           </table>
         </CardContent>

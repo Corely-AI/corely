@@ -3,6 +3,7 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -152,7 +153,7 @@ export default function CustomFieldsSettingsPage() {
             </div>
 
             {isLoading ? (
-              <div className="text-sm text-muted-foreground">{uiCopy("loading-custom-fields")}</div>
+              <LoadingSkeleton variant="list" label={uiCopy("loading-custom-fields")} />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

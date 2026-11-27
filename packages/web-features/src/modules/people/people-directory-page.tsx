@@ -3,6 +3,7 @@ import { usePeopleRoute } from "./people-runtime";
 import { PeopleLink as Link } from "./people-runtime";
 import { useSearchParams } from "react-router-dom";
 import {
+  LoadingSkeleton,
   Button,
   Input,
   Table,
@@ -46,7 +47,7 @@ export function PeopleDirectoryPage() {
       { replace: true }
     );
   if (loading) {
-    return <p role="status">{t.loading}</p>;
+    return <LoadingSkeleton variant="list" label={t.loading} className="p-6 lg:p-8" withHeading />;
   }
   if (!can("directory.read")) {
     return <p role="alert">{t.denied}</p>;
@@ -90,9 +91,7 @@ export function PeopleDirectoryPage() {
       }
     >
       {result.loading ? (
-        <p className="p-6" role="status">
-          {t.loading}
-        </p>
+        <LoadingSkeleton variant="list" label={t.loading} />
       ) : result.error ? (
         <div className="p-6" role="alert">
           {t.error}

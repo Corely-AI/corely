@@ -2,7 +2,7 @@ import { resolveCorelyLocale } from "@corely/contracts";
 import { PeopleLink as Link } from "./people-runtime";
 import { useState } from "react";
 
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { availabilityCopy } from "./availability-copy";
 import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad } from "./use-people";
@@ -27,7 +27,7 @@ export function StaffAvailability({ id, archived }: { id: string; archived: bool
       <p className="text-sm text-muted-foreground">{t.intro}</p>
       {saved && <p role="status">{t.saved}</p>}
       {result.loading ? (
-        <p role="status">{access.copy.loading}</p>
+        <LoadingSkeleton variant="calendar" label={access.copy.loading} />
       ) : result.error ? (
         <div role="alert">
           <p>{t.error}</p>

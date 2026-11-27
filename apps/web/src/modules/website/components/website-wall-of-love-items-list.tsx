@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { ArrowDown, ArrowUp, Pencil } from "lucide-react";
-import { Badge, Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent } from "@corely/ui";
 import { buildPublicFileUrl } from "@/lib/cms-api";
 import type { WebsiteWallOfLoveItemDto } from "@corely/contracts";
 
@@ -32,7 +32,7 @@ export function WebsiteWallOfLoveItemsList({
       <CardContent className="p-6 space-y-4">
         <div className="text-base font-semibold">{uiCopy("items")}</div>
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">{uiCopy("loading-items")}</div>
+          <LoadingSkeleton variant="list" label={uiCopy("loading-items")} />
         ) : items.length === 0 ? (
           <div className="rounded-md border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
             {uiCopy("no-wall-of-love")}

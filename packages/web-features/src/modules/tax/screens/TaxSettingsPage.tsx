@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
@@ -154,9 +154,7 @@ export default function TaxSettingsPage() {
 
   if (isLoading || isLoadingConsultant) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="text-muted-foreground">{t("tax.loading")}</div>
-      </div>
+      <LoadingSkeleton variant="form" label={t("tax.loading")} className="p-6 lg:p-8" withHeading />
     );
   }
 

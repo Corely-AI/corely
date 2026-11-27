@@ -6,6 +6,7 @@ import { TenantAdminSessionBanner } from "../../modules/platform/screens/tenant-
 import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import NotFound from "@corely/web-shared/shared/components/NotFound";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import {
   getDefaultRouteForSurface,
   isRouteAllowedForSurface,
@@ -54,8 +55,13 @@ export const RequireAuth: React.FC = () => {
 
   // Workspace creation is tenant-scoped. Keep its draft mounted during background discovery.
   const canKeepOnboarding = isOnboardingRoute && hint.kind === "absent" && !tenantAdminSession;
-  if (isLoading || (canKeepOnboarding ? workspaceInitialLoading : workspaceLoading)) {
-    return null;
+  const waitingForWorkspace =
+    workspaceInitialLoading ||
+    (workspaceLoading &&
+      !canKeepOnboarding &&
+      (!workspaces.length || (requestedId && !authorizedHint)));
+  if (isLoading || waitingForWorkspace) {
+    return <PageLoadingSkeleton />;
   }
 
   if (!isAuthenticated && tenantAdminSession) {
@@ -69,7 +75,7 @@ export const RequireAuth: React.FC = () => {
     return <NotFound />;
   }
   if (requestedId && requestedId !== activeWorkspaceId) {
-    return null;
+    return <PageLoadingSkeleton />;
   }
 
   if (tenantAdminSession && workspaces.length === 0) {

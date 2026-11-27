@@ -3,7 +3,16 @@ import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, MessageSquare, Save, Trash2, Pencil } from "lucide-react";
-import { Badge, Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Label,
+  Textarea,
+} from "@corely/ui";
 import { toast } from "sonner";
 import { websiteApi } from "@/lib/website-api";
 import type { WebsiteQa } from "@corely/contracts";
@@ -324,7 +333,7 @@ export default function WebsiteFeedbackConfigPage() {
 
           <div className="space-y-2">
             {qaQuery.isLoading ? (
-              <div className="text-sm text-muted-foreground">{uiCopy("loading-q-a-items")}</div>
+              <LoadingSkeleton variant="list" label={uiCopy("loading-q-a-items")} />
             ) : qaItems.length === 0 ? (
               <div className="rounded-md border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
                 {uiCopy("no-q-a-items")}

@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, CardContent, Input, Label } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { engagementApi } from "@/lib/engagement-api";
 import { CrudListPageLayout } from "@/shared/crud";
 import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
@@ -89,9 +89,7 @@ export default function BirthdayRemindersPage() {
           {hasInvalidRange ? (
             <div className="p-8 text-center text-destructive">{uiCopy("end-date-must-be")}</div>
           ) : birthdaysQuery.isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {uiCopy("loading-upcoming-birthdays")}
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-upcoming-birthdays")} />
           ) : birthdaysQuery.isError ? (
             <div className="p-8 text-center text-destructive">
               {uiCopy("failed-to-load-birthday")}

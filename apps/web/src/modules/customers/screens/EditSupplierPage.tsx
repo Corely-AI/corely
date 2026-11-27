@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
 import { customersApi } from "@/lib/customers-api";
 import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
@@ -69,9 +69,12 @@ export default function EditSupplierPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
-        <p className="text-muted-foreground">{uiCopy("loading-supplier")}</p>
-      </div>
+      <LoadingSkeleton
+        variant="form"
+        label={uiCopy("loading-supplier")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

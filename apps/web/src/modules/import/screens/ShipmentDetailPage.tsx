@@ -3,7 +3,15 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { Ship, ArrowLeft, Package } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Badge,
+  Button,
+} from "@corely/ui";
 import { importShipmentsApi } from "@/lib/import-shipments-api";
 import type { AllocationMethod, ImportShipmentStatus } from "@corely/contracts";
 import { toast } from "sonner";
@@ -99,9 +107,12 @@ export default function ShipmentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
-        <p className="text-center text-muted-foreground">{uiCopy("loading-shipment")}</p>
-      </div>
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-shipment")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

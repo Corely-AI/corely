@@ -9,7 +9,7 @@ import {
   UpdateAdminDirectoryRestaurantRequestSchema,
   type ValidationErrorItem,
 } from "@corely/contracts";
-import { Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
 import {
   getApiErrorDetail,
@@ -186,7 +186,14 @@ export default function RestaurantFormScreen() {
   };
 
   if (isEdit && isLoading) {
-    return <div className="p-8 text-muted-foreground">{uiCopy("loading-restaurant")}</div>;
+    return (
+      <LoadingSkeleton
+        variant="form"
+        label={uiCopy("loading-restaurant")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (isEdit && isError) {

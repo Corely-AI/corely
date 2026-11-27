@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { Badge, Button } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
 import {
@@ -145,9 +145,7 @@ export default function CohortsListScreen() {
       >
         <div data-testid="classes-cohorts-list">
           {isLoading ? (
-            <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
-              {uiCopy("loading-cohorts")}
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-cohorts")} />
           ) : items.length === 0 ? (
             <EmptyState
               title={uiCopy("no-cohorts-found")}

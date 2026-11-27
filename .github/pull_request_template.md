@@ -18,6 +18,8 @@
 
 <!-- For interface changes: screenshots/recording, relevant before/after states, route/role, viewports/devices/locales, manual interaction checks and verification limits. Keep Draft until material UI/UX evidence is complete. Otherwise explain why N/A. -->
 
+<!-- For new data-backed screens or sections, verify the layout-matched initial skeleton, localized loading status, reduced motion, and transition to content, empty, or error. See docs/frontend/crud-ui-standard.md. -->
+
 ## Notes / risks
 
 <!-- Material compatibility, configuration, migration, rollout or rollback concerns; otherwise N/A. -->

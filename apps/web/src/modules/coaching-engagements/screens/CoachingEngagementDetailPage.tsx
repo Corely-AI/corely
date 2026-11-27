@@ -4,7 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@corely/ui";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { coachingApi } from "@/lib/coaching-api";
 import { coachingKeys } from "../queries";
@@ -42,8 +50,23 @@ export const CoachingEngagementDetailPage = () => {
     onError: () => toast.error(t("coaching.detail.exportError")),
   });
 
-  if (isLoading || !data) {
-    return <div>{t("common.loading")}</div>;
+  if (isLoading) {
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={t("common.loading")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
+  }
+
+  if (!data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
   }
 
   const { engagement, sessions, artifacts, timeline, aiSummary } = data;

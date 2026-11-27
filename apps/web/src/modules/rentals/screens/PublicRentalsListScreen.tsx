@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -6,7 +7,7 @@ import { Search, Users, MapPin, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Button } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import { LoadingSkeleton, Badge } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { Logo } from "@/shared/components/Logo";
 import { useCrudUrlState } from "@/shared/crud";
@@ -15,6 +16,7 @@ import { rentalsPublicKeys } from "../queries";
 import { usePublicWorkspace } from "@/shared/public-workspace";
 
 export default function PublicRentalsListScreen() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.rentals-publicrentalslistscreen");
   const [listState, setListState] = useCrudUrlState({ pageSize: 12 });
   const { workspaceSlug } = usePublicWorkspace();
@@ -139,15 +141,17 @@ export default function PublicRentalsListScreen() {
         )}
 
         {isLoading ? (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="space-y-4 animate-pulse">
-                <div className="aspect-[4/3] bg-muted rounded-2xl" />
-                <div className="h-6 bg-muted rounded w-3/4" />
-                <div className="h-4 bg-muted rounded w-1/2" />
-              </div>
-            ))}
-          </div>
+          <LoadingSkeleton label={t("common.loading")}>
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="space-y-4 animate-pulse motion-reduce:animate-none">
+                  <div className="aspect-[4/3] bg-muted rounded-2xl" />
+                  <div className="h-6 bg-muted rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          </LoadingSkeleton>
         ) : isError ? (
           <div className="p-8 rounded-2xl bg-destructive/5 border border-destructive/10 text-destructive text-center">
             <p className="font-semibold">{uiCopy("oops-failed-to-load")}</p>

@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Mail, MapPin, Phone, Plus, RotateCcw, Trash2 } from "lucide-react";
-import { Button, Card, CardContent, Input } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input } from "@corely/ui";
 import { toast } from "sonner";
 import { customersApi } from "@/lib/customers-api";
 import { EmptyState } from "@/shared/components/EmptyState";
@@ -108,9 +108,7 @@ export default function SuppliersPage() {
       <Card>
         <CardContent className="p-0">
           {suppliersQuery.isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {uiCopy("loading-suppliers")}
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-suppliers")} />
           ) : suppliersQuery.isError ? (
             <div className="p-8 text-center text-destructive">
               {uiCopy("failed-to-load-suppliers")}

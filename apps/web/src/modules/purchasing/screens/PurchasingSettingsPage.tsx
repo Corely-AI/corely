@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -11,7 +12,7 @@ import { purchasingApi } from "@/lib/purchasing-api";
 export default function PurchasingSettingsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["purchasingSettings"],
     queryFn: () => purchasingApi.getSettings(),
   });
@@ -58,6 +59,18 @@ export default function PurchasingSettingsPage() {
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["purchasingSettings"] }),
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">

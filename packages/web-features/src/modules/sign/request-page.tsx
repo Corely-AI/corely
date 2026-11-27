@@ -1,4 +1,4 @@
-import { Badge, Button, EmptyState, Input } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, EmptyState, Input } from "@corely/ui";
 import { CrudListPageLayout } from "@corely/web-shared/shared/crud/CrudListPageLayout";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
 import React, { useEffect, useState } from "react";
@@ -19,8 +19,10 @@ export default function RequestPage() {
   const { user } = useAuth();
   const { activeWorkspaceId } = useWorkspace();
   const [params] = useSearchParams();
-  if (!activeWorkspaceId || !user?.activeTenantId) return null;
-  if (!id)
+  if (!activeWorkspaceId || !user?.activeTenantId) {
+    return null;
+  }
+  if (!id) {
     return (
       <DraftList
         key={JSON.stringify([
@@ -33,6 +35,7 @@ export default function RequestPage() {
         query={params.toString()}
       />
     );
+  }
   return (
     <Detail
       key={JSON.stringify([id, user.userId, user.activeTenantId, activeWorkspaceId])}
@@ -56,15 +59,18 @@ function Detail({ id, workspace }: { id: string; workspace: string }) {
         { workspaceScope: "none", signal: controller.signal }
       )
       .then((value) => {
-        if (!controller.signal.aborted) setDraft(SignRequestDraftSchema.parse(value));
+        if (!controller.signal.aborted) {
+          setDraft(SignRequestDraftSchema.parse(value));
+        }
       })
       .catch((reason) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(reason instanceof Error ? reason.message : t("sign.saveFailed"));
+        }
       });
     return () => controller.abort();
   }, [workspace, id, attempt, t]);
-  if (error)
+  if (error) {
     return (
       <section className="space-y-3 p-6">
         <p role="alert">{error}</p>
@@ -73,12 +79,17 @@ function Detail({ id, workspace }: { id: string; workspace: string }) {
         </Button>
       </section>
     );
-  if (!draft)
+  }
+  if (!draft) {
     return (
-      <p className="p-4 text-muted-foreground" role="status">
-        {t("sign.loadingRequest")}
-      </p>
+      <LoadingSkeleton
+        label={t("sign.loadingRequest")}
+        variant="detail"
+        className="p-4 sm:p-6 lg:p-8"
+        withHeading
+      />
     );
+  }
   return (
     <section className="space-y-4 p-4 sm:p-6 lg:p-8">
       <h1 className="break-words text-h1 text-foreground">{draft.title}</h1>
@@ -94,7 +105,6 @@ function Detail({ id, workspace }: { id: string; workspace: string }) {
         ))}
       </ol>
       <RequestActions workspace={workspace} draft={draft} />
-
     </section>
   );
 }
@@ -105,8 +115,11 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
   function filter(key: string, value: string) {
     const next = new URLSearchParams(params);
     next.delete("cursor");
-    if (value) next.set(key, value);
-    else next.delete(key);
+    if (value) {
+      next.set(key, value);
+    } else {
+      next.delete(key);
+    }
     setParams(next);
   }
   const { t } = useTranslation();
@@ -123,11 +136,14 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
         { workspaceScope: "none", signal: controller.signal }
       )
       .then((value) => {
-        if (!controller.signal.aborted) setPage(SignRequestListSchema.parse(value));
+        if (!controller.signal.aborted) {
+          setPage(SignRequestListSchema.parse(value));
+        }
       })
       .catch((reason) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(reason instanceof Error ? reason.message : t("sign.saveFailed"));
+        }
       });
     return () => controller.abort();
   }, [workspace, query, attempt, t]);
@@ -185,9 +201,7 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
           </Button>
         </div>
       ) : !page ? (
-        <p className="p-4 text-muted-foreground" role="status">
-          {t("sign.loadingRequest")}
-        </p>
+        <LoadingSkeleton label={t("sign.loadingRequest")} variant="list" className="p-4" />
       ) : (
         <>
           {page.items.length === 0 ? (
@@ -228,7 +242,6 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
           )}
         </>
       )}
-
     </CrudListPageLayout>
   );
 }

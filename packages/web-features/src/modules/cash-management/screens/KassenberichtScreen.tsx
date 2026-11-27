@@ -4,7 +4,7 @@ import { ArrowLeft, Download } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, Button, Input } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, Button, Input } from "@corely/ui";
 import { type CashReportPreviewDto } from "@corely/contracts";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 
@@ -397,7 +397,12 @@ export function KassenberichtScreen() {
   }
   if (reportQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.kassenbericht.loading")}</div>
+      <LoadingSkeleton
+        variant="form"
+        label={t("cash.ui.kassenbericht.loading")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
   if (!reportQuery.data?.preview) {

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -143,9 +144,12 @@ export default function SessionDetailPage() {
 
   if (isSessionLoading || isAttendanceLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-muted-foreground">{uiCopy("loading-session")}</div>
-      </div>
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-session")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

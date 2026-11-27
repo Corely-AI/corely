@@ -6,7 +6,7 @@ import "./checklists.css";
 import { normalizeError } from "@corely/api-client";
 import { TaskCreationGuidanceSlot, type TaskCreationGuidance } from "@corely/tasks-ui";
 import { TaskCreationPolicyRejectedCode } from "@corely/contracts";
-import { Button, Input } from "@corely/ui";
+import { LoadingSkeleton, Button, Input } from "@corely/ui";
 import type { EmployeeTask, EmployeeTaskList, TaskAssignee } from "@corely/contracts";
 import type { TasksClient } from "./tasks-client";
 import { tasksCopy } from "./tasks-copy";
@@ -194,7 +194,7 @@ export function DailyWork({
   }
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   return (
-    <section className="daily-work" aria-busy={loading || busy}>
+    <section className="daily-work" aria-busy={busy}>
       <header className="task-heading">
         <div>
           <p className="task-eyebrow">{data?.capabilities.manage ? t.team : t.mine}</p>
@@ -333,7 +333,7 @@ export function DailyWork({
         </span>
       </div>
       {loading ? (
-        <p role="status">{t.loading}</p>
+        <LoadingSkeleton variant="list" label={t.loading} />
       ) : (
         data && (
           <>

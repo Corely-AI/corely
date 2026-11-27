@@ -118,7 +118,23 @@ describe("RequireAuth surface gating", () => {
       </MemoryRouter>
     );
     expect(setWorkspace).toHaveBeenCalledWith("ws_2");
+    expect(screen.getByRole("status")).toBeInTheDocument();
     expect(screen.queryByText("Private expenses")).toBeNull();
+  });
+
+  it("keeps the active workspace route visible during background discovery", () => {
+    workspaceState = { ...workspaceState, isLoading: true };
+    render(
+      <MemoryRouter initialEntries={["/expenses?workspaceId=ws_1"]}>
+        <Routes>
+          <Route element={<RequireAuth />}>
+            <Route path="/expenses" element={<div>Current expenses</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    );
+    expect(screen.getByText("Current expenses")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it.each(["workspaceId=unknown", "workspaceId=ws_1&workspaceId=ws_2", "workspaceId=bad%2Fid"])(

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Textarea } from "@corely/ui";
@@ -130,7 +130,7 @@ export default function TeamEditorPage() {
       </div>
 
       {isLoading && isEdit ? (
-        <div className="text-sm text-muted-foreground">{uiCopy("loading-team-member")}</div>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-team-member")} />
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>

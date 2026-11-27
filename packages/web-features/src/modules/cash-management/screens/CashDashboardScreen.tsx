@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Alert,
   AlertDescription,
   AlertTitle,
@@ -1439,35 +1440,34 @@ export function AssistantHelpWidget({
 
 function CashDashboardLoadingState({ copy }: { copy: DashboardCopy }) {
   return (
-    <div className="space-y-6">
-      <div className={cn(sectionCardClass, "rounded-3xl p-6")}>
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="mt-4 h-10 w-80" />
-        <Skeleton className="mt-4 h-4 w-full max-w-2xl" />
-      </div>
-      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Card key={index} className={cn(sectionCardClass, "p-5")}>
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="mt-4 h-8 w-28" />
-            <Skeleton className="mt-4 h-4 w-full" />
-          </Card>
-        ))}
-      </div>
-      <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-        <Card className={cn(sectionCardClass, "p-6")}>
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="mt-6 h-44 w-full" />
-        </Card>
-        <Card className={cn(sectionCardClass, "p-6")}>
+    <LoadingSkeleton label={copy.helpers.loadingTitle}>
+      <div className="space-y-6">
+        <div className={cn(sectionCardClass, "rounded-3xl p-6")}>
           <Skeleton className="h-5 w-40" />
-          <Skeleton className="mt-6 h-44 w-full" />
-        </Card>
+          <Skeleton className="mt-4 h-10 w-80 max-w-full" />
+          <Skeleton className="mt-4 h-4 w-full max-w-2xl" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className={cn(sectionCardClass, "p-5")}>
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="mt-4 h-8 w-28" />
+              <Skeleton className="mt-4 h-4 w-full" />
+            </Card>
+          ))}
+        </div>
+        <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+          <Card className={cn(sectionCardClass, "p-6")}>
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="mt-6 h-44 w-full" />
+          </Card>
+          <Card className={cn(sectionCardClass, "p-6")}>
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="mt-6 h-44 w-full" />
+          </Card>
+        </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        {copy.helpers.loadingTitle}. {copy.helpers.loadingDescription}
-      </p>
-    </div>
+    </LoadingSkeleton>
   );
 }
 
