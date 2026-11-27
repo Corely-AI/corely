@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Package, TrendingUp, Truck, User, Calendar, DollarSign } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
@@ -30,11 +30,12 @@ export default function LotDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="text-center py-8 text-muted-foreground">
-          {uiCopy("loading-lot-details")}
-        </div>
-      </div>
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-lot-details")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

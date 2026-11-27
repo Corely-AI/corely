@@ -7,6 +7,7 @@ import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
 import { posAdminRoutes } from "@corely/web-features/features/pos-admin";
 import { RequirePermission, RequireSurface } from "@corely/web-shared/shared/permissions";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { SignWorkspace } from "./sign-workspace";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
@@ -132,7 +133,7 @@ export const appShellRoutes = (
         path={path}
         element={
           <RequireSurface surfaces={["platform", "pos"]}>
-            <React.Suspense fallback={null}>
+            <React.Suspense fallback={<PageLoadingSkeleton variant="form" />}>
               <CashOnboarding />
             </React.Suspense>
           </RequireSurface>

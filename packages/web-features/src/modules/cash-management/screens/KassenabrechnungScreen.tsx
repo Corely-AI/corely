@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { Button, Card, CardContent, Input } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input } from "@corely/ui";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 
 const localDate = (date: Date) =>
@@ -113,7 +113,7 @@ export function KassenabrechnungScreen() {
         <p className="text-sm text-destructive">{uiCopy("das-anfangsdatum-darf-nicht")}</p>
       )}
       {report.isLoading && (
-        <p className="text-sm text-muted-foreground">{uiCopy("kassenabrechnung-wird-geladen")}</p>
+        <LoadingSkeleton variant="list" label={uiCopy("kassenabrechnung-wird-geladen")} />
       )}
       {report.isError && (
         <p className="text-sm text-destructive">{uiCopy("die-kassenabrechnung-konnte-nicht")}</p>

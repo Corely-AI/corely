@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Textarea } from "@corely/ui";
@@ -127,7 +127,7 @@ export default function ServiceEditorPage() {
       </div>
 
       {isLoading && isEdit ? (
-        <div className="text-sm text-muted-foreground">{uiCopy("loading-service")}</div>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-service")} />
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>

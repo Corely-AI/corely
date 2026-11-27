@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -250,9 +251,7 @@ export default function EngagementTemplatesSettingsPage() {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">
-                {uiCopy("loading-templates")}
-              </div>
+              <LoadingSkeleton variant="list" label={uiCopy("loading-templates")} />
             ) : isError ? (
               <div className="p-8 text-center space-y-3">
                 <div className="text-destructive">{uiCopy("failed-to-load-templates")}</div>

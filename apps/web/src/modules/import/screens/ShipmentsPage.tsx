@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Ship, Filter } from "lucide-react";
-import { Card, CardContent, Badge, Button, Input, Label } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, Badge, Button, Input, Label } from "@corely/ui";
 import { importShipmentsApi } from "@/lib/import-shipments-api";
 import { useNavigate } from "react-router-dom";
 import type { ImportShipmentStatus } from "@corely/contracts";
@@ -132,11 +132,7 @@ export default function ShipmentsPage() {
       )}
 
       {isLoading ? (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">{uiCopy("loading-shipments")}</p>
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="list" label={uiCopy("loading-shipments")} />
       ) : !data || data.shipments.length === 0 ? (
         <Card>
           <CardContent className="pt-6">

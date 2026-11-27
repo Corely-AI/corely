@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { CalendarX2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -99,7 +100,12 @@ export function CashRegisterDetailScreen() {
 
   if (registerQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+      <LoadingSkeleton
+        variant="detail"
+        label={t("cash.ui.common.loadingRegister")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 
@@ -359,9 +365,7 @@ export function CashRegisterDetailScreen() {
             <Card>
               <CardContent className="pt-4 pb-2">
                 {closesQuery.isLoading ? (
-                  <p className="text-sm text-muted-foreground py-4">
-                    {t("cash.ui.common.loadingRegister")}
-                  </p>
+                  <LoadingSkeleton variant="list" label={t("cash.ui.common.loadingRegister")} />
                 ) : (
                   (() => {
                     const closedSet = new Set(

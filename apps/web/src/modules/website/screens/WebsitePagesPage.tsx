@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, FileText, Search } from "lucide-react";
-import { Button, Card, CardContent, Input, Badge } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Badge } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, useCrudUrlState } from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
@@ -112,7 +112,7 @@ export default function WebsitePagesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">{uiCopy("loading-pages")}</div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-pages")} />
           ) : pages.length === 0 ? (
             <EmptyState
               icon={FileText}

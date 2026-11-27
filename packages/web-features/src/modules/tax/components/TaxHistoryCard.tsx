@@ -2,6 +2,7 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
 import {
+  LoadingSkeleton,
   Alert,
   AlertDescription,
   AlertTitle,
@@ -22,7 +23,7 @@ import {
   TabsTrigger,
 } from "@corely/ui";
 import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { downloadTaxPdfWithPolling } from "../lib/download-tax-pdf-with-polling";
@@ -218,9 +219,7 @@ export function TaxHistoryCard() {
       </CardHeader>
       <CardContent className="space-y-6">
         {isLoading ? (
-          <div className="flex justify-center p-4">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
+          <LoadingSkeleton label={t("common.loading")} variant="list" />
         ) : periods.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("tax.history.noData")}</p>
         ) : (

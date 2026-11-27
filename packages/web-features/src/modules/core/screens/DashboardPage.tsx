@@ -15,7 +15,15 @@ import {
   ShoppingCart,
   GraduationCap,
 } from "lucide-react";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@corely/ui";
 import { formatMoney, formatRelativeTime } from "@corely/web-shared/shared/lib/formatters";
 import { CardSkeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
@@ -161,13 +169,15 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
         </div>
-      </div>
+      </LoadingSkeleton>
     );
   }
 

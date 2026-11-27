@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { bookingApi } from "@/lib/booking-api";
 import { bookingKeys } from "../queries";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Label } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent, Label } from "@corely/ui";
 
 const getStatusVariant = (status: string) => {
   if (status === "CONFIRMED") {
@@ -111,11 +111,7 @@ export default function BookingDetailPage() {
       </div>
 
       {bookingQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-booking")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="detail" label={uiCopy("loading-booking")} />
       ) : null}
 
       {bookingQuery.isError ? (

@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Plus, Search, Trash2 } from "lucide-react";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
@@ -153,9 +153,7 @@ export default function ServicesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {uiCopy("loading-services")}
-            </div>
+            <LoadingSkeleton variant="cards" label={uiCopy("loading-services")} />
           ) : services.length === 0 ? (
             <EmptyState
               icon={Briefcase}

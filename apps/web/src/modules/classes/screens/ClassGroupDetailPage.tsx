@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarPlus, Users, Edit2 } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -254,7 +255,14 @@ export default function ClassGroupDetailPage() {
   }, [customers, students]);
 
   if (isGroupLoading) {
-    return <div className="text-muted-foreground">{uiCopy("loading-class-group")}</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-class-group")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (!group) {

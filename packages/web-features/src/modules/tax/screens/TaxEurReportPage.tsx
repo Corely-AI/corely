@@ -4,6 +4,7 @@ import { normalizeError } from "@corely/api-client";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
 import { formatDateTime, formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import {
+  LoadingSkeleton,
   Alert,
   AlertDescription,
   AlertTitle,
@@ -107,11 +108,7 @@ export function TaxEurReportPage() {
       </div>
 
       {isCapabilitiesLoading ? (
-        <Card className="border-border/40">
-          <CardContent className="py-10 text-sm text-muted-foreground">
-            {t("tax.reports.eur.status.loadingCapabilities")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="detail" label={t("tax.reports.eur.status.loadingCapabilities")} />
       ) : null}
 
       {!isCapabilitiesLoading && !supportsEur ? (
@@ -122,11 +119,7 @@ export function TaxEurReportPage() {
       ) : null}
 
       {supportsEur && statementQuery.isLoading ? (
-        <Card className="border-border/40">
-          <CardContent className="py-10 text-sm text-muted-foreground">
-            {t("tax.reports.eur.status.loadingStatement")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="list" label={t("tax.reports.eur.status.loadingStatement")} />
       ) : null}
 
       {supportsEur && statementQuery.isError ? (

@@ -14,7 +14,17 @@ import { bookingApi } from "@/lib/booking-api";
 import { bookingServiceKeys } from "../queries";
 import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-errors";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Checkbox, Input, Label, Textarea } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Input,
+  Label,
+  Textarea,
+} from "@corely/ui";
 
 const RESOURCE_TYPES: ResourceType[] = ["STAFF", "ROOM", "EQUIPMENT"];
 
@@ -276,11 +286,7 @@ export default function ServiceEditorPage() {
       </div>
 
       {isEdit && serviceQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-service")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-service")} />
       ) : null}
 
       {isEdit && serviceQuery.isError ? (

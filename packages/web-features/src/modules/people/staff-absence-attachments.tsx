@@ -1,6 +1,6 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState, useEffect, useRef, type ChangeEvent } from "react";
-import { Button, Input, Label } from "@corely/ui";
+import { LoadingSkeleton, Button, Input, Label } from "@corely/ui";
 import type { StaffAbsence, PersonnelAttachment } from "@corely/contracts";
 import { usePeopleApi } from "./people-runtime";
 import { usePeopleAccess, usePeopleLoad, usePeopleMounted } from "./use-people";
@@ -121,7 +121,7 @@ export function StaffAbsenceAttachments({
       <h4 className="text-sm font-medium">{t.attachments}</h4>
       <p className="text-xs text-muted-foreground">{t.fileHint}</p>
       {result.loading ? (
-        <p role="status">{access.copy.loading}</p>
+        <LoadingSkeleton variant="list" label={access.copy.loading} />
       ) : result.error ? (
         <div role="alert">
           {t.fileError}

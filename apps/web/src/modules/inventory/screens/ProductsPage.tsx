@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,18 +7,23 @@ import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import { TableLoadingSkeleton, Badge } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import type { ProductType } from "@corely/contracts";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 import { useNavigate } from "react-router-dom";
 
 export default function ProductsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.inventory-productspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const {
+    data,
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useQuery({
     queryKey: inventoryQueryKeys.products.list(),
     queryFn: () => inventoryApi.listProducts(),
   });
@@ -108,28 +114,40 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {data?.items.map((product) => (
-                <tr key={product.id} className="border-t border-border">
-                  <td className="py-2 font-medium">{product.sku}</td>
-                  <td>{product.name}</td>
-                  <td>{product.productType}</td>
-                  <td>{product.unitOfMeasure}</td>
-                  <td>
-                    <Badge variant={product.isActive ? "secondary" : "outline"}>
-                      {product.isActive ? uiCopy("active") : uiCopy("inactive")}
-                    </Badge>
-                  </td>
-                  <td className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/inventory/products/${product.id}`)}
-                    >
-                      {uiCopy("view")}
-                    </Button>
+              {productsLoading ? (
+                <TableLoadingSkeleton columns={6} label={t("common.loading")} />
+              ) : productsError && !data ? (
+                <tr>
+                  <td colSpan={6} className="p-4 text-sm text-destructive">
+                    <p role="alert">{t("common.error")}</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                <>
+                  {data?.items.map((product) => (
+                    <tr key={product.id} className="border-t border-border">
+                      <td className="py-2 font-medium">{product.sku}</td>
+                      <td>{product.name}</td>
+                      <td>{product.productType}</td>
+                      <td>{product.unitOfMeasure}</td>
+                      <td>
+                        <Badge variant={product.isActive ? "secondary" : "outline"}>
+                          {product.isActive ? uiCopy("active") : uiCopy("inactive")}
+                        </Badge>
+                      </td>
+                      <td className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/inventory/products/${product.id}`)}
+                        >
+                          {uiCopy("view")}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
           </table>
         </CardContent>

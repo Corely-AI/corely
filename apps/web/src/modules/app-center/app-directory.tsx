@@ -1,7 +1,7 @@
 import { localizedValue } from "@corely/contracts";
 import React, { useState } from "react";
 import type { AppCatalogItem } from "@corely/contracts";
-import { Button, Input, Skeleton } from "@corely/ui";
+import { Button, Input, LoadingSkeleton, Skeleton } from "@corely/ui";
 import { catalogEntryUrl, catalogMetadata } from "./catalog-entry";
 import { AppLogo } from "@corely/web-shared/layout/app-logo";
 import { copy, type Locale } from "./copy";
@@ -90,23 +90,20 @@ export function AppDirectory({
         </div>
       )}
       {loading ? (
-        <>
-          <p role="status" className="sr-only">
-            {text.loading}
-          </p>
-          <div aria-hidden="true" className="space-y-3">
-            <Skeleton className="h-7 w-24 motion-reduce:animate-none" />
+        <LoadingSkeleton label={text.loading}>
+          <div className="space-y-3">
+            <Skeleton className="h-7 w-24" />
             <div className={appGridClassName}>
               {[0, 1, 2].map((card) => (
                 <div key={card} className={appCardClassName}>
-                  <Skeleton className="h-11 w-11 rounded-lg motion-reduce:animate-none" />
-                  <Skeleton className="h-7 w-2/3 max-w-40 motion-reduce:animate-none" />
-                  <Skeleton className="h-11 w-full motion-reduce:animate-none" />
+                  <Skeleton className="h-11 w-11 rounded-lg" />
+                  <Skeleton className="h-7 w-2/3 max-w-40" />
+                  <Skeleton className="h-11 w-full" />
                 </div>
               ))}
             </div>
           </div>
-        </>
+        </LoadingSkeleton>
       ) : error ? (
         <div role="alert" className="space-y-3 rounded-lg border p-6">
           <p>{text.error}</p>

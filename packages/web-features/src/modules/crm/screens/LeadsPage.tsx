@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Briefcase, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@corely/ui";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import { LeadCard } from "../components/LeadCard";
@@ -15,7 +15,11 @@ export default function LeadsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data: leads } = useQuery({
+  const {
+    data: leads,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["leads"],
     queryFn: () => crmApi.listLeads(),
   });
@@ -38,7 +42,13 @@ export default function LeadsPage() {
         </Button>
       </div>
 
-      {leadList.length === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton variant="cards" label={t("common.loading")} />
+      ) : isError && !leads ? (
+        <p className="p-4 text-sm text-destructive" role="alert">
+          {t("common.error")}
+        </p>
+      ) : leadList.length === 0 ? (
         <Card data-testid="crm-leads-empty">
           <CardContent className="p-0">
             <EmptyState

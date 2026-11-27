@@ -7,6 +7,7 @@ import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import {
+  LoadingSkeleton,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -23,7 +24,7 @@ export default function VendorBillsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["vendorBills"],
     queryFn: () => purchasingApi.listVendorBills(),
   });
@@ -62,7 +63,13 @@ export default function VendorBillsPage() {
 
       <Card>
         <CardContent className="p-0">
-          {bills.length === 0 ? (
+          {isLoading ? (
+            <LoadingSkeleton variant="list" label={t("common.loading")} />
+          ) : isError && !data ? (
+            <p className="p-4 text-sm text-destructive" role="alert">
+              {t("common.error")}
+            </p>
+          ) : bills.length === 0 ? (
             <EmptyState
               title={t("purchasing.vendorBills.emptyTitle")}
               description={t("purchasing.vendorBills.emptyDescription")}

@@ -8,6 +8,7 @@ import { Plus, ShieldCheck, UserMinus, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -207,7 +208,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
         )}
 
         {guardiansLoading ? (
-          <div className="text-sm text-muted-foreground">{uiCopy("loading-guardians")}</div>
+          <LoadingSkeleton variant="list" label={uiCopy("loading-guardians")} />
         ) : guardians.length === 0 ? (
           <div className="text-sm text-muted-foreground">
             {t("classes.students.guardians.empty")}

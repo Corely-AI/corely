@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ export default function VendorBillDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["vendorBills", id],
     queryFn: () => purchasingApi.getVendorBill(id || ""),
     enabled: Boolean(id),
@@ -72,6 +73,10 @@ export default function VendorBillDetailPage() {
     mutationFn: () => purchasingApi.voidVendorBill(id || ""),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["vendorBills", id] }),
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
 
   if (!data) {
     return null;

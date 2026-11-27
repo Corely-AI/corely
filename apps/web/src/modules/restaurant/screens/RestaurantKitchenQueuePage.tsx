@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -24,6 +26,7 @@ const ticketStatuses: Array<KitchenTicketStatus | "ALL"> = [
 ];
 
 export default function RestaurantKitchenQueuePage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.restaurant-restaurantkitchenqueuepage");
   const navigate = useNavigate();
   const [status, setStatus] = useState<KitchenTicketStatus | "ALL">("ALL");
@@ -128,7 +131,13 @@ export default function RestaurantKitchenQueuePage() {
             </CardContent>
           </Card>
         ))}
-        {!ticketsQuery.isLoading && (ticketsQuery.data?.items.length ?? 0) === 0 ? (
+        {ticketsQuery.isLoading ? (
+          <LoadingSkeleton label={t("common.loading")} variant="cards" />
+        ) : ticketsQuery.isError && !ticketsQuery.data ? (
+          <p role="alert" className="text-destructive">
+            {t("common.error")}
+          </p>
+        ) : (ticketsQuery.data?.items.length ?? 0) === 0 ? (
           <Card>
             <CardContent className="p-6 text-sm text-muted-foreground">
               {uiCopy("no-kitchen-tickets-for")}

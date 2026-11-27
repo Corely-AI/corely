@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -17,7 +18,7 @@ export default function OrderDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: orderData } = useQuery({
+  const { data: orderData, isLoading } = useQuery({
     queryKey: salesQueryKeys.orders.detail(orderId ?? ""),
     queryFn: () => salesApi.getOrder(orderId ?? ""),
     enabled: Boolean(orderId),
@@ -95,6 +96,10 @@ export default function OrderDetailPage() {
     },
     onError: () => toast.error(uiCopy("failed-to-create-invoice")),
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
 
   if (!order) {
     return (

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { customersApi } from "@/lib/customers-api";
 import { toast } from "sonner";
@@ -76,9 +76,12 @@ export default function EditCustomerPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-center">{uiCopy("loading-customer")}</div>
-      </div>
+      <LoadingSkeleton
+        variant="form"
+        label={uiCopy("loading-customer")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

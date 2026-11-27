@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -13,12 +15,13 @@ import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 import { toast } from "sonner";
 
 export default function DocumentDetailPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.inventory-documentdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: inventoryQueryKeys.documents.detail(id || ""),
     queryFn: () => inventoryApi.getDocument(id || ""),
     enabled: Boolean(id),
@@ -114,6 +117,18 @@ export default function DocumentDetailPage() {
 
   const editable = data.status === "DRAFT";
   const approvalStatus = requestPostApproval.data?.status;
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
+import { LoadingSkeleton, Alert, AlertDescription, AlertTitle } from "@corely/ui";
 import {
   ArrowRight,
   Building,
@@ -43,16 +43,18 @@ export default function TaxesOverviewPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <Skeleton className="h-10 w-48" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </div>
           <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+          <Skeleton className="h-40" />
         </div>
-        <Skeleton className="h-32" />
-        <Skeleton className="h-40" />
-      </div>
+      </LoadingSkeleton>
     );
   }
 

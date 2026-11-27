@@ -1,7 +1,8 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@corely/ui";
+import { Card, CardContent, LoadingSkeleton, TableLoadingSkeleton } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
@@ -11,8 +12,9 @@ import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 
 export default function WarehousesPage() {
   const uiCopy = useUiCopy("ui.inventory-warehousespage");
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: inventoryQueryKeys.warehouses.list(),
     queryFn: () => inventoryApi.listWarehouses(),
   });
@@ -23,7 +25,11 @@ export default function WarehousesPage() {
   const [locationName, setLocationName] = useState("");
   const [locationType, setLocationType] = useState<LocationType>("INTERNAL");
 
-  const { data: locations } = useQuery({
+  const {
+    data: locations,
+    isLoading: isLoadingLocations,
+    isError: isLocationsError,
+  } = useQuery({
     queryKey: selectedWarehouseId
       ? inventoryQueryKeys.warehouses.locations(selectedWarehouseId)
       : ["inventory", "locations"],
@@ -89,6 +95,13 @@ export default function WarehousesPage() {
         <Card className="lg:col-span-1">
           <CardContent className="p-6">
             <div className="space-y-2">
+              {isLoading ? (
+                <LoadingSkeleton label={t("common.loading")} variant="list" />
+              ) : isError && !data ? (
+                <p role="alert" className="text-destructive">
+                  {t("common.error")}
+                </p>
+              ) : null}
               {data?.items.map((warehouse) => (
                 <Button
                   key={warehouse.id}
@@ -152,6 +165,17 @@ export default function WarehousesPage() {
                     </tr>
                   </thead>
                   <tbody>
+                    {isLoadingLocations ? (
+                      <TableLoadingSkeleton columns={3} label={t("common.loading")} />
+                    ) : isLocationsError && !locations ? (
+                      <tr>
+                        <td colSpan={3}>
+                          <p role="alert" className="text-destructive">
+                            {t("common.error")}
+                          </p>
+                        </td>
+                      </tr>
+                    ) : null}
                     {locations?.items.map((location) => (
                       <tr key={location.id} className="border-t border-border">
                         <td className="py-2 font-medium">{location.name}</td>

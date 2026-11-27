@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Loader2, Plus, Search, Sparkles } from "lucide-react";
-import { Button, useToast } from "@corely/ui";
+import { LoadingSkeleton, Button, useToast } from "@corely/ui";
 import {
   listCopilotThreads,
   searchCopilotThreads,
@@ -420,12 +420,10 @@ export default function AssistantPage({
                   isBinding={resolveWorkspaceMutation.isPending}
                 />
               ) : isRegisterContextLoading ? (
-                <div className="flex h-full min-h-[300px] items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span>
-                    {t("cashDashboard.registerSelector.binding", "Selecting register...")}
-                  </span>
-                </div>
+                <LoadingSkeleton
+                  variant="thread"
+                  label={t("cashDashboard.registerSelector.binding", "Selecting register...")}
+                />
               ) : (
                 <div
                   className="flex min-h-0 flex-1 flex-col px-4 py-3 sm:px-6 sm:py-6 lg:px-8 lg:py-8"

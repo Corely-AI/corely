@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -85,6 +87,7 @@ const toolbarButtonClass = (active?: boolean) =>
 
 export default function CmsPostEditorPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const editorRef = useRef<Editor | null>(null);
@@ -112,7 +115,11 @@ export default function CmsPostEditorPage() {
   const postId = id ?? createdPost?.id ?? null;
   const isEdit = Boolean(id);
 
-  const { data: queryPost, isLoading } = useQuery({
+  const {
+    data: queryPost,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: cmsPostKeys.detail(id ?? ""),
     queryFn: () => (id ? cmsApi.getPost(id) : Promise.resolve(null)),
     enabled: isEdit,
@@ -392,6 +399,17 @@ export default function CmsPostEditorPage() {
       editor.chain().focus().updateAttributes("image", { alt: value }).run();
     }
   };
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+  if (isError && !queryPost) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">

@@ -5,6 +5,7 @@ import { PublicFormPage } from "../../modules/forms";
 import { PublicCmsListPage, PublicCmsPostPage } from "../../modules/cms";
 import { PublicRentalsListScreen, PublicRentalDetailScreen } from "../../modules/rentals";
 import NotFound from "@corely/web-shared/shared/components/NotFound";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
 import ForgotPasswordPage from "../../routes/auth/forgot-password";
@@ -39,7 +40,7 @@ const SurfaceRootRedirect = () => {
   const { user, isLoading } = useAuth();
   if (window.location.origin === CORELY_APP_ORIGIN) {
     if (isLoading) {
-      return null;
+      return <PageLoadingSkeleton variant="cards" />;
     }
     if (user?.activeTenantId !== null) {
       return <Navigate to={{ pathname: "/apps", search }} replace />;

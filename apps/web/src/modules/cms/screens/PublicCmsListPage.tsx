@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
@@ -81,9 +81,7 @@ export default function PublicCmsListPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center text-muted-foreground py-12">
-            {uiCopy("loading-articles")}
-          </div>
+          <LoadingSkeleton variant="cards" label={uiCopy("loading-articles")} />
         ) : isError ? (
           <div className="text-sm text-destructive">
             {(error as Error)?.message || uiCopy("failed-to-load-posts")}

@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, Package } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Label } from "@corely/ui";
@@ -129,13 +129,7 @@ export default function ExpiryDashboardPage() {
       </div>
 
       {isLoading ? (
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center py-8 text-muted-foreground">
-              {uiCopy("loading-expiry-data")}
-            </div>
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="cards" label={uiCopy("loading-expiry-data")} />
       ) : (
         <>
           {data && data.expired.length > 0 && (

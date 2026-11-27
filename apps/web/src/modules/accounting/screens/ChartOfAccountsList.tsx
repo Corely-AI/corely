@@ -2,7 +2,7 @@ import React, { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
@@ -112,9 +112,7 @@ export const ChartOfAccountsList: FC = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {t("accounting.chartOfAccounts.loading")}
-            </div>
+            <LoadingSkeleton variant="list" label={t("accounting.chartOfAccounts.loading")} />
           ) : accounts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>{t("accounting.chartOfAccounts.empty")}</p>

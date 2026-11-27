@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
@@ -25,6 +26,7 @@ import {
 } from "@/shared/list-kit";
 import { bookingResourceKeys } from "../queries";
 import {
+  LoadingSkeleton,
   Table,
   TableBody,
   TableCell,
@@ -68,6 +70,7 @@ const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
 };
 
 export const ResourcesPage = () => {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.booking-resourcespage");
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -220,14 +223,16 @@ export const ResourcesPage = () => {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="space-y-4 p-4">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={`resource-skeleton-${index}`}
-                    className="h-12 w-full animate-pulse rounded bg-muted/20"
-                  />
-                ))}
-              </div>
+              <LoadingSkeleton label={t("common.loading")}>
+                <div className="space-y-4 p-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={`resource-skeleton-${index}`}
+                      className="h-12 w-full animate-pulse motion-reduce:animate-none rounded bg-muted/20"
+                    />
+                  ))}
+                </div>
+              </LoadingSkeleton>
             ) : resources.length === 0 ? (
               <EmptyState
                 icon={Warehouse}

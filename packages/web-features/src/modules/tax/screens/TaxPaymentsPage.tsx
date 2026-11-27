@@ -31,7 +31,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@corely/ui";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
+import {
+  TableLoadingSkeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@corely/ui";
 import { formatDate, formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import { useTaxCapabilitiesQuery } from "../hooks/useTaxCapabilitiesQuery";
 import { useTaxPaymentsQuery } from "../hooks/useTaxPaymentsQuery";
@@ -431,11 +439,7 @@ export const TaxPaymentsPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {Array.from({ length: 5 }).map((_, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell colSpan={7} className="h-14 animate-pulse bg-muted/20" />
-                    </TableRow>
-                  ))}
+                  <TableLoadingSkeleton columns={7} label={t("common.loading")} />
                 </TableBody>
               </Table>
             </div>

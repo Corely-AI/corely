@@ -3,6 +3,7 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, ListFilter } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -172,7 +173,7 @@ export default function DimensionsSettingsPage() {
             </div>
 
             {isLoading ? (
-              <div className="text-sm text-muted-foreground">{uiCopy("loading-dimensions")}</div>
+              <LoadingSkeleton variant="list" label={uiCopy("loading-dimensions")} />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -271,7 +272,7 @@ export default function DimensionsSettingsPage() {
               </div>
 
               {isValuesLoading ? (
-                <div className="text-sm text-muted-foreground">{uiCopy("loading-values")}</div>
+                <LoadingSkeleton variant="list" label={uiCopy("loading-values")} />
               ) : (
                 <div className="space-y-2">
                   {values.map((value) => (

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { coachingApi } from "@/lib/coaching-api";
 import { coachingOfferKeys } from "../queries";
 import { ConfirmDeleteDialog } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Label } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent, Label } from "@corely/ui";
 
 const getLocalizedValue = (
   value: Record<string, string> | null | undefined,
@@ -107,11 +107,7 @@ export default function CoachingOfferDetailPage() {
       </div>
 
       {offerQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-offer")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="detail" label={uiCopy("loading-offer")} />
       ) : null}
 
       {offerQuery.isError ? (

@@ -43,9 +43,18 @@ remain proposals until validated/revalidated and approved as required by
 
 ## Required states
 
-- **Loading**: Skeletons or table loading placeholder; avoid empty flashes.
+- **Loading**: Use a layout-matched skeleton for the initial load of every data-backed screen or section.
 - **Empty**: `EmptyState` with icon, title, description, and primary action.
 - **Error**: Inline error state with retry and toast; React Query error should not render empty silently.
+
+### Skeleton loading for new features
+
+- Import `LoadingSkeleton`, `TableLoadingSkeleton`, or the primitive `Skeleton` from `@corely/ui`. Use `PageLoadingSkeleton` from `@corely/web-shared/shared/components/page-loading-skeleton` when a whole route is waiting for its first content.
+- Keep the page heading, filters, navigation, and any usable content in place. Fill the waiting region with placeholders sized like its loaded rows, cards, fields, calendar cells, or messages. Use `TableLoadingSkeleton` inside a table body to keep the real headers and column alignment.
+- Tie the skeleton to the initial load for the current query key, including workspace and record identity where applicable. Preserve authorized cached content during background refetches. A disabled query, an empty result, a permission denial, and a load error each follow their own state.
+- Use the existing localized loading label. Each loading region provides one status to assistive technology. Shared skeletons are decorative and respect reduced motion. For a custom layout, put a localized `role="status"` label outside its `aria-hidden` placeholders.
+- Keep submit, upload, and similar action feedback on the affected control. A synchronous screen can render immediately.
+- Review the first load with a delayed response on desktop and mobile. Check reduced motion, keyboard access to controls outside the loading region, and the transition to content, empty, and error states.
 
 ## URL/search state (list pages)
 
@@ -74,5 +83,5 @@ remain proposals until validated/revalidated and approved as required by
 - [ ] Swap row action dropdowns for `CrudRowActions`; ensure only one visible primary action.
 - [ ] Add `ConfirmDeleteDialog` for destructive actions; surface errors via toast.
 - [ ] Wire list state to URL via `useCrudUrlState` (or consistent local state) and use shared query keys + invalidation helpers.
-- [ ] Ensure loading/empty/error states are present and consistent.
+- [ ] Verify a layout-matched initial skeleton, accessible loading status, and distinct empty and error states.
 - [ ] Reuse shared forms between create/edit; navigate consistently after save (detail or list) and invalidate caches.

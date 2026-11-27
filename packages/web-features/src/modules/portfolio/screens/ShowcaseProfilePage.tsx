@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Textarea } from "@corely/ui";
@@ -111,7 +111,7 @@ export default function ShowcaseProfilePage() {
       </div>
 
       {isLoading ? (
-        <div className="text-sm text-muted-foreground">{uiCopy("loading-profile")}</div>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-profile")} />
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>

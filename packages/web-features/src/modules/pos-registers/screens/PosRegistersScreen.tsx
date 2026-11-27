@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -102,7 +103,7 @@ export function PosRegistersScreen() {
       }
     >
       {registersQuery.isLoading ? (
-        <div className="p-6 text-sm text-muted-foreground">{uiCopy("loading-pos-registers")}</div>
+        <LoadingSkeleton variant="list" label={uiCopy("loading-pos-registers")} />
       ) : registersQuery.isError ? (
         <div className="p-6 text-sm text-destructive">{uiCopy("failed-to-load-pos")}</div>
       ) : filteredRegisters.length === 0 ? (

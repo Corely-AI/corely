@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, MessageSquare, UserPlus } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Textarea } from "@corely/ui";
@@ -139,7 +139,7 @@ export default function PublicCmsPostPage() {
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         {isLoading ? (
-          <div className="text-center text-muted-foreground py-12">{uiCopy("loading-post")}</div>
+          <LoadingSkeleton variant="detail" label={uiCopy("loading-post")} />
         ) : isError || !post ? (
           <div className="text-center text-muted-foreground py-12">
             {uiCopy("post-not-found") + " "}

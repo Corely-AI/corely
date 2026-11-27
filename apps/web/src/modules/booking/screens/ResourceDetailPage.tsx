@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { bookingApi } from "@/lib/booking-api";
 import { bookingResourceKeys } from "../queries";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Label } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent, Label } from "@corely/ui";
 
 export default function ResourceDetailPage() {
   const uiCopy = useUiCopy("ui.booking-resourcedetailpage");
@@ -99,11 +99,7 @@ export default function ResourceDetailPage() {
       </div>
 
       {resourceQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            {uiCopy("loading-resource")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="detail" label={uiCopy("loading-resource")} />
       ) : null}
 
       {resourceQuery.isError ? (

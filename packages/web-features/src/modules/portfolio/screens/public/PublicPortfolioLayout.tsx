@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { createContext, useContext } from "react";
 import { Outlet, useParams, useLocation } from "react-router-dom";
@@ -52,14 +53,7 @@ export const PublicPortfolioLayout = () => {
   const { t } = useTranslation();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="h-12 w-12 bg-muted rounded-full" />
-          <div className="h-4 w-32 bg-muted rounded" />
-        </div>
-      </div>
-    );
+    return <PageLoadingSkeleton variant="cards" />;
   }
   if (error || !data) {
     const status =

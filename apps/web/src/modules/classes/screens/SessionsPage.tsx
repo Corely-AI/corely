@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { CheckCircle2, XCircle, CalendarDays, RotateCw } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Select,
   SelectContent,
@@ -348,9 +349,7 @@ export default function SessionsPage() {
         }
       >
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground">
-            {t("classes.sessions.loading")}
-          </div>
+          <LoadingSkeleton variant="list" label={t("classes.sessions.loading")} />
         ) : sessions.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">{t("classes.sessions.empty")}</div>
         ) : (

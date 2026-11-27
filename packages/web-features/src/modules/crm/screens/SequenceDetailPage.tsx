@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Pencil, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -254,11 +255,7 @@ export default function SequenceDetailPage() {
       </div>
 
       {isLoading ? (
-        <Card>
-          <CardContent className="py-6 text-sm text-muted-foreground">
-            {uiCopy("loading-sequence")}
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="detail" label={uiCopy("loading-sequence")} />
       ) : isError || !sequence ? (
         <Card>
           <CardContent className="py-6 space-y-3">

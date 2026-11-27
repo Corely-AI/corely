@@ -32,7 +32,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@corely/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import {
+  TableLoadingSkeleton,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@corely/ui";
 import type {
   ListTaxFilingsInput,
   TaxFilingStatus,
@@ -413,11 +420,7 @@ export const FilingsListPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {Array.from({ length: 5 }).map((_, idx) => (
-                    <tr key={idx} className="border-b border-border">
-                      <td colSpan={6} className="h-14 animate-pulse bg-muted/20" />
-                    </tr>
-                  ))}
+                  <TableLoadingSkeleton columns={6} label={t("common.loading")} />
                 </tbody>
               </table>
             </div>

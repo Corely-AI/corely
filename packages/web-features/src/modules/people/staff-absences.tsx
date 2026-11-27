@@ -1,7 +1,7 @@
 import { resolveCorelyLocale } from "@corely/contracts";
 import { usePeopleDraftGuard } from "./people-runtime";
 import { useState, useRef, type FormEvent } from "react";
-import { Button, Input, Label, Textarea, Badge } from "@corely/ui";
+import { LoadingSkeleton, Button, Input, Label, Textarea, Badge } from "@corely/ui";
 import { ConfirmDeleteDialog } from "@corely/web-shared/shared/crud";
 import { RecordStaffAbsenceSchema, type StaffAbsence } from "@corely/contracts";
 import { usePeopleApi } from "./people-runtime";
@@ -133,7 +133,7 @@ function AbsenceRecords({
         </div>
       )}
       {result.loading ? (
-        <p role="status">{access.copy.loading}</p>
+        <LoadingSkeleton variant="list" label={access.copy.loading} />
       ) : result.error ? (
         <div role="alert">
           <p>{t.error}</p>

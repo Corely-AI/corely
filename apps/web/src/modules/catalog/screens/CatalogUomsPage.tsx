@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent } from "@corely/ui";
 import { CrudListPageLayout } from "@/shared/crud";
 import { catalogApi } from "@/lib/catalog-api";
 import { catalogUomKeys } from "../queries";
@@ -48,7 +48,7 @@ export default function CatalogUomsPage() {
             </Button>
           </div>
           {isLoading ? (
-            <div className="text-sm text-muted-foreground">{uiCopy("loading")}</div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading")} />
           ) : (
             <div className="space-y-2">
               {(data?.items ?? []).map((uom) => (

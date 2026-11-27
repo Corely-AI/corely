@@ -1,7 +1,7 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useQueries } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle, LoadingSkeleton } from "@corely/ui";
 import { Checkbox } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
@@ -113,7 +113,7 @@ export function DimensionsSection({
           <CardTitle>{uiCopy("dimensions")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">{uiCopy("loading-dimensions")}</div>
+          <LoadingSkeleton label={uiCopy("loading-dimensions")} variant="form" />
         </CardContent>
       </Card>
     );

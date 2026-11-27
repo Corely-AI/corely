@@ -16,9 +16,8 @@ import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
 import {
   invoiceFormSchema,
@@ -370,12 +369,12 @@ export default function InvoiceDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {t("invoices.loading")}
-        </div>
-      </div>
+      <LoadingSkeleton
+        variant="detail"
+        label={t("invoices.loading")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

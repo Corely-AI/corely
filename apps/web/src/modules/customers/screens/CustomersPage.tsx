@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Users, Plus, Mail, Phone, MapPin, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { customersApi } from "@/lib/customers-api";
 import { EmptyState } from "@/shared/components/EmptyState";
@@ -57,9 +57,7 @@ export default function CustomersPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {uiCopy("loading-customers")}
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-customers")} />
           ) : isError ? (
             <div className="p-8 text-center text-destructive">
               {uiCopy("failed-to-load-customers")}

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Input } from "@corely/ui";
+import { LoadingSkeleton, Button, Input } from "@corely/ui";
 import { Filter, Plus, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -114,7 +114,7 @@ export function CashRegistersScreen() {
       }
     >
       {registersQuery.isLoading ? (
-        <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.registers.loading")}</div>
+        <LoadingSkeleton variant="list" label={t("cash.ui.registers.loading")} />
       ) : registersQuery.isError ? (
         <div className="p-6 text-sm text-destructive">{t("cash.ui.registers.loadFailed")}</div>
       ) : registers.length === 0 ? (

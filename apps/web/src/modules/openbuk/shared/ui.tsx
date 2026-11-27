@@ -1,3 +1,4 @@
+import { StandaloneLoading } from "../../../app/standalone-loading";
 import { Link } from "react-router-dom";
 import { brand } from "./brand";
 import { useLanguage } from "./i18n";
@@ -40,12 +41,12 @@ export function ErrorMessage({
     </p>
   );
 }
-export function Loading() {
+export function Loading({ variant = "form" }: { variant?: "form" | "calendar" } = {}) {
   const { t } = useLanguage();
   return (
-    <p role="status" className="loading">
-      {t("loading")}
-    </p>
+    <div className="loading">
+      <StandaloneLoading label={t("loading")} variant={variant} />
+    </div>
   );
 }
 export const localDay = (timezone: string) => {

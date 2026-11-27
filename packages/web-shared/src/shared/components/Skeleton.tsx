@@ -1,4 +1,5 @@
 import React from "react";
+import { Skeleton as UiSkeleton } from "@corely/ui";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -12,7 +13,7 @@ export function Skeleton({ className, variant = "default", ...props }: SkeletonP
     text: "rounded h-4",
   };
 
-  return <div className={cn("animate-pulse bg-muted", variants[variant], className)} {...props} />;
+  return <UiSkeleton className={cn(variants[variant], className)} {...props} />;
 }
 
 export function CardSkeleton() {

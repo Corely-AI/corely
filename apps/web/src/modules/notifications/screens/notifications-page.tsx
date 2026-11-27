@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
-import { Tabs, TabsList, TabsTrigger, Button, Badge } from "@corely/ui";
+import { LoadingSkeleton, Tabs, TabsList, TabsTrigger, Button, Badge } from "@corely/ui";
 import { CheckCheck } from "lucide-react";
 import {
   useNotificationsList,
@@ -89,9 +89,7 @@ export function NotificationsPage() {
 
         <div className="space-y-2">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {t("common.loading", "Loading...")}
-            </div>
+            <LoadingSkeleton variant="list" label={t("common.loading", "Loading...")} />
           ) : isError ? (
             <div className="p-8 text-center text-destructive">
               {t("notifications.error", "Failed to load notifications.")}

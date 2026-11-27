@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@corely/ui";
+import { LoadingSkeleton, cn } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { OnboardingChecklist } from "./OnboardingChecklist";
@@ -45,12 +45,13 @@ export const OnboardingShell = ({ config, onCompleted, onExit, onSkip }: Onboard
 
   if (!isLoaded) {
     return (
-      <div
-        className="flex min-h-screen items-center justify-center bg-[#0B0F14]"
-        data-testid="onboarding-loading"
-      >
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-accent border-t-transparent" />
-        <span className="sr-only">{t("onboarding.loading")}</span>
+      <div className="min-h-screen bg-[#0B0F14] p-6 sm:p-12" data-testid="onboarding-loading">
+        <LoadingSkeleton
+          className="mx-auto max-w-4xl"
+          label={t("onboarding.loading")}
+          variant="form"
+          withHeading
+        />
       </div>
     );
   }

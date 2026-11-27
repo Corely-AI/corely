@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePublicPortfolioContext } from "./PublicPortfolioLayout";
 import { portfolioPublicApi } from "@corely/web-shared/lib/portfolio-public-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import { LoadingSkeleton, Badge } from "@corely/ui";
 import { Link, useParams } from "react-router-dom";
 
 export const PublicShowcaseWorks = () => {
@@ -33,11 +33,16 @@ export const PublicShowcaseWorks = () => {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-          ))}
-        </div>
+        <LoadingSkeleton label={t("common.loading")}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-64 bg-muted animate-pulse motion-reduce:animate-none rounded-lg"
+              />
+            ))}
+          </div>
+        </LoadingSkeleton>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {data?.items.map((project) => (

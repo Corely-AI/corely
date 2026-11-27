@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UploadFileOutput } from "@corely/contracts";
 import { Button } from "@corely/ui";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { apiClient } from "@corely/web-shared/lib/api-client";
 import { expensesApi } from "@corely/web-shared/lib/expenses-api";
@@ -189,12 +189,14 @@ export default function NewExpensePage() {
       </div>
 
       {isEdit && isLoading ? (
-        <Card>
-          <CardContent className="p-6">
-            <Skeleton className="h-6 w-48 mb-4" />
-            <Skeleton className="h-10 w-full" />
-          </CardContent>
-        </Card>
+        <LoadingSkeleton label={t("common.loading")}>
+          <Card>
+            <CardContent className="p-6">
+              <Skeleton className="h-6 w-48 mb-4" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        </LoadingSkeleton>
       ) : (
         <ExpenseForm
           key={expense?.id ?? "new-expense"}

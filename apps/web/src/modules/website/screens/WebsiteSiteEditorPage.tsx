@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -36,6 +38,7 @@ import {
 } from "./website-site-editor-utils";
 
 export default function WebsiteSiteEditorPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.website-websitesiteeditorpage");
   const { siteId } = useParams<{ siteId: string }>();
   const isEdit = Boolean(siteId);
@@ -46,7 +49,7 @@ export default function WebsiteSiteEditorPage() {
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const faviconInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: websiteSiteKeys.detail(siteId ?? ""),
     queryFn: () => (siteId ? websiteApi.getSite(siteId) : Promise.resolve(null)),
     enabled: isEdit,
@@ -304,6 +307,18 @@ export default function WebsiteSiteEditorPage() {
 
     setSearchParams({}, { replace: true });
   };
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6 animate-fade-in lg:p-8">

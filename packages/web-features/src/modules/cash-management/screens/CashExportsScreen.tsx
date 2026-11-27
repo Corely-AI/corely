@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -67,7 +68,12 @@ export function CashExportsScreen() {
 
   if (registerQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+      <LoadingSkeleton
+        variant="detail"
+        label={t("cash.ui.common.loadingRegister")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

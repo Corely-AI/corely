@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -11,8 +13,9 @@ import { salesQueryKeys } from "../queries/sales.queryKeys";
 import { toast } from "sonner";
 
 export default function SalesSettingsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.sales-salessettingspage");
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: salesQueryKeys.settings(),
     queryFn: () => salesApi.getSettings(),
   });
@@ -75,6 +78,18 @@ export default function SalesSettingsPage() {
     onSuccess: () => toast.success(uiCopy("settings-updated")),
     onError: () => toast.error(uiCopy("failed-to-update-settings")),
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8 space-y-6">

@@ -1,10 +1,12 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Badge, Button, Card, CardContent, Input, Label } from "@corely/ui";
-import { sonnerToast } from "@corely/ui";
+import { LoadingSkeleton, sonnerToast } from "@corely/ui";
 import { useKitchenStations, useUpsertKitchenStation } from "../hooks/use-restaurant-admin";
 
 export default function RestaurantKitchenStationsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.restaurant-restaurantkitchenstationspage");
   const stationsQuery = useKitchenStations();
   const saveStation = useUpsertKitchenStation();
@@ -76,7 +78,13 @@ export default function RestaurantKitchenStationsPage() {
               </CardContent>
             </Card>
           ))}
-          {!stationsQuery.isLoading && (stationsQuery.data?.items.length ?? 0) === 0 ? (
+          {stationsQuery.isLoading ? (
+            <LoadingSkeleton label={t("common.loading")} variant="list" />
+          ) : stationsQuery.isError && !stationsQuery.data ? (
+            <p role="alert" className="text-destructive">
+              {t("common.error")}
+            </p>
+          ) : (stationsQuery.data?.items.length ?? 0) === 0 ? (
             <Card>
               <CardContent className="p-6 text-sm text-muted-foreground">
                 {uiCopy("no-kitchen-stations-configured")}

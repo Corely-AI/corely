@@ -4,6 +4,7 @@ import React from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Input,
@@ -210,9 +211,7 @@ export function PosTransactionsScreen() {
       }
     >
       {transactionsQuery.isLoading ? (
-        <div className="p-6 text-sm text-muted-foreground">
-          {uiCopy("loading-pos-transactions")}
-        </div>
+        <LoadingSkeleton variant="list" label={uiCopy("loading-pos-transactions")} />
       ) : transactionsQuery.isError ? (
         <div className="p-6 text-sm text-destructive">{uiCopy("failed-to-load-pos")}</div>
       ) : transactions.length === 0 ? (

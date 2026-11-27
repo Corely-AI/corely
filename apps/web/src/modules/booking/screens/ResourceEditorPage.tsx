@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -14,6 +15,7 @@ import { bookingResourceKeys } from "../queries";
 import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-errors";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -125,6 +127,7 @@ const toPayload = (values: ResourceFormValues): CreateResourceInput => ({
 });
 
 export default function ResourceEditorPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
@@ -376,11 +379,7 @@ export default function ResourceEditorPage() {
       </div>
 
       {isEdit && resourceQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            Loading resource...
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="form" label={t("common.loading")} />
       ) : null}
 
       {isEdit && resourceQuery.isError ? (
@@ -529,7 +528,7 @@ export default function ResourceEditorPage() {
             </div>
 
             {availabilityQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading availability...</p>
+              <LoadingSkeleton variant="calendar" label={t("common.loading")} />
             ) : availabilityQuery.isError ? (
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-destructive">Failed to load availability rule.</p>

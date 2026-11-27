@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ExternalLink, Pencil, EyeOff, Eye } from "lucide-react";
-import { Badge, Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
 import { formatDateTime } from "@/shared/lib/formatters";
 import {
@@ -59,7 +59,14 @@ export default function RestaurantDetailScreen() {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-muted-foreground">{uiCopy("loading-restaurant")}</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-restaurant")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (isError) {

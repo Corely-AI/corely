@@ -1,13 +1,15 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Badge, Button, Card, CardContent } from "@corely/ui";
-import { Label } from "@corely/ui";
+import { TableLoadingSkeleton, Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 
 export default function StockOverviewPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.inventory-stockoverviewpage");
   const [warehouseId, setWarehouseId] = useState<string>("");
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -24,6 +26,8 @@ export default function StockOverviewPage() {
     dataUpdatedAt,
     refetch,
     isFetching,
+    isLoading: stockLoading,
+    isError: stockError,
   } = useQuery({
     queryKey: inventoryQueryKeys.stock.available({ warehouseId: warehouseId || undefined }),
     queryFn: () => inventoryApi.getAvailable({ warehouseId: warehouseId || undefined }),
@@ -128,34 +132,48 @@ export default function StockOverviewPage() {
               </tr>
             </thead>
             <tbody>
-              {stock?.items.map((item) => {
-                const isDepleted = item.availableQty <= 0;
-                return (
-                  <tr
-                    key={`${item.productId}-${item.locationId}`}
-                    className="border-t border-border"
-                  >
-                    <td className="py-2 font-medium">{item.productId}</td>
-                    <td>{item.locationId || "-"}</td>
-                    <td>{item.onHandQty}</td>
-                    <td>{item.reservedQty}</td>
-                    <td
-                      className={
-                        isDepleted ? "font-semibold text-rose-600" : "font-medium text-emerald-600"
-                      }
-                    >
-                      {item.availableQty}
-                    </td>
-                    <td>
-                      {isDepleted ? (
-                        <Badge variant="outline">{uiCopy("at-risk")}</Badge>
-                      ) : (
-                        <Badge variant="accent">{uiCopy("healthy")}</Badge>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {stockLoading ? (
+                <TableLoadingSkeleton columns={6} label={t("common.loading")} />
+              ) : stockError && !stock ? (
+                <tr>
+                  <td colSpan={6} className="p-4 text-sm text-destructive">
+                    <p role="alert">{t("common.error")}</p>
+                  </td>
+                </tr>
+              ) : (
+                <>
+                  {stock?.items.map((item) => {
+                    const isDepleted = item.availableQty <= 0;
+                    return (
+                      <tr
+                        key={`${item.productId}-${item.locationId}`}
+                        className="border-t border-border"
+                      >
+                        <td className="py-2 font-medium">{item.productId}</td>
+                        <td>{item.locationId || "-"}</td>
+                        <td>{item.onHandQty}</td>
+                        <td>{item.reservedQty}</td>
+                        <td
+                          className={
+                            isDepleted
+                              ? "font-semibold text-rose-600"
+                              : "font-medium text-emerald-600"
+                          }
+                        >
+                          {item.availableQty}
+                        </td>
+                        <td>
+                          {isDepleted ? (
+                            <Badge variant="outline">{uiCopy("at-risk")}</Badge>
+                          ) : (
+                            <Badge variant="accent">{uiCopy("healthy")}</Badge>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </>
+              )}
             </tbody>
           </table>
         </CardContent>

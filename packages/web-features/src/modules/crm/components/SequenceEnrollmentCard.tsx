@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -72,9 +73,7 @@ export function SequenceEnrollmentCard({ entityType, entityId }: SequenceEnrollm
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoadingSequences ? (
-          <div className="flex justify-center p-4">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
+          <PageLoadingSkeleton variant="list" />
         ) : sequenceList.length === 0 ? (
           <div className="text-sm text-muted-foreground">
             {uiCopy("no-sequences-available-create")}

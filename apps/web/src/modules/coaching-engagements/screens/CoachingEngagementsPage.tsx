@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  TableLoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -37,7 +38,7 @@ export const CoachingEngagementsPage = () => {
     [state.page, state.pageSize, state.q, state.sort]
   );
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: coachingKeys.list(queryParams),
     queryFn: () => coachingApi.listEngagements(queryParams),
     placeholderData: keepPreviousData,
@@ -75,6 +76,15 @@ export const CoachingEngagementsPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {isLoading ? (
+                <TableLoadingSkeleton columns={6} label={t("common.loading")} />
+              ) : isError && !data ? (
+                <TableRow>
+                  <TableCell colSpan={6}>
+                    <p role="alert">{t("common.error")}</p>
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {(data?.items ?? []).map((engagement) => (
                 <TableRow key={engagement.id}>
                   <TableCell>
@@ -100,7 +110,7 @@ export const CoachingEngagementsPage = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (data?.items?.length ?? 0) === 0 ? (
+              {!isLoading && (!isError || data) && (data?.items?.length ?? 0) === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6}>{t("coaching.empty.engagements")}</TableCell>
                 </TableRow>

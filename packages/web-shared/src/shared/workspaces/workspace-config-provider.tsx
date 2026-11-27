@@ -70,7 +70,7 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
 
   const value: WorkspaceConfigContextValue = {
     config: config ?? null,
-    isLoading: isFetching,
+    isLoading: isFetching && !config,
     error: error ?? null,
     surfaceId: config?.surfaceId ?? surfaceId,
     hasCapability,

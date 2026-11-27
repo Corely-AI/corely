@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Mail } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, Button } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, Button } from "@corely/ui";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { customersApi } from "@/lib/customers-api";
@@ -85,9 +85,12 @@ export default function StudentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-center">{uiCopy("loading-student")}</div>
-      </div>
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-student")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 

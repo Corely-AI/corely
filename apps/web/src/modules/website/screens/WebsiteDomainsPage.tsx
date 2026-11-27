@@ -1,15 +1,17 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import { Button, Card, CardContent, Input, Label } from "@corely/ui";
+import { TableLoadingSkeleton, Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { ConfirmDeleteDialog } from "@/shared/crud";
 import { websiteApi } from "@/lib/website-api";
 import { websiteDomainKeys } from "../queries";
 import { toast } from "sonner";
 
 export default function WebsiteDomainsPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.website-websitedomainspage");
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
@@ -20,7 +22,11 @@ export default function WebsiteDomainsPage() {
 
   const domainQueryKey = useMemo(() => websiteDomainKeys.list(siteId ?? ""), [siteId]);
 
-  const { data } = useQuery({
+  const {
+    data,
+    isLoading: domainsLoading,
+    isError: domainsError,
+  } = useQuery({
     queryKey: domainQueryKey,
     queryFn: () => (siteId ? websiteApi.listDomains(siteId) : Promise.resolve({ items: [] })),
     enabled: Boolean(siteId),
@@ -129,29 +135,45 @@ export default function WebsiteDomainsPage() {
                 </tr>
               </thead>
               <tbody>
-                {domains.map((domain) => (
-                  <tr
-                    key={domain.id}
-                    className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-sm font-medium">{domain.hostname}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {domain.isPrimary ? uiCopy("yes") : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(domain.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-                {domains.length === 0 ? (
+                {domainsLoading ? (
+                  <TableLoadingSkeleton columns={3} label={t("common.loading")} />
+                ) : domainsError && !data ? (
                   <tr>
-                    <td className="px-4 py-6 text-sm text-muted-foreground" colSpan={3}>
-                      {uiCopy("no-domains-yet")}
+                    <td colSpan={3} className="p-4 text-sm text-destructive">
+                      <p role="alert">{t("common.error")}</p>
                     </td>
                   </tr>
-                ) : null}
+                ) : (
+                  <>
+                    {domains.map((domain) => (
+                      <tr
+                        key={domain.id}
+                        className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-sm font-medium">{domain.hostname}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {domain.isPrimary ? uiCopy("yes") : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteTarget(domain.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                    {domains.length === 0 ? (
+                      <tr>
+                        <td className="px-4 py-6 text-sm text-muted-foreground" colSpan={3}>
+                          {uiCopy("no-domains-yet")}
+                        </td>
+                      </tr>
+                    ) : null}
+                  </>
+                )}
               </tbody>
             </table>
           </div>

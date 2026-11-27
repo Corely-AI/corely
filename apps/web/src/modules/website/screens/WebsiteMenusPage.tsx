@@ -1,9 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, Plus, ChevronUp, ChevronDown, Trash2, Code2 } from "lucide-react";
-import { Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
 import { websiteApi } from "@/lib/website-api";
 import { websiteMenuKeys } from "../queries";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ const normalizeMenuItems = (itemsJson: unknown): MenuItem[] => {
 };
 
 export default function WebsiteMenusPage() {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.website-websitemenuspage");
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
@@ -55,7 +57,7 @@ export default function WebsiteMenusPage() {
 
   const menuQueryKey = useMemo(() => websiteMenuKeys.list(siteId ?? ""), [siteId]);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: menuQueryKey,
     queryFn: () => (siteId ? websiteApi.listMenus(siteId) : Promise.resolve({ items: [] })),
     enabled: Boolean(siteId),
@@ -221,7 +223,13 @@ export default function WebsiteMenusPage() {
               </Button>
             </div>
 
-            {items.length === 0 ? (
+            {isLoading ? (
+              <LoadingSkeleton label={t("common.loading")} variant="list" />
+            ) : isError && !data ? (
+              <p role="alert" className="text-destructive">
+                {t("common.error")}
+              </p>
+            ) : items.length === 0 ? (
               <div className="rounded-md border border-dashed border-border/60 px-4 py-6 text-center text-sm text-muted-foreground">
                 {uiCopy("no-menu-items-yet")}
               </div>

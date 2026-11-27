@@ -2,6 +2,8 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  LoadingSkeleton,
+  TableLoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -149,7 +151,7 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         {summaryQuery.isLoading ? (
-          <div className="text-sm text-muted-foreground">{uiCopy("loading-loyalty-summary")}</div>
+          <LoadingSkeleton variant="detail" label={uiCopy("loading-loyalty-summary")} />
         ) : summaryQuery.isError ? (
           <div className="text-sm text-destructive">{uiCopy("failed-to-load-loyalty")}</div>
         ) : account ? (
@@ -196,11 +198,7 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
             </TableHeader>
             <TableBody>
               {ledgerQuery.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    {uiCopy("loading-transactions")}
-                  </TableCell>
-                </TableRow>
+                <TableLoadingSkeleton columns={4} label={uiCopy("loading-transactions")} />
               ) : ledgerQuery.isError ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-destructive">

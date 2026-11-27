@@ -20,7 +20,14 @@ import {
   type CarouselApi,
 } from "@corely/ui";
 import { Textarea } from "@corely/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@corely/ui";
 import { formatDate } from "@/shared/lib/formatters";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
@@ -154,9 +161,11 @@ export default function IssueDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="h-8 w-64 animate-pulse rounded bg-muted/20" />
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8">
+          <div className="h-8 w-64 animate-pulse motion-reduce:animate-none rounded bg-muted/20" />
+        </div>
+      </LoadingSkeleton>
     );
   }
 

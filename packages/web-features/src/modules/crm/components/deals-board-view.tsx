@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { LoadingSkeleton } from "@corely/ui";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState } from "react";
 import {
@@ -37,6 +39,7 @@ export function DealsBoardView({
   onRetry,
   listParams,
 }: DealsBoardViewProps) {
+  const { t } = useTranslation();
   const uiCopy = useUiCopy("ui.crm-deals-board-view");
   const navigate = useNavigate();
   const [activeDeal, setActiveDeal] = useState<DealDto | null>(null);
@@ -100,11 +103,13 @@ export function DealsBoardView({
   // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-4 px-1">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <StageColumnSkeleton key={i} />
-        ))}
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="flex gap-4 overflow-x-auto pb-4 px-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <StageColumnSkeleton key={i} />
+          ))}
+        </div>
+      </LoadingSkeleton>
     );
   }
 

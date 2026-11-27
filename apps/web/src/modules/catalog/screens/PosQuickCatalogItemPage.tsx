@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, PackagePlus } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -211,7 +212,7 @@ export default function PosQuickCatalogItemPage() {
       <Card>
         <CardContent className="space-y-6 p-6">
           {isEditing && itemQuery.isLoading ? (
-            <div className="text-sm text-muted-foreground">{uiCopy("loading-pos-item")}</div>
+            <LoadingSkeleton variant="form" label={uiCopy("loading-pos-item")} />
           ) : null}
 
           {isEditing && itemQuery.isError ? (

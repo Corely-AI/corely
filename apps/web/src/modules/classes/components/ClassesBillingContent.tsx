@@ -2,7 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import type { BillingInvoiceSendProgress, BillingPreviewOutput } from "@corely/contracts";
 import { FileText, Facebook, ExternalLink, RefreshCcw } from "lucide-react";
-import { Badge } from "@corely/ui";
+import { LoadingSkeleton, Badge } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 import { formatMoney } from "@/shared/lib/formatters";
 import { ClassBillingLineRow } from "./ClassBillingLineRow";
@@ -114,10 +114,7 @@ export function ClassesBillingContent({
       )}
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
-          <RefreshCcw className="h-8 w-8 animate-spin opacity-20" />
-          <p className="text-sm">{t("classes.billing.loading")}</p>
-        </div>
+        <LoadingSkeleton variant="list" label={t("classes.billing.loading")} />
       ) : isError ? (
         <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {(error as Error)?.message || t("classes.billing.loadFailed")}

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Home, Tags } from "lucide-react";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
@@ -242,9 +242,7 @@ export default function RentalPropertiesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              {uiCopy("loading-properties")}
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-properties")} />
           ) : !properties || properties.length === 0 ? (
             <EmptyState
               icon={Home}

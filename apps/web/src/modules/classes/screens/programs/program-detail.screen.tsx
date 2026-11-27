@@ -2,6 +2,7 @@ import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -196,7 +197,14 @@ export default function ProgramDetailScreen() {
     createCohortMutation.isPending;
 
   if (!isNew && isLoading) {
-    return <div className="p-6 text-sm text-muted-foreground">{uiCopy("loading-combo")}</div>;
+    return (
+      <LoadingSkeleton
+        variant="form"
+        label={uiCopy("loading-combo")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (!isNew && isError) {

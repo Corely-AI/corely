@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, User, Building, Mail, Phone, Calendar } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardHeader,
@@ -51,7 +52,14 @@ export default function LeadDetailPage() {
   });
 
   if (isLoading) {
-    return <div>{uiCopy("loading")}</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
   if (!lead) {
     return <div>{uiCopy("lead-not-found")}</div>;
