@@ -16,8 +16,11 @@ const confirmationDraft: SignRequestDraft = {
   templateRevision: 1,
   title: "Sample signing request",
   canonicalSha256: "a".repeat(64),
-  routing: "parallel",
-  recipients: [{ roleId: "signer", name: "Jamie Example", email: "jamie@example.test" }],
+  routing: "sequential",
+  recipients: [
+    { roleId: "signer", name: "Jamie Example", email: "jamie@example.test" },
+    { roleId: "reviewer", name: "Avery Example", email: "avery@example.test" },
+  ],
   status: "DRAFT",
 };
 createRoot(document.querySelector("#root")!).render(
@@ -26,15 +29,6 @@ createRoot(document.querySelector("#root")!).render(
       <RequestDetail id={request[1]} workspace="fixture-workspace" />
     ) : path === "/sign/requests/confirmation-fixture" ? (
       <main className="space-y-4 p-4 sm:p-6">
-        <h1 className="text-h1">{confirmationDraft.title}</h1>
-        <p>Revision 1 · Parallel</p>
-        <ol className="list-inside list-decimal rounded border p-4">
-          {confirmationDraft.recipients.map((recipient) => (
-            <li key={recipient.roleId}>
-              {recipient.name} ({recipient.email})
-            </li>
-          ))}
-        </ol>
         <RequestActions workspace="fixture-workspace" draft={confirmationDraft} />
       </main>
     ) : (

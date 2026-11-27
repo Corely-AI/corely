@@ -86,18 +86,6 @@ export function RequestDetail({ id, workspace }: { id: string; workspace: string
   }
   return (
     <section className="space-y-4 p-4 sm:p-6 lg:p-8">
-      <h1 className="break-words text-h1 text-foreground">{draft.title}</h1>
-
-      <p>
-        {t("sign.revision", { revision: draft.templateRevision })} · {t("sign." + draft.routing)}
-      </p>
-      <ol className="list-inside list-decimal rounded border p-4">
-        {draft.recipients.map((r) => (
-          <li key={r.roleId}>
-            {r.name} ({r.email})
-          </li>
-        ))}
-      </ol>
       <RequestActions workspace={workspace} draft={draft} />
     </section>
   );
