@@ -45,6 +45,39 @@ async function inspectStaticPdf() {
   ]);
   const objects = pdf.context.enumerateIndirectObjects();
   if (objects.length > 30000) throw Error("complex");
+  const listNumberingStyles = new Set([
+    "None",
+    "Disc",
+    "Circle",
+    "Square",
+    "Decimal",
+    "UpperRoman",
+    "LowerRoman",
+    "UpperAlpha",
+    "LowerAlpha",
+  ]);
+  // ISO 32000-1 Tables 323 and 347 define /A on list structure elements as attributes.
+  const isListStructureAttribute = (element, value) => {
+    if (
+      element.get(PDFName.of("Type")) !== PDFName.of("StructElem") ||
+      element.get(PDFName.of("S")) !== PDFName.of("L")
+    ) {
+      return false;
+    }
+    const attributes = pdf.context.lookup(value);
+    return (
+      attributes instanceof PDFDict &&
+      attributes.get(PDFName.of("O")) === PDFName.of("List") &&
+      attributes.entries().every(([key, attribute]) => {
+        return (
+          key === PDFName.of("O") ||
+          (key === PDFName.of("ListNumbering") &&
+            attribute instanceof PDFName &&
+            listNumberingStyles.has(attribute.decodeText()))
+        );
+      })
+    );
+  };
   let count = 0;
   const visit = (object, depth) => {
     if (++count > 300000 || depth > 64 || object instanceof PDFInvalidObject)
@@ -53,9 +86,9 @@ async function inspectStaticPdf() {
     if (object instanceof PDFStream) visit(object.dict, depth + 1);
     else if (object instanceof PDFDict)
       for (const [key, value] of object.entries()) {
-        if (key.decodeText() === "Annots" && value instanceof PDFArray && value.size() === 0)
-          continue;
-        visit(key, depth + 1);
+        const name = key.decodeText();
+        if (name === "Annots" && value instanceof PDFArray && value.size() === 0) continue;
+        if (name !== "A" || !isListStructureAttribute(object, value)) visit(key, depth + 1);
         visit(value, depth + 1);
       }
     else if (object instanceof PDFArray)
