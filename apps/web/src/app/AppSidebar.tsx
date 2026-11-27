@@ -7,25 +7,12 @@ import {
   AppSidebar as SharedAppSidebar,
   type AppSidebarProps as SharedAppSidebarProps,
 } from "@corely/web-shared";
-import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
-import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 
 export type AppSidebarProps = SharedAppSidebarProps;
 
 export function AppSidebar(props: AppSidebarProps) {
   const { i18n } = useTranslation();
   const locale = appCenterLocale(i18n.language ?? "en");
-  const { isLoading: isConfigLoading, error: configError, navigationGroups } = useWorkspaceConfig();
-
-  const sidebarGroups = props.navigationGroups ?? navigationGroups;
-
-  const hasTaxNav = React.useMemo(
-    () => sidebarGroups.some((group) => group.items.some((item) => item.route?.startsWith("/tax"))),
-    [sidebarGroups]
-  );
-  const { data: taxCapabilities } = useTaxCapabilitiesQuery(!isConfigLoading && hasTaxNav);
-  const paymentsEnabled = taxCapabilities?.paymentsEnabled ?? false;
-  const hiddenItemIds = paymentsEnabled ? [] : ["tax-payments"];
 
   return (
     <SharedAppSidebar
@@ -41,10 +28,6 @@ export function AppSidebar(props: AppSidebarProps) {
           <span className={props.collapsed ? "sr-only" : undefined}>{copy[locale].title}</span>
         </Link>
       }
-      navigationGroups={sidebarGroups}
-      isConfigLoading={isConfigLoading}
-      configError={configError}
-      hiddenItemIds={hiddenItemIds}
     />
   );
 }

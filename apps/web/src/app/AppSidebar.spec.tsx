@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppSidebar } from "./AppSidebar";
+import { AppShell } from "./AppShell";
 
 let navigationGroupsState = [
   {
@@ -26,13 +27,14 @@ let navigationGroupsState = [
 ];
 let surfaceIdState = "platform";
 let tenantPermissionState = { canRead: false, canManage: false };
+let paymentsEnabled = false;
 
 vi.mock("react-i18next", async () => {
   const actual = await vi.importActual("react-i18next");
   return {
     ...actual,
     useTranslation: () => ({
-      t: (key: string) => key,
+      t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key,
       i18n: { changeLanguage: vi.fn() },
     }),
   };
@@ -59,7 +61,7 @@ vi.mock("@/shared/workspaces/workspace-config-provider", () => ({
 }));
 
 vi.mock("@/modules/tax/hooks/useTaxCapabilitiesQuery", () => ({
-  useTaxCapabilitiesQuery: () => ({ data: { paymentsEnabled: false } }),
+  useTaxCapabilitiesQuery: () => ({ data: { paymentsEnabled } }),
 }));
 
 vi.mock("@/shared/workspaces/WorkspaceSwitcher", () => ({
@@ -96,9 +98,31 @@ vi.mock("@corely/web-shared/shared/surface", () => ({
 }));
 
 describe("AppSidebar", () => {
+  const originalScrollIntoView = Element.prototype.scrollIntoView;
+
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+  });
+
+  afterAll(() => {
+    Element.prototype.scrollIntoView = originalScrollIntoView;
+    vi.unstubAllGlobals();
+  });
+
+  afterEach(cleanup);
+
   beforeEach(() => {
     surfaceIdState = "platform";
     tenantPermissionState = { canRead: false, canManage: false };
+    paymentsEnabled = false;
     navigationGroupsState = [
       {
         id: "tax",
@@ -121,16 +145,28 @@ describe("AppSidebar", () => {
     ];
   });
 
-  it("hides tax payments when payments are disabled", () => {
-    render(
-      <MemoryRouter>
-        <AppSidebar />
-      </MemoryRouter>
-    );
+  it.each([false, true])(
+    "uses the same Tax payments visibility in the sidebar and palette (%s)",
+    async (enabled) => {
+      paymentsEnabled = enabled;
+      render(
+        <MemoryRouter initialEntries={["/tax"]}>
+          <AppShell />
+        </MemoryRouter>
+      );
 
-    expect(screen.queryByTestId("nav-tax-payments")).not.toBeInTheDocument();
-    expect(screen.getByTestId("nav-tax-filings")).toBeInTheDocument();
-  });
+      expect(screen.queryAllByTestId("nav-tax-payments")).toHaveLength(enabled ? 2 : 0);
+      expect(screen.getAllByTestId("nav-tax-filings")).toHaveLength(2);
+      fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+      const palette = await screen.findByRole("dialog");
+      expect(palette).toHaveTextContent("Filings");
+      if (enabled) {
+        expect(palette).toHaveTextContent("Payments");
+      } else {
+        expect(palette).not.toHaveTextContent("Payments");
+      }
+    }
+  );
 
   it("keeps import shipments menu active on shipment detail deep links", () => {
     navigationGroupsState = [
