@@ -4,8 +4,8 @@ import { observeFocused } from "@corely/web-shared/session/focused-observation";
 
 export function isLegacyInvoiceEntry(pathname: string): boolean {
   return (
-    /^\/(?:sales\/)?invoices(?:\/(?:new|[^/]+(?:\/(?:edit|audit))?))?\/?$/.test(pathname) &&
-    !/^\/(?:sales\/)?invoices\/public(?:\/|$)/.test(pathname)
+    /^\/(?:sales\/)?invoices(?:\/(?:new|[^/]+(?:\/(?:edit|audit))?))?\/?$/i.test(pathname) &&
+    !/^\/(?:sales\/)?invoices\/public(?:\/|$)/i.test(pathname)
   );
 }
 /** Counts legacy entry usage, including retained deep links; never records their IDs or queries. */

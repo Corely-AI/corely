@@ -53,6 +53,11 @@ their first workspace. Personal and company workspaces use the same defaults.
 Invited users inherit the destination tenant's app settings. Opening Booking
 for internal use leaves public booking subject to the existing publication flow.
 
+In Backoffice, an app's directory entry and its related routes use that app's
+authorized workspace menu in the sidebar and command palette. **All apps** stays
+available in the sidebar. Dashboard, workspace settings and subscription billing
+use the general menu. Class billing belongs to Classes.
+
 Implemented-module entries reuse their owner's existing menu ID and route. The
 server resolves that exact entry from the app's permission/capability-filtered menu
 group and checks installed dependencies. Hidden or revoked entries do not grant a
