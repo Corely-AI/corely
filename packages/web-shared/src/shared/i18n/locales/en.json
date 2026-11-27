@@ -86,6 +86,8 @@
     "confirmRemind": "Send a replacement invitation and revoke the previous link?",
     "confirmVoid": "Void this request and revoke recipient access?",
     "confirmSend": "Send signing invitations to the recipients listed above?",
+    "sendConfirmationTitle": "Confirm sending",
+    "sendInvitations": "Send invitations",
     "export": "Export evidence bundle",
     "download": "Download sealed PDF",
     "refresh": "Refresh status",

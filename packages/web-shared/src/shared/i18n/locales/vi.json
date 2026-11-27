@@ -86,6 +86,8 @@
     "confirmRemind": "Gửi lời mời thay thế và thu hồi liên kết cũ?",
     "confirmVoid": "Thu hồi yêu cầu và quyền truy cập của người nhận?",
     "confirmSend": "Gửi lời mời ký đến những người nhận trên?",
+    "sendConfirmationTitle": "Xác nhận gửi",
+    "sendInvitations": "Gửi lời mời",
     "export": "Xuất gói bằng chứng",
     "download": "Tải PDF đã đóng dấu",
     "refresh": "Cập nhật trạng thái",
