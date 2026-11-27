@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { createBaseViteConfig } from "@corely/vite-config";
+import { signingDevProxy } from "./signing-dev-proxy";
 
 // https://vitejs.dev/config/
 const getFirstHostLabel = (value: string | undefined): string => {
@@ -44,6 +45,10 @@ export default defineConfig(({ mode }) => {
   const baseConfig = createBaseViteConfig({
     port: 8080,
     plugins: [
+      signingDevProxy({
+        publicOrigin: process.env.SIGN_PUBLIC_ORIGIN || env.SIGN_PUBLIC_ORIGIN,
+        apiBaseUrl: process.env.PUBLIC_API_BASE_URL || env.PUBLIC_API_BASE_URL || apiTarget,
+      }),
       react(), // tailwindcss() is handled by postcss.config.js
     ],
     aliases: {
@@ -103,6 +108,7 @@ export default defineConfig(({ mode }) => {
         input: {
           web: path.resolve(__dirname, "index.html"),
           openbuk: path.resolve(__dirname, "openbuk.html"),
+          signReceive: path.resolve(__dirname, "sign/receive.html"),
         },
       },
     },

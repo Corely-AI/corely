@@ -9,7 +9,7 @@ for (const [language, locale, open, unavailable] of [
     "Dieser Link oder diese Sitzung ist nicht verfügbar.",
   ],
   ["vi-VN", "vi", "Mở tài liệu để xem", "Liên kết hoặc phiên ký không còn hiệu lực."],
-  ["fr-FR", "en", "Open document for review", "This signing link or session is unavailable."],
+  ["ja-JP", "en", "Open document for review", "This signing link or session is unavailable."],
 ] as const) {
   test.describe(`recipient using ${language}`, () => {
     test.use({ locale: language });
@@ -75,6 +75,10 @@ test("explicit review, consent, saved progress and mobile acceptance", async ({ 
   await expect(page).toHaveURL(/\/sign\/receive$/);
   expect(calls).toEqual([]);
   await page.getByRole("button", { name: "Open document for review" }).click();
+  await expect(page.getByText("Page 1 of 2")).toBeVisible({ timeout: 45000 });
+  await page.getByRole("button", { name: "Next page" }).click();
+  await expect(page.getByText("Page 2 of 2")).toBeVisible();
+  await page.getByRole("button", { name: "Previous page" }).click();
   await page.getByRole("textbox", { name: "signature", exact: true }).fill("Taylor Sample");
   await page.getByRole("button", { name: "Save progress" }).click();
   await expect(page.getByText("Progress saved.")).toBeVisible();
@@ -83,10 +87,32 @@ test("explicit review, consent, saved progress and mobile acceptance", async ({ 
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Review answers" }).click();
   await page.getByRole("heading", { name: "Confirm your signature" }).scrollIntoViewIfNeeded();
+  await expect(page.getByText("Page 1 of 2")).toBeVisible({ timeout: 45000 });
+  await expect
+    .poll(() =>
+      page
+        .locator("canvas")
+        .evaluate(
+          (canvas: HTMLCanvasElement) => canvas.getContext("2d")?.getImageData(0, 0, 1, 1).data[3]
+        )
+    )
+    .toBe(255);
   await page.screenshot({ path: info.outputPath("recipient-mobile.png"), fullPage: true });
+  if (process.env.SIGN_E2E_RECIPIENT_SURFACE === "backoffice") {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.screenshot({ path: info.outputPath("recipient-desktop.png"), fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
   await page.getByRole("button", { name: "Sign and submit" }).click();
   await expect(
     page.getByRole("status").filter({ hasText: "Your signature has been recorded." })
   ).toBeVisible();
   expect(calls).toEqual(["exchange", "review", "progress", "prepare", "accept"]);
 });
+
+if (process.env.SIGN_E2E_RECIPIENT_SURFACE === "backoffice") {
+  test("requires sign-in for the Backoffice signing request page", async ({ page }) => {
+    await page.goto("/sign/requests/10000000-0000-4000-8000-000000000001");
+    await expect(page).toHaveURL(/\/auth\/login(?:\?|$)/, { timeout: 20000 });
+  });
+}

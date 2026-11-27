@@ -636,6 +636,9 @@ importers:
       '@corely/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@corely/web-features':
+        specifier: workspace:*
+        version: link:../../packages/web-features
       '@corely/web-shared':
         specifier: workspace:*
         version: link:../../packages/web-shared

@@ -1,8 +1,12 @@
+import { proxySigningRequest } from "@corely/web-shared/server/signing-proxy";
+
 const CORELY_APP_ORIGIN = "https://app.corely.one";
+const CORELY_API_ORIGIN = "https://api.corely.one";
 
 export const config = {
   runtime: "nodejs",
   matcher: [
+    "/api/signing/:path*",
     "/sso/cli/:path*",
     "/sso/authorize",
     "/sso/context",
@@ -29,6 +33,13 @@ const responseHeaders = [
  */
 export default async function middleware(request) {
   const url = new URL(request.url);
+  const signingAction = /^\/api\/signing\/([^/]+)$/.exec(url.pathname)?.[1];
+  if (signingAction && url.origin === CORELY_APP_ORIGIN) {
+    return proxySigningRequest(request, signingAction, {
+      publicOrigin: CORELY_APP_ORIGIN,
+      apiBaseUrl: CORELY_API_ORIGIN,
+    });
+  }
   if (
     url.origin !== CORELY_APP_ORIGIN ||
     !(url.pathname.startsWith("/sso/cli/") || config.matcher.includes(url.pathname))
@@ -53,7 +64,7 @@ export default async function middleware(request) {
     }
   }
 
-  const target = new URL("https://api.corely.one");
+  const target = new URL(CORELY_API_ORIGIN);
   target.pathname = url.pathname;
   target.search = url.search;
   /** @type {RequestInit & { duplex: "half" }} */

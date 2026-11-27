@@ -9,5 +9,5 @@
     "moduleDetection": "force",
     "noEmit": true
   },
-  "include": ["vite.config.ts", "middleware.js"]
+  "include": ["vite.config.ts", "middleware.js", "signing-dev-proxy.ts"]
 }

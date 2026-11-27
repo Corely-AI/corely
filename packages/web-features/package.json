@@ -13,7 +13,8 @@
     "./modules/people/self-service": "./src/modules/people/self-service.ts",
     "./modules/sign/overview-page": "./src/modules/sign/overview-page.tsx",
     "./modules/sign/template-page": "./src/modules/sign/template-page.tsx",
-    "./modules/sign/request-page": "./src/modules/sign/request-page.tsx"
+    "./modules/sign/request-page": "./src/modules/sign/request-page.tsx",
+    "./modules/sign/recipient-form": "./src/modules/sign/recipient-form.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
