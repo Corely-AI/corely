@@ -86,6 +86,8 @@
     "confirmRemind": "Neue Einladung senden und den vorherigen Link widerrufen?",
     "confirmVoid": "Anfrage widerrufen und Zugriff entziehen?",
     "confirmSend": "Signatureinladungen an die oben aufgeführten Personen senden?",
+    "sendConfirmationTitle": "Versand bestätigen",
+    "sendInvitations": "Einladungen senden",
     "export": "Nachweispaket exportieren",
     "download": "Versiegeltes PDF herunterladen",
     "refresh": "Status aktualisieren",
