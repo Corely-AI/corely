@@ -6,6 +6,7 @@ export default {
   content: {
     relative: true,
     files: [
+      "./sign/**/*.html",
       "./pages/**/*.{ts,tsx}",
       "./components/**/*.{ts,tsx}",
       "./app/**/*.{ts,tsx}",

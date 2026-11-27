@@ -1,10 +1,32 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { SignRecipientMessages } from "@corely/web-shared/shared/i18n/sign-recipient";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Button,
+  Input,
+  LoadingSkeleton,
+  Skeleton,
+} from "@corely/ui";
+import { SignRecipientReviewSchema, type DrawnSignature } from "@corely/contracts";
 import { DocumentPreview, type SigningPdfAssets } from "./document-preview";
 import { SignatureInput } from "./signature-input";
-import { SignRecipientReviewSchema, type DrawnSignature } from "@corely/contracts";
+
 type Review = ReturnType<typeof SignRecipientReviewSchema.parse>;
+type Pending = "open" | "prepare" | "save" | "accept" | "decline";
+type Answer = string | boolean | DrawnSignature;
+
+class SigningResponseError extends Error {}
+
 export function RecipientForm({
   lang,
   messages,
@@ -14,31 +36,26 @@ export function RecipientForm({
   messages: SignRecipientMessages;
   pdfAssets: SigningPdfAssets;
 }) {
-  async function post(action: string, body: unknown) {
-    const r = await fetch("/api/signing/" + action, {
-      method: "POST",
-      credentials: "same-origin",
-      cache: "no-store",
-      headers: { "Content-Type": "application/json", "X-Sign-Action": "1" },
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) {
-      throw Error(r.status === 403 ? messages.linkUnavailable : messages.requestFailed);
-    }
-    return r;
-  }
-  const [progressSaved, setProgressSaved] = useState(false);
-  const [prepared, setPrepared] = useState<{ confirmation: string; pdf: string }>();
   const token = useRef("");
+  const running = useRef(false);
+  const title = useRef<HTMLHeadingElement>(null);
+  const fieldsHeading = useRef<HTMLHeadingElement>(null);
   const confirmationHeading = useRef<HTMLHeadingElement>(null);
-  const [review, setReview] = useState<Review>(),
-    [pdf, setPdf] = useState(""),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [result, setResult] = useState<"signatureRecorded" | "requestDeclined">(),
-    [consent, setConsent] = useState(false),
-    [confirm, setConfirm] = useState(false);
-  const [values, setValues] = useState<Record<string, string | boolean | DrawnSignature>>({});
+  const returnToFields = useRef(false);
+  const [review, setReview] = useState<Review>();
+  const [pdfLink, setPdfLink] = useState<{ source: string; url: string }>();
+  const [prepared, setPrepared] = useState<{ confirmation: string; pdf: string }>();
+  const [values, setValues] = useState<Record<string, Answer>>({});
+  const [pending, setPending] = useState<Pending>();
+  const [error, setError] = useState("");
+  const [progressSaved, setProgressSaved] = useState(false);
+  const [result, setResult] = useState<"signatureRecorded" | "requestDeclined">();
+  const [consent, setConsent] = useState(false);
+  const confirm = Boolean(prepared);
+  const busy = Boolean(pending);
+  const displayedPdf = prepared?.pdf ?? review?.pdf;
+  const pdf = pdfLink?.source === displayedPdf ? pdfLink?.url : undefined;
+
   useEffect(() => {
     if (/^#[A-Za-z0-9_-]{43}$/.test(location.hash)) {
       token.current = location.hash.slice(1);
@@ -48,27 +65,56 @@ export function RecipientForm({
   useEffect(() => {
     if (confirm) {
       confirmationHeading.current?.focus();
+    } else if (returnToFields.current) {
+      returnToFields.current = false;
+      fieldsHeading.current?.focus();
+    } else if (review || result) {
+      title.current?.focus();
     }
-  }, [confirm]);
-  const displayedPdf = confirm && prepared ? prepared.pdf : review?.pdf;
+  }, [confirm, review, result]);
   useEffect(() => {
     if (!displayedPdf) {
       return;
     }
-    const bytes = Uint8Array.from(atob(displayedPdf), (c) => c.charCodeAt(0));
-    const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
-    setPdf(url);
-    return () => URL.revokeObjectURL(url);
+    try {
+      const bytes = Uint8Array.from(atob(displayedPdf), (c) => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      setPdfLink({ source: displayedPdf, url });
+      return () => URL.revokeObjectURL(url);
+    } catch {
+      // The viewer reports a malformed document and offers retry.
+    }
   }, [displayedPdf]);
-  async function run(fn: () => Promise<void>) {
-    setBusy(true);
+
+  async function post(action: string, body: unknown) {
+    const response = await fetch("/api/signing/" + action, {
+      method: "POST",
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json", "X-Sign-Action": "1" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new SigningResponseError(
+        response.status === 403 ? messages.linkUnavailable : messages.requestFailed
+      );
+    }
+    return response;
+  }
+  async function run(action: Pending, fn: () => Promise<void>) {
+    if (running.current) {
+      return;
+    }
+    running.current = true;
+    setPending(action);
     setError("");
     try {
       await fn();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : messages.unableToSign);
+    } catch (reason) {
+      setError(reason instanceof SigningResponseError ? reason.message : messages.requestFailed);
     } finally {
-      setBusy(false);
+      running.current = false;
+      setPending(undefined);
     }
   }
   async function open() {
@@ -77,8 +123,17 @@ export function RecipientForm({
       token.current = "";
     }
     const opened = SignRecipientReviewSchema.parse(await (await post("review", {})).json());
-    setValues(Object.fromEntries(opened.saved.map((v) => [v.fieldId, v.value])));
+    setValues(Object.fromEntries(opened.saved.map((value) => [value.fieldId, value.value])));
     setReview(opened);
+  }
+  function answers() {
+    return Object.entries(values)
+      .filter(([, value]) => value !== "")
+      .map(([fieldId, value]) => ({ fieldId, value }));
+  }
+  function updateAnswer(id: string, value: Answer) {
+    setValues((current) => ({ ...current, [id]: value }));
+    setProgressSaved(false);
   }
   async function finish(action: "accept" | "decline") {
     await post(
@@ -88,182 +143,358 @@ export function RecipientForm({
             confirmation: prepared?.confirmation,
             review: review?.review,
             consent,
-            values: Object.entries(values)
-              .filter(([, value]) => value !== "")
-              .map(([fieldId, value]) => ({ fieldId, value })),
+            values: answers(),
           }
         : {}
     );
     setProgressSaved(false);
     setReview(undefined);
     setValues({});
-    setConfirm(false);
     setPrepared(undefined);
-    setPdf("");
+    setPdfLink(undefined);
     setResult(action === "accept" ? "signatureRecorded" : "requestDeclined");
   }
+  function reviewAnswers(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!review) {
+      return;
+    }
+    if (prepared) {
+      void run("accept", () => finish("accept"));
+      return;
+    }
+    const missing = review.fields.find((field) => {
+      const value = values[field.id];
+      return field.required && (typeof value === "string" ? !value.trim() : !value);
+    });
+    if (missing || !consent) {
+      setError(messages.completeRequiredFields);
+      if (missing) {
+        document.getElementById("field-" + missing.id)?.focus();
+      }
+      return;
+    }
+    void run("prepare", async () => {
+      const response = await post("prepare", { review: review.review, consent, values: answers() });
+      const preview: unknown = await response.json();
+      if (
+        !preview ||
+        typeof preview !== "object" ||
+        !("confirmation" in preview) ||
+        typeof preview.confirmation !== "string" ||
+        !/^[a-f0-9]{64}$/.test(preview.confirmation) ||
+        !("pdf" in preview) ||
+        typeof preview.pdf !== "string" ||
+        !preview.pdf
+      ) {
+        throw new Error("Invalid signing preview");
+      }
+      setPrepared({ confirmation: preview.confirmation, pdf: preview.pdf });
+    });
+  }
+
+  const errorMessage = error && (
+    <p
+      role="alert"
+      className="rounded-lg border border-destructive/60 bg-card p-3 text-sm text-foreground"
+    >
+      {error}
+    </p>
+  );
+
   return (
-    <main lang={lang} className="mx-auto max-w-3xl space-y-5 p-5">
-      <h1 className="text-3xl font-semibold">{review?.title ?? messages.reviewAndSign}</h1>
-      {progressSaved && <p role="status">{messages.progressSaved}</p>}
-      {review?.senderWorkspace && (
-        <p>
-          {messages.requestedBy} {review.senderWorkspace}
-        </p>
-      )}
-      {error && <p role="alert">{error}</p>}
-      {result ? (
-        <p role="status">{messages[result]}</p>
-      ) : !review ? (
-        <button disabled={busy} onClick={() => void run(open)}>
-          {messages.openForReview}
-        </button>
-      ) : (
+    <main lang={lang} className="mx-auto min-h-screen max-w-6xl space-y-6 px-4 py-8 sm:px-6">
+      <header className="space-y-2">
+        <p className="text-sm font-semibold text-muted-foreground">Corely Sign</p>
+        {result ? (
+          <div role="status" className="max-w-xl space-y-2 rounded-xl border bg-card p-5 sm:p-6">
+            <h1 ref={title} tabIndex={-1} className="text-2xl font-semibold tracking-tight">
+              {messages[result]}
+            </h1>
+            <p className="text-sm text-muted-foreground">{messages.closePage}</p>
+          </div>
+        ) : (
+          <>
+            <h1
+              ref={title}
+              tabIndex={-1}
+              className="break-words text-3xl font-semibold tracking-tight"
+            >
+              {review?.title ?? messages.reviewAndSign}
+            </h1>
+            {review?.senderWorkspace && (
+              <p className="break-words text-sm text-muted-foreground">
+                {messages.requestedBy}{" "}
+                <span className="font-medium text-foreground">{review.senderWorkspace}</span>
+              </p>
+            )}
+          </>
+        )}
+      </header>
+
+      {!result &&
+        !review &&
+        (pending === "open" ? (
+          <LoadingSkeleton
+            label={messages.openingInvitation}
+            className="max-w-lg rounded-xl border bg-card p-5"
+          >
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-4/5" />
+              <Skeleton className="h-4 w-3/5" />
+              <Skeleton className="h-11 w-52 max-w-full" />
+            </div>
+          </LoadingSkeleton>
+        ) : (
+          <section className="grid max-w-lg gap-4 rounded-xl border bg-card p-5 sm:p-6">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {messages.openInstruction}
+            </p>
+            {errorMessage}
+            <Button
+              type="button"
+              className="w-full sm:w-fit"
+              onClick={() => void run("open", open)}
+            >
+              {messages.openForReview}
+            </Button>
+          </section>
+        ))}
+
+      {review && displayedPdf && (
         <>
-          {pdf && (
-            <>
-              <a href={pdf} target="_blank" rel="noreferrer" className="underline">
-                {confirm ? messages.openReviewedPdf : messages.openOriginalPdf}
-              </a>
+          {confirm && (
+            <h2 ref={confirmationHeading} tabIndex={-1} className="text-xl font-semibold">
+              {messages.confirmSignature}
+            </h2>
+          )}
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+            <section
+              aria-labelledby="recipient-document-title"
+              className="min-w-0 space-y-4 rounded-xl border bg-card p-4 sm:p-5"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 id="recipient-document-title" className="font-semibold">
+                  {messages.documentPreview}
+                </h2>
+                {pdf && (
+                  <a
+                    href={pdf}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4"
+                  >
+                    {confirm ? messages.openReviewedPdf : messages.openOriginalPdf}
+                  </a>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="lg:hidden"
+                onClick={() => fieldsHeading.current?.focus()}
+              >
+                {confirm ? messages.goToConfirmation : messages.goToFields}
+              </Button>
               <DocumentPreview
                 assets={pdfAssets}
                 messages={messages}
                 key={confirm ? "reviewed" : "original"}
-                source={confirm && prepared ? prepared.pdf : review.pdf}
+                source={displayedPdf}
                 fields={confirm ? [] : review.fields}
               />
-            </>
-          )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!confirm) {
-                void run(async () => {
-                  const response = await post("prepare", {
-                    review: review?.review,
-                    consent,
-                    values: Object.entries(values)
-                      .filter(([, v]) => v !== "")
-                      .map(([fieldId, value]) => ({ fieldId, value })),
-                  });
-                  setPrepared((await response.json()) as { confirmation: string; pdf: string });
-                  setConfirm(true);
-                });
-                return;
-              }
-              void run(() => finish("accept"));
-            }}
-            className="grid gap-4"
-          >
-            <fieldset disabled={busy || confirm} className="grid gap-3">
-              {review.fields.map((f, i) => (
-                <fieldset id={"field-" + f.id} key={f.id} className="grid gap-1" tabIndex={-1}>
-                  <legend>
-                    {f.type === "signature" ? messages.typeSignature : messages[f.type]} ·{" "}
-                    {messages.page} {f.pageIndex + 1} · {messages.field} {i + 1}
-                  </legend>
-                  {f.type === "signature" || f.type === "initials" ? (
-                    <SignatureInput
-                      messages={messages}
-                      label={messages[f.type]}
-                      required={f.required}
-                      value={
-                        typeof values[f.id] === "boolean"
-                          ? ""
-                          : ((values[f.id] as string | DrawnSignature) ?? "")
-                      }
-                      onChange={(v) => setValues({ ...values, [f.id]: v })}
-                    />
+            </section>
+
+            <section
+              aria-labelledby="recipient-fields-title"
+              className="min-w-0 space-y-4 rounded-xl border bg-card p-4 sm:p-5"
+            >
+              <h2
+                id="recipient-fields-title"
+                ref={fieldsHeading}
+                tabIndex={-1}
+                className="text-lg font-semibold"
+              >
+                {confirm ? messages.answerSummary : messages.signingFields}
+              </h2>
+              {errorMessage}
+              {progressSaved && !confirm && (
+                <p role="status" className="rounded-lg bg-muted p-3 text-sm">
+                  {messages.progressSaved}
+                </p>
+              )}
+              <form onSubmit={reviewAnswers} className="grid gap-4">
+                {confirm ? (
+                  <dl className="divide-y rounded-lg border">
+                    {review.fields.map((field, index) => {
+                      const value = values[field.id];
+                      const answer =
+                        typeof value === "object"
+                          ? messages.drawnSignature
+                          : typeof value === "boolean"
+                            ? value
+                              ? messages.checked
+                              : "—"
+                            : value || "—";
+                      return (
+                        <div key={field.id} className="space-y-1 p-3">
+                          <dt className="text-sm text-muted-foreground">
+                            {messages[field.type]} · {messages.page} {field.pageIndex + 1} ·{" "}
+                            {messages.field} {index + 1}
+                          </dt>
+                          <dd className="break-words font-medium">{answer}</dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
+                ) : (
+                  <fieldset disabled={busy} className="grid min-w-0 gap-4">
+                    {review.fields.map((field, index) => (
+                      <fieldset
+                        id={"field-" + field.id}
+                        key={field.id}
+                        className="grid min-w-0 gap-2 border-b pb-4"
+                        tabIndex={-1}
+                      >
+                        <legend className="font-medium">
+                          {field.type === "signature"
+                            ? messages.typeSignature
+                            : messages[field.type]}
+                          {field.required && (
+                            <span className="ms-2 text-xs text-muted-foreground">
+                              ({messages.requiredField})
+                            </span>
+                          )}
+                        </legend>
+                        <p className="text-xs text-muted-foreground">
+                          {messages.pageTitle} {field.pageIndex + 1} · {messages.field} {index + 1}
+                        </p>
+                        {field.type === "signature" || field.type === "initials" ? (
+                          <SignatureInput
+                            messages={messages}
+                            label={messages[field.type]}
+                            required={field.required}
+                            value={
+                              typeof values[field.id] === "boolean"
+                                ? ""
+                                : ((values[field.id] as string | DrawnSignature) ?? "")
+                            }
+                            onChange={(value) => updateAnswer(field.id, value)}
+                          />
+                        ) : (
+                          <Input
+                            aria-label={messages[field.type]}
+                            className={field.type === "checkbox" ? "size-5" : "w-full"}
+                            checked={
+                              field.type === "checkbox" ? Boolean(values[field.id]) : undefined
+                            }
+                            value={
+                              field.type === "checkbox" ? undefined : String(values[field.id] ?? "")
+                            }
+                            type={
+                              field.type === "checkbox"
+                                ? "checkbox"
+                                : field.type === "date"
+                                  ? "date"
+                                  : "text"
+                            }
+                            maxLength={240}
+                            required={field.required}
+                            onChange={(event) =>
+                              updateAnswer(
+                                field.id,
+                                field.type === "checkbox"
+                                  ? event.target.checked
+                                  : event.target.value
+                              )
+                            }
+                          />
+                        )}
+                      </fieldset>
+                    ))}
+                    <label className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3 text-sm">
+                      <input
+                        className="mt-0.5 size-5 shrink-0 accent-primary"
+                        type="checkbox"
+                        required
+                        checked={consent}
+                        onChange={(event) => setConsent(event.target.checked)}
+                      />
+                      <span className="break-words">{review.consent}</span>
+                    </label>
+                  </fieldset>
+                )}
+                {pending === "prepare" && (
+                  <LoadingSkeleton label={messages.preparingPreview}>
+                    <Skeleton className="h-6 w-2/3" />
+                  </LoadingSkeleton>
+                )}
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  <Button type="submit" disabled={busy}>
+                    {pending === "accept"
+                      ? messages.submittingSignature
+                      : pending === "prepare"
+                        ? messages.preparingPreview
+                        : confirm
+                          ? messages.signAndSubmit
+                          : messages.reviewAnswers}
+                  </Button>
+                  {confirm ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => {
+                        returnToFields.current = true;
+                        setPrepared(undefined);
+                        setError("");
+                      }}
+                    >
+                      {messages.editAnswers}
+                    </Button>
                   ) : (
-                    <input
-                      aria-label={messages[f.type]}
-                      className="rounded border p-2"
-                      checked={f.type === "checkbox" ? Boolean(values[f.id]) : undefined}
-                      value={f.type === "checkbox" ? undefined : String(values[f.id] ?? "")}
-                      type={
-                        f.type === "checkbox" ? "checkbox" : f.type === "date" ? "date" : "text"
-                      }
-                      maxLength={240}
-                      required={f.required}
-                      onChange={(e) =>
-                        setValues({
-                          ...values,
-                          [f.id]: f.type === "checkbox" ? e.target.checked : e.target.value,
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() =>
+                        void run("save", async () => {
+                          await post("progress", answers());
+                          setProgressSaved(true);
                         })
                       }
-                    />
+                    >
+                      {pending === "save" ? messages.savingProgress : messages.saveProgress}
+                    </Button>
                   )}
-                </fieldset>
-              ))}
-              <label>
-                <input
-                  type="checkbox"
-                  required
-                  checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
-                />{" "}
-                {review.consent}
-              </label>
-            </fieldset>
-            {confirm && (
-              <>
-                <h2 ref={confirmationHeading} tabIndex={-1}>
-                  {messages.confirmSignature}
-                </h2>
-                <ul>
-                  {review.fields.map((f) => (
-                    <li key={f.id}>
-                      {messages[f.type]} ·{" "}
-                      {typeof values[f.id] === "object"
-                        ? messages.drawnSignature
-                        : String(values[f.id] ?? "—")}
-                    </li>
-                  ))}
-                </ul>
-                <button type="button" onClick={() => setConfirm(false)}>
-                  {messages.editAnswers}
-                </button>
-              </>
-            )}
-            {!confirm && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() =>
-                  void run(async () => {
-                    await post(
-                      "progress",
-                      Object.entries(values)
-                        .filter(([, v]) => v !== "")
-                        .map(([fieldId, value]) => ({ fieldId, value }))
-                    );
-                    setProgressSaved(true);
-                  })
-                }
-              >
-                {messages.saveProgress}
-              </button>
-            )}
-            <button
-              disabled={busy}
-              className="rounded bg-primary px-4 py-2 text-primary-foreground"
-            >
-              {confirm ? messages.signAndSubmit : messages.reviewAnswers}
-            </button>
-          </form>
-          <button
-            disabled={busy}
-            onClick={() => {
-              if (window.confirm(messages.confirmDecline)) {
-                void run(() => finish("decline"));
-              }
-            }}
-          >
-            {messages.declineRequest}
-          </button>
+                </div>
+              </form>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="ghost" disabled={busy}>
+                    {pending === "decline" ? messages.decliningRequest : messages.declineRequest}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent lang={lang} className="w-[calc(100%-2rem)] rounded-xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{messages.confirmDecline}</AlertDialogTitle>
+                    <AlertDialogDescription>{messages.declineDescription}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{messages.cancel}</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-red-700 text-white hover:bg-red-800"
+                      onClick={() => void run("decline", () => finish("decline"))}
+                    >
+                      {messages.declineRequest}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </section>
+          </div>
         </>
       )}
-      <footer></footer>
     </main>
   );
 }

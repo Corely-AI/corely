@@ -2,6 +2,7 @@
 import { useRef, useState, type PointerEvent } from "react";
 import type { SignRecipientMessages } from "@corely/web-shared/shared/i18n/sign-recipient";
 import type { DrawnSignature } from "@corely/contracts";
+import { Button, Input } from "@corely/ui";
 export function SignatureInput({
   messages,
   label,
@@ -27,23 +28,12 @@ export function SignatureInput({
     ].map((n) => Math.round(n * 1000) / 1000) as [number, number];
   }
   return (
-    <div>
-      <button
-        type="button"
-        className="underline"
-        onClick={() => {
-          setDraw(!draw);
-          onChange("");
-          setPreview([]);
-        }}
-      >
-        {draw ? messages.useTypedSignature : messages.useDrawnSignature}
-      </button>
+    <div className="space-y-2">
       {!draw ? (
-        <input
+        <Input
           aria-label={label}
           type="text"
-          className="block w-full rounded border p-2"
+          className="w-full"
           value={typeof value === "string" ? value : ""}
           required={required}
           maxLength={240}
@@ -97,11 +87,22 @@ export function SignatureInput({
               />
             ))}
           </svg>
-          <button type="button" onClick={() => onChange("")}>
+          <Button type="button" variant="outline" onClick={() => onChange("")}>
             {messages.clearDrawing}
-          </button>
+          </Button>
         </>
       )}
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => {
+          setDraw(!draw);
+          onChange("");
+          setPreview([]);
+        }}
+      >
+        {draw ? messages.useTypedSignature : messages.useDrawnSignature}
+      </Button>
     </div>
   );
 }
