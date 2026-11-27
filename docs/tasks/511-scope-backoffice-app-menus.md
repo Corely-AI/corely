@@ -4,6 +4,7 @@
 
 - [Corely #511](https://github.com/Corely-AI/corely/issues/511) follows [#466](https://github.com/Corely-AI/corely/issues/466).
 - Branch `511-scope-backoffice-app-menus` targets `development`.
+- [Draft PR #514](https://github.com/Corely-AI/corely/pull/514)
 - Sign and the other Backoffice directory apps use the workspace menu group for their owning app on entry routes and deep links. The sidebar keeps **All apps**. The command palette uses the same filtered navigation.
 - Dashboard, account and workspace settings, and subscription billing use the general menu. Class billing uses the Classes menu. Legacy workspace navigation continues on host administration and routes that have no configured app menu.
 
@@ -16,6 +17,7 @@ The existing resolver uses app IDs from the registered workspace menu. The audit
 - The added resolver cases reproduced the workspace menu fallback before the fix.
 - Web navigation, sidebar, Invoice aliases and workspace navigation Vitest suites passed 85 tests. Platform launch and workspace configuration suites passed 6 tests.
 - Web typecheck, changed-file ESLint and Prettier checks passed.
+- The full unit run had 1,641 passes, five frontend failures reproduced on `development`, eight skips, and a local Cash handoff database setup failure. The repository formatting check flagged 34 files outside this change. The draft branch used the documented pre-push override after those checks ran separately.
 - The repository architecture check reports the same existing Prisma boundary findings on the base and this branch.
 - Chrome opened all 22 directory entries at desktop and phone sizes, compared sidebar links with the registered app menus, and returned via **All apps**. Dashboard, Settings and subscription billing showed the general menu. The English synthetic workspace verified navigation without production sessions or live business data.
 - Sign direct links kept the Sign sidebar across templates, requests, and settings. Opening My signing requests selected it in the sidebar. The Sign and Tax command palettes showed only applicable app links.
