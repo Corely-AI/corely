@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { StaffProfilePage } from "../people/staff-profile-extensions";
 import { useMemo } from "react";
 import {
@@ -29,6 +30,7 @@ import {
 } from "@corely/web-features/modules/people";
 
 function HrLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
+  const uiCopy = useUiCopy("ui.sso-hr-hr-app");
   const { client } = useSession();
   const workspace = useWorkspaceSession();
   const { pathname } = useLocation();
@@ -87,9 +89,9 @@ function HrLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
       locale={locale}
     >
       {permissions.isPending ? (
-        <p role="status">Loading permissions…</p>
+        <p role="status">{uiCopy("loading-permissions")}</p>
       ) : permissions.isError ? (
-        <p role="alert">HR access could not be verified. Refresh to try again.</p>
+        <p role="alert">{uiCopy("hr-access-could-not")}</p>
       ) : (
         <PeopleRuntimeProvider value={runtime}>
           <div key={pathname}>
@@ -105,14 +107,16 @@ function Landing() {
   return <Navigate to={`/people/staff${search}`} replace />;
 }
 function NotFound() {
+  const uiCopy = useUiCopy("ui.sso-hr-hr-app");
   return (
     <section role="status">
-      <h1 className="text-2xl font-semibold">Page not found</h1>
-      <p>This page is not part of HR.</p>
+      <h1 className="text-2xl font-semibold">{uiCopy("page-not-found")}</h1>
+      <p>{uiCopy("this-page-is-not")}</p>
     </section>
   );
 }
 export function HrApp() {
+  const uiCopy = useUiCopy("ui.sso-hr-hr-app");
   const environment = AppLaunchOriginSchema.safeParse(
     import.meta.env.VITE_CORELY_APP_CENTER_ORIGIN
   );
@@ -145,8 +149,7 @@ export function HrApp() {
     <RouterProvider router={router} />
   ) : (
     <main role="alert" className="p-6">
-      HR is unavailable because its setup is incomplete. Please contact your workspace
-      administrator.
+      {uiCopy("hr-is-unavailable-because")}
     </main>
   );
 }

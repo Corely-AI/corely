@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
@@ -36,6 +37,7 @@ const formatUpdatedAt = (value: string) => {
 };
 
 export default function EngagementTemplatesSettingsPage() {
+  const uiCopy = useUiCopy("ui.settings-engagementtemplatessettingspage");
   const queryClient = useQueryClient();
   const { activeWorkspaceId } = useWorkspace();
   const { data: channels = [] } = useCrmChannels();
@@ -148,7 +150,7 @@ export default function EngagementTemplatesSettingsPage() {
     onSuccess: async () => {
       setDeleteTarget(null);
       await queryClient.invalidateQueries({ queryKey: channelTemplateQueryKeys.all });
-      toast.success("Template deleted");
+      toast.success(uiCopy("template-deleted"));
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Failed to delete template");
@@ -172,7 +174,7 @@ export default function EngagementTemplatesSettingsPage() {
         subject: isEmailChannel(current.channel) ? (generated.subject ?? current.subject) : "",
         body: generated.body,
       }));
-      toast.success("AI template generated");
+      toast.success(uiCopy("ai-template-generated"));
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Failed to generate template");
@@ -194,12 +196,12 @@ export default function EngagementTemplatesSettingsPage() {
   if (!activeWorkspaceId) {
     return (
       <CrudListPageLayout
-        title="Templates"
+        title={uiCopy("templates")}
         subtitle="Create reusable channel templates per workspace"
       >
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
-            Select a workspace to manage templates.
+            {uiCopy("select-a-workspace-to")}
           </CardContent>
         </Card>
       </CrudListPageLayout>
@@ -209,12 +211,12 @@ export default function EngagementTemplatesSettingsPage() {
   return (
     <>
       <CrudListPageLayout
-        title="Templates"
+        title={uiCopy("templates")}
         subtitle="Manage reusable email and messaging templates for this workspace"
         primaryAction={
           <Button variant="accent" onClick={openCreateDialog}>
             <Plus className="h-4 w-4 mr-2" />
-            New template
+            {uiCopy("new-template")}
           </Button>
         }
         toolbar={
@@ -223,10 +225,10 @@ export default function EngagementTemplatesSettingsPage() {
               <ListFilter className="h-4 w-4 text-muted-foreground" />
               <Select value={channelFilter} onValueChange={handleChannelFilterChange}>
                 <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder="All channels" />
+                  <SelectValue placeholder={uiCopy("all-channels")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All channels</SelectItem>
+                  <SelectItem value="all">{uiCopy("all-channels")}</SelectItem>
                   {channels.map((channel) => (
                     <SelectItem key={channel.key} value={channel.key}>
                       {channel.label}
@@ -239,7 +241,7 @@ export default function EngagementTemplatesSettingsPage() {
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search templates by name"
+              placeholder={uiCopy("search-templates-by-name")}
               className="w-full max-w-sm"
             />
           </>
@@ -248,23 +250,25 @@ export default function EngagementTemplatesSettingsPage() {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">Loading templates...</div>
+              <div className="p-8 text-center text-muted-foreground">
+                {uiCopy("loading-templates")}
+              </div>
             ) : isError ? (
               <div className="p-8 text-center space-y-3">
-                <div className="text-destructive">Failed to load templates.</div>
+                <div className="text-destructive">{uiCopy("failed-to-load-templates")}</div>
                 <Button variant="outline" onClick={() => void refetch()}>
-                  Retry
+                  {uiCopy("retry")}
                 </Button>
               </div>
             ) : templates.length === 0 ? (
               <EmptyState
                 icon={Plus}
-                title="No templates yet"
-                description="Create your first workspace template to speed up channel outreach."
+                title={uiCopy("no-templates-yet")}
+                description={uiCopy("create-your-first-workspace")}
                 action={
                   <Button variant="accent" onClick={openCreateDialog}>
                     <Plus className="h-4 w-4 mr-2" />
-                    New template
+                    {uiCopy("new-template")}
                   </Button>
                 }
               />
@@ -274,13 +278,13 @@ export default function EngagementTemplatesSettingsPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Name
+                        {uiCopy("name")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Channel
+                        {uiCopy("channel")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th className="px-4 py-3" />
                     </tr>
@@ -350,8 +354,8 @@ export default function EngagementTemplatesSettingsPage() {
           }
         }}
         trigger={null}
-        title="Delete template"
-        description="This will permanently delete the template from this workspace."
+        title={uiCopy("delete-template")}
+        description={uiCopy("this-will-permanently-delete")}
         isLoading={deleteTemplateMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

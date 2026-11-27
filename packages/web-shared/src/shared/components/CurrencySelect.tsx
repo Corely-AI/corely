@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState, useMemo, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -38,6 +39,7 @@ export function CurrencySelect({
   onCustomAdded,
   persistCustomKey,
 }: CurrencySelectProps) {
+  const uiCopy = useUiCopy("ui.shared-currencyselect");
   const [customInput, setCustomInput] = useState("");
   const [customError, setCustomError] = useState("");
   const [customCodes, setCustomCodes] = useState<string[]>([]);
@@ -142,7 +144,7 @@ export function CurrencySelect({
           >
             <div className="flex gap-1">
               <Input
-                placeholder="Add (e.g., SGD)"
+                placeholder={uiCopy("add-e-g-sgd")}
                 value={customInput}
                 onChange={(e) => {
                   setCustomInput(e.target.value);

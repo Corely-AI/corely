@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@corely/ui";
@@ -14,6 +15,7 @@ import { useRoles } from "../hooks/useRoles";
 import { useActiveRoleId } from "@/shared/lib/permissions";
 
 export default function RolePermissionsPage() {
+  const uiCopy = useUiCopy("ui.settings-rolepermissionspage");
   const { roleId } = useParams<{ roleId: string }>();
   const { data, isLoading } = useRolePermissions(roleId);
   const updatePermissions = useUpdateRolePermissions(roleId || "");
@@ -103,14 +105,14 @@ export default function RolePermissionsPage() {
         <div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/settings/roles">Back</Link>
+              <Link to="/settings/roles">{uiCopy("back")}</Link>
             </Button>
-            <h1 className="text-h2 text-foreground">Role permissions</h1>
+            <h1 className="text-h2 text-foreground">{uiCopy("role-permissions")}</h1>
           </div>
           {role && (
             <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
               <span>{role.name}</span>
-              {role.isSystem && <Badge variant="outline">System</Badge>}
+              {role.isSystem && <Badge variant="outline">{uiCopy("system")}</Badge>}
             </div>
           )}
         </div>
@@ -121,7 +123,7 @@ export default function RolePermissionsPage() {
               onClick={handleSyncOwnerPermissions}
               disabled={syncOwnerPermissions.isPending || ownerMissingCount === 0}
             >
-              Sync owner permissions
+              {uiCopy("sync-owner-permissions")}
             </Button>
           )}
           <Button
@@ -129,18 +131,18 @@ export default function RolePermissionsPage() {
             onClick={handleSave}
             disabled={!dirty || readOnly || updatePermissions.isPending}
           >
-            Save changes
+            {uiCopy("save-changes")}
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Permissions</CardTitle>
+          <CardTitle>{uiCopy("permissions")}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading || !data ? (
-            <div className="text-sm text-muted-foreground">Loading permissions...</div>
+            <div className="text-sm text-muted-foreground">{uiCopy("loading-permissions")}</div>
           ) : (
             <RolePermissionsEditor
               catalog={data.catalog}

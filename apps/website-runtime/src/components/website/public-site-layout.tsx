@@ -1,10 +1,7 @@
-import { resolveCorelyLocale } from "@corely/contracts";
-import messages from "./locales/website.json";
 import React from "react";
 import type { WebsiteMenuPublic, WebsiteSiteSettings } from "@corely/contracts";
 
 export const PublicSiteLayout = ({
-  locale,
   menus,
   settings,
   host,
@@ -12,7 +9,6 @@ export const PublicSiteLayout = ({
   basePath,
   children,
 }: {
-  locale?: string;
   menus: WebsiteMenuPublic[];
   settings?: WebsiteSiteSettings;
   host?: string | null;
@@ -20,7 +16,6 @@ export const PublicSiteLayout = ({
   basePath?: string;
   children: React.ReactNode;
 }) => {
-  const copy = messages[resolveCorelyLocale(locale)];
   const theme = settings?.theme;
   const tokenVars: Record<string, string | number> = {};
 
@@ -53,10 +48,10 @@ export const PublicSiteLayout = ({
   const themeStyle = tokenVars as React.CSSProperties;
 
   return (
-    <div lang={locale} className="min-h-screen bg-background text-foreground" style={themeStyle}>
+    <div className="min-h-screen bg-background text-foreground" style={themeStyle}>
       {previewMode ? (
         <div className="fixed right-4 top-4 z-50 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-          {copy.preview}
+          Preview mode
         </div>
       ) : null}
       <main className="min-h-[70vh]">{children}</main>

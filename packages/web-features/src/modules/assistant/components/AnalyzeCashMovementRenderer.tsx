@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { type ToolRendererProps } from "@corely/web-shared/shared/components/chat/ChatParts";
 import { Button } from "@corely/ui";
@@ -69,6 +70,7 @@ const getExtractionInput = (value: unknown): CashMovementExtractionInput => {
 export const AnalyzeCashMovementRenderer: React.FC<
   ToolRendererProps & { conversationId?: string }
 > = ({ state, input, output, toolCallId, submittingToolIds, conversationId }) => {
+  const uiCopy = useUiCopy("ui.assistant-analyzecashmovementrenderer");
   const { t, i18n } = useTranslation();
   const [resolvedOutput, setResolvedOutput] = useState<ResolvedCashMovementOutput | null>(null);
   const [answerError, setAnswerError] = useState<string | null>(null);
@@ -142,7 +144,7 @@ export const AnalyzeCashMovementRenderer: React.FC<
   if (result?.resolution?.choiceId) {
     return (
       <div className="rounded-md border border-border/40 bg-muted/20 px-3 py-1.5 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">Selected</span>
+        <span className="font-medium text-foreground">{uiCopy("selected")}</span>
       </div>
     );
   }

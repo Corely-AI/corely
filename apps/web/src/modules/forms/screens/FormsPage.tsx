@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
@@ -39,6 +41,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function FormsPage() {
+  const uiCopy = useUiCopy("ui.forms-formspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -90,21 +93,21 @@ export default function FormsPage() {
   const deleteMutation = useMutation({
     mutationFn: (formId: string) => formsApi.deleteForm(formId),
     onSuccess: async () => {
-      toast.success("Form deleted");
+      toast.success(uiCopy("form-deleted"));
       await invalidateResourceQueries(queryClient, "forms");
     },
-    onError: () => toast.error("Failed to delete form"),
+    onError: () => toast.error(uiCopy("failed-to-delete-form")),
   });
 
   return (
     <>
       <CrudListPageLayout
-        title="Forms"
+        title={uiCopy("forms")}
         subtitle="Create and manage public forms"
         primaryAction={
           <Button variant="accent" onClick={() => navigate("/forms/new")}>
             <Plus className="h-4 w-4" />
-            New form
+            {uiCopy("new-form")}
           </Button>
         }
         toolbar={
@@ -124,7 +127,7 @@ export default function FormsPage() {
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load forms"}
+                {(error as Error)?.message || uiCopy("failed-to-load-forms")}
               </div>
             ) : null}
           </ListToolbar>
@@ -153,11 +156,11 @@ export default function FormsPage() {
             ) : forms.length === 0 ? (
               <EmptyState
                 icon={ExternalLink}
-                title="No forms yet"
-                description="Create your first form to collect responses."
+                title={uiCopy("no-forms-yet")}
+                description={uiCopy("create-your-first-form")}
                 action={
                   <Button variant="outline" onClick={() => navigate("/forms/new")}>
-                    Create form
+                    {uiCopy("create-form")}
                   </Button>
                 }
               />
@@ -168,13 +171,13 @@ export default function FormsPage() {
                     <thead>
                       <tr className="border-b border-border bg-muted/50">
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Name
+                          {uiCopy("name")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Status
+                          {uiCopy("status")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Updated
+                          {uiCopy("updated")}
                         </th>
                         <th className="w-[50px]"></th>
                       </tr>
@@ -188,7 +191,7 @@ export default function FormsPage() {
                           <td className="px-4 py-3 text-sm font-medium">{form.name}</td>
                           <td className="px-4 py-3">
                             <Badge variant={form.status === "PUBLISHED" ? "success" : "muted"}>
-                              {form.status === "PUBLISHED" ? "Published" : "Draft"}
+                              {form.status === "PUBLISHED" ? uiCopy("published") : uiCopy("draft")}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-sm text-muted-foreground">
@@ -218,7 +221,10 @@ export default function FormsPage() {
                     <PaginationContent>
                       <PaginationItem>
                         <span className="text-sm text-muted-foreground mr-4">
-                          Page {pageInfo.page} of {Math.ceil(pageInfo.total / pageInfo.pageSize)}
+                          <PaginationSummary
+                            page={pageInfo.page}
+                            pages={Math.ceil(pageInfo.total / pageInfo.pageSize)}
+                          />
                         </span>
                       </PaginationItem>
                       <PaginationItem>
@@ -253,8 +259,8 @@ export default function FormsPage() {
           open={deleteTarget !== null}
           onOpenChange={(open: boolean) => !open && setDeleteTarget(null)}
           trigger={null}
-          title="Delete form"
-          description="This will archive the form and remove it from the list."
+          title={uiCopy("delete-form")}
+          description={uiCopy("this-will-archive-the")}
           isLoading={deleteMutation.isPending}
           onConfirm={() => {
             if (deleteTarget) {

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import {
   type ResolvedFeatureValue,
@@ -19,6 +20,7 @@ interface TenantFeaturesTabProps {
 }
 
 export function TenantFeaturesTab({ tenantId, features, onRefresh }: TenantFeaturesTabProps) {
+  const uiCopy = useUiCopy("ui.platform-tenant-management-tenantfeaturestab");
   const [search, setSearch] = useState("");
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -94,7 +96,7 @@ export function TenantFeaturesTab({ tenantId, features, onRefresh }: TenantFeatu
       <div className="flex items-center gap-2 max-w-sm">
         <Search className="h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search features..."
+          placeholder={uiCopy("search-features")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -104,10 +106,10 @@ export function TenantFeaturesTab({ tenantId, features, onRefresh }: TenantFeatu
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Key</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead className="w-[150px]">Actions</TableHead>
+              <TableHead>{uiCopy("key")}</TableHead>
+              <TableHead>{uiCopy("value")}</TableHead>
+              <TableHead>{uiCopy("source")}</TableHead>
+              <TableHead className="w-[150px]">{uiCopy("actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

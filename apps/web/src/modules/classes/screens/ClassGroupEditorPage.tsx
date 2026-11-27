@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ import {
 } from "../components/class-group-schedule-builder";
 
 export default function ClassGroupEditorPage() {
+  const uiCopy = useUiCopy("ui.classes-classgroupeditorpage");
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -94,7 +96,7 @@ export default function ClassGroupEditorPage() {
 
   const handleSave = () => {
     if (!canSave) {
-      toast.error("Fill in all required fields");
+      toast.error(uiCopy("fill-in-all-required"));
       return;
     }
     mutation.mutate();
@@ -106,21 +108,21 @@ export default function ClassGroupEditorPage() {
         <div className="flex items-start gap-3 sm:items-center">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {uiCopy("back")}
           </Button>
           <div>
             <div className="text-lg font-semibold">
-              {isEdit ? "Edit class group" : "New class group"}
+              {isEdit ? uiCopy("edit-class-group") : uiCopy("new-class-group")}
             </div>
             <div className="text-sm text-muted-foreground">
-              Define your group subject, level, and default pricing.
+              {uiCopy("define-your-group-subject")}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="accent" disabled={!canSave || mutation.isPending} onClick={handleSave}>
             <Save className="h-4 w-4" />
-            Save
+            {uiCopy("save")}
           </Button>
         </div>
       </div>
@@ -129,19 +131,19 @@ export default function ClassGroupEditorPage() {
         <CardContent className="p-6 space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{uiCopy("name")}</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Subject</Label>
+              <Label>{uiCopy("subject")}</Label>
               <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Level</Label>
+              <Label>{uiCopy("level")}</Label>
               <Input value={level} onChange={(e) => setLevel(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Price per session</Label>
+              <Label>{uiCopy("price-per-session")}</Label>
               <div className="flex gap-2">
                 <Input
                   type="number"
@@ -155,8 +157,8 @@ export default function ClassGroupEditorPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="EUR">EUR (€)</SelectItem>
-                    <SelectItem value="USD">USD ($)</SelectItem>
+                    <SelectItem value="EUR">{uiCopy("eur")}</SelectItem>
+                    <SelectItem value="USD">{uiCopy("usd")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import {
   Alert,
   AlertDescription,
@@ -44,6 +45,7 @@ type Props = {
 };
 
 export function ClosedDayCorrectionDialog(props: Props) {
+  const uiCopy = useUiCopy("ui.cash-management-closed-day-correction-dialog");
   const {
     open,
     onOpenChange,
@@ -80,23 +82,26 @@ export function ClosedDayCorrectionDialog(props: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[100dvh] overflow-y-auto sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>Điều chỉnh ngày đã chốt</DialogTitle>
+          <DialogTitle>{uiCopy("ie-u-chi-nh")}</DialogTitle>
           <DialogDescription>
-            Ngày {day} đã được chốt{closedAt ? ` lúc ${closedAt}` : ""}. Bút toán gốc không bị sửa
-            hoặc xóa.
+            {uiCopy("nga-y") + " "}
+            {day}
+            {" " + uiCopy("a-u-o-c")}
+            {closedAt ? ` lúc ${closedAt}` : ""}
+            {uiCopy("bu-t-toa-n")}
           </DialogDescription>
         </DialogHeader>
         <Alert>
-          <AlertTitle>Không có giao dịch nào được tạo</AlertTitle>
+          <AlertTitle>{uiCopy("kho-ng-co-giao")}</AlertTitle>
           <AlertDescription>
-            Số dư hiện tại vẫn là{" "}
-            {formatMoney(conflict?.currentBalanceCents ?? 0, undefined, registerCurrency)}. Bút toán
-            điều chỉnh sẽ được lưu kèm lịch sử và tạo revision mới của Kassenbericht.
+            {uiCopy("so-du-hie-n")}{" "}
+            {formatMoney(conflict?.currentBalanceCents ?? 0, undefined, registerCurrency)}
+            {uiCopy("bu-t-toa-n-2")}
           </AlertDescription>
         </Alert>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="closed-day-correction-type">Loại điều chỉnh</Label>
+            <Label htmlFor="closed-day-correction-type">{uiCopy("loa-i-ie-u")}</Label>
             <select
               id="closed-day-correction-type"
               className="h-11 w-full rounded-md border bg-background px-3 text-base sm:h-10 sm:text-sm"
@@ -104,15 +109,15 @@ export function ClosedDayCorrectionDialog(props: Props) {
               onChange={(event) => setCorrectionType(event.target.value as Props["correctionType"])}
               disabled={correctionTypeLocked}
             >
-              <option value="MISSING_ENTRY">Thiếu doanh thu / giao dịch</option>
-              <option value="REVERSE_ENTRY">Giao dịch trùng hoặc cần đảo</option>
-              <option value="REPLACE_ENTRY">Sai số tiền hoặc thông tin</option>
-              <option value="BALANCE_EXPLANATION">Giải thích chênh lệch quỹ</option>
+              <option value="MISSING_ENTRY">{uiCopy("thie-u-doanh-thu")}</option>
+              <option value="REVERSE_ENTRY">{uiCopy("giao-di-ch-tru")}</option>
+              <option value="REPLACE_ENTRY">{uiCopy("sai-so-tie-n")}</option>
+              <option value="BALANCE_EXPLANATION">{uiCopy("gia-i-thi-ch")}</option>
             </select>
           </div>
           {needsOriginalEntry ? (
             <div className="space-y-1">
-              <Label htmlFor="closed-day-original-entry">Bút toán gốc bắt buộc</Label>
+              <Label htmlFor="closed-day-original-entry">{uiCopy("bu-t-toa-n-3")}</Label>
               <select
                 id="closed-day-original-entry"
                 className="min-h-11 w-full rounded-md border bg-background px-3 py-2 text-base sm:min-h-10 sm:text-sm"
@@ -121,7 +126,7 @@ export function ClosedDayCorrectionDialog(props: Props) {
                 disabled={originalEntriesLoading}
               >
                 <option value="">
-                  {originalEntriesLoading ? "Đang tải bút toán…" : "Chọn bút toán cần sửa"}
+                  {originalEntriesLoading ? uiCopy("ang-ta-i-bu") : uiCopy("cho-n-bu-t")}
                 </option>
                 {originalEntries.map((entry) => (
                   <option key={entry.id} value={entry.id}>
@@ -131,47 +136,36 @@ export function ClosedDayCorrectionDialog(props: Props) {
                 ))}
               </select>
               {originalEntriesError ? (
-                <p className="text-xs text-destructive">Không thể tải các bút toán của ngày này.</p>
+                <p className="text-xs text-destructive">{uiCopy("kho-ng-the-ta")}</p>
               ) : null}
               {!originalEntriesLoading && !originalEntriesError && originalEntries.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  Không còn bút toán hợp lệ để đảo trong ngày này.
-                </p>
+                <p className="text-xs text-muted-foreground">{uiCopy("kho-ng-co-n")}</p>
               ) : null}
             </div>
           ) : null}
           {correctionType === "REVERSE_ENTRY" ? (
             <Alert>
-              <AlertTitle>Hệ thống tự tạo bút toán ngược</AlertTitle>
-              <AlertDescription>
-                Số tiền, VAT và ngày nghiệp vụ được sao chép từ bút toán gốc; chiều thu/chi được đảo
-                tự động. Dữ liệu đang nhập trong form sẽ không được dùng.
-              </AlertDescription>
+              <AlertTitle>{uiCopy("he-tho-ng-tu")}</AlertTitle>
+              <AlertDescription>{uiCopy("so-tie-n-vat")}</AlertDescription>
             </Alert>
           ) : null}
           {correctionType === "REPLACE_ENTRY" ? (
             <Alert>
-              <AlertTitle>Đảo bút toán cũ và tạo bút toán đúng</AlertTitle>
-              <AlertDescription>
-                Hai bút toán được tạo cùng một transaction. Bút toán mới dùng số tiền, loại giao
-                dịch và VAT bạn vừa nhập.
-              </AlertDescription>
+              <AlertTitle>{uiCopy("a-o-bu-t")}</AlertTitle>
+              <AlertDescription>{uiCopy("hai-bu-t-toa")}</AlertDescription>
             </Alert>
           ) : null}
           <div className="space-y-1">
-            <Label htmlFor="closed-day-correction-reason">Lý do bắt buộc</Label>
+            <Label htmlFor="closed-day-correction-reason">{uiCopy("ly-do-ba-t")}</Label>
             <Textarea
               id="closed-day-correction-reason"
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Ví dụ: Thiếu doanh thu tiền mặt 120 € trong Z-Bon ngày 31/07"
+              placeholder={uiCopy("vi-du-thie-u")}
             />
           </div>
           {needsCashConfirmation ? (
-            <p className="text-xs text-muted-foreground">
-              Nếu tiền không còn trong quỹ, cần ghi rõ tiền đã được gửi ngân hàng, rút ra hay bị
-              thiếu trước khi xác nhận.
-            </p>
+            <p className="text-xs text-muted-foreground">{uiCopy("ne-u-tie-n")}</p>
           ) : null}
           {needsCashConfirmation ? (
             <label className="flex gap-2 rounded-md border p-3 text-sm">
@@ -180,22 +174,17 @@ export function ClosedDayCorrectionDialog(props: Props) {
                 checked={cashIsInRegister}
                 onChange={(event) => setCashIsInRegister(event.target.checked)}
               />
-              <span>
-                Tôi xác nhận số tiền bị thiếu trong sổ hiện vẫn có trong quỹ. Nếu tiền đã rời quỹ,
-                cần ghi thêm giao dịch tiền mặt thực tế tương ứng.
-              </span>
+              <span>{uiCopy("to-i-xa-c")}</span>
             </label>
           ) : null}
-          {isError ? (
-            <p className="text-sm text-destructive">Không thể tạo bút toán điều chỉnh.</p>
-          ) : null}
+          {isError ? <p className="text-sm text-destructive">{uiCopy("kho-ng-the-ta-2")}</p> : null}
         </div>
         <DialogFooter className="grid grid-cols-2 gap-2 sm:flex">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {uiCopy("hu-y")}
           </Button>
           <Button onClick={onConfirm} disabled={isPending || !canConfirm}>
-            {isPending ? "Đang lưu…" : "Tạo bút toán điều chỉnh"}
+            {isPending ? uiCopy("ang-lu-u") : uiCopy("ta-o-bu-t")}
           </Button>
         </DialogFooter>
       </DialogContent>

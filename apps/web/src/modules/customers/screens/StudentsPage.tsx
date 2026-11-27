@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,7 @@ import { getPortalUrl } from "@/shared/lib/portal-url";
 import { toast } from "sonner";
 
 export default function StudentsPage() {
+  const uiCopy = useUiCopy("ui.customers-studentspage");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -65,7 +67,7 @@ export default function StudentsPage() {
         <Button variant="outline" asChild>
           <a href={portalUrl} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="h-4 w-4" />
-            Student Portal
+            {uiCopy("student-portal")}
           </a>
         </Button>
       )}

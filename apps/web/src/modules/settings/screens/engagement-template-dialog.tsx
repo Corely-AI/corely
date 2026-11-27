@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { ChannelDefinition } from "@corely/contracts";
@@ -40,6 +41,7 @@ type EngagementTemplateDialogProps = {
 };
 
 export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
+  const uiCopy = useUiCopy("ui.settings-engagement-template-dialog");
   const {
     open,
     onOpenChange,
@@ -91,7 +93,7 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
       await navigator.clipboard.writeText(`{${key}}`);
       toast.success(`Copied {${key}}`);
     } catch {
-      toast.error("Failed to copy variable");
+      toast.error(uiCopy("failed-to-copy-variable"));
     }
   };
 
@@ -138,13 +140,15 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>{formState.id ? "Edit template" : "Create template"}</DialogTitle>
+          <DialogTitle>
+            {formState.id ? uiCopy("edit-template") : uiCopy("create-template")}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="template-channel">Channel</Label>
+              <Label htmlFor="template-channel">{uiCopy("channel")}</Label>
               <Select
                 value={formState.channel}
                 onValueChange={(channel) =>
@@ -169,20 +173,20 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="template-name">Name</Label>
+              <Label htmlFor="template-name">{uiCopy("name")}</Label>
               <Input
                 id="template-name"
                 value={formState.name}
                 onChange={(event) =>
                   setFormState((current) => ({ ...current, name: event.target.value }))
                 }
-                placeholder="Template name"
+                placeholder={uiCopy("template-name")}
               />
             </div>
 
             <div className="rounded-md border border-border bg-muted/40 p-3 space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-foreground">AI generate</div>
+                <div className="text-sm font-medium text-foreground">{uiCopy("ai-generate")}</div>
                 <Button
                   type="button"
                   variant="outline"
@@ -190,24 +194,24 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
                   onClick={() => setAiPanelOpen((current) => !current)}
                 >
                   <Sparkles className="h-4 w-4 mr-1" />
-                  {aiPanelOpen ? "Hide" : "Generate with AI"}
+                  {aiPanelOpen ? uiCopy("hide") : uiCopy("generate-with-ai")}
                 </Button>
               </div>
               {aiPanelOpen ? (
                 <div className="space-y-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="template-ai-context">Context (optional)</Label>
+                    <Label htmlFor="template-ai-context">{uiCopy("context-optional")}</Label>
                     <Textarea
                       id="template-ai-context"
                       rows={3}
                       value={aiContext}
                       onChange={(event) => setAiContext(event.target.value)}
-                      placeholder="Example: Friendly tone, short WhatsApp follow-up after first demo."
+                      placeholder={uiCopy("example-friendly-tone-short")}
                     />
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs text-muted-foreground">
-                      Include style, audience, and key points you want in the template.
+                      {uiCopy("include-style-audience-and")}
                     </p>
                     <Button
                       type="button"
@@ -216,7 +220,7 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
                       onClick={() => onGenerateAi(aiContext.trim() || undefined)}
                       disabled={isGeneratingAi}
                     >
-                      {isGeneratingAi ? "Generating..." : "Generate"}
+                      {isGeneratingAi ? uiCopy("generating") : uiCopy("generate")}
                     </Button>
                   </div>
                 </div>
@@ -225,7 +229,7 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
 
             {isEmailChannel(formState.channel) ? (
               <div className="space-y-1.5">
-                <Label htmlFor="template-subject">Subject</Label>
+                <Label htmlFor="template-subject">{uiCopy("subject")}</Label>
                 <Input
                   id="template-subject"
                   ref={subjectInputRef}
@@ -234,16 +238,17 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
                   onChange={(event) =>
                     setFormState((current) => ({ ...current, subject: event.target.value }))
                   }
-                  placeholder="Email subject"
+                  placeholder={uiCopy("email-subject")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Preview: <span className="text-foreground">{previewSubject}</span>
+                  {uiCopy("preview") + " "}
+                  <span className="text-foreground">{previewSubject}</span>
                 </p>
               </div>
             ) : null}
 
             <div className="space-y-1.5">
-              <Label htmlFor="template-body">Body</Label>
+              <Label htmlFor="template-body">{uiCopy("body")}</Label>
               <Textarea
                 id="template-body"
                 ref={bodyTextareaRef}
@@ -253,20 +258,24 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
                 onChange={(event) =>
                   setFormState((current) => ({ ...current, body: event.target.value }))
                 }
-                placeholder="Template body"
+                placeholder={uiCopy("template-body")}
               />
               <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words">
-                Preview: <span className="text-foreground">{previewBody}</span>
+                {uiCopy("preview") + " "}
+                <span className="text-foreground">{previewBody}</span>
               </p>
             </div>
           </div>
 
           <div className="rounded-md border border-border bg-muted/40 p-3 space-y-2">
-            <div className="text-sm font-medium text-foreground">How to use variables</div>
+            <div className="text-sm font-medium text-foreground">
+              {uiCopy("how-to-use-variables")}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Use placeholders in curly braces, for example <code>{"{fullName}"}</code> or{" "}
-              <code>{"{firstName}"}</code>. Values are filled automatically from the selected
-              deal/contact when composing a message.
+              {uiCopy("use-placeholders-in-curly") + " "}
+              <code>{uiCopy("fullname")}</code>
+              {" " + uiCopy("or")} <code>{uiCopy("firstname")}</code>
+              {uiCopy("values-are-filled-automatically")}
             </p>
             <div className="space-y-1.5">
               {TEMPLATE_VARIABLES.map((variable) => (
@@ -283,7 +292,7 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
                       className="h-6 px-2 text-xs"
                       onClick={() => handleInsertVariable(variable.key)}
                     >
-                      Insert
+                      {uiCopy("insert")}
                     </Button>
                     <Button
                       type="button"
@@ -294,7 +303,7 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
                         void handleCopyVariable(variable.key);
                       }}
                     >
-                      Copy
+                      {uiCopy("copy")}
                     </Button>
                   </div>
                 </div>
@@ -305,10 +314,10 @@ export function EngagementTemplateDialog(props: EngagementTemplateDialogProps) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button variant="accent" onClick={onSave} disabled={isSaving || isGeneratingAi}>
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? uiCopy("saving") : uiCopy("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

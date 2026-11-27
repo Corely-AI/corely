@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { cn } from "@/shared/lib/utils";
 import { formatRelativeTime } from "@/shared/lib/formatters";
@@ -13,6 +14,7 @@ export interface NotificationItemProps {
 }
 
 export function NotificationItem({ notification, onMarkRead, className }: NotificationItemProps) {
+  const uiCopy = useUiCopy("ui.notifications-notification-item");
   const isRead = !!notification.readAt;
 
   const Icon = useMemo(() => {
@@ -71,7 +73,8 @@ export function NotificationItem({ notification, onMarkRead, className }: Notifi
             className="inline-flex items-center text-xs text-primary hover:underline mt-1"
             onClick={() => !isRead && onMarkRead(notification.id)}
           >
-            View details <ExternalLink className="ml-1 h-3 w-3" />
+            {uiCopy("view-details") + " "}
+            <ExternalLink className="ml-1 h-3 w-3" />
           </Link>
         )}
       </div>
@@ -85,10 +88,10 @@ export function NotificationItem({ notification, onMarkRead, className }: Notifi
             e.stopPropagation();
             onMarkRead(notification.id);
           }}
-          title="Mark as read"
+          title={uiCopy("mark-as-read")}
         >
           <Check className="h-3 w-3" />
-          <span className="sr-only">Mark as read</span>
+          <span className="sr-only">{uiCopy("mark-as-read")}</span>
         </Button>
       )}
     </div>

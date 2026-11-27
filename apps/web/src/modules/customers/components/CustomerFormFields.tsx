@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import type { ReactNode } from "react";
 import { Controller, useFieldArray, type UseFormReturn } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
@@ -16,6 +17,7 @@ interface CustomerFormFieldsProps {
 }
 
 export function CustomerFormFields({ form, className, afterDisplayName }: CustomerFormFieldsProps) {
+  const uiCopy = useUiCopy("ui.customers-customerformfields");
   const { t } = useTranslation();
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -73,7 +75,7 @@ export function CustomerFormFields({ form, className, afterDisplayName }: Custom
           </div>
 
           <div>
-            <Label htmlFor="birthday">Birthday</Label>
+            <Label htmlFor="birthday">{uiCopy("birthday")}</Label>
             <Input
               id="birthday"
               type="date"
@@ -213,7 +215,7 @@ export function CustomerFormFields({ form, className, afterDisplayName }: Custom
                 className="grid grid-cols-1 md:grid-cols-12 gap-3 rounded-md border border-border/70 dark:border-border/40 p-3"
               >
                 <div className="md:col-span-3">
-                  <Label>Platform</Label>
+                  <Label>{uiCopy("platform")}</Label>
                   <Controller
                     control={form.control}
                     name={`socialLinks.${index}.platform`}
@@ -223,14 +225,14 @@ export function CustomerFormFields({ form, className, afterDisplayName }: Custom
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="linkedin">LinkedIn</SelectItem>
+                          <SelectItem value="linkedin">{uiCopy("linkedin")}</SelectItem>
                           <SelectItem value="facebook">Facebook</SelectItem>
                           <SelectItem value="instagram">Instagram</SelectItem>
-                          <SelectItem value="x">X</SelectItem>
+                          <SelectItem value="x">{uiCopy("x")}</SelectItem>
                           <SelectItem value="github">GitHub</SelectItem>
-                          <SelectItem value="tiktok">TikTok</SelectItem>
-                          <SelectItem value="youtube">YouTube</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="tiktok">{uiCopy("tiktok")}</SelectItem>
+                          <SelectItem value="youtube">{uiCopy("youtube")}</SelectItem>
+                          <SelectItem value="other">{uiCopy("other")}</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -241,10 +243,10 @@ export function CustomerFormFields({ form, className, afterDisplayName }: Custom
                   <Input {...form.register(`socialLinks.${index}.url`)} placeholder="https://..." />
                 </div>
                 <div className="md:col-span-3">
-                  <Label>Label</Label>
+                  <Label>{uiCopy("label")}</Label>
                   <Input
                     {...form.register(`socialLinks.${index}.label`)}
-                    placeholder="Public profile"
+                    placeholder={uiCopy("public-profile")}
                   />
                 </div>
                 <div className="md:col-span-1 flex items-end justify-end">

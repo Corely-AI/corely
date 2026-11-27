@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, RefreshCw } from "lucide-react";
@@ -7,6 +8,7 @@ import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 
 export default function StockOverviewPage() {
+  const uiCopy = useUiCopy("ui.inventory-stockoverviewpage");
   const [warehouseId, setWarehouseId] = useState<string>("");
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -44,9 +46,9 @@ export default function StockOverviewPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-h1 text-foreground">Stock Overview</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("stock-overview")}</h1>
           <p className="text-sm text-muted-foreground">
-            Real-time inventory visibility with automatic refresh every 15 seconds
+            {uiCopy("real-time-inventory-visibility")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -54,11 +56,11 @@ export default function StockOverviewPage() {
             variant={autoRefresh ? "accent" : "outline"}
             onClick={() => setAutoRefresh((prev) => !prev)}
           >
-            {autoRefresh ? "Auto refresh ON" : "Auto refresh OFF"}
+            {autoRefresh ? uiCopy("auto-refresh-on") : uiCopy("auto-refresh-off")}
           </Button>
           <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
             <RefreshCw className="h-4 w-4" />
-            Refresh now
+            {uiCopy("refresh-now")}
           </Button>
         </div>
       </div>
@@ -68,19 +70,19 @@ export default function StockOverviewPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Total available qty
+                {uiCopy("total-available-qty")}
               </div>
               <div className="text-2xl font-semibold">{totalAvailable}</div>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Low-stock alerts
+                {uiCopy("low-stock-alerts")}
               </div>
               <div className="text-2xl font-semibold text-amber-600">{lowStockCount}</div>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Last synced
+                {uiCopy("last-synced")}
               </div>
               <div className="text-sm font-medium">
                 {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : "-"}
@@ -89,13 +91,13 @@ export default function StockOverviewPage() {
           </div>
 
           <div className="space-y-2 max-w-sm">
-            <Label>Warehouse</Label>
+            <Label>{uiCopy("warehouse")}</Label>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={warehouseId}
               onChange={(event) => setWarehouseId(event.target.value)}
             >
-              <option value="">All warehouses</option>
+              <option value="">{uiCopy("all-warehouses")}</option>
               {warehouses?.items.map((warehouse) => (
                 <option key={warehouse.id} value={warehouse.id}>
                   {warehouse.name}
@@ -108,7 +110,8 @@ export default function StockOverviewPage() {
             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <AlertTriangle className="h-4 w-4" />
-                {lowStockCount} products are below threshold
+                {lowStockCount}
+                {" " + uiCopy("products-are-below-threshold")}
               </div>
             </div>
           ) : null}
@@ -116,12 +119,12 @@ export default function StockOverviewPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground">
-                <th className="py-2">Product</th>
-                <th>Location</th>
-                <th>On-hand</th>
-                <th>Reserved</th>
-                <th>Available</th>
-                <th>Status</th>
+                <th className="py-2">{uiCopy("product")}</th>
+                <th>{uiCopy("location")}</th>
+                <th>{uiCopy("on-hand")}</th>
+                <th>{uiCopy("reserved")}</th>
+                <th>{uiCopy("available")}</th>
+                <th>{uiCopy("status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -145,9 +148,9 @@ export default function StockOverviewPage() {
                     </td>
                     <td>
                       {isDepleted ? (
-                        <Badge variant="outline">At risk</Badge>
+                        <Badge variant="outline">{uiCopy("at-risk")}</Badge>
                       ) : (
-                        <Badge variant="accent">Healthy</Badge>
+                        <Badge variant="accent">{uiCopy("healthy")}</Badge>
                       )}
                     </td>
                   </tr>

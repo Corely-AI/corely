@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -31,6 +32,7 @@ interface QuickCreateCategoryDialogProps {
 }
 
 export function QuickCreateCategoryDialog({ onCreated }: QuickCreateCategoryDialogProps) {
+  const uiCopy = useUiCopy("ui.rentals-quickcreatecategorydialog");
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -47,7 +49,7 @@ export function QuickCreateCategoryDialog({ onCreated }: QuickCreateCategoryDial
   const createMutation = useMutation({
     mutationFn: () => rentalsApi.createCategory({ name, slug }),
     onSuccess: (newCategory) => {
-      toast.success("Category created");
+      toast.success(uiCopy("category-created"));
       void queryClient.invalidateQueries({ queryKey: ["rentals/categories"] });
       onCreated?.(newCategory.id);
       setOpen(false);
@@ -69,21 +71,21 @@ export function QuickCreateCategoryDialog({ onCreated }: QuickCreateCategoryDial
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Quick Create Category</DialogTitle>
-          <DialogDescription>Add a new category for your properties.</DialogDescription>
+          <DialogTitle>{uiCopy("quick-create-category")}</DialogTitle>
+          <DialogDescription>{uiCopy("add-a-new-category")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="quick-cat-name">Name</Label>
+            <Label htmlFor="quick-cat-name">{uiCopy("name")}</Label>
             <Input
               id="quick-cat-name"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. Luxury"
+              placeholder={uiCopy("e-g-luxury")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="quick-cat-slug">Slug</Label>
+            <Label htmlFor="quick-cat-slug">{uiCopy("slug")}</Label>
             <Input
               id="quick-cat-slug"
               value={slug}
@@ -91,19 +93,19 @@ export function QuickCreateCategoryDialog({ onCreated }: QuickCreateCategoryDial
                 setSlug(e.target.value);
                 setSlugTouched(true);
               }}
-              placeholder="luxury"
+              placeholder={uiCopy("luxury")}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             onClick={() => createMutation.mutate()}
             disabled={createMutation.isPending || !name.trim()}
           >
-            {createMutation.isPending ? "Creating..." : "Create Category"}
+            {createMutation.isPending ? uiCopy("creating") : uiCopy("create-category")}
           </Button>
         </DialogFooter>
       </DialogContent>

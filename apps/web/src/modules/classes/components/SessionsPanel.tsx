@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import {
   Badge,
@@ -74,6 +75,7 @@ export function SessionsPanel({
   selectedMonth,
   onMonthChange,
 }: SessionsPanelProps) {
+  const uiCopy = useUiCopy("ui.classes-sessionspanel");
   const sessions = sessionData?.items ?? [];
   const totalSessions = sessionData?.total ?? sessions.length;
   const currentMonthLabel = React.useMemo(() => {
@@ -100,9 +102,9 @@ export function SessionsPanel({
     <Card>
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold">Sessions</div>
+          <div className="text-sm font-semibold">{uiCopy("sessions")}</div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium">Month:</span>
+            <span className="text-xs text-muted-foreground font-medium">{uiCopy("month")}</span>
             <Select value={selectedMonth} onValueChange={onMonthChange}>
               <SelectTrigger className="h-8 w-[160px] text-xs">
                 <SelectValue />
@@ -119,7 +121,7 @@ export function SessionsPanel({
         </div>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_120px_180px_auto] items-end">
           <div className="space-y-2">
-            <Label>Start time</Label>
+            <Label>{uiCopy("start-time")}</Label>
             <Input
               type="datetime-local"
               value={sessionStart}
@@ -127,7 +129,7 @@ export function SessionsPanel({
             />
           </div>
           <div className="space-y-2">
-            <Label>Duration (min)</Label>
+            <Label>{uiCopy("duration-min")}</Label>
             <Input
               type="number"
               min="15"
@@ -137,18 +139,18 @@ export function SessionsPanel({
             />
           </div>
           <div className="space-y-2">
-            <Label>Topic</Label>
+            <Label>{uiCopy("topic")}</Label>
             <Input value={sessionTopic} onChange={(e) => onSessionTopicChange(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label className="sr-only">Actions</Label>
+            <Label className="sr-only">{uiCopy("actions")}</Label>
             <Button
               variant="accent"
               className="w-full lg:min-w-[136px]"
               onClick={onAddSession}
               disabled={createSessionPending}
             >
-              Add session
+              {uiCopy("add-session")}
             </Button>
           </div>
         </div>
@@ -161,15 +163,14 @@ export function SessionsPanel({
                     variant="outline"
                     className="border-accent/40 bg-accent/10 text-accent uppercase tracking-wide text-[10px]"
                   >
-                    Recurring schedule
+                    {uiCopy("recurring-schedule")}
                   </Badge>
                   <div className="text-sm font-medium">
-                    Generate sessions for {currentMonthLabel}
+                    {uiCopy("generate-sessions-for") + " "}
+                    {currentMonthLabel}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  This adds only missing sessions based on your recurring schedule.
-                </p>
+                <p className="text-xs text-muted-foreground">{uiCopy("this-adds-only-missing")}</p>
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -183,13 +184,11 @@ export function SessionsPanel({
                       className={generateSessionsPending ? "h-4 w-4 animate-spin" : "h-4 w-4"}
                     />
                     {generateSessionsPending
-                      ? "Generating..."
+                      ? uiCopy("generating")
                       : `Generate for ${currentMonthLabel}`}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  Safe to run multiple times. Existing sessions are not duplicated.
-                </TooltipContent>
+                <TooltipContent>{uiCopy("safe-to-run-multiple")}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -200,13 +199,13 @@ export function SessionsPanel({
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                  Starts
+                  {uiCopy("starts")}
                 </th>
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                  Topic
+                  {uiCopy("topic")}
                 </th>
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                  Status
+                  {uiCopy("status")}
                 </th>
                 <th />
               </tr>
@@ -239,7 +238,7 @@ export function SessionsPanel({
               {sessions.length === 0 ? (
                 <tr>
                   <td className="px-4 py-8 text-sm text-center text-muted-foreground" colSpan={4}>
-                    No sessions scheduled yet.
+                    {uiCopy("no-sessions-scheduled-yet")}
                   </td>
                 </tr>
               ) : null}
@@ -250,8 +249,12 @@ export function SessionsPanel({
         {sessionData && totalSessions > 10 ? (
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
-              Showing {(sessionsPage - 1) * 10 + 1} to {Math.min(sessionsPage * 10, totalSessions)}{" "}
-              of {totalSessions} sessions
+              {uiCopy("showing") + " "}
+              {(sessionsPage - 1) * 10 + 1}
+              {" " + uiCopy("to") + " "}
+              {Math.min(sessionsPage * 10, totalSessions)} {uiCopy("of") + " "}
+              {totalSessions}
+              {" " + uiCopy("sessions-2")}
             </div>
             <Pagination>
               <PaginationContent>

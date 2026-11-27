@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Badge, Button, Input, Label, Switch, Textarea } from "@corely/ui";
 import type { WebsiteBlock } from "@corely/contracts";
@@ -30,11 +31,12 @@ type WebsitePageEditorSelectedBlockPanelProps = {
 export const WebsitePageEditorSelectedBlockPanel = (
   props: WebsitePageEditorSelectedBlockPanelProps
 ) => {
+  const uiCopy = useUiCopy("ui.website-website-page-editor-selected-block-panel");
   const selectedBlock = props.selectedBlock;
   const selectedDefinition = props.selectedDefinition;
 
   if (!selectedBlock) {
-    return <p className="text-sm text-muted-foreground">Select a block to edit its properties.</p>;
+    return <p className="text-sm text-muted-foreground">{uiCopy("select-a-block-to")}</p>;
   }
 
   return (
@@ -45,17 +47,16 @@ export const WebsitePageEditorSelectedBlockPanel = (
             {selectedDefinition?.displayName ?? selectedBlock.type}
           </div>
           <p className="text-xs text-muted-foreground">
-            {selectedDefinition?.description ??
-              "No field editor is registered for this block type."}
+            {selectedDefinition?.description ?? uiCopy("no-field-editor-is")}
           </p>
         </div>
         <Badge variant={selectedBlock.enabled === false ? "warning" : "success"}>
-          {selectedBlock.enabled === false ? "Disabled" : "Enabled"}
+          {selectedBlock.enabled === false ? uiCopy("disabled") : uiCopy("enabled")}
         </Badge>
       </div>
 
       <div className="space-y-2 rounded-md border border-border/60 p-3">
-        <Label>Component review</Label>
+        <Label>{uiCopy("component-review")}</Label>
         <div className="overflow-hidden rounded-md border border-border/60">
           {props.renderSelectedBlockPreview()}
         </div>
@@ -102,7 +103,7 @@ export const WebsitePageEditorSelectedBlockPanel = (
                     }
                     onBlur={() => props.onCommitJsonFieldDraft(field)}
                   />
-                  <p className="text-xs text-muted-foreground">JSON value is applied on blur.</p>
+                  <p className="text-xs text-muted-foreground">{uiCopy("json-value-is-applied")}</p>
                 </div>
               );
             }
@@ -146,7 +147,7 @@ export const WebsitePageEditorSelectedBlockPanel = (
                         }
                       }}
                     >
-                      {isUploading ? "Uploading..." : "Upload"}
+                      {isUploading ? uiCopy("uploading") : uiCopy("upload")}
                     </Button>
                   </div>
                   {imageUrl ? (
@@ -168,7 +169,7 @@ export const WebsitePageEditorSelectedBlockPanel = (
                   <Label>{field.label}</Label>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Add fileId and press Enter"
+                      placeholder={uiCopy("add-fileid-and-press")}
                       onKeyDown={(event) => {
                         if (event.key !== "Enter") {
                           return;
@@ -206,7 +207,7 @@ export const WebsitePageEditorSelectedBlockPanel = (
                         }
                       }}
                     >
-                      {isUploading ? "Uploading..." : "Upload"}
+                      {isUploading ? uiCopy("uploading") : uiCopy("upload")}
                     </Button>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -230,7 +231,7 @@ export const WebsitePageEditorSelectedBlockPanel = (
                             props.onUpdateSelectedBlockField(field, next);
                           }}
                         >
-                          Remove
+                          {uiCopy("remove")}
                         </Button>
                       </div>
                     ))}
@@ -263,22 +264,20 @@ export const WebsitePageEditorSelectedBlockPanel = (
           })}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          No editor fields registered for this block type.
-        </p>
+        <p className="text-sm text-muted-foreground">{uiCopy("no-editor-fields-registered")}</p>
       )}
 
       {selectedDefinition ? (
         <div className="space-y-2 rounded-md border border-border/60 p-3">
-          <Label>AI instruction</Label>
+          <Label>{uiCopy("ai-instruction")}</Label>
           <Textarea
             rows={2}
-            placeholder="Disable this block on mobile"
+            placeholder={uiCopy("disable-this-block-on")}
             value={props.aiInstruction}
             onChange={(event) => props.setAiInstruction(event.target.value)}
           />
           <Button variant="outline" onClick={props.onRegenerateBlock}>
-            Regenerate selected block
+            {uiCopy("regenerate-selected-block")}
           </Button>
         </div>
       ) : null}

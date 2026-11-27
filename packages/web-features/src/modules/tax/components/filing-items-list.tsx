@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { TableRowSkeleton } from "@corely/web-shared/shared/components/Skeleton";
@@ -20,6 +22,7 @@ type FilingItemsListProps = {
 };
 
 export function FilingItemsList({ filingId, sourceType, pageSize = 5 }: FilingItemsListProps) {
+  const uiCopy = useUiCopy("ui.tax-filing-items-list");
   const navigate = useNavigate();
   const [page, setPage] = React.useState(1);
 
@@ -46,7 +49,11 @@ export function FilingItemsList({ filingId, sourceType, pageSize = 5 }: FilingIt
   }
 
   if (isError) {
-    return <div className="p-4 text-sm text-destructive text-center">Failed to load items.</div>;
+    return (
+      <div className="p-4 text-sm text-destructive text-center">
+        {uiCopy("failed-to-load-items")}
+      </div>
+    );
   }
 
   if (items.length === 0) {
@@ -67,22 +74,22 @@ export function FilingItemsList({ filingId, sourceType, pageSize = 5 }: FilingIt
           <thead>
             <tr className="border-b border-border bg-muted/50">
               <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
-                Date
+                {uiCopy("date")}
               </th>
               <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
-                Counterparty
+                {uiCopy("counterparty")}
               </th>
               <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
-                Description
+                {uiCopy("description")}
               </th>
               <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
-                Net
+                {uiCopy("net")}
               </th>
               <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
-                Tax
+                {uiCopy("tax")}
               </th>
               <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
-                Gross
+                {uiCopy("gross")}
               </th>
             </tr>
           </thead>
@@ -126,7 +133,7 @@ export function FilingItemsList({ filingId, sourceType, pageSize = 5 }: FilingIt
             </PaginationItem>
             <PaginationItem>
               <span className="text-xs text-muted-foreground px-2">
-                Page {page} of {Math.ceil(pageInfo.total / pageSize)}
+                <PaginationSummary page={page} pages={Math.ceil(pageInfo.total / pageSize)} />
               </span>
             </PaginationItem>
             <PaginationItem>

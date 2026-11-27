@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Button, Card, CardContent } from "@corely/ui";
 import { type ToolRendererProps } from "@corely/web-shared/shared/components/chat/ChatParts";
@@ -42,6 +43,7 @@ const isPendingEntryConfirmation = (value: unknown): value is PendingEntryConfir
 };
 
 export const CashEntryConfirmationRenderer: React.FC<ToolRendererProps> = ({ state, output }) => {
+  const uiCopy = useUiCopy("ui.assistant-cashentryconfirmationrenderer");
   const { t, i18n } = useTranslation();
   const [isConsumed, setIsConsumed] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
@@ -99,12 +101,19 @@ export const CashEntryConfirmationRenderer: React.FC<ToolRendererProps> = ({ sta
             <p className="text-xs text-muted-foreground">
               {payload.description} ({amountStr})
             </p>
-            <p className="text-xs text-muted-foreground">Entry type: {payload.movementType}</p>
+            <p className="text-xs text-muted-foreground">
+              {uiCopy("entry-type") + " "}
+              {payload.movementType}
+            </p>
             {payload.direction ? (
-              <p className="text-xs text-muted-foreground">Direction: {payload.direction}</p>
+              <p className="text-xs text-muted-foreground">
+                {uiCopy("direction") + " "}
+                {payload.direction}
+              </p>
             ) : null}
             <p className="text-xs text-muted-foreground">
-              Date: {output.confirmation.businessDate}
+              {uiCopy("date") + " "}
+              {output.confirmation.businessDate}
             </p>
           </div>
         </div>

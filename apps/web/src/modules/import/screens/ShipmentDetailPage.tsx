@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
@@ -8,6 +9,7 @@ import type { AllocationMethod, ImportShipmentStatus } from "@corely/contracts";
 import { toast } from "sonner";
 
 export default function ShipmentDetailPage() {
+  const uiCopy = useUiCopy("ui.import-shipmentdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -32,12 +34,12 @@ export default function ShipmentDetailPage() {
       return importShipmentsApi.submitShipment(id);
     },
     onSuccess: async () => {
-      toast.success("Shipment submitted");
+      toast.success(uiCopy("shipment-submitted"));
       await queryClient.invalidateQueries({ queryKey: ["import", "shipments", "detail", id] });
       await queryClient.invalidateQueries({ queryKey: ["import", "shipments"] });
     },
     onError: () => {
-      toast.error("Failed to submit shipment");
+      toast.error(uiCopy("failed-to-submit-shipment"));
     },
   });
 
@@ -49,12 +51,12 @@ export default function ShipmentDetailPage() {
       return importShipmentsApi.allocateLandedCosts(id, { allocationMethod });
     },
     onSuccess: async () => {
-      toast.success("Landed costs allocated");
+      toast.success(uiCopy("landed-costs-allocated"));
       await queryClient.invalidateQueries({ queryKey: ["import", "shipments", "detail", id] });
       await queryClient.invalidateQueries({ queryKey: ["import", "shipments"] });
     },
     onError: () => {
-      toast.error("Failed to allocate landed costs");
+      toast.error(uiCopy("failed-to-allocate-landed"));
     },
   });
 
@@ -98,7 +100,7 @@ export default function ShipmentDetailPage() {
   if (isLoading) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-center text-muted-foreground">Loading shipment...</p>
+        <p className="text-center text-muted-foreground">{uiCopy("loading-shipment")}</p>
       </div>
     );
   }
@@ -106,7 +108,7 @@ export default function ShipmentDetailPage() {
   if (!shipment) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-center text-muted-foreground">Shipment not found</p>
+        <p className="text-center text-muted-foreground">{uiCopy("shipment-not-found")}</p>
       </div>
     );
   }
@@ -121,12 +123,13 @@ export default function ShipmentDetailPage() {
           <Ship className="h-8 w-8 text-muted-foreground" />
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Import / Shipments / {shipment.shipmentNumber || shipment.id.slice(0, 8)}
+              {uiCopy("import-shipments") + " "}
+              {shipment.shipmentNumber || shipment.id.slice(0, 8)}
             </p>
             <h1 className="text-h1 text-foreground">
               {shipment.shipmentNumber || `Shipment ${shipment.id.slice(0, 8)}`}
             </h1>
-            <p className="text-sm text-muted-foreground">Import shipment details</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("import-shipment-details")}</p>
           </div>
         </div>
         <Badge variant={getStatusColor(shipment.status)}>{shipment.status}</Badge>
@@ -137,7 +140,7 @@ export default function ShipmentDetailPage() {
               onClick={() => submitMutation.mutate()}
               disabled={submitMutation.isPending}
             >
-              {submitMutation.isPending ? "Submitting..." : "Submit"}
+              {submitMutation.isPending ? uiCopy("submitting") : uiCopy("submit")}
             </Button>
           ) : null}
           {shipment.status === "RECEIVED" ? (
@@ -147,17 +150,17 @@ export default function ShipmentDetailPage() {
                 value={allocationMethod}
                 onChange={(event) => setAllocationMethod(event.target.value as AllocationMethod)}
               >
-                <option value="BY_FOB_VALUE">By FOB value</option>
-                <option value="BY_WEIGHT">By weight</option>
-                <option value="BY_VOLUME">By volume</option>
-                <option value="EQUAL">Equal split</option>
+                <option value="BY_FOB_VALUE">{uiCopy("by-fob-value")}</option>
+                <option value="BY_WEIGHT">{uiCopy("by-weight")}</option>
+                <option value="BY_VOLUME">{uiCopy("by-volume")}</option>
+                <option value="EQUAL">{uiCopy("equal-split")}</option>
               </select>
               <Button
                 variant="outline"
                 onClick={() => allocateMutation.mutate()}
                 disabled={allocateMutation.isPending}
               >
-                {allocateMutation.isPending ? "Allocating..." : "Allocate Costs"}
+                {allocateMutation.isPending ? uiCopy("allocating") : uiCopy("allocate-costs")}
               </Button>
             </div>
           ) : null}
@@ -167,17 +170,17 @@ export default function ShipmentDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Shipment Information</CardTitle>
+            <CardTitle>{uiCopy("shipment-information")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <div className="text-muted-foreground">Shipping Mode:</div>
+              <div className="text-muted-foreground">{uiCopy("shipping-mode")}</div>
               <div className="font-medium">{shipment.shippingMode}</div>
-              <div className="text-muted-foreground">Container #:</div>
+              <div className="text-muted-foreground">{uiCopy("container")}</div>
               <div className="font-medium">{shipment.containerNumber || "-"}</div>
-              <div className="text-muted-foreground">BOL #:</div>
+              <div className="text-muted-foreground">{uiCopy("bol")}</div>
               <div className="font-medium">{shipment.billOfLadingNumber || "-"}</div>
-              <div className="text-muted-foreground">Carrier:</div>
+              <div className="text-muted-foreground">{uiCopy("carrier")}</div>
               <div className="font-medium">{shipment.carrierName || "-"}</div>
             </div>
           </CardContent>
@@ -185,17 +188,17 @@ export default function ShipmentDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Origin & Destination</CardTitle>
+            <CardTitle>{uiCopy("origin-destination")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <div className="text-muted-foreground">Origin Port:</div>
+              <div className="text-muted-foreground">{uiCopy("origin-port")}</div>
               <div className="font-medium">{shipment.originPort || "-"}</div>
-              <div className="text-muted-foreground">Destination Port:</div>
+              <div className="text-muted-foreground">{uiCopy("destination-port")}</div>
               <div className="font-medium">{shipment.destinationPort || "-"}</div>
-              <div className="text-muted-foreground">Origin Country:</div>
+              <div className="text-muted-foreground">{uiCopy("origin-country")}</div>
               <div className="font-medium">{shipment.originCountry || "-"}</div>
-              <div className="text-muted-foreground">Destination Country:</div>
+              <div className="text-muted-foreground">{uiCopy("destination-country")}</div>
               <div className="font-medium">{shipment.destinationCountry || "-"}</div>
             </div>
           </CardContent>
@@ -203,19 +206,19 @@ export default function ShipmentDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Dates</CardTitle>
+            <CardTitle>{uiCopy("dates")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <div className="text-muted-foreground">Departure:</div>
+              <div className="text-muted-foreground">{uiCopy("departure")}</div>
               <div className="font-medium">{formatDate(shipment.departureDate)}</div>
-              <div className="text-muted-foreground">Estimated Arrival:</div>
+              <div className="text-muted-foreground">{uiCopy("estimated-arrival")}</div>
               <div className="font-medium">{formatDate(shipment.estimatedArrivalDate)}</div>
-              <div className="text-muted-foreground">Actual Arrival:</div>
+              <div className="text-muted-foreground">{uiCopy("actual-arrival")}</div>
               <div className="font-medium">{formatDate(shipment.actualArrivalDate)}</div>
-              <div className="text-muted-foreground">Clearance Date:</div>
+              <div className="text-muted-foreground">{uiCopy("clearance-date")}</div>
               <div className="font-medium">{formatDate(shipment.clearanceDate)}</div>
-              <div className="text-muted-foreground">Received Date:</div>
+              <div className="text-muted-foreground">{uiCopy("received-date")}</div>
               <div className="font-medium">{formatDate(shipment.receivedDate)}</div>
             </div>
           </CardContent>
@@ -223,23 +226,25 @@ export default function ShipmentDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Costs</CardTitle>
+            <CardTitle>{uiCopy("costs")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <div className="text-muted-foreground">FOB Value:</div>
+              <div className="text-muted-foreground">{uiCopy("fob-value")}</div>
               <div className="font-medium">{formatCurrency(shipment.fobValueCents)}</div>
-              <div className="text-muted-foreground">Freight:</div>
+              <div className="text-muted-foreground">{uiCopy("freight")}</div>
               <div className="font-medium">{formatCurrency(shipment.freightCostCents)}</div>
-              <div className="text-muted-foreground">Insurance:</div>
+              <div className="text-muted-foreground">{uiCopy("insurance")}</div>
               <div className="font-medium">{formatCurrency(shipment.insuranceCostCents)}</div>
-              <div className="text-muted-foreground">Customs Duty:</div>
+              <div className="text-muted-foreground">{uiCopy("customs-duty")}</div>
               <div className="font-medium">{formatCurrency(shipment.customsDutyCents)}</div>
-              <div className="text-muted-foreground">Customs Tax:</div>
+              <div className="text-muted-foreground">{uiCopy("customs-tax")}</div>
               <div className="font-medium">{formatCurrency(shipment.customsTaxCents)}</div>
-              <div className="text-muted-foreground">Other Costs:</div>
+              <div className="text-muted-foreground">{uiCopy("other-costs")}</div>
               <div className="font-medium">{formatCurrency(shipment.otherCostsCents)}</div>
-              <div className="text-muted-foreground font-semibold">Total Landed Cost:</div>
+              <div className="text-muted-foreground font-semibold">
+                {uiCopy("total-landed-cost")}
+              </div>
               <div className="font-bold">{formatCurrency(shipment.totalLandedCostCents)}</div>
             </div>
           </CardContent>
@@ -250,7 +255,8 @@ export default function ShipmentDetailPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            Shipment Lines ({shipment.lines.length})
+            {uiCopy("shipment-lines")}
+            {shipment.lines.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -258,12 +264,22 @@ export default function ShipmentDetailPage() {
             <table className="w-full">
               <thead className="bg-muted/50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Product ID</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">HS Code</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium">Ordered Qty</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium">Received Qty</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium">Unit FOB Cost</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium">Line FOB Cost</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">
+                    {uiCopy("product-id")}
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">{uiCopy("hs-code")}</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium">
+                    {uiCopy("ordered-qty")}
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium">
+                    {uiCopy("received-qty")}
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium">
+                    {uiCopy("unit-fob-cost")}
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-medium">
+                    {uiCopy("line-fob-cost")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y">

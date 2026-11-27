@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import type { BankAccountOwner, TaxOfficeInfoSectionPayload } from "@corely/contracts";
 import { AlertCircle } from "lucide-react";
@@ -17,6 +18,7 @@ export const IncomeTaxReturnInfoForTaxOfficeStep = ({
   onChange,
   onNext,
 }: IncomeTaxReturnInfoForTaxOfficeStepProps) => {
+  const uiCopy = useUiCopy("ui.tax-income-tax-return-info-for-tax-office-step");
   const update = (patch: Partial<TaxOfficeInfoSectionPayload>) => onChange({ ...value, ...patch });
   const iban = value.iban;
   const bankAccountOwner = value.bankAccountOwner as BankAccountOwner;
@@ -35,14 +37,14 @@ export const IncomeTaxReturnInfoForTaxOfficeStep = ({
       {isIbanMissing ? (
         <div className="flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <p>Required details are missing on this page</p>
+          <p>{uiCopy("required-details-are-missing")}</p>
         </div>
       ) : null}
 
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-2">
-            <h2 className="text-h3 text-foreground">Bank account</h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("bank-account")}</h2>
             <p className="max-w-3xl text-body text-muted-foreground">
               Used by the Finanzamt for tax refunds. Your details won&apos;t be shared with anyone
               but the Finanzamt.
@@ -63,7 +65,9 @@ export const IncomeTaxReturnInfoForTaxOfficeStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">Bank account belongs to</Label>
+            <Label className="text-sm font-medium text-foreground">
+              {uiCopy("bank-account-belongs-to")}
+            </Label>
             <SegmentedControl
               ariaLabel="Bank account belongs to"
               value={bankAccountOwner}
@@ -81,9 +85,9 @@ export const IncomeTaxReturnInfoForTaxOfficeStep = ({
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-2">
-            <h2 className="text-h3 text-foreground">Additional information</h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("additional-information")}</h2>
             <p className="max-w-3xl text-body text-muted-foreground">
-              Further information or issues to be considered which have not been already included
+              {uiCopy("further-information-or-issues")}
             </p>
           </div>
 
@@ -93,7 +97,7 @@ export const IncomeTaxReturnInfoForTaxOfficeStep = ({
                 htmlFor="tax-office-additional-information"
                 className="text-sm font-medium text-foreground"
               >
-                Further data to your tax declaration (Optional)
+                {uiCopy("further-data-to-your")}
               </Label>
               <span className="text-xs text-muted-foreground">
                 {additionalInformation.length}/{MAX_ADDITIONAL_INFO_LENGTH}
@@ -116,7 +120,7 @@ export const IncomeTaxReturnInfoForTaxOfficeStep = ({
       {onNext ? (
         <div className="flex justify-end">
           <Button type="button" onClick={onNext} className="rounded-full px-8">
-            Next: Paid add ons
+            {uiCopy("next-paid-add-ons")}
           </Button>
         </div>
       ) : null}

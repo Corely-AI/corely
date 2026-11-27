@@ -317,16 +317,8 @@
     "syncSnapshotTitle": "Synchronizuj migawkę",
     "unknownUser": "Nieznany użytkownik",
     "workspaceBadge": "WS {{id}}",
-    "layoutMode": {
-      "auto": "Automat",
-      "phone": "Telefon",
-      "tablet": "Tablet"
-    },
-    "languages": {
-      "en": "Angielski",
-      "de": "Niemiecki",
-      "vi": "Tiếng Việt"
-    }
+    "layoutMode": { "auto": "Automat", "phone": "Telefon", "tablet": "Tablet" },
+    "languages": { "en": "Angielski", "de": "Niemiecki", "vi": "Tiếng Việt" }
   },
   "kiosk": {
     "brand": "Odprawa Corely",
@@ -420,5 +412,74 @@
     "online": "W Internecie",
     "queue": "Kolejka {{count}}",
     "syncing": "Synchronizowanie"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Najpierw wybierz rejestr",
+      "restaurant-pos-uses-the": "Restauracja POS korzysta z tego samego kontekstu rejestrów i zmian, co podstawowy przepływ POS.",
+      "open-a-shift-first": "Najpierw otwórz zmianę",
+      "restaurant-tables-can-only": "Stoły restauracyjne można otwierać tylko wtedy, gdy aktywna jest zmiana kasjera.",
+      "restaurant-floor": "Podłoga restauracji",
+      "open-and-resume-table": "Otwieraj i wznawiaj sesje przy stole z mapy jadalni.",
+      "floor-plan-copilot": "Drugi pilot na planie piętra",
+      "summarize-occupied-dirty-or": "Podsumuj zajęte, brudne lub zablokowane stoły bez przerywania ręcznego korzystania z podłogi.",
+      "loading-floor-plan": "Ładowanie planu piętra…",
+      "seats": "· siedzenia",
+      "tap-to-resume-check": "Kliknij, aby wznowić sprawdzanie"
+    },
+    "main-settings": {
+      "workspace": "Obszar roboczy",
+      "workspace-id": "Identyfikator obszaru roboczego",
+      "user-id": "Identyfikator użytkownika"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "Płatność",
+      "load-the-table-order": "Załaduj zamówienie na stół przed przyjęciem płatności.",
+      "payment-close": "Płatność / Zamknij",
+      "settle-table": "Rozstrzygnij stół",
+      "send-all-draft-items": "Wyślij wszystkie pozycje robocze do kuchni przed przyjęciem płatności.",
+      "this-order-has-already": "Zamówienie to zostało już rozliczone.",
+      "phase-1-keeps-settlement": "W fazie 1 rozliczenie jest proste: dokładna gotówka lub przejęcie pojedynczej karty zastępczej.",
+      "send-items-to-kitchen": "Wyślij rzeczy do kuchni",
+      "cash": "Gotówka",
+      "card": "Karta"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Kolejność stołu",
+      "loading-table": "Tabela ładowania",
+      "opening-or-resuming-the": "Otwieranie lub wznawianie wybranej tabeli.",
+      "search-menu-items": "Wyszukaj pozycje menu",
+      "current-order": "Aktualne zamówienie",
+      "add-menu-items-to": "Dodaj pozycje menu, aby rozpocząć sprawdzanie.",
+      "no-modifiers": "Żadnych modyfikatorów",
+      "subtotal": "Suma częściowa",
+      "tax": "Podatek",
+      "total": "Razem",
+      "send-to-kitchen": "Wyślij do kuchni",
+      "take-payment": "Przyjmij płatność",
+      "order-copilot": "Zamów drugiego pilota",
+      "parse-order-instructions-into": "Przeanalizuj instrukcje dotyczące zamówienia na wyraźne karty propozycji. Apply nadal używa zwykłych poleceń restauracyjnych.",
+      "try-2-margherita-1": "Spróbuj: „2 margherity, 1 cola, dodatkowy ser”",
+      "included": "Uwzględnione",
+      "add-item": "Dodaj element"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Przesuń blisko drugiego pilota",
+      "summarize-open-tables-unpaid": "Podsumuj otwarte tabele, niezapłacone zamówienia, zatwierdzenia i rozbieżności gotówkowe przed ostatecznym potwierdzeniem."
+    },
+    "errorbanner": {
+      "trace-id": "Identyfikator śledzenia:",
+      "copied": "✓ Skopiowano",
+      "copy": "Kopiuj"
+    },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Drugi pilot restauracji",
+      "missing-required-modifier": "Brak wymaganego modyfikatora:",
+      "apply-proposal": "Zastosuj propozycję",
+      "dismiss": "Odrzuć",
+      "ticket": "Bilet",
+      "m": "m"
+    }
   }
 }

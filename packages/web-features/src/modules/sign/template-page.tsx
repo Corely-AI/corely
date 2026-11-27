@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { Button, EmptyState } from "@corely/ui";
 import { CrudListPageLayout } from "@corely/web-shared/shared/crud/CrudListPageLayout";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
@@ -21,12 +22,14 @@ import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-pro
 import TemplateEditor from "./template-editor";
 
 export default function SignTemplatePage() {
+  const uiCopy = useUiCopy("ui.sign-template-page");
   const { activeWorkspaceId } = useWorkspace();
   const { user } = useAuth();
   const { id } = useParams();
   const { pathname, search } = useLocation();
-  if (!activeWorkspaceId || !user?.activeTenantId)
-    return <p>Select a workspace to prepare templates.</p>;
+  if (!activeWorkspaceId || !user?.activeTenantId) {
+    return <p>{uiCopy("select-a-workspace-to")}</p>;
+  }
   return (
     <WorkspaceTemplates
       key={JSON.stringify([user.userId, user.activeTenantId, activeWorkspaceId, pathname, search])}
@@ -81,7 +84,7 @@ export function WorkspaceTemplates({
           await apiClient.request(endpoint + "/" + id + "/source", { headers }, options)
         );
         if (active) {
-          if (source.base64)
+          if (source.base64) {
             setSourceFile(
               new File(
                 [Uint8Array.from(atob(source.base64), (char) => char.charCodeAt(0))],
@@ -89,6 +92,7 @@ export function WorkspaceTemplates({
                 { type: "application/pdf" }
               )
             );
+          }
           revision.current = draft.revision;
           setInitial(draft);
         }
@@ -106,10 +110,14 @@ export function WorkspaceTemplates({
           setNext(page.nextCursor);
         }
       }
-      if (active) setReady(true);
+      if (active) {
+        setReady(true);
+      }
     }
     void open().catch((reason) => {
-      if (active) setError(reason instanceof Error ? reason.message : "Could not load templates.");
+      if (active) {
+        setError(reason instanceof Error ? reason.message : "Could not load templates.");
+      }
     });
     return () => {
       active = false;
@@ -188,13 +196,16 @@ export function WorkspaceTemplates({
   const [archiving, setArchiving] = useState("");
   const archiveKey = useRef<{ target: string; key: string }>();
   async function archive(item: SignDraftSummary) {
-    if (!window.confirm("Archive " + item.title + "? Published versions will be retained.")) return;
+    if (!window.confirm("Archive " + item.title + "? Published versions will be retained.")) {
+      return;
+    }
     setArchiving(item.templateId);
     setArchiveError("");
     try {
       const target = item.templateId + "/" + item.revision;
-      if (archiveKey.current?.target !== target)
+      if (archiveKey.current?.target !== target) {
         archiveKey.current = { target, key: crypto.randomUUID() };
+      }
       const updated = SignDraftSchema.parse(
         await apiClient.request(
           endpoint + "/" + item.templateId + "/archive",
@@ -216,7 +227,7 @@ export function WorkspaceTemplates({
       setArchiving("");
     }
   }
-  if (!list && error)
+  if (!list && error) {
     return (
       <section className="space-y-3 p-6">
         <p role="alert">{error}</p>
@@ -225,13 +236,15 @@ export function WorkspaceTemplates({
         </Button>
       </section>
     );
-  if (!list && !ready)
+  }
+  if (!list && !ready) {
     return (
       <p className="p-6 text-muted-foreground" role="status">
         {t("sign.loading")}
       </p>
     );
-  if (!list)
+  }
+  if (!list) {
     return (
       <TemplateEditor
         requestMode={requestMode}
@@ -242,6 +255,7 @@ export function WorkspaceTemplates({
         createRequest={createRequest}
       />
     );
+  }
   return (
     <CrudListPageLayout
       title={t("sign.templates")}
@@ -306,7 +320,6 @@ export function WorkspaceTemplates({
           {t("sign.nextPage")}
         </Link>
       )}
-
     </CrudListPageLayout>
   );
 }

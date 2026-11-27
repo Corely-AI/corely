@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -36,6 +38,7 @@ import {
 } from "@corely/ui";
 
 export function TenantsListPage() {
+  const uiCopy = useUiCopy("ui.platform-tenant-management-tenantslistpage");
   const { t } = useTranslation();
   const { data: effectivePermissions } = useEffectivePermissions();
   const canOpenTenant =
@@ -136,7 +139,7 @@ export function TenantsListPage() {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>Failed to load tenants. Please try again.</AlertDescription>
+        <AlertDescription>{uiCopy("failed-to-load-tenants")}</AlertDescription>
       </Alert>
     );
   }
@@ -192,7 +195,7 @@ export function TenantsListPage() {
                 <TableHead>{t("common.name")}</TableHead>
                 <TableHead>{t("tenants.slug")}</TableHead>
                 <TableHead>{t("tenants.status")}</TableHead>
-                <TableHead>Plan</TableHead>
+                <TableHead>{uiCopy("plan")}</TableHead>
                 <TableHead>{t("tenants.tenantId")}</TableHead>
                 <TableHead className="text-right">{t("tenants.actions")}</TableHead>
               </TableRow>
@@ -224,11 +227,14 @@ export function TenantsListPage() {
                             {tenant.plan}
                           </span>
                           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                            {tenant.planStatus || "active"} • {tenant.billingMethod || "stripe"}
+                            {tenant.planStatus || uiCopy("active")} •{" "}
+                            {tenant.billingMethod || uiCopy("stripe")}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm italic">No plan</span>
+                        <span className="text-muted-foreground text-sm italic">
+                          {uiCopy("no-plan")}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground font-mono">
@@ -276,7 +282,7 @@ export function TenantsListPage() {
                               setSelectedTenantForPlan(tenant);
                               setIsPlanModalOpen(true);
                             }}
-                            title="Manage Plan"
+                            title={uiCopy("manage-plan")}
                             data-testid={`manage-plan-${tenant.id}`}
                           >
                             <CreditCard className="h-4 w-4 text-primary" />
@@ -302,8 +308,10 @@ export function TenantsListPage() {
               <PaginationContent>
                 <PaginationItem>
                   <span className="text-sm text-muted-foreground mr-4">
-                    Page {pageInfo.page} of{" "}
-                    {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    <PaginationSummary
+                      page={pageInfo.page}
+                      pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    />
                   </span>
                 </PaginationItem>
                 <PaginationItem>

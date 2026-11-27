@@ -162,11 +162,11 @@
     "skip": "Перейти к приложениям"
   },
   "pt-PT": {
-    "title": "Todos os aplicativos",
+    "title": "Todas as aplicações",
     "intro": "O seu espaço de trabalho conectado.",
     "subtitle": "Abra as ferramentas disponíveis para a sua equipa.",
-    "manage": "Gerir aplicativos de equipe",
-    "accessNote": "O seu administrador gere aplicativos de equipe. O acesso pode variar de acordo com o espaço de trabalho.",
+    "manage": "Gerir aplicações da equipa",
+    "accessNote": "O seu administrador gere as aplicações da equipa. O acesso pode variar consoante o espaço de trabalho.",
     "search": "Pesquisar aplicações",
     "category": "Categoria",
     "all": "Todas as categorias",

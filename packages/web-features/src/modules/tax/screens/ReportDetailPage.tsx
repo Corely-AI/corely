@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import { ArrowLeft, Download, FileText } from "lucide-react";
 import { formatMoney, formatDueDate } from "@corely/web-shared/shared/lib/formatters";
 
 export default function ReportDetailPage() {
+  const uiCopy = useUiCopy("ui.tax-reportdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -31,9 +33,9 @@ export default function ReportDetailPage() {
   if (!report) {
     return (
       <div className="p-6 lg:p-8">
-        <div className="text-center text-muted-foreground">Report not found</div>
+        <div className="text-center text-muted-foreground">{uiCopy("report-not-found")}</div>
         <Button onClick={() => navigate(-1)} className="mt-4">
-          Go Back
+          {uiCopy("go-back")}
         </Button>
       </div>
     );
@@ -51,7 +53,9 @@ export default function ReportDetailPage() {
           <div>
             <h1 className="text-2xl font-bold">{humanizeReportType(report.type)}</h1>
             <p className="text-muted-foreground">
-              {report.periodLabel} • Due {formatDueDate(report.dueDate, locale)}
+              {report.periodLabel}
+              {" " + uiCopy("due") + " "}
+              {formatDueDate(report.dueDate, locale)}
             </p>
           </div>
         </div>
@@ -66,14 +70,16 @@ export default function ReportDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Amount Due</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {uiCopy("amount-due")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {formatMoney(report.amountFinalCents ?? report.amountEstimatedCents ?? 0, locale)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {report.status === "PAID" ? "Paid" : "To be paid"}
+              {report.status === "PAID" ? uiCopy("paid") : uiCopy("to-be-paid")}
             </p>
           </CardContent>
         </Card>
@@ -83,12 +89,12 @@ export default function ReportDetailPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Lines
+                {uiCopy("total-lines")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{report.lines?.length ?? 0}</div>
-              <p className="text-xs text-muted-foreground">Transactions</p>
+              <p className="text-xs text-muted-foreground">{uiCopy("transactions")}</p>
             </CardContent>
           </Card>
         )}
@@ -96,7 +102,7 @@ export default function ReportDetailPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Report Details</CardTitle>
+          <CardTitle>{uiCopy("report-details")}</CardTitle>
         </CardHeader>
         <CardContent>
           {report.lines && report.lines.length > 0 ? (
@@ -104,10 +110,10 @@ export default function ReportDetailPage() {
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
                   <tr>
-                    <th className="px-4 py-3">Section</th>
-                    <th className="px-4 py-3">Label</th>
-                    <th className="px-4 py-3 text-right">Net Amount</th>
-                    <th className="px-4 py-3 text-right">Tax Amount</th>
+                    <th className="px-4 py-3">{uiCopy("section")}</th>
+                    <th className="px-4 py-3">{uiCopy("label")}</th>
+                    <th className="px-4 py-3 text-right">{uiCopy("net-amount")}</th>
+                    <th className="px-4 py-3 text-right">{uiCopy("tax-amount")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -132,7 +138,7 @@ export default function ReportDetailPage() {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-8 w-8 mx-auto mb-2 opacity-20" />
-              <p>No detailed lines available for this report.</p>
+              <p>{uiCopy("no-detailed-lines-available")}</p>
             </div>
           )}
         </CardContent>
@@ -142,7 +148,7 @@ export default function ReportDetailPage() {
       {report.meta && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Debug Metadata</CardTitle>
+            <CardTitle className="text-sm">{uiCopy("debug-metadata")}</CardTitle>
           </CardHeader>
           <CardContent>
             <pre className="text-xs bg-muted p-4 rounded overflow-auto">

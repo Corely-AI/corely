@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useRef, useState } from "react";
 import { AppDependencyConflictSchema, type AppCatalogItem } from "@corely/contracts";
 import {
@@ -31,6 +32,7 @@ interface TenantAppsTabProps {
 }
 
 export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: TenantAppsTabProps) {
+  const uiCopy = useUiCopy("ui.platform-tenant-management-tenantappstab");
   const [pending, setPending] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<{
     app: AppCatalogItem;
@@ -107,10 +109,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">
-        Enable the apps your team needs. Access also depends on each workspace and user’s
-        permissions.
-      </p>
+      <p className="text-sm text-muted-foreground">{uiCopy("enable-the-apps-your")}</p>
       {error && (
         <p role="alert" className="rounded-md border border-destructive p-4">
           {error}
@@ -136,21 +135,29 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                   <CardTitle className="min-w-0 break-words text-lg">{app.name}</CardTitle>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">
-                      {activeInstall ? "Active installation" : "No active installation"}
+                      {activeInstall
+                        ? uiCopy("active-installation")
+                        : uiCopy("no-active-installation")}
                     </Badge>
                     <Badge variant={enabled ? "default" : "outline"}>
-                      {enabled ? "Team enabled" : "Team disabled"}
+                      {enabled ? uiCopy("team-enabled") : uiCopy("team-disabled")}
                     </Badge>
                   </div>
                 </div>
-                <CardDescription>v{app.version}</CardDescription>
+                <CardDescription>
+                  {uiCopy("v")}
+                  {app.version}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {app.description && (
                   <p className="text-sm text-muted-foreground">{app.description}</p>
                 )}
                 {app.dependencies.length > 0 && (
-                  <p className="text-sm">Requires: {app.dependencies.map(name).join(", ")}</p>
+                  <p className="text-sm">
+                    {uiCopy("requires") + " "}
+                    {app.dependencies.map(name).join(", ")}
+                  </p>
                 )}
                 {configured && policy.hideDisableAction ? (
                   <p className="text-sm text-muted-foreground">{policy.reason}</p>
@@ -171,7 +178,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                       }
                     }}
                   >
-                    {pending === app.appId ? "Saving…" : `${action} app`}
+                    {pending === app.appId ? uiCopy("saving") : `${action} app`}
                   </Button>
                 )}
                 {enabled && !activeInstall && !policy.hideDisableAction && (
@@ -184,7 +191,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                       void toggle(app, false);
                     }}
                   >
-                    Disable for team
+                    {uiCopy("disable-for-team")}
                   </Button>
                 )}
               </CardContent>
@@ -206,13 +213,13 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
               {confirmation?.action} {confirmation?.app.name}?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This also enables required apps: {confirmation?.app.dependencies.map(name).join(", ")}
-              . Required apps and their dependencies will be enabled for this team. User permissions
-              remain unchanged.
+              {uiCopy("this-also-enables-required") + " "}
+              {confirmation?.app.dependencies.map(name).join(", ")}
+              {uiCopy("required-apps-and-their")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{uiCopy("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const app = confirmation?.app;
@@ -222,7 +229,8 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                 }
               }}
             >
-              {confirmation?.action} with dependencies
+              {confirmation?.action}
+              {" " + uiCopy("with-dependencies")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -238,15 +246,18 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Disable {disableConfirmation?.app.name} and dependent apps?
+              {uiCopy("disable") + " "}
+              {disableConfirmation?.app.name}
+              {" " + uiCopy("and-dependent-apps")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Also disables: {disableConfirmation?.dependents.map(name).join(", ")}. Additional
-              dependent apps require another confirmation. Business records are retained.
+              {uiCopy("also-disables") + " "}
+              {disableConfirmation?.dependents.map(name).join(", ")}
+              {uiCopy("additional-dependent-apps-require")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel ref={disableCancelRef}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel ref={disableCancelRef}>{uiCopy("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={pending !== null}
               onClick={() => {
@@ -257,7 +268,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                 }
               }}
             >
-              Disable app and dependents
+              {uiCopy("disable-app-and-dependents")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

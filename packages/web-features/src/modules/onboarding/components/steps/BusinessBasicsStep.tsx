@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import {
   Button,
@@ -32,6 +33,7 @@ type FormValues = {
 };
 
 export const BusinessBasicsStep = ({ config, locale, onAdvance, isSaving }: StepComponentProps) => {
+  const uiCopy = useUiCopy("ui.onboarding-steps-businessbasicsstep");
   const { t } = useTranslation();
   const analytics = useOnboardingAnalytics();
 
@@ -196,13 +198,13 @@ export const BusinessBasicsStep = ({ config, locale, onAdvance, isSaving }: Step
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border/50 rounded-2xl backdrop-blur-xl p-2">
                   <SelectItem value="EUR" className="rounded-xl px-4 py-3">
-                    EUR (€)
+                    {uiCopy("eur")}
                   </SelectItem>
                   <SelectItem value="USD" className="rounded-xl px-4 py-3">
-                    USD ($)
+                    {uiCopy("usd")}
                   </SelectItem>
                   <SelectItem value="VND" className="rounded-xl px-4 py-3">
-                    VND (₫)
+                    {uiCopy("vnd")}
                   </SelectItem>
                 </SelectContent>
               </Select>

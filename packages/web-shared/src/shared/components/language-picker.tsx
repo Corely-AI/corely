@@ -23,18 +23,19 @@ export function LanguagePicker({
   compact?: boolean;
 }) {
   const label = corelyLocaleDetails[locale].label;
+  const languageCode = locale.toUpperCase();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           className={className ?? "min-h-11 min-w-11 gap-2"}
-          aria-label={label}
+          aria-label={compact ? label : `${languageCode} ${label}`}
         >
           <span aria-hidden="true" className="text-lg leading-none">
             <Globe className="h-4 w-4" />
           </span>
-          {!compact && <span>{locale.toUpperCase()}</span>}
+          {!compact && <span>{languageCode}</span>}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-[60vh] w-52 overflow-y-auto">

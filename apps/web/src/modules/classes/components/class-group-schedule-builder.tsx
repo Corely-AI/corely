@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Checkbox,
@@ -50,6 +51,7 @@ export function ClassGroupScheduleBuilder({
   initialPattern,
   onChange,
 }: ClassGroupScheduleBuilderProps) {
+  const uiCopy = useUiCopy("ui.classes-class-group-schedule-builder");
   const [scheduleState, setScheduleState] = useState<ScheduleBuilderState>(() =>
     resolveScheduleState(initialPattern)
   );
@@ -110,7 +112,7 @@ export function ClassGroupScheduleBuilder({
       const parsed = JSON.parse(scheduleState.advancedJson);
       const parsedState = parseSchedulePattern(parsed);
       if (!parsedState) {
-        toast.error("Advanced JSON doesn't match the guided schedule format.");
+        toast.error(uiCopy("advanced-json-doesn-t"));
         return;
       }
       setScheduleState((prev) => ({
@@ -119,7 +121,7 @@ export function ClassGroupScheduleBuilder({
         mode: "guided",
       }));
     } catch {
-      toast.error("Advanced JSON is invalid.");
+      toast.error(uiCopy("advanced-json-is-invalid"));
     }
   };
 
@@ -127,10 +129,8 @@ export function ClassGroupScheduleBuilder({
     <div className="space-y-3">
       <div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/40 px-4 py-3">
         <div>
-          <Label>Recurring schedule</Label>
-          <p className="text-sm text-muted-foreground">
-            Optional. Capture a repeat pattern to plan sessions.
-          </p>
+          <Label>{uiCopy("recurring-schedule")}</Label>
+          <p className="text-sm text-muted-foreground">{uiCopy("optional-capture-a-repeat")}</p>
         </div>
         <Switch
           checked={scheduleState.enabled}
@@ -142,7 +142,7 @@ export function ClassGroupScheduleBuilder({
         <div className="space-y-4 rounded-md border border-border/60 p-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Input mode</Label>
+              <Label>{uiCopy("input-mode")}</Label>
               <Select
                 value={scheduleState.mode}
                 onValueChange={(value) => handleScheduleModeChange(value as ScheduleMode)}
@@ -151,8 +151,8 @@ export function ClassGroupScheduleBuilder({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="guided">Guided builder</SelectItem>
-                  <SelectItem value="advanced">Advanced JSON</SelectItem>
+                  <SelectItem value="guided">{uiCopy("guided-builder")}</SelectItem>
+                  <SelectItem value="advanced">{uiCopy("advanced-json")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -162,7 +162,7 @@ export function ClassGroupScheduleBuilder({
             <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Starts on</Label>
+                  <Label>{uiCopy("starts-on")}</Label>
                   <Input
                     type="date"
                     value={scheduleState.startsOn}
@@ -170,7 +170,7 @@ export function ClassGroupScheduleBuilder({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Time</Label>
+                  <Label>{uiCopy("time")}</Label>
                   <Input
                     type="time"
                     value={scheduleState.time}
@@ -181,7 +181,7 @@ export function ClassGroupScheduleBuilder({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Repeats</Label>
+                  <Label>{uiCopy("repeats")}</Label>
                   <Select
                     value={scheduleState.frequency}
                     onValueChange={(value) =>
@@ -192,15 +192,15 @@ export function ClassGroupScheduleBuilder({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="DAILY">Daily</SelectItem>
-                      <SelectItem value="WEEKLY">Weekly</SelectItem>
-                      <SelectItem value="MONTHLY">Monthly</SelectItem>
-                      <SelectItem value="YEARLY">Yearly</SelectItem>
+                      <SelectItem value="DAILY">{uiCopy("daily")}</SelectItem>
+                      <SelectItem value="WEEKLY">{uiCopy("weekly")}</SelectItem>
+                      <SelectItem value="MONTHLY">{uiCopy("monthly")}</SelectItem>
+                      <SelectItem value="YEARLY">{uiCopy("yearly")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Every</Label>
+                  <Label>{uiCopy("every")}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -210,7 +210,7 @@ export function ClassGroupScheduleBuilder({
                     />
                     <span className="text-sm text-muted-foreground">
                       {getFrequencyUnit(scheduleState.frequency)}
-                      {scheduleState.interval === 1 ? "" : "s"}
+                      {scheduleState.interval === 1 ? "" : uiCopy("s")}
                     </span>
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export function ClassGroupScheduleBuilder({
 
               {scheduleState.frequency === "WEEKLY" ? (
                 <div className="space-y-2">
-                  <Label>Days of week</Label>
+                  <Label>{uiCopy("days-of-week")}</Label>
                   <div className="flex flex-wrap gap-2">
                     {WEEKDAYS.map((day) => (
                       <label
@@ -238,7 +238,7 @@ export function ClassGroupScheduleBuilder({
 
               {scheduleState.frequency === "MONTHLY" ? (
                 <div className="space-y-2">
-                  <Label>Monthly pattern</Label>
+                  <Label>{uiCopy("monthly-pattern")}</Label>
                   <RadioGroup
                     value={scheduleState.monthlyMode}
                     onValueChange={(value) => updateSchedule({ monthlyMode: value as MonthlyMode })}
@@ -246,7 +246,7 @@ export function ClassGroupScheduleBuilder({
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <RadioGroupItem value="DAY_OF_MONTH" id="monthly-day-of-month" />
-                      <Label htmlFor="monthly-day-of-month">On day</Label>
+                      <Label htmlFor="monthly-day-of-month">{uiCopy("on-day")}</Label>
                       <Input
                         type="number"
                         min="1"
@@ -261,7 +261,7 @@ export function ClassGroupScheduleBuilder({
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <RadioGroupItem value="WEEKDAY_OF_MONTH" id="monthly-weekday-of-month" />
-                      <Label htmlFor="monthly-weekday-of-month">On the</Label>
+                      <Label htmlFor="monthly-weekday-of-month">{uiCopy("on-the")}</Label>
                       <Select
                         value={String(scheduleState.monthlyWeek)}
                         onValueChange={(value) => updateSchedule({ monthlyWeek: Number(value) })}
@@ -304,7 +304,7 @@ export function ClassGroupScheduleBuilder({
               {scheduleState.frequency === "YEARLY" ? (
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Month</Label>
+                    <Label>{uiCopy("month")}</Label>
                     <Select
                       value={String(scheduleState.yearlyMonth)}
                       onValueChange={(value) => updateSchedule({ yearlyMonth: Number(value) })}
@@ -322,7 +322,7 @@ export function ClassGroupScheduleBuilder({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Day</Label>
+                    <Label>{uiCopy("day")}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -335,7 +335,7 @@ export function ClassGroupScheduleBuilder({
               ) : null}
 
               <div className="space-y-2">
-                <Label>Ends</Label>
+                <Label>{uiCopy("ends")}</Label>
                 <RadioGroup
                   value={scheduleState.endsType}
                   onValueChange={(value) => updateSchedule({ endsType: value as ScheduleEndsType })}
@@ -343,11 +343,11 @@ export function ClassGroupScheduleBuilder({
                 >
                   <div className="flex items-center gap-2">
                     <RadioGroupItem value="NEVER" id="ends-never" />
-                    <Label htmlFor="ends-never">Never</Label>
+                    <Label htmlFor="ends-never">{uiCopy("never")}</Label>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <RadioGroupItem value="ON_DATE" id="ends-on-date" />
-                    <Label htmlFor="ends-on-date">On date</Label>
+                    <Label htmlFor="ends-on-date">{uiCopy("on-date")}</Label>
                     <Input
                       type="date"
                       className="w-44"
@@ -358,7 +358,7 @@ export function ClassGroupScheduleBuilder({
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <RadioGroupItem value="AFTER" id="ends-after" />
-                    <Label htmlFor="ends-after">After</Label>
+                    <Label htmlFor="ends-after">{uiCopy("after")}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -367,27 +367,28 @@ export function ClassGroupScheduleBuilder({
                       value={scheduleState.endsAfter}
                       onChange={(e) => updateSchedule({ endsAfter: Number(e.target.value) || 1 })}
                     />
-                    <span className="text-sm text-muted-foreground">occurrences</span>
+                    <span className="text-sm text-muted-foreground">{uiCopy("occurrences")}</span>
                   </div>
                 </RadioGroup>
               </div>
 
               {scheduleSummary ? (
-                <p className="text-sm text-muted-foreground">Summary: {scheduleSummary}</p>
+                <p className="text-sm text-muted-foreground">
+                  {uiCopy("summary") + " "}
+                  {scheduleSummary}
+                </p>
               ) : null}
             </div>
           ) : (
             <div className="space-y-2">
-              <Label>Schedule JSON</Label>
+              <Label>{uiCopy("schedule-json")}</Label>
               <Textarea
                 value={scheduleState.advancedJson}
                 onChange={(e) => updateSchedule({ advancedJson: e.target.value })}
-                placeholder='{"recurrence":{"frequency":"WEEKLY","interval":1,"daysOfWeek":["MO","WE"]},"time":"16:00"}'
+                placeholder={uiCopy("recurrence-frequency-weekly-interval")}
                 rows={6}
               />
-              <p className="text-sm text-muted-foreground">
-                Advanced format is stored as-is. Switch back to guided mode to simplify.
-              </p>
+              <p className="text-sm text-muted-foreground">{uiCopy("advanced-format-is-stored")}</p>
             </div>
           )}
 

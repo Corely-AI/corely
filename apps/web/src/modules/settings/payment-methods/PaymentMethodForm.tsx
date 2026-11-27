@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,6 +53,7 @@ export function PaymentMethodForm({
   bankAccounts,
   onSuccess,
 }: PaymentMethodFormProps) {
+  const uiCopy = useUiCopy("ui.settings-payment-methods-paymentmethodform");
   const createMutation = useCreatePaymentMethod();
   const [isCreateBankAccountOpen, setIsCreateBankAccountOpen] = React.useState(false);
   const [availableBankAccounts, setAvailableBankAccounts] = React.useState<BankAccountDto[]>(
@@ -116,7 +118,7 @@ export function PaymentMethodForm({
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Payment Type</FormLabel>
+                <FormLabel>{uiCopy("payment-type")}</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger>
@@ -124,11 +126,11 @@ export function PaymentMethodForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                    <SelectItem value="BANK_TRANSFER">{uiCopy("bank-transfer")}</SelectItem>
                     <SelectItem value="PAYPAL">PayPal</SelectItem>
-                    <SelectItem value="CASH">Cash</SelectItem>
-                    <SelectItem value="CARD">Card Payment</SelectItem>
-                    <SelectItem value="OTHER">Other</SelectItem>
+                    <SelectItem value="CASH">{uiCopy("cash")}</SelectItem>
+                    <SelectItem value="CARD">{uiCopy("card-payment")}</SelectItem>
+                    <SelectItem value="OTHER">{uiCopy("other")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -141,9 +143,9 @@ export function PaymentMethodForm({
             name="label"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Label</FormLabel>
+                <FormLabel>{uiCopy("label")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Main Account" {...field} />
+                  <Input placeholder={uiCopy("e-g-main-account")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -157,7 +159,7 @@ export function PaymentMethodForm({
                 name="bankAccountId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bank Account</FormLabel>
+                    <FormLabel>{uiCopy("bank-account")}</FormLabel>
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
@@ -177,14 +179,9 @@ export function PaymentMethodForm({
                       </SelectContent>
                     </Select>
                     {availableBankAccounts.length > 0 ? (
-                      <FormDescription>
-                        Select a bank account for this payment method
-                      </FormDescription>
+                      <FormDescription>{uiCopy("select-a-bank-account")}</FormDescription>
                     ) : (
-                      <FormDescription>
-                        No active bank account found yet. Add one below and it will be selected
-                        automatically.
-                      </FormDescription>
+                      <FormDescription>{uiCopy("no-active-bank-account")}</FormDescription>
                     )}
                     <FormMessage />
                   </FormItem>
@@ -196,7 +193,7 @@ export function PaymentMethodForm({
                 className="w-full"
                 onClick={() => setIsCreateBankAccountOpen(true)}
               >
-                Add Bank Account
+                {uiCopy("add-bank-account")}
               </Button>
             </>
           )}
@@ -208,12 +205,16 @@ export function PaymentMethodForm({
                 name="instructions"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment Instructions</FormLabel>
+                    <FormLabel>{uiCopy("payment-instructions")}</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Enter payment instructions..." {...field} rows={3} />
+                      <Textarea
+                        placeholder={uiCopy("enter-payment-instructions")}
+                        {...field}
+                        rows={3}
+                      />
                     </FormControl>
                     <FormDescription>
-                      Instructions displayed on invoices for this payment method
+                      {uiCopy("instructions-displayed-on-invoices")}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -225,11 +226,11 @@ export function PaymentMethodForm({
                 name="payUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Payment URL (Optional)</FormLabel>
+                    <FormLabel>{uiCopy("payment-url-optional")}</FormLabel>
                     <FormControl>
                       <Input type="url" placeholder="https://..." {...field} />
                     </FormControl>
-                    <FormDescription>Link to payment gateway or payment page</FormDescription>
+                    <FormDescription>{uiCopy("link-to-payment-gateway")}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -242,12 +243,14 @@ export function PaymentMethodForm({
             name="referenceTemplate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reference Template</FormLabel>
+                <FormLabel>{uiCopy("reference-template")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="INV-{invoiceNumber}" {...field} />
+                  <Input placeholder={uiCopy("inv-invoicenumber")} {...field} />
                 </FormControl>
                 <FormDescription>
-                  Use {`{invoiceNumber}`} as placeholder for invoice number
+                  {uiCopy("use") + " "}
+                  {`{invoiceNumber}`}
+                  {" " + uiCopy("as-placeholder-for-invoice")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -255,7 +258,7 @@ export function PaymentMethodForm({
           />
 
           <Button type="submit" disabled={createMutation.isPending} className="w-full">
-            {createMutation.isPending ? "Creating..." : "Create Payment Method"}
+            {createMutation.isPending ? uiCopy("creating") : uiCopy("create-payment-method")}
           </Button>
         </form>
       </Form>
@@ -263,7 +266,7 @@ export function PaymentMethodForm({
       <Dialog open={isCreateBankAccountOpen} onOpenChange={setIsCreateBankAccountOpen}>
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
-            <DialogTitle>Add Bank Account</DialogTitle>
+            <DialogTitle>{uiCopy("add-bank-account")}</DialogTitle>
           </DialogHeader>
           <BankAccountForm
             legalEntityId={legalEntityId}

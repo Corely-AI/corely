@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,6 +40,7 @@ const statusVariant = (status: PortfolioContentStatus) => {
 };
 
 export default function TeamPage() {
+  const uiCopy = useUiCopy("ui.portfolio-teampage");
   const { showcaseId } = useParams<{ showcaseId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -79,7 +82,7 @@ export default function TeamPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => portfolioApi.deleteTeamMember(id),
     onSuccess: async () => {
-      toast.success("Team member deleted");
+      toast.success(uiCopy("team-member-deleted"));
       if (showcaseId) {
         await queryClient.invalidateQueries({
           queryKey: ["portfolio", "team", "list", showcaseId],
@@ -96,7 +99,7 @@ export default function TeamPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search team"
+          placeholder={uiCopy("search-team")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -123,7 +126,7 @@ export default function TeamPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load team"}
+          {(error as Error)?.message || uiCopy("failed-to-load-team")}
         </div>
       ) : null}
     </div>
@@ -136,13 +139,13 @@ export default function TeamPage() {
       disabled={!showcaseId}
     >
       <Plus className="h-4 w-4" />
-      New team member
+      {uiCopy("new-team-member")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Team"
+      title={uiCopy("team")}
       subtitle="Highlight the people behind the work"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -150,12 +153,12 @@ export default function TeamPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading team...</div>
+            <div className="p-8 text-center text-muted-foreground">{uiCopy("loading-team")}</div>
           ) : members.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="No team members yet"
-              description="Add people to show who delivers the work."
+              title={uiCopy("no-team-members-yet")}
+              description={uiCopy("add-people-to-show")}
               action={primaryAction}
             />
           ) : (
@@ -165,16 +168,16 @@ export default function TeamPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Name
+                        {uiCopy("name")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Role
+                        {uiCopy("role")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th />
                     </tr>
@@ -219,7 +222,7 @@ export default function TeamPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -228,7 +231,7 @@ export default function TeamPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -236,7 +239,7 @@ export default function TeamPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>
@@ -253,8 +256,8 @@ export default function TeamPage() {
           }
         }}
         trigger={null}
-        title="Delete team member"
-        description="This will permanently delete the team member."
+        title={uiCopy("delete-team-member")}
+        description={uiCopy("this-will-permanently-delete")}
         isLoading={deleteMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

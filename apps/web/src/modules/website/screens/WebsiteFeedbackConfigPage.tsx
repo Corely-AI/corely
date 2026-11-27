@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +29,7 @@ const DEFAULT_FORM: QaFormState = {
 };
 
 export default function WebsiteFeedbackConfigPage() {
+  const uiCopy = useUiCopy("ui.website-websitefeedbackconfigpage");
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -117,7 +119,7 @@ export default function WebsiteFeedbackConfigPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: qaQueryKey });
-      toast.success("Q&A deleted");
+      toast.success(uiCopy("q-a-deleted"));
     },
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : "Failed to delete Q&A";
@@ -147,12 +149,12 @@ export default function WebsiteFeedbackConfigPage() {
         <div className="flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {uiCopy("back")}
           </Button>
           <div>
-            <div className="text-lg font-semibold">Feedback & Q&A</div>
+            <div className="text-lg font-semibold">{uiCopy("feedback-q-a")}</div>
             <div className="text-sm text-muted-foreground">
-              Configure FAQ content and connect public feedback submissions.
+              {uiCopy("configure-faq-content-and")}
             </div>
           </div>
         </div>
@@ -162,12 +164,9 @@ export default function WebsiteFeedbackConfigPage() {
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium">
             <MessageSquare className="h-4 w-4" />
-            Public feedback endpoint
+            {uiCopy("public-feedback-endpoint")}
           </div>
-          <p className="text-sm text-muted-foreground">
-            Use this endpoint from your public website to submit feedback with optional images and
-            YouTube URLs.
-          </p>
+          <p className="text-sm text-muted-foreground">{uiCopy("use-this-endpoint-from")}</p>
           <pre className="rounded-md bg-muted p-3 text-xs overflow-x-auto">
             {`POST /public/website/feedback
 {
@@ -184,16 +183,16 @@ export default function WebsiteFeedbackConfigPage() {
         <CardContent className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-base font-semibold">Q&A items</div>
+              <div className="text-base font-semibold">{uiCopy("q-a-items")}</div>
               <div className="text-sm text-muted-foreground">
-                Manage FAQ entries displayed by `/public/website/qa`.
+                {uiCopy("manage-faq-entries-displayed")}
               </div>
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Filter locale</Label>
+              <Label>{uiCopy("filter-locale")}</Label>
               <Input
                 value={filterLocale}
                 onChange={(event) => setFilterLocale(event.target.value)}
@@ -201,7 +200,7 @@ export default function WebsiteFeedbackConfigPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Filter status</Label>
+              <Label>{uiCopy("filter-status")}</Label>
               <select
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={filterStatus}
@@ -209,9 +208,9 @@ export default function WebsiteFeedbackConfigPage() {
                   setFilterStatus(event.target.value as "all" | "draft" | "published")
                 }
               >
-                <option value="all">All</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
+                <option value="all">{uiCopy("all")}</option>
+                <option value="published">{uiCopy("published")}</option>
+                <option value="draft">{uiCopy("draft")}</option>
               </select>
             </div>
             <div className="flex items-end">
@@ -222,14 +221,14 @@ export default function WebsiteFeedbackConfigPage() {
                   setForm((prev) => ({ ...DEFAULT_FORM, locale: prev.locale || defaultLocale }));
                 }}
               >
-                New item
+                {uiCopy("new-item")}
               </Button>
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Locale</Label>
+              <Label>{uiCopy("locale")}</Label>
               <Input
                 value={form.locale}
                 onChange={(event) => setForm((prev) => ({ ...prev, locale: event.target.value }))}
@@ -237,7 +236,7 @@ export default function WebsiteFeedbackConfigPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Order</Label>
+              <Label>{uiCopy("order")}</Label>
               <Input
                 type="number"
                 value={form.order}
@@ -247,7 +246,7 @@ export default function WebsiteFeedbackConfigPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Scope</Label>
+              <Label>{uiCopy("scope")}</Label>
               <select
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={form.scope}
@@ -255,12 +254,12 @@ export default function WebsiteFeedbackConfigPage() {
                   setForm((prev) => ({ ...prev, scope: event.target.value as "site" | "page" }))
                 }
               >
-                <option value="site">Site</option>
-                <option value="page">Page</option>
+                <option value="site">{uiCopy("site")}</option>
+                <option value="page">{uiCopy("page")}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Page ID (optional)</Label>
+              <Label>{uiCopy("page-id-optional")}</Label>
               <Input
                 value={form.pageId}
                 disabled={form.scope !== "page"}
@@ -269,7 +268,7 @@ export default function WebsiteFeedbackConfigPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label>{uiCopy("status")}</Label>
               <select
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={form.status}
@@ -280,23 +279,23 @@ export default function WebsiteFeedbackConfigPage() {
                   }))
                 }
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
+                <option value="draft">{uiCopy("draft")}</option>
+                <option value="published">{uiCopy("published")}</option>
               </select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Question</Label>
+            <Label>{uiCopy("question")}</Label>
             <Input
               value={form.question}
               onChange={(event) => setForm((prev) => ({ ...prev, question: event.target.value }))}
-              placeholder="What is your refund policy?"
+              placeholder={uiCopy("what-is-your-refund")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Answer (HTML)</Label>
+            <Label>{uiCopy("answer-html")}</Label>
             <Textarea
               rows={6}
               value={form.answerHtml}
@@ -314,21 +313,21 @@ export default function WebsiteFeedbackConfigPage() {
                   setForm((prev) => ({ ...DEFAULT_FORM, locale: prev.locale }));
                 }}
               >
-                Cancel edit
+                {uiCopy("cancel-edit")}
               </Button>
             ) : null}
             <Button variant="accent" onClick={() => void upsertMutation.mutate()}>
               <Save className="h-4 w-4" />
-              {editingQaId ? "Update item" : "Create item"}
+              {editingQaId ? uiCopy("update-item") : uiCopy("create-item")}
             </Button>
           </div>
 
           <div className="space-y-2">
             {qaQuery.isLoading ? (
-              <div className="text-sm text-muted-foreground">Loading Q&A items...</div>
+              <div className="text-sm text-muted-foreground">{uiCopy("loading-q-a-items")}</div>
             ) : qaItems.length === 0 ? (
               <div className="rounded-md border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
-                No Q&A items found.
+                {uiCopy("no-q-a-items")}
               </div>
             ) : (
               <div className="space-y-2">
@@ -344,8 +343,14 @@ export default function WebsiteFeedbackConfigPage() {
                           {item.status}
                         </Badge>
                         <span>{item.locale}</span>
-                        <span>scope: {item.scope}</span>
-                        <span>order: {item.order}</span>
+                        <span>
+                          {uiCopy("scope-2") + " "}
+                          {item.scope}
+                        </span>
+                        <span>
+                          {uiCopy("order-2") + " "}
+                          {item.order}
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import {
   useInvoicesApi,
   useInvoiceCustomersApi,
@@ -37,6 +38,7 @@ import type { InvoiceStatus } from "@corely/web-shared/shared/types";
 import { Pagination, PaginationContent, PaginationItem } from "@corely/ui";
 
 export default function InvoicesPage() {
+  const uiCopy = useUiCopy("ui.invoices-invoicespage");
   const runtime = useInvoiceRuntime();
   const invoicesApi = useInvoicesApi();
   const customersApi = useInvoiceCustomersApi();
@@ -44,7 +46,7 @@ export default function InvoicesPage() {
   const customerKeys = useInvoiceKeys("customers");
   const { t, i18n } = useTranslation();
   const navigate = useInvoiceNavigate();
-  const locale = i18n.language === "vi" ? "vi-VN" : i18n.language === "de" ? "de-DE" : "en-DE";
+  const locale = i18n.language === "en" ? "en-DE" : t("common.locale");
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -134,11 +136,11 @@ export default function InvoicesPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
-      toast.success("Invoice duplicated");
+      toast.success(uiCopy("invoice-duplicated"));
     },
     onError: (error) => {
       console.error("Duplicate invoice failed", error);
-      toast.error("Failed to duplicate invoice");
+      toast.error(uiCopy("failed-to-duplicate-invoice"));
     },
   });
 
@@ -148,11 +150,11 @@ export default function InvoicesPage() {
     mutationFn: (invoiceId: string) => invoicesApi.cancelInvoice(invoiceId, "Soft delete"),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
-      toast.success("Invoice deleted (soft)");
+      toast.success(uiCopy("invoice-deleted-soft"));
     },
     onError: (error) => {
       console.error("Delete invoice failed", error);
-      toast.error("Failed to delete invoice");
+      toast.error(uiCopy("failed-to-delete-invoice"));
     },
   });
 
@@ -172,13 +174,13 @@ export default function InvoicesPage() {
         window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
         return;
       }
-      toast.info("PDF is being prepared", {
+      toast.info(uiCopy("pdf-is-being-prepared"), {
         description: "We started generating the PDF. Please try again in a moment.",
       });
     },
     onError: (error) => {
       console.error("Download PDF failed", error);
-      toast.error("Failed to download invoice PDF");
+      toast.error(uiCopy("failed-to-download-invoice"));
     },
   });
 
@@ -188,10 +190,10 @@ export default function InvoicesPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
-      toast.success("Invoices deleted");
+      toast.success(uiCopy("invoices-deleted"));
       setSelectedIds(new Set());
     },
-    onError: () => toast.error("Failed to delete invoices"),
+    onError: () => toast.error(uiCopy("failed-to-delete-invoices")),
   });
 
   const toggleSelection = (id: string) => {
@@ -277,7 +279,7 @@ export default function InvoicesPage() {
           description={t("invoices.noInvoicesDescription")}
           action={
             <Button variant="outline" onClick={() => setUrlState({ q: "", filters: [] })}>
-              Clear filters
+              {uiCopy("clear-filters")}
             </Button>
           }
         />
@@ -285,15 +287,17 @@ export default function InvoicesPage() {
         <div className="space-y-4">
           {selectedIds.size > 0 ? (
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40 rounded-t-md">
-              <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+              <div className="text-sm text-muted-foreground">
+                {t("common.selectedCount", { count: selectedIds.size })}
+              </div>
               <ConfirmDeleteDialog
                 trigger={
-                  <Button variant="destructive" size="sm" disabled={bulkDeleteMutation.isPending}>
-                    Delete selected
+                  <Button variant="outline" size="sm" disabled={bulkDeleteMutation.isPending}>
+                    {uiCopy("delete-selected")}
                   </Button>
                 }
-                title="Delete selected invoices"
-                description="This will cancel and soft-delete the selected invoices."
+                title={uiCopy("delete-selected-invoices")}
+                description={uiCopy("this-will-cancel-and")}
                 isLoading={bulkDeleteMutation.isPending}
                 onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
               />
@@ -313,7 +317,7 @@ export default function InvoicesPage() {
                           setSelectedIds(new Set());
                         }
                       }}
-                      aria-label="Select all"
+                      aria-label={uiCopy("select-all")}
                     />
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
@@ -373,7 +377,7 @@ export default function InvoicesPage() {
                           </Badge>
                         </td>
                         <td className="px-4 py-3 text-sm text-right font-medium">
-                          {formatMoney(invoice.totals.totalCents, locale)}
+                          {formatMoney(invoice.totals.totalCents, locale, invoice.currency)}
                         </td>
                         <td className="px-2 py-3">
                           <CrudRowActions

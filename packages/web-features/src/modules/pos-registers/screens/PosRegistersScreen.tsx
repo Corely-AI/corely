@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ const formatOptionalId = (value: string | null) => {
 };
 
 export function PosRegistersScreen() {
+  const uiCopy = useUiCopy("ui.pos-registers-posregistersscreen");
   const { canManageRegisters } = usePosRegisterPermissions();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<RegisterStatusFilter>("ALL");
@@ -63,14 +65,14 @@ export function PosRegistersScreen() {
 
   return (
     <CrudListPageLayout
-      title="POS Registers"
+      title={uiCopy("pos-registers")}
       subtitle="Manage selling stations and device-level shift scopes. Cash drawers stay separate and bind explicitly."
       primaryAction={
         canManageRegisters ? (
           <Button asChild>
             <Link to="/pos/admin/registers/new">
               <Plus className="mr-2 h-4 w-4" />
-              New register
+              {uiCopy("new-register")}
             </Link>
           </Button>
         ) : undefined
@@ -80,7 +82,7 @@ export function PosRegistersScreen() {
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search name, register ID, or cash drawer"
+            placeholder={uiCopy("search-name-register-id")}
             className="w-72"
           />
           <Select
@@ -88,25 +90,23 @@ export function PosRegistersScreen() {
             onValueChange={(value) => setStatus(value as RegisterStatusFilter)}
           >
             <SelectTrigger className="w-44">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={uiCopy("status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All statuses</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="INACTIVE">Inactive</SelectItem>
+              <SelectItem value="ALL">{uiCopy("all-statuses")}</SelectItem>
+              <SelectItem value="ACTIVE">{uiCopy("active")}</SelectItem>
+              <SelectItem value="INACTIVE">{uiCopy("inactive")}</SelectItem>
             </SelectContent>
           </Select>
         </>
       }
     >
       {registersQuery.isLoading ? (
-        <div className="p-6 text-sm text-muted-foreground">Loading POS registers...</div>
+        <div className="p-6 text-sm text-muted-foreground">{uiCopy("loading-pos-registers")}</div>
       ) : registersQuery.isError ? (
-        <div className="p-6 text-sm text-destructive">Failed to load POS registers.</div>
+        <div className="p-6 text-sm text-destructive">{uiCopy("failed-to-load-pos")}</div>
       ) : filteredRegisters.length === 0 ? (
-        <div className="p-6 text-sm text-muted-foreground">
-          No POS registers found for this workspace.
-        </div>
+        <div className="p-6 text-sm text-muted-foreground">{uiCopy("no-pos-registers-found")}</div>
       ) : (
         <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredRegisters.map((register) => (
@@ -124,15 +124,15 @@ export function PosRegistersScreen() {
 
                 <dl className="space-y-2 text-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <dt className="text-muted-foreground">Cash drawer</dt>
+                    <dt className="text-muted-foreground">{uiCopy("cash-drawer")}</dt>
                     <dd>{formatOptionalId(register.cashDrawerId)}</dd>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <dt className="text-muted-foreground">Default warehouse</dt>
+                    <dt className="text-muted-foreground">{uiCopy("default-warehouse")}</dt>
                     <dd>{formatOptionalId(register.defaultWarehouseId)}</dd>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <dt className="text-muted-foreground">Default bank</dt>
+                    <dt className="text-muted-foreground">{uiCopy("default-bank")}</dt>
                     <dd>{formatOptionalId(register.defaultBankAccountId)}</dd>
                   </div>
                 </dl>

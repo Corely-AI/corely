@@ -273,7 +273,7 @@ export const renderPart = (
       const formatCents = (value: unknown): string => {
         const cents = typeof value === "number" ? value : 0;
         const amount = cents / 100;
-        return new Intl.NumberFormat(i18n.language === "de" ? "de-DE" : "en-US", {
+        return new Intl.NumberFormat(i18n.t("common.locale"), {
           style: "currency",
           currency,
         }).format(amount);

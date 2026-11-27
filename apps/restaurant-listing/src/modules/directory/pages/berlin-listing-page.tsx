@@ -1,8 +1,3 @@
-import {
-  BrowserLanguageSelect,
-  useBrowserLocale,
-} from "@corely/web-shared/shared/i18n/browser-locale";
-import messages from "@/shared/i18n/locales/directory.json";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
@@ -14,6 +9,7 @@ import { LoadingState } from "@/shared/ui/loading-state";
 import { directoryQueryKeys } from "../query-keys";
 
 const DISH_OPTIONS = [
+  { value: "", label: "All dishes" },
   { value: "pho", label: "Pho" },
   { value: "bun-bo", label: "Bun Bo" },
   { value: "banh-mi", label: "Banh Mi" },
@@ -21,6 +17,7 @@ const DISH_OPTIONS = [
 ];
 
 const NEIGHBORHOOD_OPTIONS = [
+  { value: "", label: "All neighborhoods" },
   { value: "mitte", label: "Mitte" },
   { value: "friedrichshain", label: "Friedrichshain" },
   { value: "neukolln", label: "Neukoelln" },
@@ -37,8 +34,6 @@ const getPositiveInt = (raw: string | null, fallback: number) => {
 };
 
 export const BerlinListingPage = () => {
-  const locale = useBrowserLocale();
-  const copy = messages[locale];
   const [searchParams, setSearchParams] = useSearchParams();
 
   const queryInput = useMemo<DirectoryRestaurantListQuery>(
@@ -78,45 +73,45 @@ export const BerlinListingPage = () => {
   return (
     <div className="page">
       <header className="hero">
-        <p className="eyebrow">{copy.guide}</p>
-        <BrowserLanguageSelect className="language-select" />
-        <h1>{copy.title}</h1>
-        <p>{copy.intro}</p>
+        <p className="eyebrow">Berlin City Guide</p>
+        <h1>Vietnamese Restaurants in Berlin</h1>
+        <p>
+          Discover places by dish and neighborhood, then send a catering or group inquiry directly
+          to each restaurant.
+        </p>
       </header>
 
-      <section className="filter-bar" aria-label={copy.filters}>
+      <section className="filter-bar" aria-label="Search and filters">
         <label className="field">
-          <span>{copy.search}</span>
+          <span>Search</span>
           <input
             type="search"
             value={queryInput.q ?? ""}
-            placeholder={copy.placeholder}
+            placeholder="Pho, banh mi, vegan..."
             onChange={(event) => setParam("q", event.currentTarget.value)}
           />
         </label>
 
         <label className="field">
-          <span>{copy.dish}</span>
+          <span>Dish</span>
           <select
             value={queryInput.dish ?? ""}
             onChange={(event) => setParam("dish", event.currentTarget.value)}
           >
-            <option value="">{copy.allDishes}</option>
             {DISH_OPTIONS.map((option) => (
               <option key={option.value || "all"} value={option.value}>
-                {option.value === "vegan-pho" ? copy.vegan : option.label}
+                {option.label}
               </option>
             ))}
           </select>
         </label>
 
         <label className="field">
-          <span>{copy.neighborhood}</span>
+          <span>Neighborhood</span>
           <select
             value={queryInput.neighborhood ?? ""}
             onChange={(event) => setParam("neighborhood", event.currentTarget.value)}
           >
-            <option value="">{copy.allNeighborhoods}</option>
             {NEIGHBORHOOD_OPTIONS.map((option) => (
               <option key={option.value || "all"} value={option.value}>
                 {option.label}
@@ -131,7 +126,7 @@ export const BerlinListingPage = () => {
       {listingQuery.error ? (
         <ErrorState
           message={
-            listingQuery.error instanceof Error ? listingQuery.error.message : copy.failedLoad
+            listingQuery.error instanceof Error ? listingQuery.error.message : "Failed to load"
           }
           onRetry={() => listingQuery.refetch()}
         />
@@ -140,7 +135,10 @@ export const BerlinListingPage = () => {
       {!listingQuery.isLoading && !listingQuery.error && listingData ? (
         <>
           {listingData.items.length === 0 ? (
-            <EmptyState title={copy.none} message={copy.tryBroader} />
+            <EmptyState
+              title="No restaurants found"
+              message="Try a broader dish tag or clear one of the filters."
+            />
           ) : (
             <div className="card-grid">
               {listingData.items.map((restaurant) => (
@@ -152,7 +150,7 @@ export const BerlinListingPage = () => {
                   <h2>
                     <Link to={`/berlin/restaurants/${restaurant.slug}`}>{restaurant.name}</Link>
                   </h2>
-                  <p>{restaurant.shortDescription ?? copy.noDescription}</p>
+                  <p>{restaurant.shortDescription ?? "No description available yet."}</p>
                   <div className="tag-row">
                     {restaurant.dishTags.slice(0, 4).map((tag) => (
                       <span key={tag} className="tag">
@@ -173,23 +171,11 @@ export const BerlinListingPage = () => {
               disabled={queryInput.page <= 1}
               onClick={() => setPage(Math.max(1, queryInput.page - 1))}
             >
-              {copy.previous}
+              Previous
             </button>
             <span>
-              {copy.page
-                .replace(
-                  "{{page}}",
-                  new Intl.NumberFormat(locale).format(listingData.pageInfo.page)
-                )
-                .replace(
-                  "{{total}}",
-                  new Intl.NumberFormat(locale).format(
-                    Math.max(
-                      1,
-                      Math.ceil(listingData.pageInfo.total / listingData.pageInfo.pageSize)
-                    )
-                  )
-                )}
+              Page {listingData.pageInfo.page} of{" "}
+              {Math.max(1, Math.ceil(listingData.pageInfo.total / listingData.pageInfo.pageSize))}
             </span>
             <button
               type="button"
@@ -197,7 +183,7 @@ export const BerlinListingPage = () => {
               disabled={!listingData.pageInfo.hasNextPage}
               onClick={() => setPage(queryInput.page + 1)}
             >
-              {copy.next}
+              Next
             </button>
           </div>
         </>

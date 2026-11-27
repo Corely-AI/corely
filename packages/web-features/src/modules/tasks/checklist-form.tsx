@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useRef, useState, useEffect, type FormEvent } from "react";
 import { Button, Input } from "@corely/ui";
 import {
@@ -35,6 +36,7 @@ export function ChecklistForm({
   onSave: (plan: PublishChecklist) => void;
   onCancel: () => void;
 }) {
+  const uiCopy = useUiCopy("ui.tasks-checklist-form");
   const previous = template?.plans.at(-1);
   const [zone, setZone] = useState(
     template?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -214,7 +216,7 @@ export function ChecklistForm({
               disabled={steps.length === 1}
               onClick={() => setSteps(steps.filter((s) => s.id !== step.id))}
             >
-              ×
+              {uiCopy("message")}
             </Button>
           </div>
         ))}

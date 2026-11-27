@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, Loader2, Mail, Plug } from "lucide-react";
@@ -30,6 +31,7 @@ const readConfigString = (config: Record<string, unknown>, key: string): string 
 };
 
 export default function CrmEmailSettingsPage() {
+  const uiCopy = useUiCopy("ui.crm-crmemailsettingspage");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -276,8 +278,8 @@ export default function CrmEmailSettingsPage() {
         <CardContent className="space-y-2">
           <code className="block text-xs rounded bg-muted px-3 py-2 break-all">{webhookUrl}</code>
           <p className="text-xs text-muted-foreground">
-            {t("crm.emailSettings.tenantResolution")} <code>?tenantId=&lt;tenant-id&gt;</code> if
-            needed.
+            {t("crm.emailSettings.tenantResolution")} <code>?tenantId=&lt;tenant-id&gt;</code>
+            {" " + uiCopy("if-needed")}
           </p>
         </CardContent>
       </Card>
@@ -292,7 +294,7 @@ export default function CrmEmailSettingsPage() {
             <li>{t("crm.emailSettings.guide.step1")}</li>
             <li>{t("crm.emailSettings.guide.step2")}</li>
             <li>
-              {t("crm.emailSettings.guide.step3")} <code>email.received</code>.
+              {t("crm.emailSettings.guide.step3")} <code>{uiCopy("email-received")}</code>.
             </li>
             <li>{t("crm.emailSettings.guide.step4")}</li>
           </ol>

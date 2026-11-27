@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import type { PermissionGroup } from "@corely/contracts";
 import { Button } from "@corely/ui";
@@ -20,6 +21,7 @@ export const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
   onChange,
   readOnly = false,
 }) => {
+  const uiCopy = useUiCopy("ui.settings-rolepermissionseditor");
   const [activeGroupId, setActiveGroupId] = useState(catalog[0]?.id ?? "");
   const [search, setSearch] = useState("");
 
@@ -84,7 +86,7 @@ export const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
       <div className="rounded-lg border bg-card">
         <div className="border-b px-4 py-3">
-          <div className="text-sm font-medium">Groups</div>
+          <div className="text-sm font-medium">{uiCopy("groups")}</div>
         </div>
         <ScrollArea className="h-[420px]">
           <div className="p-2 space-y-1">
@@ -118,14 +120,15 @@ export const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
       <div className="rounded-lg border bg-card">
         <div className="border-b px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-sm font-medium">Permissions</div>
+            <div className="text-sm font-medium">{uiCopy("permissions")}</div>
             <div className="text-xs text-muted-foreground">
-              {selectedCount} / {totalCount} permissions enabled
+              {selectedCount} / {totalCount}
+              {" " + uiCopy("permissions-enabled")}
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Input
-              placeholder="Search permissions"
+              placeholder={uiCopy("search-permissions")}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="sm:w-64"
@@ -136,7 +139,7 @@ export const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
               onClick={toggleGroup}
               disabled={!activeGroup || readOnly}
             >
-              Toggle group
+              {uiCopy("toggle-group")}
             </Button>
           </div>
         </div>
@@ -160,7 +163,7 @@ export const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
                     <span className="font-medium">{permission.label}</span>
                     {permission.danger && (
                       <Badge variant="destructive" className="text-[10px] uppercase">
-                        Sensitive
+                        {uiCopy("sensitive")}
                       </Badge>
                     )}
                   </span>

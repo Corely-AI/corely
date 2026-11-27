@@ -317,16 +317,8 @@
     "syncSnapshotTitle": "Sincronizar instantánea",
     "unknownUser": "Usuario desconocido",
     "workspaceBadge": "WS{{id}}",
-    "layoutMode": {
-      "auto": "Automático",
-      "phone": "Teléfono",
-      "tablet": "tableta"
-    },
-    "languages": {
-      "en": "ingles",
-      "de": "alemán",
-      "vi": "Tiếng Việt"
-    }
+    "layoutMode": { "auto": "Automático", "phone": "Teléfono", "tablet": "tableta" },
+    "languages": { "en": "ingles", "de": "alemán", "vi": "Tiếng Việt" }
   },
   "kiosk": {
     "brand": "Registro Corely",
@@ -420,5 +412,70 @@
     "online": "En línea",
     "queue": "Cola {{count}}",
     "syncing": "Sincronización"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Seleccione un registro primero",
+      "restaurant-pos-uses-the": "El POS del restaurante utiliza el mismo contexto de registro y turno que el flujo principal del POS.",
+      "open-a-shift-first": "Abrir un turno primero",
+      "restaurant-tables-can-only": "Las mesas del restaurante sólo se pueden abrir mientras haya un turno de caja activo.",
+      "restaurant-floor": "Piso del restaurante",
+      "open-and-resume-table": "Abrir y reanudar sesiones de mesa desde el mapa del comedor.",
+      "floor-plan-copilot": "Copiloto de planta",
+      "summarize-occupied-dirty-or": "Resuma las mesas ocupadas, sucias o bloqueadas sin interrumpir el uso manual del piso.",
+      "loading-floor-plan": "Cargando plano de planta…",
+      "seats": "· asientos",
+      "tap-to-resume-check": "Toque para reanudar la verificación"
+    },
+    "main-settings": {
+      "workspace": "Espacio de trabajo",
+      "workspace-id": "ID del espacio de trabajo",
+      "user-id": "ID de usuario"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "Pago",
+      "load-the-table-order": "Cargue el pedido de la mesa antes de realizar el pago.",
+      "payment-close": "Pago / Cerrar",
+      "settle-table": "arreglar la mesa",
+      "send-all-draft-items": "Envíe todos los artículos borrador a la cocina antes de recibir el pago.",
+      "this-order-has-already": "Esta orden ya ha sido liquidada.",
+      "phase-1-keeps-settlement": "La fase 1 simplifica la liquidación: efectivo exacto o marcador de posición de captura de tarjeta única.",
+      "send-items-to-kitchen": "Enviar artículos a la cocina.",
+      "cash": "efectivo",
+      "card": "tarjeta"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Orden de la mesa",
+      "loading-table": "mesa de carga",
+      "opening-or-resuming-the": "Abrir o reanudar la tabla seleccionada.",
+      "search-menu-items": "Buscar elementos del menú",
+      "current-order": "Orden actual",
+      "add-menu-items-to": "Agregue elementos del menú para iniciar la verificación.",
+      "no-modifiers": "Sin modificadores",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
+      "total": "totales",
+      "send-to-kitchen": "enviar a la cocina",
+      "take-payment": "aceptar pago",
+      "order-copilot": "Orden copiloto",
+      "parse-order-instructions-into": "Analice las instrucciones de pedido en tarjetas de propuesta explícitas. Aplicar todavía usa los comandos normales del restaurante.",
+      "try-2-margherita-1": "Prueba: \"2 margaritas, 1 coca cola, queso extra\"",
+      "included": "Incluido",
+      "add-item": "Agregar artículo"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Copiloto de cierre de turnos",
+      "summarize-open-tables-unpaid": "Resuma las tablas abiertas, los pedidos impagos, las aprobaciones y la variación de efectivo antes de la confirmación final."
+    },
+    "errorbanner": { "trace-id": "ID de seguimiento:", "copied": "✓ Copiado", "copy": "Copiar" },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Copiloto de restaurante",
+      "missing-required-modifier": "Modificador requerido faltante:",
+      "apply-proposal": "Aplicar propuesta",
+      "dismiss": "Descartar",
+      "ticket": "Boleto",
+      "m": "m"
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { persistFocusedLocale } from "@corely/web-shared/session/focused-locale";
 import { corelyLocaleDetails, corelyLocales, type CorelyLocale } from "@corely/contracts";
 import React, { useMemo } from "react";
@@ -15,6 +16,7 @@ import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export default function SettingsPage() {
+  const uiCopy = useUiCopy("ui.settings-settingspage");
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useThemeStore();
   const db = getDb();
@@ -76,24 +78,24 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Tenant</CardTitle>
+          <CardTitle>{uiCopy("tenant")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Tenant ID</Label>
+              <Label>{uiCopy("tenant-id")}</Label>
               <Input
                 value={tenantIdValue}
-                placeholder="Not available"
+                placeholder={uiCopy("not-available")}
                 readOnly
                 className="bg-muted/40"
               />
             </div>
             <div>
-              <Label>Tenant name</Label>
+              <Label>{uiCopy("tenant-name")}</Label>
               <Input
                 value={tenantNameValue}
-                placeholder="Not available"
+                placeholder={uiCopy("not-available")}
                 readOnly
                 className="bg-muted/40"
               />
@@ -149,51 +151,51 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Module Settings</CardTitle>
+          <CardTitle>{uiCopy("module-settings")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="font-medium text-foreground">Classes</div>
+              <div className="font-medium text-foreground">{uiCopy("classes")}</div>
               <div className="text-sm text-muted-foreground">
-                Configure billing strategy for class invoices.
+                {uiCopy("configure-billing-strategy-for")}
               </div>
             </div>
             <Button asChild variant="outline">
-              <Link to="/settings/classes">Open</Link>
+              <Link to="/settings/classes">{uiCopy("open")}</Link>
             </Button>
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="font-medium text-foreground">Engagement Templates</div>
+              <div className="font-medium text-foreground">{uiCopy("engagement-templates")}</div>
               <div className="text-sm text-muted-foreground">
-                Manage reusable email and messaging templates for CRM channels.
+                {uiCopy("manage-reusable-email-and")}
               </div>
             </div>
             <Button asChild variant="outline">
-              <Link to="/settings/engagement/templates">Open</Link>
+              <Link to="/settings/engagement/templates">{uiCopy("open")}</Link>
             </Button>
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="font-medium text-foreground">Dimensions</div>
+              <div className="font-medium text-foreground">{uiCopy("dimensions")}</div>
               <div className="text-sm text-muted-foreground">
-                Manage reporting segments for expenses and parties.
+                {uiCopy("manage-reporting-segments-for")}
               </div>
             </div>
             <Button asChild variant="outline">
-              <Link to="/settings/custom-attributes/dimensions">Open</Link>
+              <Link to="/settings/custom-attributes/dimensions">{uiCopy("open")}</Link>
             </Button>
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="font-medium text-foreground">Custom Fields</div>
+              <div className="font-medium text-foreground">{uiCopy("custom-fields")}</div>
               <div className="text-sm text-muted-foreground">
-                Define custom field schemas and indexing per entity type.
+                {uiCopy("define-custom-field-schemas")}
               </div>
             </div>
             <Button asChild variant="outline">
-              <Link to="/settings/custom-attributes/custom-fields">Open</Link>
+              <Link to="/settings/custom-attributes/custom-fields">{uiCopy("open")}</Link>
             </Button>
           </div>
         </CardContent>

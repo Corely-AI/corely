@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import { Textarea } from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
 
 export default function NewVendorBillPage() {
+  const uiCopy = useUiCopy("ui.purchasing-newvendorbillpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: suppliersData } = useQuery({
@@ -77,10 +79,10 @@ export default function NewVendorBillPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/purchasing/vendor-bills")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">New Vendor Bill</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("new-vendor-bill")}</h1>
         </div>
         <Button variant="outline" onClick={() => navigate("/purchasing/vendor-bills")}>
-          Cancel
+          {uiCopy("cancel")}
         </Button>
       </div>
 
@@ -89,7 +91,7 @@ export default function NewVendorBillPage() {
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Supplier</Label>
+                <Label>{uiCopy("supplier")}</Label>
                 <select
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={supplierPartyId}
@@ -103,11 +105,11 @@ export default function NewVendorBillPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Bill Number</Label>
+                <Label>{uiCopy("bill-number")}</Label>
                 <Input value={billNumber} onChange={(event) => setBillNumber(event.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Bill Date</Label>
+                <Label>{uiCopy("bill-date")}</Label>
                 <Input
                   type="date"
                   value={billDate}
@@ -115,7 +117,7 @@ export default function NewVendorBillPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Due Date</Label>
+                <Label>{uiCopy("due-date")}</Label>
                 <Input
                   type="date"
                   value={dueDate}
@@ -123,35 +125,35 @@ export default function NewVendorBillPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Currency</Label>
+                <Label>{uiCopy("currency")}</Label>
                 <Input value={currency} onChange={(event) => setCurrency(event.target.value)} />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>{uiCopy("notes")}</Label>
               <Textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Line Items</Label>
+                <Label>{uiCopy("line-items")}</Label>
                 <Button variant="outline" size="sm" onClick={addLineItem}>
                   <Plus className="h-4 w-4" />
-                  Add line
+                  {uiCopy("add-line")}
                 </Button>
               </div>
               {lineItems.map((item, index) => (
                 <div key={index} className="grid grid-cols-12 gap-3 items-end">
                   <div className="col-span-6">
-                    <Label>Description</Label>
+                    <Label>{uiCopy("description")}</Label>
                     <Input
                       value={item.description}
                       onChange={(event) => updateLineItem(index, "description", event.target.value)}
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label>Qty</Label>
+                    <Label>{uiCopy("qty")}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -162,7 +164,7 @@ export default function NewVendorBillPage() {
                     />
                   </div>
                   <div className="col-span-3">
-                    <Label>Unit Cost (cents)</Label>
+                    <Label>{uiCopy("unit-cost-cents")}</Label>
                     <Input
                       type="number"
                       min="0"
@@ -186,9 +188,9 @@ export default function NewVendorBillPage() {
         <div className="flex flex-col gap-4">
           <Card>
             <CardContent className="p-6 space-y-4">
-              <h2 className="text-lg font-semibold">Review</h2>
+              <h2 className="text-lg font-semibold">{uiCopy("review")}</h2>
               <p className="text-sm text-muted-foreground">
-                Confirm bill details before creating the draft.
+                {uiCopy("confirm-bill-details-before")}
               </p>
               <Button
                 variant="accent"
@@ -196,7 +198,7 @@ export default function NewVendorBillPage() {
                 onClick={() => createMutation.mutate()}
                 disabled={!supplierPartyId || createMutation.isPending}
               >
-                {createMutation.isPending ? "Creating..." : "Create Bill Draft"}
+                {createMutation.isPending ? uiCopy("creating") : uiCopy("create-bill-draft")}
               </Button>
             </CardContent>
           </Card>

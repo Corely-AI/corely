@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@corely/ui";
@@ -22,6 +23,7 @@ import { useCreateRole, useDeleteRole, useRoles, useUpdateRole } from "../hooks/
 import type { RoleDto } from "@corely/contracts";
 
 export default function RolesPage() {
+  const uiCopy = useUiCopy("ui.settings-rolespage");
   const { data: roles = [], isLoading } = useRoles();
   const createRole = useCreateRole();
   const updateRole = useUpdateRole();
@@ -40,41 +42,39 @@ export default function RolesPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-h1 text-foreground">Roles</h1>
-          <p className="text-sm text-muted-foreground">
-            Create roles and manage permission assignments.
-          </p>
+          <h1 className="text-h1 text-foreground">{uiCopy("roles")}</h1>
+          <p className="text-sm text-muted-foreground">{uiCopy("create-roles-and-manage")}</p>
         </div>
         <Button variant="accent" onClick={() => setCreateOpen(true)}>
-          New role
+          {uiCopy("new-role")}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Role list</CardTitle>
+          <CardTitle>{uiCopy("role-list")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{uiCopy("name")}</TableHead>
+                <TableHead>{uiCopy("description")}</TableHead>
+                <TableHead>{uiCopy("status")}</TableHead>
+                <TableHead className="text-right">{uiCopy("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    Loading roles...
+                    {uiCopy("loading-roles")}
                   </TableCell>
                 </TableRow>
               ) : sortedRoles.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No roles yet.
+                    {uiCopy("no-roles-yet")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -86,17 +86,19 @@ export default function RolesPage() {
                     </TableCell>
                     <TableCell>
                       {role.isSystem ? (
-                        <Badge variant="outline">System</Badge>
+                        <Badge variant="outline">{uiCopy("system")}</Badge>
                       ) : (
-                        <Badge variant="accent">Custom</Badge>
+                        <Badge variant="accent">{uiCopy("custom")}</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" onClick={() => setEditRole(role)}>
-                        Edit
+                        {uiCopy("edit")}
                       </Button>
                       <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/settings/roles/${role.id}/permissions`}>Permissions</Link>
+                        <Link to={`/settings/roles/${role.id}/permissions`}>
+                          {uiCopy("permissions")}
+                        </Link>
                       </Button>
                       <Button
                         variant="destructive"
@@ -104,7 +106,7 @@ export default function RolesPage() {
                         disabled={role.isSystem}
                         onClick={() => setDeleteRoleId(role.id)}
                       >
-                        Delete
+                        {uiCopy("delete")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -117,7 +119,7 @@ export default function RolesPage() {
 
       <RoleDialog
         open={createOpen}
-        title="Create role"
+        title={uiCopy("create-role")}
         submitLabel="Create"
         onClose={() => setCreateOpen(false)}
         onSubmit={(values) => createRole.mutateAsync(values).then(() => setCreateOpen(false))}
@@ -125,7 +127,7 @@ export default function RolesPage() {
 
       <RoleDialog
         open={!!editRole}
-        title="Edit role"
+        title={uiCopy("edit-role")}
         submitLabel="Save"
         role={editRole}
         disableName={editRole?.isSystem}
@@ -142,13 +144,11 @@ export default function RolesPage() {
       <AlertDialog open={!!deleteRoleId} onOpenChange={() => setDeleteRoleId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete role</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. Make sure the role is not assigned to members.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{uiCopy("delete-role")}</AlertDialogTitle>
+            <AlertDialogDescription>{uiCopy("this-action-cannot-be")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{uiCopy("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() =>
                 deleteRoleId
@@ -156,7 +156,7 @@ export default function RolesPage() {
                   : Promise.resolve()
               }
             >
-              Delete
+              {uiCopy("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -184,6 +184,7 @@ const RoleDialog: React.FC<RoleDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const uiCopy = useUiCopy("ui.settings-rolespage");
   const [name, setName] = useState(role?.name ?? "");
   const [description, setDescription] = useState(role?.description ?? "");
 
@@ -200,26 +201,26 @@ const RoleDialog: React.FC<RoleDialogProps> = ({
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Name</Label>
+            <Label>{uiCopy("name")}</Label>
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Role name"
+              placeholder={uiCopy("role-name")}
               disabled={disableName}
             />
           </div>
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{uiCopy("description")}</Label>
             <Textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="What can this role do?"
+              placeholder={uiCopy("what-can-this-role")}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"

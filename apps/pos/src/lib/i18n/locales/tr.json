@@ -317,16 +317,8 @@
     "syncSnapshotTitle": "Anlık görüntüyü senkronize et",
     "unknownUser": "Bilinmeyen kullanıcı",
     "workspaceBadge": "WS {{id}}",
-    "layoutMode": {
-      "auto": "Otomatik",
-      "phone": "Telefon",
-      "tablet": "tablet"
-    },
-    "languages": {
-      "en": "İngilizce",
-      "de": "Almanca",
-      "vi": "Tiếng Việt"
-    }
+    "layoutMode": { "auto": "Otomatik", "phone": "Telefon", "tablet": "tablet" },
+    "languages": { "en": "İngilizce", "de": "Almanca", "vi": "Tiếng Việt" }
   },
   "kiosk": {
     "brand": "Corely Giriş Yap",
@@ -420,5 +412,70 @@
     "online": "Çevrimiçi",
     "queue": "Sıra {{count}}",
     "syncing": "Senkronizasyon"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Önce bir kayıt seçin",
+      "restaurant-pos-uses-the": "Restoran POS, temel POS akışıyla aynı kayıt ve kaydırma bağlamını kullanır.",
+      "open-a-shift-first": "Önce bir vardiya açın",
+      "restaurant-tables-can-only": "Restoran masaları yalnızca kasiyer vardiyası aktifken açılabilir.",
+      "restaurant-floor": "Restoran katı",
+      "open-and-resume-table": "Yemek odası haritasından masa oturumlarını açın ve devam ettirin.",
+      "floor-plan-copilot": "Kat planı yardımcı pilotu",
+      "summarize-occupied-dirty-or": "Manuel kat kullanımını kesintiye uğratmadan dolu, kirli veya tıkanmış tabloları özetleyin.",
+      "loading-floor-plan": "Kat planı yükleniyor…",
+      "seats": "· koltuklar",
+      "tap-to-resume-check": "Kontrolü devam ettirmek için dokunun"
+    },
+    "main-settings": {
+      "workspace": "Çalışma alanı",
+      "workspace-id": "Çalışma Alanı Kimliği",
+      "user-id": "Kullanıcı Kimliği"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "Ödeme",
+      "load-the-table-order": "Ödeme almadan önce masa sırasını yükleyin.",
+      "payment-close": "Ödeme / Kapat",
+      "settle-table": "Masayı kur",
+      "send-all-draft-items": "Ödemeyi almadan önce tüm taslak öğeleri mutfağa gönderin.",
+      "this-order-has-already": "Bu sipariş zaten tamamlandı.",
+      "phase-1-keeps-settlement": "Aşama 1, ödemeyi basitleştirir: tam nakit veya tek kartlı yakalama yer tutucusu.",
+      "send-items-to-kitchen": "Mutfağa eşya gönder",
+      "cash": "Nakit",
+      "card": "Kart"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Tablo sırası",
+      "loading-table": "Tablo yükleniyor",
+      "opening-or-resuming-the": "Seçilen tabloyu açma veya devam ettirme.",
+      "search-menu-items": "Menü öğelerini arayın",
+      "current-order": "Mevcut sipariş",
+      "add-menu-items-to": "Kontrolü başlatmak için menü öğeleri ekleyin.",
+      "no-modifiers": "Değiştirici yok",
+      "subtotal": "Ara toplam",
+      "tax": "Vergi",
+      "total": "Toplam",
+      "send-to-kitchen": "Mutfağa gönder",
+      "take-payment": "Ödeme al",
+      "order-copilot": "Yardımcı pilot sipariş edin",
+      "parse-order-instructions-into": "Sipariş talimatlarını açık teklif kartlarına ayrıştırın. Uygula hala normal restoran komutlarını kullanıyor.",
+      "try-2-margherita-1": "Deneyin: \"2 margherita, 1 kola, ekstra peynir\"",
+      "included": "Dahil",
+      "add-item": "Öğe ekle"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Shift yakın yardımcı pilot",
+      "summarize-open-tables-unpaid": "Açık tabloları, ödenmemiş siparişleri, onayları ve nakit farklarını son onaydan önce özetleyin."
+    },
+    "errorbanner": { "trace-id": "İzleme Kimliği:", "copied": "✓ Kopyalandı", "copy": "Kopyala" },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Restoran yardımcı pilotu",
+      "missing-required-modifier": "Gerekli değiştirici eksik:",
+      "apply-proposal": "Teklifi uygula",
+      "dismiss": "Reddet",
+      "ticket": "Bilet",
+      "m": "m"
+    }
   }
 }

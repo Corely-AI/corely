@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import {
   AlertDialog,
@@ -35,6 +36,7 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   open,
   onOpenChange,
 }) => {
+  const uiCopy = useUiCopy("ui.shared-crud-confirmdeletedialog");
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       {trigger !== null ? (
@@ -58,7 +60,7 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? "Deleting..." : confirmLabel}
+            {isLoading ? uiCopy("deleting") : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -78,6 +80,7 @@ const statusTone = (status: PosTransactionStatus): "default" | "secondary" | "de
 };
 
 export function PosTransactionsScreen() {
+  const uiCopy = useUiCopy("ui.pos-transactions-postransactionsscreen");
   const [state, setUrlState] = useCrudUrlState({
     pageSize: 20,
     sort: "saleDate:desc",
@@ -116,14 +119,14 @@ export function PosTransactionsScreen() {
 
   return (
     <CrudListPageLayout
-      title="Transactions"
+      title={uiCopy("transactions")}
       subtitle="Review synced POS sales from registers without editing or refunding them from the admin."
       filters={
         <>
           <Input
             value={state.q ?? ""}
             onChange={(event) => setUrlState({ q: event.target.value, page: 1 })}
-            placeholder="Search receipt, transaction ID, invoice ID, or register"
+            placeholder={uiCopy("search-receipt-transaction-id")}
             className="w-72"
           />
           <Select
@@ -139,10 +142,10 @@ export function PosTransactionsScreen() {
             }
           >
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Register" />
+              <SelectValue placeholder={uiCopy("register")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All registers</SelectItem>
+              <SelectItem value="ALL">{uiCopy("all-registers")}</SelectItem>
               {registers.map((register) => (
                 <SelectItem key={register.registerId} value={register.registerId}>
                   {register.name}
@@ -163,7 +166,7 @@ export function PosTransactionsScreen() {
             }
           >
             <SelectTrigger className="w-44">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={uiCopy("status")} />
             </SelectTrigger>
             <SelectContent>
               {statusOptions.map((status) => (
@@ -186,7 +189,7 @@ export function PosTransactionsScreen() {
               })
             }
             className="w-44"
-            aria-label="From date"
+            aria-label={uiCopy("from-date")}
           />
           <Input
             type="date"
@@ -201,19 +204,21 @@ export function PosTransactionsScreen() {
               })
             }
             className="w-44"
-            aria-label="To date"
+            aria-label={uiCopy("to-date")}
           />
         </>
       }
     >
       {transactionsQuery.isLoading ? (
-        <div className="p-6 text-sm text-muted-foreground">Loading POS transactions...</div>
+        <div className="p-6 text-sm text-muted-foreground">
+          {uiCopy("loading-pos-transactions")}
+        </div>
       ) : transactionsQuery.isError ? (
-        <div className="p-6 text-sm text-destructive">Failed to load POS transactions.</div>
+        <div className="p-6 text-sm text-destructive">{uiCopy("failed-to-load-pos")}</div>
       ) : transactions.length === 0 ? (
         <EmptyState
-          title="No synced POS transactions yet"
-          description="Once POS sales sync successfully, they appear here for operator review."
+          title={uiCopy("no-synced-pos-transactions")}
+          description={uiCopy("once-pos-sales-sync")}
           action={
             state.q ||
             filters.registerId ||
@@ -230,7 +235,7 @@ export function PosTransactionsScreen() {
                   })
                 }
               >
-                Clear filters
+                {uiCopy("clear-filters")}
               </Button>
             ) : undefined
           }
@@ -241,13 +246,13 @@ export function PosTransactionsScreen() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead>Receipt</TableHead>
-                  <TableHead>Register</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Payments</TableHead>
-                  <TableHead>Cashier</TableHead>
-                  <TableHead>Sold at</TableHead>
+                  <TableHead>{uiCopy("receipt")}</TableHead>
+                  <TableHead>{uiCopy("register")}</TableHead>
+                  <TableHead>{uiCopy("status")}</TableHead>
+                  <TableHead className="text-right">{uiCopy("total")}</TableHead>
+                  <TableHead>{uiCopy("payments")}</TableHead>
+                  <TableHead>{uiCopy("cashier")}</TableHead>
+                  <TableHead>{uiCopy("sold-at")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -283,8 +288,9 @@ export function PosTransactionsScreen() {
                     <TableCell className="align-top text-sm text-muted-foreground">
                       <div>{formatPaymentSummary(transaction.payments)}</div>
                       <div className="mt-1 text-xs">
-                        {transaction.payments.length} payment
-                        {transaction.payments.length === 1 ? "" : "s"}
+                        {transaction.payments.length}
+                        {" " + uiCopy("payment")}
+                        {transaction.payments.length === 1 ? "" : uiCopy("s")}
                       </div>
                     </TableCell>
                     <TableCell className="align-top text-sm text-muted-foreground">
@@ -293,7 +299,8 @@ export function PosTransactionsScreen() {
                     <TableCell className="align-top text-sm text-muted-foreground">
                       <div>{formatTimestamp(transaction.saleDate)}</div>
                       <div className="mt-1 text-xs">
-                        Synced {formatTimestamp(transaction.syncedAt)}
+                        {uiCopy("synced") + " "}
+                        {formatTimestamp(transaction.syncedAt)}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -305,9 +312,11 @@ export function PosTransactionsScreen() {
           {pageInfo ? (
             <div className="flex flex-col gap-3 px-1 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
               <div>
-                Page {pageInfo.page} of {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
-                {" · "}
-                {pageInfo.total} total
+                <PaginationSummary
+                  page={pageInfo.page}
+                  pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                  total={pageInfo.total}
+                />
               </div>
               <Pagination>
                 <PaginationContent>

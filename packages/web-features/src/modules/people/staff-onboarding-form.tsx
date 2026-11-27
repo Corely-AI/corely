@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState, type FormEvent } from "react";
 import { Button, Input } from "@corely/ui";
 import { ApproveStaffOnboardingSchema } from "@corely/contracts";
@@ -13,6 +14,7 @@ export function StaffOnboardingForm({
   busy: boolean;
   onSave: (body: unknown) => void;
 }) {
+  const uiCopy = useUiCopy("ui.people-staff-onboarding-form");
   const [title, setTitle] = useState(""),
     [steps, setSteps] = useState(() => [{ id: crypto.randomUUID(), title: "" }]),
     [invalid, setInvalid] = useState(false);
@@ -63,7 +65,7 @@ export function StaffOnboardingForm({
             disabled={busy || steps.length === 1}
             onClick={() => setSteps(steps.filter((s) => s.id !== step.id))}
           >
-            ×
+            {uiCopy("message")}
           </Button>
         </div>
       ))}

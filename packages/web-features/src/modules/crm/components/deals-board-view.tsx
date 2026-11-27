@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState } from "react";
 import {
   DndContext,
@@ -36,6 +37,7 @@ export function DealsBoardView({
   onRetry,
   listParams,
 }: DealsBoardViewProps) {
+  const uiCopy = useUiCopy("ui.crm-deals-board-view");
   const navigate = useNavigate();
   const [activeDeal, setActiveDeal] = useState<DealDto | null>(null);
   const { mutate: updateStage } = useUpdateDealStage();
@@ -113,14 +115,14 @@ export function DealsBoardView({
         className="flex flex-col items-center justify-center py-16 gap-4 text-muted-foreground"
         data-testid="crm-board-error"
       >
-        <p className="text-sm">Failed to load deals.</p>
+        <p className="text-sm">{uiCopy("failed-to-load-deals")}</p>
         {onRetry && (
           <button
             onClick={onRetry}
             className="text-sm text-primary hover:underline"
             data-testid="crm-board-retry"
           >
-            Try again
+            {uiCopy("try-again")}
           </button>
         )}
       </div>
@@ -136,8 +138,8 @@ export function DealsBoardView({
       >
         <Briefcase className="h-12 w-12 opacity-20" />
         <div className="text-center space-y-1">
-          <p className="font-medium text-foreground">No deals yet</p>
-          <p className="text-sm">Create your first deal to populate the board.</p>
+          <p className="font-medium text-foreground">{uiCopy("no-deals-yet")}</p>
+          <p className="text-sm">{uiCopy("create-your-first-deal")}</p>
         </div>
         <button
           onClick={() => navigate("/crm/deals/new")}
@@ -145,7 +147,7 @@ export function DealsBoardView({
           data-testid="crm-board-add-deal-cta"
         >
           <Plus className="h-4 w-4" />
-          Add deal
+          {uiCopy("add-deal")}
         </button>
       </div>
     );

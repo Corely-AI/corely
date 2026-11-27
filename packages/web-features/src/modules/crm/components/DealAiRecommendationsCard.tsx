@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -24,6 +25,7 @@ export const DealAiRecommendationsCard: React.FC<DealAiRecommendationsCardProps>
   onRefresh,
   onApply,
 }) => {
+  const uiCopy = useUiCopy("ui.crm-dealairecommendationscard");
   if (!enabled) {
     return null;
   }
@@ -32,12 +34,14 @@ export const DealAiRecommendationsCard: React.FC<DealAiRecommendationsCardProps>
     <Card data-testid="crm-deal-ai-recommendations">
       <CardHeader className="space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle>Next Best Actions</CardTitle>
+          <CardTitle>{uiCopy("next-best-actions")}</CardTitle>
           <Button size="sm" variant="outline" onClick={onRefresh} disabled={offline || loading}>
-            Refresh
+            {uiCopy("refresh")}
           </Button>
         </div>
-        {offline ? <p className="text-xs text-muted-foreground">AI requires connection.</p> : null}
+        {offline ? (
+          <p className="text-xs text-muted-foreground">{uiCopy("ai-requires-connection")}</p>
+        ) : null}
       </CardHeader>
       <CardContent className="space-y-2">
         {loading ? (
@@ -63,17 +67,18 @@ export const DealAiRecommendationsCard: React.FC<DealAiRecommendationsCardProps>
                 </div>
                 <p className="text-xs text-muted-foreground">{recommendation.reason}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  Confidence: {Math.round(recommendation.confidence * 100)}%
+                  {uiCopy("confidence") + " "}
+                  {Math.round(recommendation.confidence * 100)}%
                 </p>
               </div>
               <Button size="sm" onClick={() => onApply(recommendation)} disabled={offline}>
-                Apply
+                {uiCopy("apply")}
               </Button>
             </div>
           ))}
 
         {!loading && !error && recommendations.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No recommendations right now.</p>
+          <p className="text-xs text-muted-foreground">{uiCopy("no-recommendations-right-now")}</p>
         ) : null}
       </CardContent>
     </Card>

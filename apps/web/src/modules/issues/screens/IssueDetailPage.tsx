@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,6 +40,7 @@ const STATUS_OPTIONS: IssueStatus[] = [
 ];
 
 export default function IssueDetailPage() {
+  const uiCopy = useUiCopy("ui.issues-issuedetailpage");
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -392,7 +394,7 @@ export default function IssueDetailPage() {
                     >
                       <img
                         src={buildPublicFileUrl(attachment.fileId!)}
-                        alt="Attachment"
+                        alt={uiCopy("attachment")}
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -467,7 +469,7 @@ export default function IssueDetailPage() {
                     >
                       <img
                         src={buildPublicFileUrl(attachment.fileId!)}
-                        alt="Attachment"
+                        alt={uiCopy("attachment")}
                         className="max-h-full max-w-full object-contain rounded-md"
                       />
                     </CarouselItem>

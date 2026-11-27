@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -22,17 +23,18 @@ export function PayStep({
   currency,
   paymentInstructions,
 }: PayStepProps) {
+  const uiCopy = useUiCopy("ui.tax-steps-pay-step");
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pay</CardTitle>
+        <CardTitle>{uiCopy("pay")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-2 text-sm">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Amount due</span>
+            <span className="text-muted-foreground">{uiCopy("amount-due")}</span>
             <span className="font-medium">
               {defaultAmountCents != null
                 ? formatMoney(defaultAmountCents, "en-US", currency)
@@ -40,13 +42,13 @@ export function PayStep({
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Due date</span>
+            <span className="text-muted-foreground">{uiCopy("due-date")}</span>
             <span className="font-medium">{formatDate(dueDate, "en-US")}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Payment reference</span>
+            <span className="text-muted-foreground">{uiCopy("payment-reference")}</span>
             <span className="font-medium">
-              {paymentInstructions?.reference ?? "Not configured"}
+              {paymentInstructions?.reference ?? uiCopy("not-configured")}
             </span>
           </div>
           {paymentInstructions?.ibanMasked ? (
@@ -58,7 +60,7 @@ export function PayStep({
         </div>
 
         <Button onClick={() => setDialogOpen(true)} disabled={isSubmitting}>
-          Mark as paid
+          {uiCopy("mark-as-paid")}
         </Button>
 
         <MarkPaidDialog

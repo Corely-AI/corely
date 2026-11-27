@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
@@ -9,6 +10,7 @@ import {
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 
 export default function SettingsPage() {
+  const uiCopy = useUiCopy("ui.cash-settings-page");
   const { activeWorkspace } = useWorkspace();
   const [paymentMethodId, setPaymentMethodId] = useState<string | undefined>(undefined);
   const [taxDialogOpen, setTaxDialogOpen] = useState(false);
@@ -22,23 +24,21 @@ export default function SettingsPage() {
 
       <div className="min-w-0 space-y-5 px-4 py-5 sm:px-5 sm:py-6 lg:space-y-6 lg:p-8">
         <div>
-          <h1 className="text-2xl font-semibold">Settings</h1>
+          <h1 className="text-2xl font-semibold">{uiCopy("settings")}</h1>
           <p className="text-sm text-muted-foreground">
-            Minimal operations settings for cash register and payment method workflows.
+            {uiCopy("minimal-operations-settings-for")}
           </p>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Profile & contact info</CardTitle>
-              <CardDescription>
-                Maintain the workspace contact details used in operational documents.
-              </CardDescription>
+              <CardTitle>{uiCopy("profile-contact-info")}</CardTitle>
+              <CardDescription>{uiCopy("maintain-the-workspace-contact")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" onClick={() => setContactDialogOpen(true)}>
-                Edit profile
+                {uiCopy("edit-profile")}
               </Button>
             </CardContent>
           </Card>
@@ -46,27 +46,22 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Tax &amp; VAT</CardTitle>
-              <CardDescription>
-                Configure the VAT regime, effective date, filing frequency and tax identifiers for
-                this business.
-              </CardDescription>
+              <CardDescription>{uiCopy("configure-the-vat-regime")}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               <Button asChild>
                 <Link to="/settings/tax">Configure tax &amp; VAT</Link>
               </Button>
               <Button variant="outline" onClick={() => setTaxDialogOpen(true)}>
-                Edit tax IDs
+                {uiCopy("edit-tax-ids")}
               </Button>
             </CardContent>
           </Card>
 
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Payment methods</CardTitle>
-              <CardDescription>
-                Choose the default payment method and open the full payment method settings.
-              </CardDescription>
+              <CardTitle>{uiCopy("payment-methods")}</CardTitle>
+              <CardDescription>{uiCopy("choose-the-default-payment")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {legalEntityId ? (
@@ -76,10 +71,10 @@ export default function SettingsPage() {
                   onSelect={setPaymentMethodId}
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">No active legal entity found.</p>
+                <p className="text-sm text-muted-foreground">{uiCopy("no-active-legal-entity")}</p>
               )}
               <Button asChild variant="ghost">
-                <Link to="/settings/payment-methods">Manage payment methods</Link>
+                <Link to="/settings/payment-methods">{uiCopy("manage-payment-methods")}</Link>
               </Button>
             </CardContent>
           </Card>

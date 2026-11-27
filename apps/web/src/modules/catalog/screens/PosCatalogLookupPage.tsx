@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -11,6 +13,7 @@ import { hasPermission, useEffectivePermissions } from "@corely/web-shared/share
 import { catalogItemKeys } from "../queries";
 
 export default function PosCatalogLookupPage() {
+  const uiCopy = useUiCopy("ui.catalog-poscataloglookuppage");
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -50,13 +53,13 @@ export default function PosCatalogLookupPage() {
 
   return (
     <CrudListPageLayout
-      title="POS Catalog"
+      title={uiCopy("pos-catalog")}
       subtitle={subtitle}
       primaryAction={
         canQuickAdd ? (
           <Button variant="accent" onClick={() => navigate("/pos/catalog/new")}>
             <PackagePlus className="h-4 w-4" />
-            Add new item
+            {uiCopy("add-new-item")}
           </Button>
         ) : undefined
       }
@@ -68,7 +71,7 @@ export default function PosCatalogLookupPage() {
               setSearch(event.target.value);
               setPage(1);
             }}
-            placeholder="Search by name or code"
+            placeholder={uiCopy("search-by-name-or")}
           />
         </div>
       }
@@ -76,7 +79,7 @@ export default function PosCatalogLookupPage() {
       <Card>
         <CardContent className="p-0">
           {isError ? (
-            <div className="p-6 text-sm text-destructive">Catalog lookup could not be loaded.</div>
+            <div className="p-6 text-sm text-destructive">{uiCopy("catalog-lookup-could-not")}</div>
           ) : null}
 
           {!isError && isLoading ? (
@@ -90,7 +93,7 @@ export default function PosCatalogLookupPage() {
           {!isError && !isLoading && items.length === 0 ? (
             <EmptyState
               icon={Package}
-              title="No catalog items found"
+              title={uiCopy("no-catalog-items-found")}
               description={
                 trimmedSearch
                   ? "Try a different product name or code."
@@ -106,22 +109,22 @@ export default function PosCatalogLookupPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Code
+                        {uiCopy("code")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Name
+                        {uiCopy("name")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Type
+                        {uiCopy("type")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                        Actions
+                        {uiCopy("actions")}
                       </th>
                     </tr>
                   </thead>
@@ -150,7 +153,7 @@ export default function PosCatalogLookupPage() {
                               onClick={() => navigate(`/pos/catalog/${item.id}/edit`)}
                             >
                               <Pencil className="h-4 w-4" />
-                              Edit
+                              {uiCopy("edit")}
                             </Button>
                           ) : null}
                         </td>
@@ -163,8 +166,10 @@ export default function PosCatalogLookupPage() {
               {pageInfo ? (
                 <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
                   <div className="text-sm text-muted-foreground">
-                    Page {pageInfo.page} of{" "}
-                    {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    <PaginationSummary
+                      page={pageInfo.page}
+                      pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    />
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -173,7 +178,7 @@ export default function PosCatalogLookupPage() {
                       disabled={page <= 1}
                       onClick={() => setPage((current) => Math.max(1, current - 1))}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </button>
                     <button
                       type="button"
@@ -181,7 +186,7 @@ export default function PosCatalogLookupPage() {
                       disabled={!pageInfo.hasNextPage}
                       onClick={() => setPage((current) => current + 1)}
                     >
-                      Next
+                      {uiCopy("next")}
                     </button>
                   </div>
                 </div>

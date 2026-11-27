@@ -317,16 +317,8 @@
     "syncSnapshotTitle": "Sincronizza istantanea",
     "unknownUser": "Utente sconosciuto",
     "workspaceBadge": "WS {{id}}",
-    "layoutMode": {
-      "auto": "Automatico",
-      "phone": "Telefono",
-      "tablet": "Tavoletta"
-    },
-    "languages": {
-      "en": "Inglese",
-      "de": "Tedesco",
-      "vi": "Tiếng Việt"
-    }
+    "layoutMode": { "auto": "Automatico", "phone": "Telefono", "tablet": "Tavoletta" },
+    "languages": { "en": "Inglese", "de": "Tedesco", "vi": "Tiếng Việt" }
   },
   "kiosk": {
     "brand": "Corely Check-in",
@@ -420,5 +412,70 @@
     "online": "In linea",
     "queue": "Coda {{count}}",
     "syncing": "Sincronizzazione"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Selezionare prima un registro",
+      "restaurant-pos-uses-the": "Il POS del ristorante utilizza lo stesso registro e contesto di turno del flusso POS principale.",
+      "open-a-shift-first": "Apri prima un turno",
+      "restaurant-tables-can-only": "I tavoli del ristorante possono essere aperti solo mentre è attivo il turno di cassa.",
+      "restaurant-floor": "Piano del ristorante",
+      "open-and-resume-table": "Apri e riprendi le sessioni al tavolo dalla mappa della sala da pranzo.",
+      "floor-plan-copilot": "Copilota della planimetria",
+      "summarize-occupied-dirty-or": "Riepiloga le tabelle occupate, sporche o bloccate senza interrompere l'utilizzo manuale del piano.",
+      "loading-floor-plan": "Caricamento planimetria…",
+      "seats": "· sedili",
+      "tap-to-resume-check": "Tocca per riprendere il controllo"
+    },
+    "main-settings": {
+      "workspace": "Spazio di lavoro",
+      "workspace-id": "ID dell'area di lavoro",
+      "user-id": "ID utente"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "Pagamento",
+      "load-the-table-order": "Carica l'ordine del tavolo prima di effettuare il pagamento.",
+      "payment-close": "Pagamento / Chiudi",
+      "settle-table": "Sistemare il tavolo",
+      "send-all-draft-items": "Invia tutte le bozze degli articoli in cucina prima di accettare il pagamento.",
+      "this-order-has-already": "Questo ordine è già stato risolto.",
+      "phase-1-keeps-settlement": "La Fase 1 semplifica il regolamento: contanti esatti o segnaposto per l'acquisizione di una singola carta.",
+      "send-items-to-kitchen": "Invia oggetti in cucina",
+      "cash": "Contanti",
+      "card": "Carta"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Ordine della tabella",
+      "loading-table": "Tabella di caricamento",
+      "opening-or-resuming-the": "Apertura o ripresa della tabella selezionata.",
+      "search-menu-items": "Cerca voci di menu",
+      "current-order": "Ordine attuale",
+      "add-menu-items-to": "Aggiungi voci di menu per avviare il controllo.",
+      "no-modifiers": "Nessun modificatore",
+      "subtotal": "Totale parziale",
+      "tax": "Tassa",
+      "total": "Totale",
+      "send-to-kitchen": "Invia in cucina",
+      "take-payment": "Accetta il pagamento",
+      "order-copilot": "Ordina il copilota",
+      "parse-order-instructions-into": "Analizza le istruzioni dell'ordine in schede di proposta esplicite. Applica utilizza ancora i normali comandi del ristorante.",
+      "try-2-margherita-1": "Prova: \"2 margherita, 1 coca cola, formaggio extra\"",
+      "included": "Incluso",
+      "add-item": "Aggiungi elemento"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Sposta il copilota ravvicinato",
+      "summarize-open-tables-unpaid": "Riepiloga le tabelle aperte, gli ordini non pagati, le approvazioni e lo scostamento di cassa prima della conferma finale."
+    },
+    "errorbanner": { "trace-id": "ID traccia:", "copied": "✓ Copiato", "copy": "Copia" },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Copilota del ristorante",
+      "missing-required-modifier": "Modificatore obbligatorio mancante:",
+      "apply-proposal": "Applicare la proposta",
+      "dismiss": "Ignora",
+      "ticket": "Biglietto",
+      "m": "m"
+    }
   }
 }

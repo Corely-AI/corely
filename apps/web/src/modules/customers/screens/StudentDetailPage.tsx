@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -22,6 +23,7 @@ import { MaterialsSection } from "../../portal/components/MaterialsSection";
 import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function StudentDetailPage() {
+  const uiCopy = useUiCopy("ui.customers-studentdetailpage");
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const studentId = id ?? "";
@@ -73,7 +75,7 @@ export default function StudentDetailPage() {
         partyId: student?.id,
         role: "STUDENT",
       }),
-    onSuccess: () => toast.success("Student invited to portal"),
+    onSuccess: () => toast.success(uiCopy("student-invited-to-portal")),
     onError: (err: any) => toast.error("Failed to invite: " + (err?.message ?? "Unknown error")),
   });
 
@@ -84,7 +86,7 @@ export default function StudentDetailPage() {
   if (isLoading) {
     return (
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-center">Loading student...</div>
+        <div className="text-center">{uiCopy("loading-student")}</div>
       </div>
     );
   }
@@ -92,7 +94,7 @@ export default function StudentDetailPage() {
   if (!student) {
     return (
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-center">Student not found</div>
+        <div className="text-center">{uiCopy("student-not-found")}</div>
       </div>
     );
   }
@@ -104,7 +106,7 @@ export default function StudentDetailPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/students")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Student</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("student")}</h1>
         </div>
         <div className="flex gap-2">
           {student?.email && (
@@ -112,10 +114,10 @@ export default function StudentDetailPage() {
               variant="outline"
               onClick={() => inviteToPortalMutation.mutate()}
               disabled={inviteToPortalMutation.isPending}
-              title="Invite this student to the portal via email"
+              title={uiCopy("invite-this-student-to")}
             >
               <Mail className="h-4 w-4" />
-              {inviteToPortalMutation.isPending ? "Inviting..." : "Invite to Portal"}
+              {inviteToPortalMutation.isPending ? uiCopy("inviting") : uiCopy("invite-to-portal")}
             </Button>
           )}
           <Button
@@ -123,14 +125,14 @@ export default function StudentDetailPage() {
             onClick={() => navigate("/students")}
             disabled={updateStudentMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={updateStudentMutation.isPending}
           >
-            {updateStudentMutation.isPending ? "Saving..." : "Save Changes"}
+            {updateStudentMutation.isPending ? uiCopy("saving") : uiCopy("save-changes")}
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Ship, Filter } from "lucide-react";
@@ -9,6 +10,7 @@ import { hasPermission, useEffectivePermissions } from "@/shared/lib/permissions
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 
 export default function ShipmentsPage() {
+  const uiCopy = useUiCopy("ui.import-shipmentspage");
   const navigate = useNavigate();
   const { hasCapability } = useWorkspaceConfig();
   const { data: effectivePermissions } = useEffectivePermissions();
@@ -74,22 +76,22 @@ export default function ShipmentsPage() {
           <Ship className="h-8 w-8 text-muted-foreground" />
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Import / Shipments
+              {uiCopy("import-shipments")}
             </p>
-            <h1 className="text-h1 text-foreground">Import Shipments</h1>
+            <h1 className="text-h1 text-foreground">{uiCopy("import-shipments-2")}</h1>
             <p className="text-sm text-muted-foreground">
-              Track international shipments and customs clearance
+              {uiCopy("track-international-shipments-and")}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
             <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? "Hide Filters" : "Show Filters"}
+            {showFilters ? uiCopy("hide-filters") : uiCopy("show-filters")}
           </Button>
           {canManageShipments ? (
             <Button variant="accent" onClick={() => navigate("/import/shipments/new")}>
-              Create Shipment
+              {uiCopy("create-shipment")}
             </Button>
           ) : null}
         </div>
@@ -100,26 +102,26 @@ export default function ShipmentsPage() {
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label>{uiCopy("status")}</Label>
                 <select
                   className="w-full rounded-md border border-input bg-background px-3 py-2"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as ImportShipmentStatus | "")}
                 >
-                  <option value="">All</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="SUBMITTED">Submitted</option>
-                  <option value="IN_TRANSIT">In Transit</option>
-                  <option value="CUSTOMS_CLEARANCE">Customs Clearance</option>
-                  <option value="CLEARED">Cleared</option>
-                  <option value="RECEIVED">Received</option>
-                  <option value="CANCELED">Canceled</option>
+                  <option value="">{uiCopy("all")}</option>
+                  <option value="DRAFT">{uiCopy("draft")}</option>
+                  <option value="SUBMITTED">{uiCopy("submitted")}</option>
+                  <option value="IN_TRANSIT">{uiCopy("in-transit")}</option>
+                  <option value="CUSTOMS_CLEARANCE">{uiCopy("customs-clearance")}</option>
+                  <option value="CLEARED">{uiCopy("cleared")}</option>
+                  <option value="RECEIVED">{uiCopy("received")}</option>
+                  <option value="CANCELED">{uiCopy("canceled")}</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Container Number</Label>
+                <Label>{uiCopy("container-number")}</Label>
                 <Input
-                  placeholder="Search container..."
+                  placeholder={uiCopy("search-container")}
                   value={containerFilter}
                   onChange={(e) => setContainerFilter(e.target.value)}
                 />
@@ -132,13 +134,13 @@ export default function ShipmentsPage() {
       {isLoading ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading shipments...</p>
+            <p className="text-center text-muted-foreground">{uiCopy("loading-shipments")}</p>
           </CardContent>
         </Card>
       ) : !data || data.shipments.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No shipments found</p>
+            <p className="text-center text-muted-foreground">{uiCopy("no-shipments-found")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -148,13 +150,19 @@ export default function ShipmentsPage() {
               <table className="w-full">
                 <thead className="bg-muted/50 border-b">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Shipment #</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Container</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Origin</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      {uiCopy("shipment")}
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{uiCopy("status")}</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      {uiCopy("container")}
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{uiCopy("origin")}</th>
                     <th className="px-4 py-3 text-left text-sm font-medium">ETA</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Total Cost</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">
+                      {uiCopy("total-cost")}
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">{uiCopy("actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -180,7 +188,7 @@ export default function ShipmentsPage() {
                           size="sm"
                           onClick={() => navigate(`/import/shipments/${shipment.id}`)}
                         >
-                          View
+                          {uiCopy("view")}
                         </Button>
                       </td>
                     </tr>

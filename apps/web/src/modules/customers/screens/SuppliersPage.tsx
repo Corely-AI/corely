@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +15,7 @@ import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
 type SupplierFilter = "ACTIVE" | "ARCHIVED";
 
 export default function SuppliersPage() {
+  const uiCopy = useUiCopy("ui.customers-supplierspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -52,31 +54,31 @@ export default function SuppliersPage() {
   const archiveMutation = useMutation({
     mutationFn: (id: string) => customersApi.archiveCustomer(id, "SUPPLIER"),
     onSuccess: async () => {
-      toast.success("Supplier archived");
+      toast.success(uiCopy("supplier-archived"));
       await queryClient.invalidateQueries({ queryKey: withWorkspace(["suppliers"]) });
     },
-    onError: () => toast.error("Failed to archive supplier"),
+    onError: () => toast.error(uiCopy("failed-to-archive-supplier")),
   });
 
   const unarchiveMutation = useMutation({
     mutationFn: (id: string) => customersApi.unarchiveCustomer(id, "SUPPLIER"),
     onSuccess: async () => {
-      toast.success("Supplier restored");
+      toast.success(uiCopy("supplier-restored"));
       await queryClient.invalidateQueries({ queryKey: withWorkspace(["suppliers"]) });
     },
-    onError: () => toast.error("Failed to restore supplier"),
+    onError: () => toast.error(uiCopy("failed-to-restore-supplier")),
   });
 
   const primaryAction = canManageSuppliers ? (
     <Button variant="accent" onClick={() => navigate("/suppliers/new")}>
       <Plus className="h-4 w-4" />
-      Create supplier
+      {uiCopy("create-supplier")}
     </Button>
   ) : null;
 
   return (
     <CrudListPageLayout
-      title="Suppliers"
+      title={uiCopy("suppliers")}
       subtitle="Manage supplier records used in purchasing and import shipments"
       primaryAction={primaryAction}
       toolbar={
@@ -84,7 +86,7 @@ export default function SuppliersPage() {
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by supplier name"
+            placeholder={uiCopy("search-by-supplier-name")}
             className="md:max-w-sm"
           />
           <div className="flex items-center gap-2">
@@ -93,11 +95,11 @@ export default function SuppliersPage() {
               value={status}
               onChange={(event) => setStatus(event.target.value as SupplierFilter)}
             >
-              <option value="ACTIVE">Active</option>
-              <option value="ARCHIVED">Archived</option>
+              <option value="ACTIVE">{uiCopy("active")}</option>
+              <option value="ARCHIVED">{uiCopy("archived")}</option>
             </select>
             <Button variant="outline" onClick={() => void suppliersQuery.refetch()}>
-              Refresh
+              {uiCopy("refresh")}
             </Button>
           </div>
         </div>
@@ -106,9 +108,13 @@ export default function SuppliersPage() {
       <Card>
         <CardContent className="p-0">
           {suppliersQuery.isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading suppliers...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {uiCopy("loading-suppliers")}
+            </div>
           ) : suppliersQuery.isError ? (
-            <div className="p-8 text-center text-destructive">Failed to load suppliers.</div>
+            <div className="p-8 text-center text-destructive">
+              {uiCopy("failed-to-load-suppliers")}
+            </div>
           ) : suppliers.length === 0 ? (
             <EmptyState
               icon={Building2}
@@ -126,16 +132,16 @@ export default function SuppliersPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Supplier
+                      {uiCopy("supplier")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Email
+                      {uiCopy("email")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Phone
+                      {uiCopy("phone")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Country
+                      {uiCopy("country")}
                     </th>
                     <th />
                   </tr>
@@ -219,8 +225,8 @@ export default function SuppliersPage() {
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         trigger={null}
-        title="Archive supplier"
-        description="Archived suppliers are hidden from shipment pickers until restored."
+        title={uiCopy("archive-supplier")}
+        description={uiCopy("archived-suppliers-are-hidden")}
         isLoading={archiveMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

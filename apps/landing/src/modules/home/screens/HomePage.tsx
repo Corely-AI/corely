@@ -1,5 +1,3 @@
-import { useBrowserLocale } from "@corely/web-shared/shared/i18n/browser-locale";
-import messages from "@/shared/i18n/locales/landing.json";
 import { Link } from "react-router-dom";
 import {
   Bot,
@@ -86,7 +84,6 @@ const faqJsonLd = {
 };
 
 export function HomePage() {
-  const copy = messages[useBrowserLocale()];
   return (
     <>
       <Seo
@@ -100,40 +97,47 @@ export function HomePage() {
         <Container>
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="space-y-6">
-              <Badge variant="accent">{copy.kernel}</Badge>
-              <div className="text-sm font-medium text-muted-foreground">{copy.tagline}</div>
+              <Badge variant="accent">AI-native ERP kernel</Badge>
+              <div className="text-sm font-medium text-muted-foreground">
+                Run your business, clearly.
+              </div>
               <div className="space-y-4">
-                <h1 className="text-display text-foreground">{copy.hero}</h1>
-                <p className="text-body text-muted-foreground">{copy.intro}</p>
+                <h1 className="text-display text-foreground">
+                  One workspace for you and your team.
+                </h1>
+                <p className="text-body text-muted-foreground">
+                  Choose the apps that support your work and bring your team into one workspace. Add
+                  invoices, expenses, and taxes when you need them.
+                </p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <a
                   className={buttonVariants({ variant: "accent", size: "lg" })}
                   href="mailto:hello@corely.one"
                 >
-                  {copy.earlyAccess}
+                  Get early access
                 </a>
                 <a
                   className={buttonVariants({ variant: "outline", size: "lg" })}
                   href="https://docs.corely.one"
                 >
-                  {copy.docs}
+                  Read docs
                 </a>
                 <a
                   className={buttonVariants({ variant: "ghost", size: "lg" })}
                   href="https://github.com/Corely-AI/corely"
                 >
-                  {copy.github}
+                  View GitHub
                 </a>
               </div>
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-accent" />
-                  {copy.modular}
+                  Modular kernel, clear boundaries
                 </div>
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-accent" />
-                  {copy.audit}
+                  Audit, idempotency, tenant scoping
                 </div>
               </div>
             </div>
@@ -142,8 +146,8 @@ export function HomePage() {
               <div className="relative card-elevated overflow-hidden rounded-3xl border border-border bg-panel p-6 shadow-card">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{copy.workspace}</span>
-                    <span className="badge-accent">{copy.preview}</span>
+                    <span>Corely workspace</span>
+                    <span className="badge-accent">Live preview</span>
                   </div>
                   <div className="grid gap-4">
                     <div className="rounded-2xl border border-border bg-background p-4">
@@ -412,7 +416,7 @@ export function HomePage() {
                   className={buttonVariants({ variant: "secondary", size: "lg" })}
                   href="mailto:hello@corely.one"
                 >
-                  {copy.earlyAccess}
+                  Get early access
                 </a>
                 <Link
                   className={buttonVariants({ variant: "outline", size: "lg" })}

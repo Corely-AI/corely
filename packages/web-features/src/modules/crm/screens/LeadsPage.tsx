@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import { LeadCard } from "../components/LeadCard";
 
 export default function LeadsPage() {
+  const uiCopy = useUiCopy("ui.crm-leadspage");
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -24,7 +26,7 @@ export default function LeadsPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-leads-page">
       <div className="flex items-center justify-between">
         <h1 className="text-h1 text-foreground" data-testid="crm-leads-header">
-          Leads
+          {uiCopy("leads")}
         </h1>
         <Button
           variant="accent"
@@ -32,7 +34,7 @@ export default function LeadsPage() {
           data-testid="crm-leads-create"
         >
           <UserPlus className="h-4 w-4" />
-          New Lead
+          {uiCopy("new-lead")}
         </Button>
       </div>
 
@@ -41,8 +43,8 @@ export default function LeadsPage() {
           <CardContent className="p-0">
             <EmptyState
               icon={Briefcase}
-              title="No leads found"
-              description="Create a new lead to get started."
+              title={uiCopy("no-leads-found")}
+              description={uiCopy("create-a-new-lead")}
             />
           </CardContent>
         </Card>

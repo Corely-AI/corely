@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -32,6 +34,7 @@ const statusVariant = (status: string) => {
 };
 
 export default function CmsPostsPage() {
+  const uiCopy = useUiCopy("ui.cms-cmspostspage");
   const navigate = useNavigate();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
 
@@ -56,7 +59,7 @@ export default function CmsPostsPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search posts"
+          placeholder={uiCopy("search-posts")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -83,7 +86,7 @@ export default function CmsPostsPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load posts"}
+          {(error as Error)?.message || uiCopy("failed-to-load-posts")}
         </div>
       ) : null}
     </div>
@@ -92,13 +95,13 @@ export default function CmsPostsPage() {
   const primaryAction = (
     <Button variant="accent" onClick={() => navigate("/cms/posts/new")}>
       <Plus className="h-4 w-4" />
-      New post
+      {uiCopy("new-post")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="CMS Posts"
+      title={uiCopy("cms-posts")}
       subtitle="Draft, publish, and manage articles"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -106,12 +109,12 @@ export default function CmsPostsPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading posts...</div>
+            <div className="p-8 text-center text-muted-foreground">{uiCopy("loading-posts")}</div>
           ) : posts.length === 0 ? (
             <EmptyState
               icon={Eye}
-              title="No posts yet"
-              description="Create your first article to get started."
+              title={uiCopy("no-posts-yet")}
+              description={uiCopy("create-your-first-article")}
               action={primaryAction}
             />
           ) : (
@@ -121,16 +124,16 @@ export default function CmsPostsPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Title
+                        {uiCopy("title")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Published
+                        {uiCopy("published")}
                       </th>
                       <th />
                     </tr>
@@ -175,7 +178,7 @@ export default function CmsPostsPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -184,7 +187,7 @@ export default function CmsPostsPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -192,7 +195,7 @@ export default function CmsPostsPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>

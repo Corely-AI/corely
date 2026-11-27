@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +12,7 @@ import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 import type { InventoryLotStatus } from "@corely/contracts";
 
 export default function LotDetailPage() {
+  const uiCopy = useUiCopy("ui.inventory-lotdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -29,7 +31,9 @@ export default function LotDetailPage() {
   if (isLoading) {
     return (
       <div className="p-6 lg:p-8">
-        <div className="text-center py-8 text-muted-foreground">Loading lot details...</div>
+        <div className="text-center py-8 text-muted-foreground">
+          {uiCopy("loading-lot-details")}
+        </div>
       </div>
     );
   }
@@ -37,7 +41,7 @@ export default function LotDetailPage() {
   if (!lot) {
     return (
       <div className="p-6 lg:p-8">
-        <div className="text-center py-8 text-muted-foreground">Lot not found</div>
+        <div className="text-center py-8 text-muted-foreground">{uiCopy("lot-not-found")}</div>
       </div>
     );
   }
@@ -79,9 +83,15 @@ export default function LotDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Lot: {lot.lotNumber}</h1>
+            <h1 className="text-h1 text-foreground">
+              {uiCopy("lot") + " "}
+              {lot.lotNumber}
+            </h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-              <span>Product: {lot.productId}</span>
+              <span>
+                {uiCopy("product") + " "}
+                {lot.productId}
+              </span>
               <Badge variant={getStatusColor(lot.status)}>{lot.status}</Badge>
             </div>
           </div>
@@ -93,19 +103,19 @@ export default function LotDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Package className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Lot Information</h2>
+              <h2 className="text-lg font-semibold">{uiCopy("lot-information")}</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <div className="text-xs text-muted-foreground">Lot Number</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("lot-number")}</div>
                 <div className="text-sm font-medium">{lot.lotNumber}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Product ID</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("product-id")}</div>
                 <div className="text-sm font-medium">{lot.productId}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Status</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("status")}</div>
                 <Badge variant={getStatusColor(lot.status)}>{lot.status}</Badge>
               </div>
             </div>
@@ -116,19 +126,19 @@ export default function LotDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Dates</h2>
+              <h2 className="text-lg font-semibold">{uiCopy("dates")}</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <div className="text-xs text-muted-foreground">Manufacturing Date</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("manufacturing-date")}</div>
                 <div className="text-sm font-medium">{formatDate(lot.mfgDate)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Expiry Date</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("expiry-date")}</div>
                 <div className="text-sm font-medium">{formatDate(lot.expiryDate)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Received Date</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("received-date")}</div>
                 <div className="text-sm font-medium">{formatDate(lot.receivedDate)}</div>
               </div>
             </div>
@@ -139,19 +149,19 @@ export default function LotDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Quantity</h2>
+              <h2 className="text-lg font-semibold">{uiCopy("quantity")}</h2>
             </div>
             <div className="space-y-3">
               <div>
-                <div className="text-xs text-muted-foreground">Qty Received</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("qty-received")}</div>
                 <div className="text-sm font-medium">{lot.qtyReceived}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Qty On Hand</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("qty-on-hand")}</div>
                 <div className="text-sm font-medium">{lot.qtyOnHand}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Qty Reserved</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("qty-reserved")}</div>
                 <div className="text-sm font-medium">{lot.qtyReserved}</div>
               </div>
             </div>
@@ -164,11 +174,11 @@ export default function LotDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Truck className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Traceability</h2>
+              <h2 className="text-lg font-semibold">{uiCopy("traceability")}</h2>
             </div>
             <div className="space-y-4">
               <div>
-                <div className="text-xs text-muted-foreground">Shipment ID</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("shipment-id")}</div>
                 <div className="text-sm font-medium">
                   {lot.shipmentId ? (
                     <Button
@@ -184,7 +194,7 @@ export default function LotDetailPage() {
                 </div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Supplier</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("supplier")}</div>
                 <div className="text-sm font-medium flex items-center gap-2">
                   {lot.supplierPartyId ? (
                     <>
@@ -197,7 +207,7 @@ export default function LotDetailPage() {
                 </div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Unit Cost</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("unit-cost")}</div>
                 <div className="text-sm font-medium flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
                   {formatCurrency(lot.unitCostCents)}
@@ -209,9 +219,9 @@ export default function LotDetailPage() {
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Notes</h2>
+            <h2 className="text-lg font-semibold mb-4">{uiCopy("notes")}</h2>
             <div className="text-sm text-muted-foreground">
-              {lot.notes || "No notes available for this lot."}
+              {lot.notes || uiCopy("no-notes-available-for")}
             </div>
           </CardContent>
         </Card>
@@ -219,20 +229,20 @@ export default function LotDetailPage() {
 
       <Card>
         <CardContent className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Stock Movements</h2>
+          <h2 className="text-lg font-semibold mb-4">{uiCopy("stock-movements")}</h2>
           {!stockMoves?.items.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              No stock movements found for this product.
+              {uiCopy("no-stock-movements-found")}
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground border-b">
-                  <th className="py-3">Date</th>
-                  <th>Document Type</th>
-                  <th>Location</th>
-                  <th>Quantity Delta</th>
-                  <th>Reason</th>
+                  <th className="py-3">{uiCopy("date")}</th>
+                  <th>{uiCopy("document-type")}</th>
+                  <th>{uiCopy("location")}</th>
+                  <th>{uiCopy("quantity-delta")}</th>
+                  <th>{uiCopy("reason")}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -253,7 +263,7 @@ export default function LotDetailPage() {
                         size="sm"
                         onClick={() => navigate(`/inventory/documents/${move.documentId}`)}
                       >
-                        View Doc
+                        {uiCopy("view-doc")}
                       </Button>
                     </td>
                   </tr>
@@ -267,7 +277,7 @@ export default function LotDetailPage() {
       {lot.metadataJson && Object.keys(lot.metadataJson).length > 0 && (
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Metadata</h2>
+            <h2 className="text-lg font-semibold mb-4">{uiCopy("metadata")}</h2>
             <pre className="text-sm bg-muted p-4 rounded-md overflow-auto">
               {JSON.stringify(lot.metadataJson, null, 2)}
             </pre>

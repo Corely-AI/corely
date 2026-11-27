@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { type Dispatch, type SetStateAction } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -92,6 +93,7 @@ type CreateEntryDialogProps = {
 };
 
 export function CreateEntryDialog(props: CreateEntryDialogProps) {
+  const uiCopy = useUiCopy("ui.cash-management-cash-entries-dialogs");
   const { t } = useTranslation();
   const {
     open,
@@ -220,7 +222,7 @@ export function CreateEntryDialog(props: CreateEntryDialogProps) {
                   setForm((prev) => ({ ...prev, dailyZReport: event.target.checked }))
                 }
               />
-              <span>Đây là tổng doanh thu Z-Bon của ngày này</span>
+              <span>{uiCopy("a-y-la-to")}</span>
             </label>
           ) : null}
           <div className="space-y-1">

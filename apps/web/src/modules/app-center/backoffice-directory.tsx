@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,7 @@ function modulePath(app: AppCatalogItem) {
 }
 
 export function BackofficeDirectory() {
+  const uiCopy = useUiCopy("ui.app-center-backoffice-directory");
   const { activeWorkspaceId } = useWorkspace();
   const { user } = useAuth();
   const { i18n } = useTranslation();
@@ -91,7 +93,7 @@ export function BackofficeDirectory() {
       />
       {query.data?.some((app) => app.appId === "booking" && modulePath(app)) && (
         <Link className="underline" to={{ pathname: "/openbuk/app", search }}>
-          OpenBuk Studio
+          {uiCopy("openbuk-studio")}
         </Link>
       )}
     </main>

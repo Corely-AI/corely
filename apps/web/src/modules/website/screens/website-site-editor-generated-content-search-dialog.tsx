@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -87,6 +88,7 @@ const getOrderedKeys = (
 export function WebsiteSiteEditorGeneratedContentSearchDialog(
   props: WebsiteSiteEditorGeneratedContentSearchDialogProps
 ) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-generated-content-search-dialog");
   const [selectedSearchId, setSelectedSearchId] = useState<string | null>(null);
   const [searchJsonDraft, setSearchJsonDraft] = useState("");
   const [searchJsonError, setSearchJsonError] = useState<string | null>(null);
@@ -202,22 +204,22 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
               }}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {uiCopy("back")}
             </Button>
             <Button type="button" size="sm" onClick={() => closeDialog(false)}>
-              Done
+              {uiCopy("done")}
             </Button>
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs uppercase">Field</Label>
+            <Label className="text-xs uppercase">{uiCopy("field")}</Label>
             <div className="rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-sm">
               {selectedSearchEntry.pathLabel}
             </div>
           </div>
 
           <GeneratedFileIdField
-            label="Value"
+            label={uiCopy("value")}
             path={selectedSearchEntry.path}
             fileId={typeof value === "string" ? value : ""}
             isUploading={Boolean(props.uploadingPathStates[fieldStateKey])}
@@ -243,22 +245,22 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
               }}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {uiCopy("back")}
             </Button>
             <Button type="button" size="sm" onClick={() => closeDialog(false)}>
-              Done
+              {uiCopy("done")}
             </Button>
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs uppercase">Field</Label>
+            <Label className="text-xs uppercase">{uiCopy("field")}</Label>
             <div className="rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-sm">
               {selectedSearchEntry.pathLabel}
             </div>
           </div>
 
           <GeneratedFileIdListField
-            label="Value"
+            label={uiCopy("value")}
             path={selectedSearchEntry.path}
             fileIds={normalizeStringArray(value)}
             isUploading={Boolean(props.uploadingPathStates[fieldStateKey])}
@@ -283,15 +285,15 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
             }}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            {uiCopy("back")}
           </Button>
           <Button type="button" size="sm" onClick={() => closeDialog(false)}>
-            Done
+            {uiCopy("done")}
           </Button>
         </div>
 
         <div className="space-y-1">
-          <Label className="text-xs uppercase">Field</Label>
+          <Label className="text-xs uppercase">{uiCopy("field")}</Label>
           <div className="rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-sm">
             {selectedSearchEntry.pathLabel}
           </div>
@@ -299,7 +301,7 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
 
         {typeof value === "string" ? (
           <div className="space-y-1">
-            <Label>Value</Label>
+            <Label>{uiCopy("value")}</Label>
             {value.includes("\n") || value.length > 120 ? (
               <Textarea
                 rows={6}
@@ -321,7 +323,7 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
 
         {typeof value === "number" ? (
           <div className="space-y-1">
-            <Label>Value</Label>
+            <Label>{uiCopy("value")}</Label>
             <Input
               type="number"
               step="any"
@@ -338,7 +340,7 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
 
         {typeof value === "boolean" ? (
           <div className="flex items-center justify-between rounded-md border border-border/60 p-3">
-            <Label>Value</Label>
+            <Label>{uiCopy("value")}</Label>
             <Switch
               checked={value}
               onCheckedChange={(checked) => props.onUpdateValue(selectedSearchEntry.path, checked)}
@@ -348,7 +350,7 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
 
         {typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean" ? (
           <div className="space-y-2">
-            <Label>JSON value</Label>
+            <Label>{uiCopy("json-value")}</Label>
             <Textarea
               rows={10}
               className="font-mono text-xs"
@@ -361,7 +363,7 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
             <div className="flex items-center justify-between">
               <p className="text-xs text-destructive">{searchJsonError ?? ""}</p>
               <Button type="button" size="sm" variant="outline" onClick={applySearchJsonDraft}>
-                Apply
+                {uiCopy("apply")}
               </Button>
             </div>
           </div>
@@ -376,9 +378,9 @@ export function WebsiteSiteEditorGeneratedContentSearchDialog(
         renderSearchSelectedEditor()
       ) : (
         <>
-          <CommandInput placeholder="Search keys or content..." />
+          <CommandInput placeholder={uiCopy("search-keys-or-content")} />
           <CommandList>
-            <CommandEmpty>No matching fields found.</CommandEmpty>
+            <CommandEmpty>{uiCopy("no-matching-fields-found")}</CommandEmpty>
             <CommandGroup heading="Fields">
               {searchEntries.map((entry) => (
                 <CommandItem

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
@@ -85,6 +86,7 @@ const parsePayload = (values: RestaurantFormValues) => {
 };
 
 export default function RestaurantFormScreen() {
+  const uiCopy = useUiCopy("ui.directory-restaurant-form-screen");
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -119,12 +121,12 @@ export default function RestaurantFormScreen() {
       if (isEdit && id) {
         const patch = UpdateAdminDirectoryRestaurantRequestSchema.parse(payload);
         const response = await updateMutation.mutateAsync({ id, patch });
-        toast.success("Restaurant updated");
+        toast.success(uiCopy("restaurant-updated"));
         navigate(`/directory/restaurants/${response.restaurant.id}`);
       } else {
         const input = CreateAdminDirectoryRestaurantRequestSchema.parse(payload);
         const response = await createMutation.mutateAsync(input);
-        toast.success("Restaurant created");
+        toast.success(uiCopy("restaurant-created"));
         navigate(`/directory/restaurants/${response.restaurant.id}`);
       }
     } catch (submitError) {
@@ -137,7 +139,7 @@ export default function RestaurantFormScreen() {
           }
         }
         setFieldErrors(mapped);
-        toast.error("Please fix validation errors");
+        toast.error(uiCopy("please-fix-validation-errors"));
         return;
       }
 
@@ -184,7 +186,7 @@ export default function RestaurantFormScreen() {
   };
 
   if (isEdit && isLoading) {
-    return <div className="p-8 text-muted-foreground">Loading restaurant...</div>;
+    return <div className="p-8 text-muted-foreground">{uiCopy("loading-restaurant")}</div>;
   }
 
   if (isEdit && isError) {
@@ -192,7 +194,7 @@ export default function RestaurantFormScreen() {
       <div className="space-y-3 p-8">
         <p className="text-sm text-destructive">{getApiErrorDetail(error)}</p>
         <Button variant="outline" onClick={() => void refetch()} disabled={isRefetching}>
-          {isRefetching ? "Retrying..." : "Retry"}
+          {isRefetching ? uiCopy("retrying") : uiCopy("retry")}
         </Button>
       </div>
     );
@@ -201,11 +203,11 @@ export default function RestaurantFormScreen() {
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <div>
-        <h1 className="text-h1 text-foreground">{isEdit ? "Edit restaurant" : "Add restaurant"}</h1>
+        <h1 className="text-h1 text-foreground">
+          {isEdit ? uiCopy("edit-restaurant") : uiCopy("add-restaurant")}
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isEdit
-            ? "Update restaurant information for the public directory."
-            : "Create a new restaurant entry for the public directory."}
+          {isEdit ? uiCopy("update-restaurant-information-for") : uiCopy("create-a-new-restaurant")}
         </p>
       </div>
 

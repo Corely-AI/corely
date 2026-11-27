@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ const formatLocalDate = (value: string): string => {
 };
 
 export default function BirthdayRemindersPage() {
+  const uiCopy = useUiCopy("ui.customers-birthdayreminderspage");
   const today = React.useMemo(() => toDateInputValue(new Date()), []);
   const inThirtyDays = React.useMemo(() => toDateInputValue(addDays(new Date(), 30)), []);
 
@@ -46,7 +48,7 @@ export default function BirthdayRemindersPage() {
 
   return (
     <CrudListPageLayout
-      title="Birthday Reminders"
+      title={uiCopy("birthday-reminders")}
       subtitle="See upcoming customer birthdays for the next period"
       primaryAction={
         <Button
@@ -54,13 +56,13 @@ export default function BirthdayRemindersPage() {
           onClick={() => birthdaysQuery.refetch()}
           disabled={birthdaysQuery.isFetching}
         >
-          Refresh
+          {uiCopy("refresh")}
         </Button>
       }
       filters={
         <>
           <div className="space-y-1">
-            <Label htmlFor="birthdays-from">From</Label>
+            <Label htmlFor="birthdays-from">{uiCopy("from")}</Label>
             <Input
               id="birthdays-from"
               type="date"
@@ -70,7 +72,7 @@ export default function BirthdayRemindersPage() {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="birthdays-to">To</Label>
+            <Label htmlFor="birthdays-to">{uiCopy("to")}</Label>
             <Input
               id="birthdays-to"
               type="date"
@@ -85,20 +87,18 @@ export default function BirthdayRemindersPage() {
       <Card className="border-0 shadow-none">
         <CardContent className="p-0">
           {hasInvalidRange ? (
-            <div className="p-8 text-center text-destructive">
-              End date must be greater than or equal to start date.
-            </div>
+            <div className="p-8 text-center text-destructive">{uiCopy("end-date-must-be")}</div>
           ) : birthdaysQuery.isLoading ? (
             <div className="p-8 text-center text-muted-foreground">
-              Loading upcoming birthdays...
+              {uiCopy("loading-upcoming-birthdays")}
             </div>
           ) : birthdaysQuery.isError ? (
             <div className="p-8 text-center text-destructive">
-              Failed to load birthday reminders.
+              {uiCopy("failed-to-load-birthday")}
             </div>
           ) : birthdays.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              No upcoming birthdays in this range.
+              {uiCopy("no-upcoming-birthdays-in")}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -106,19 +106,19 @@ export default function BirthdayRemindersPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Customer
+                      {uiCopy("customer")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Birthday
+                      {uiCopy("birthday")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Next birthday
+                      {uiCopy("next-birthday")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      In
+                      {uiCopy("in")}
                     </th>
                     <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                      Action
+                      {uiCopy("action")}
                     </th>
                   </tr>
                 </thead>
@@ -133,11 +133,13 @@ export default function BirthdayRemindersPage() {
                         {formatLocalDate(item.nextBirthday)}
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {item.daysUntilBirthday} day{item.daysUntilBirthday === 1 ? "" : "s"}
+                        {item.daysUntilBirthday}
+                        {" " + uiCopy("day")}
+                        {item.daysUntilBirthday === 1 ? "" : uiCopy("s")}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/customers/${item.customerPartyId}`}>Open</Link>
+                          <Link to={`/customers/${item.customerPartyId}`}>{uiCopy("open")}</Link>
                         </Button>
                       </td>
                     </tr>

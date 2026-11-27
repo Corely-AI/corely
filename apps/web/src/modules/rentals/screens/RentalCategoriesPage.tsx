@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit2, Trash2 } from "lucide-react";
@@ -22,6 +23,7 @@ const slugify = (value: string) =>
     .substring(0, 80);
 
 export default function RentalCategoriesPage() {
+  const uiCopy = useUiCopy("ui.rentals-rentalcategoriespage");
   const queryClient = useQueryClient();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{
@@ -83,7 +85,7 @@ export default function RentalCategoriesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => rentalsApi.deleteCategory(id),
     onSuccess: () => {
-      toast.success("Category deleted");
+      toast.success(uiCopy("category-deleted"));
       void queryClient.invalidateQueries({ queryKey: ["rentals/categories"] });
       setDeleteId(null);
     },
@@ -95,24 +97,26 @@ export default function RentalCategoriesPage() {
   return (
     <>
       <CrudListPageLayout
-        title="Rental Categories"
+        title={uiCopy("rental-categories")}
         subtitle="Manage categories for your properties"
         primaryAction={
           <Button onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Category
+            {uiCopy("add-category")}
           </Button>
         }
       >
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">Loading categories...</div>
+              <div className="p-8 text-center text-muted-foreground">
+                {uiCopy("loading-categories")}
+              </div>
             ) : categories.length === 0 ? (
               <EmptyState
-                title="No categories"
-                description="Create your first category to organize your properties."
-                action={<Button onClick={openCreate}>Add Category</Button>}
+                title={uiCopy("no-categories")}
+                description={uiCopy("create-your-first-category")}
+                action={<Button onClick={openCreate}>{uiCopy("add-category")}</Button>}
               />
             ) : (
               <div className="overflow-x-auto">
@@ -120,10 +124,10 @@ export default function RentalCategoriesPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Name
+                        {uiCopy("name")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Slug
+                        {uiCopy("slug")}
                       </th>
                       <th />
                     </tr>
@@ -165,20 +169,22 @@ export default function RentalCategoriesPage() {
         <DrawerContent>
           <div className="mx-auto w-full max-w-sm">
             <DrawerHeader>
-              <DrawerTitle>{editingCategory ? "Edit Category" : "New Category"}</DrawerTitle>
+              <DrawerTitle>
+                {editingCategory ? uiCopy("edit-category") : uiCopy("new-category")}
+              </DrawerTitle>
             </DrawerHeader>
             <div className="p-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="cat-name">Name</Label>
+                <Label htmlFor="cat-name">{uiCopy("name")}</Label>
                 <Input
                   id="cat-name"
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="e.g. Luxury"
+                  placeholder={uiCopy("e-g-luxury")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cat-slug">Slug</Label>
+                <Label htmlFor="cat-slug">{uiCopy("slug")}</Label>
                 <Input
                   id="cat-slug"
                   value={slug}
@@ -186,16 +192,16 @@ export default function RentalCategoriesPage() {
                     setSlug(e.target.value);
                     setSlugTouched(true);
                   }}
-                  placeholder="luxury"
+                  placeholder={uiCopy("luxury")}
                 />
               </div>
             </div>
             <DrawerFooter>
               <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
-                {editingCategory ? "Update" : "Create"}
+                {editingCategory ? uiCopy("update") : uiCopy("create")}
               </Button>
               <Button variant="outline" onClick={() => setIsDrawerOpen(false)}>
-                Cancel
+                {uiCopy("cancel")}
               </Button>
             </DrawerFooter>
           </div>
@@ -208,8 +214,8 @@ export default function RentalCategoriesPage() {
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
         isLoading={deleteMutation.isPending}
-        title="Delete Category"
-        description="Are you sure you want to delete this category? This action cannot be undone."
+        title={uiCopy("delete-category")}
+        description={uiCopy("are-you-sure-you")}
       />
     </>
   );

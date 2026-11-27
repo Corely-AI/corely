@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Plus, Trash2, Check, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -26,6 +27,7 @@ interface BankAccountsListProps {
 }
 
 export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
+  const uiCopy = useUiCopy("ui.settings-payment-methods-bankaccountslist");
   const { data, isLoading } = useBankAccounts(legalEntityId);
   const accounts = data?.bankAccounts ?? [];
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -38,23 +40,23 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
   const activeAccounts = accounts.filter((a) => a.isActive);
 
   if (isLoading) {
-    return <div className="text-muted-foreground">Loading bank accounts...</div>;
+    return <div className="text-muted-foreground">{uiCopy("loading-bank-accounts")}</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Bank Accounts</h3>
+        <h3 className="font-semibold">{uiCopy("bank-accounts")}</h3>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              Add Account
+              {uiCopy("add-account")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Bank Account</DialogTitle>
+              <DialogTitle>{uiCopy("add-bank-account")}</DialogTitle>
             </DialogHeader>
             <BankAccountForm legalEntityId={legalEntityId} onSuccess={() => setIsFormOpen(false)} />
           </DialogContent>
@@ -64,7 +66,7 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
       {activeAccounts.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            No bank accounts configured yet
+            {uiCopy("no-bank-accounts-configured")}
           </CardContent>
         </Card>
       ) : (
@@ -78,7 +80,7 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
                     {account.accountHolderName} • {account.currency}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {account.iban ? `IBAN: ****${account.iban.slice(-4)}` : "No IBAN"}
+                    {account.iban ? `IBAN: ****${account.iban.slice(-4)}` : uiCopy("no-iban")}
                   </div>
                 </div>
 
@@ -86,7 +88,7 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
                   {account.isDefault && (
                     <Badge variant="secondary" className="gap-1">
                       <Check className="w-3 h-3" />
-                      Default
+                      {uiCopy("default")}
                     </Badge>
                   )}
 
@@ -97,7 +99,7 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
                       onClick={() => setDefaultMutation.mutate({ id: account.id, legalEntityId })}
                       disabled={setDefaultMutation.isPending}
                     >
-                      Set Default
+                      {uiCopy("set-default")}
                     </Button>
                   )}
 
@@ -113,13 +115,10 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
-          <AlertDialogTitle>Deactivate Bank Account</AlertDialogTitle>
-          <AlertDialogDescription>
-            This bank account will no longer be available for new invoices, but existing invoices
-            will retain the payment information.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{uiCopy("deactivate-bank-account")}</AlertDialogTitle>
+          <AlertDialogDescription>{uiCopy("this-bank-account-will")}</AlertDialogDescription>
           <div className="flex justify-end gap-2">
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{uiCopy("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (deleteId) {
@@ -130,7 +129,7 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
               disabled={deactivateMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Deactivate
+              {uiCopy("deactivate")}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

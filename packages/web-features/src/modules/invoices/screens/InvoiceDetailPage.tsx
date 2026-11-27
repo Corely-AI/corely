@@ -1,8 +1,15 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { InvoiceDraftGuidanceSlot } from "@corely/invoices-ui";
 import { invoiceCustomerOptions } from "../utils/invoice-customer-options";
 import { invoiceFormValues } from "../utils/invoice-form-values";
-import { useInvoicesApi, useInvoiceKeys, useInvoiceNavigate } from "../invoice-runtime";
-import { useInvoiceWorkspace, useInvoiceRuntime, useInvoiceDraftGuard } from "../invoice-runtime";
+import {
+  useInvoicesApi,
+  useInvoiceKeys,
+  useInvoiceNavigate,
+  useInvoiceWorkspace,
+  useInvoiceRuntime,
+  useInvoiceDraftGuard,
+} from "../invoice-runtime";
 import { flushSync } from "react-dom";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
@@ -11,8 +18,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@corely/ui";
-import { Button } from "@corely/ui";
+import { Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
 import {
   invoiceFormSchema,
@@ -39,6 +45,7 @@ import { InvoiceTotals } from "../components/invoice-form/InvoiceTotals";
 import { InvoiceNotes } from "../components/invoice-form/InvoiceNotes";
 
 export default function InvoiceDetailPage() {
+  const uiCopy = useUiCopy("ui.invoices-invoicedetailpage");
   const invoicesApi = useInvoicesApi();
   const invoiceQueryKeys = useInvoiceKeys();
   const { id } = useParams<{ id: string }>();
@@ -290,7 +297,7 @@ export default function InvoiceDetailPage() {
       return;
     }
     if (isViewOnly) {
-      toast.info("This invoice is view-only after finalize.");
+      toast.info(uiCopy("this-invoice-is-view"));
       return;
     }
     try {
@@ -440,31 +447,24 @@ export default function InvoiceDetailPage() {
         <form onSubmit={handleSubmit(onFormSubmit)}>
           {isViewOnly && (
             <div className="mb-4 rounded-md border border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-              This invoice is finalized and can only be viewed.
+              {uiCopy("this-invoice-is-finalized")}
             </div>
           )}
           <Card>
             <CardContent className="p-4 sm:p-8 space-y-8">
               <fieldset disabled={isViewOnly} className="min-w-0 space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Customer Selection */}
                   <CustomerSelection additionalOptions={additionalCustomerOptions} />
-
-                  {/* Invoice Metadata */}
                   <InvoiceMetadata onGenerateInvoiceNumber={generateInvoiceNumber} />
                 </div>
 
-                {/* Line Items */}
                 <InvoiceLineItems locale={locale} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Notes */}
                   <InvoiceNotes />
-                  {/* Totals */}
                   <InvoiceTotals locale={locale} />
                 </div>
 
-                {/* Footer */}
                 <InvoiceFooter
                   legalEntityId={invoice.legalEntityId}
                   paymentMethodId={watch("paymentMethodId")}
@@ -478,7 +478,7 @@ export default function InvoiceDetailPage() {
               </fieldset>
               {isViewOnly ? (
                 <div className="flex justify-end pt-6 border-t border-border text-sm text-muted-foreground">
-                  View only
+                  {uiCopy("view-only")}
                 </div>
               ) : (
                 <div className="flex justify-end pt-6 border-t border-border">

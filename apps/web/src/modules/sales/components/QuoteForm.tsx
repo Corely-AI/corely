@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -41,6 +42,7 @@ type LineItem = {
 };
 
 export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabled, onSubmit }) => {
+  const uiCopy = useUiCopy("ui.sales-quoteform");
   const buildLineItems = (items?: QuoteFormValues["lineItems"]): LineItem[] =>
     items?.length
       ? items.map((item) => ({
@@ -128,10 +130,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Customer</Label>
+          <Label>{uiCopy("customer")}</Label>
           <Select value={customerPartyId} onValueChange={setCustomerPartyId} disabled={disabled}>
             <SelectTrigger>
-              <SelectValue placeholder="Select customer" />
+              <SelectValue placeholder={uiCopy("select-customer")} />
             </SelectTrigger>
             <SelectContent>
               {customers.map((customer) => (
@@ -143,7 +145,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Currency</Label>
+          <Label>{uiCopy("currency")}</Label>
           <Input
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
@@ -151,7 +153,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
           />
         </div>
         <div className="space-y-2">
-          <Label>Issue Date</Label>
+          <Label>{uiCopy("issue-date")}</Label>
           <Input
             type="date"
             value={issueDate}
@@ -160,7 +162,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
           />
         </div>
         <div className="space-y-2">
-          <Label>Valid Until</Label>
+          <Label>{uiCopy("valid-until")}</Label>
           <Input
             type="date"
             value={validUntilDate}
@@ -169,7 +171,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
           />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label>Payment Terms</Label>
+          <Label>{uiCopy("payment-terms")}</Label>
           <Input
             value={paymentTerms}
             onChange={(e) => setPaymentTerms(e.target.value)}
@@ -180,16 +182,16 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Line Items</Label>
+          <Label>{uiCopy("line-items")}</Label>
           <Button type="button" variant="secondary" onClick={addLineItem} disabled={disabled}>
-            Add Line
+            {uiCopy("add-line")}
           </Button>
         </div>
         <div className="space-y-3">
           {lineItems.map((item, index) => (
             <div key={index} className="grid gap-3 md:grid-cols-6 items-end">
               <div className="md:col-span-2">
-                <Label>Description</Label>
+                <Label>{uiCopy("description")}</Label>
                 <Input
                   value={item.description}
                   onChange={(e) => updateLineItem(index, "description", e.target.value)}
@@ -197,7 +199,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
                 />
               </div>
               <div>
-                <Label>Qty</Label>
+                <Label>{uiCopy("qty")}</Label>
                 <Input
                   type="number"
                   value={item.quantity}
@@ -206,7 +208,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
                 />
               </div>
               <div>
-                <Label>Unit Price (cents)</Label>
+                <Label>{uiCopy("unit-price-cents")}</Label>
                 <Input
                   type="number"
                   value={item.unitPriceCents}
@@ -215,7 +217,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
                 />
               </div>
               <div>
-                <Label>Discount (cents)</Label>
+                <Label>{uiCopy("discount-cents")}</Label>
                 <Input
                   type="number"
                   value={item.discountCents ?? 0}
@@ -230,7 +232,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
                   onClick={() => removeLineItem(index)}
                   disabled={disabled}
                 >
-                  Remove
+                  {uiCopy("remove")}
                 </Button>
               </div>
             </div>
@@ -239,22 +241,24 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({ customers, initial, disabl
       </div>
 
       <div className="space-y-2">
-        <Label>Notes</Label>
+        <Label>{uiCopy("notes")}</Label>
         <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} disabled={disabled} />
       </div>
 
       <div className="border-t pt-4 flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Subtotal: {formatMoney(totals.subtotalCents, "en-US", currency)} | Discount:{" "}
-          {formatMoney(totals.discountCents, "en-US", currency)}
+          {uiCopy("subtotal") + " "}
+          {formatMoney(totals.subtotalCents, "en-US", currency)}
+          {" " + uiCopy("discount")} {formatMoney(totals.discountCents, "en-US", currency)}
         </div>
         <div className="text-lg font-semibold">
-          Total: {formatMoney(totals.totalCents, "en-US", currency)}
+          {uiCopy("total") + " "}
+          {formatMoney(totals.totalCents, "en-US", currency)}
         </div>
       </div>
 
       <Button type="submit" variant="accent" disabled={disabled || !customerPartyId}>
-        Save Quote
+        {uiCopy("save-quote")}
       </Button>
     </form>
   );

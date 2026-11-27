@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -23,6 +24,7 @@ import CustomerFormFields from "../components/CustomerFormFields";
 import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function NewCustomerPage() {
+  const uiCopy = useUiCopy("ui.customers-newcustomerpage");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -49,7 +51,7 @@ export default function NewCustomerPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["customers"] });
-      toast.success("Customer created successfully!");
+      toast.success(uiCopy("customer-created-successfully"));
       navigate("/customers");
     },
     onError: (error) => {
@@ -73,7 +75,7 @@ export default function NewCustomerPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/customers")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Create New Customer</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("create-new-customer")}</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -81,7 +83,7 @@ export default function NewCustomerPage() {
             onClick={() => navigate("/customers")}
             disabled={createCustomerMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
@@ -89,7 +91,7 @@ export default function NewCustomerPage() {
             disabled={createCustomerMutation.isPending}
             data-testid="submit-customer-button"
           >
-            {createCustomerMutation.isPending ? "Creating..." : "Create Customer"}
+            {createCustomerMutation.isPending ? uiCopy("creating") : uiCopy("create-customer")}
           </Button>
         </div>
       </div>

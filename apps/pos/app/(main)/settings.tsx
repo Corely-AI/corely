@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import { corelyLocaleDetails, corelyLocales } from "@corely/contracts";
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,6 +15,7 @@ import { posTheme } from "@/ui/theme";
 const LAYOUT_OPTIONS: LayoutMode[] = ["AUTO", "PHONE", "TABLET"];
 
 export default function SettingsScreen() {
+  const uiCopy = useUiCopy("ui.main-settings");
   const { t } = useTranslation();
   const router = useRouter();
   const { user, logout } = useAuthStore();
@@ -83,9 +85,12 @@ export default function SettingsScreen() {
 
       <Card>
         <View testID="pos-settings-workspace-info">
-          <Text style={styles.sectionTitle}>Workspace</Text>
-          <ListRow title="Workspace ID" subtitle={user?.workspaceId ?? t("settings.noWorkspace")} />
-          <ListRow title="User ID" subtitle={user?.userId ?? t("settings.unknownUser")} />
+          <Text style={styles.sectionTitle}>{uiCopy("workspace")}</Text>
+          <ListRow
+            title={uiCopy("workspace-id")}
+            subtitle={user?.workspaceId ?? t("settings.noWorkspace")}
+          />
+          <ListRow title={uiCopy("user-id")} subtitle={user?.userId ?? t("settings.unknownUser")} />
         </View>
       </Card>
 

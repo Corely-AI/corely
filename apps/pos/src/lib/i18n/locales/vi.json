@@ -326,16 +326,8 @@
     "syncSnapshotTitle": "Sync snapshot",
     "unknownUser": "Unknown user",
     "workspaceBadge": "WS {{id}}",
-    "layoutMode": {
-      "auto": "Tự động",
-      "phone": "Điện thoại",
-      "tablet": "Máy tính bảng"
-    },
-    "languages": {
-      "en": "English",
-      "de": "Deutsch",
-      "vi": "Tiếng Việt"
-    }
+    "layoutMode": { "auto": "Tự động", "phone": "Điện thoại", "tablet": "Máy tính bảng" },
+    "languages": { "en": "English", "de": "Deutsch", "vi": "Tiếng Việt" }
   },
   "kiosk": {
     "brand": "Corely Check-In",
@@ -429,5 +421,70 @@
     "online": "Trực tuyến",
     "queue": "Hàng đợi {{count}}",
     "syncing": "Đang đồng bộ"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Chọn một đăng ký đầu tiên",
+      "restaurant-pos-uses-the": "POS nhà hàng sử dụng cùng một bối cảnh đăng ký và thay đổi như luồng POS cốt lõi.",
+      "open-a-shift-first": "Mở ca trước",
+      "restaurant-tables-can-only": "Bàn nhà hàng chỉ có thể được mở khi ca thu ngân đang hoạt động.",
+      "restaurant-floor": "Tầng nhà hàng",
+      "open-and-resume-table": "Mở và tiếp tục các phiên bàn từ bản đồ phòng ăn.",
+      "floor-plan-copilot": "Sơ đồ mặt bằng phi công phụ",
+      "summarize-occupied-dirty-or": "Tóm tắt các bàn bị chiếm dụng, bẩn hoặc bị chặn mà không làm gián đoạn việc sử dụng sàn thủ công.",
+      "loading-floor-plan": "Đang tải sơ đồ mặt bằng…",
+      "seats": "· chỗ ngồi",
+      "tap-to-resume-check": "Nhấn để tiếp tục kiểm tra"
+    },
+    "main-settings": {
+      "workspace": "Không gian làm việc",
+      "workspace-id": "ID không gian làm việc",
+      "user-id": "ID người dùng"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "thanh toán",
+      "load-the-table-order": "Tải thứ tự bảng trước khi thanh toán.",
+      "payment-close": "Thanh toán / Đóng",
+      "settle-table": "Giải quyết bàn",
+      "send-all-draft-items": "Gửi tất cả các mặt hàng dự thảo đến nhà bếp trước khi thanh toán.",
+      "this-order-has-already": "Lệnh này đã được giải quyết.",
+      "phase-1-keeps-settlement": "Giai đoạn 1 giúp việc thanh toán trở nên đơn giản: tiền mặt chính xác hoặc giữ chỗ chụp thẻ duy nhất.",
+      "send-items-to-kitchen": "Gửi đồ vào bếp",
+      "cash": "Tiền mặt",
+      "card": "Thẻ"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Thứ tự bàn",
+      "loading-table": "Đang tải bảng",
+      "opening-or-resuming-the": "Mở hoặc tiếp tục bảng đã chọn.",
+      "search-menu-items": "Tìm kiếm các mục menu",
+      "current-order": "Thứ tự hiện tại",
+      "add-menu-items-to": "Thêm các mục menu để bắt đầu kiểm tra.",
+      "no-modifiers": "Không có sửa đổi",
+      "subtotal": "Tổng phụ",
+      "tax": "Thuế",
+      "total": "Tổng cộng",
+      "send-to-kitchen": "Gửi vào bếp",
+      "take-payment": "Nhận thanh toán",
+      "order-copilot": "Lệnh phi công phụ",
+      "parse-order-instructions-into": "Phân tích hướng dẫn đặt hàng thành các thẻ đề xuất rõ ràng. Áp dụng vẫn sử dụng các lệnh nhà hàng bình thường.",
+      "try-2-margherita-1": "Hãy thử: \"2 margherita, 1 cocacola, thêm phô mai\"",
+      "included": "Bao gồm",
+      "add-item": "Thêm mục"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Chuyển gần phi công phụ",
+      "summarize-open-tables-unpaid": "Tóm tắt các bảng đang mở, đơn hàng chưa thanh toán, phê duyệt và chênh lệch tiền mặt trước khi xác nhận cuối cùng."
+    },
+    "errorbanner": { "trace-id": "ID dấu vết:", "copied": "✓ Sao chép", "copy": "Sao chép" },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Phi công phụ nhà hàng",
+      "missing-required-modifier": "Thiếu công cụ sửa đổi bắt buộc:",
+      "apply-proposal": "Áp dụng đề xuất",
+      "dismiss": "Loại bỏ",
+      "ticket": "Vé",
+      "m": "tôi"
+    }
   }
 }

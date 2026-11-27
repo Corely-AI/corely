@@ -10,24 +10,24 @@ export const siteConfig = {
 };
 
 export const primaryNav = [
-  { label: "freelancer", href: "/freelancer" },
-  { label: "company", href: "/company" },
-  { label: "developers", href: "/developers" },
-] as const;
+  { label: "Freelancer", href: "/freelancer" },
+  { label: "Company", href: "/company" },
+  { label: "Developers", href: "/developers" },
+];
 
 export const footerNav = {
   product: [
-    { label: "home", href: "/" },
-    { label: "freelancer", href: "/freelancer" },
-    { label: "company", href: "/company" },
+    { label: "Home", href: "/" },
+    { label: "Freelancer", href: "/freelancer" },
+    { label: "Company", href: "/company" },
   ],
   platform: [
-    { label: "developers", href: "/developers" },
-    { label: "requestAccess", href: "mailto:hello@corely.one" },
+    { label: "Developers", href: "/developers" },
+    { label: "Request access", href: "mailto:hello@corely.one" },
     { label: "GitHub", href: "https://github.com/Corely-AI/corely" },
   ],
   legal: [
-    { label: "privacy", href: "/privacy" },
-    { label: "terms", href: "/terms" },
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
   ],
-} as const;
+};

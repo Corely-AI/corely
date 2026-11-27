@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { Button, Input, Label } from "@corely/ui";
 import type { StaffAbsence, PersonnelAttachment } from "@corely/contracts";
@@ -15,6 +16,7 @@ export function StaffAbsenceAttachments({
   manage: boolean;
   copy: AbsenceCopy;
 }) {
+  const uiCopy = useUiCopy("ui.people-staff-absence-attachments");
   const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
   const version = record.revisions[record.revisions.length - 1].version;
@@ -133,7 +135,8 @@ export function StaffAbsenceAttachments({
           {result.data?.items.map((attachment) => (
             <div key={attachment.documentId} className="flex flex-wrap items-center gap-3 text-sm">
               <span className="min-w-0 break-all">
-                {attachment.filename} · {Math.ceil(attachment.sizeBytes / 1024)} KiB
+                {attachment.filename} · {Math.ceil(attachment.sizeBytes / 1024)}
+                {" " + uiCopy("kib")}
               </span>
               <Button variant="outline" disabled={busy} onClick={() => void download(attachment)}>
                 {t.download}

@@ -15,14 +15,27 @@ export const languageNames: Partial<Record<OpenBukLocale, string>> = {
 type Key = keyof typeof messages.en;
 
 const translations: Record<OpenBukLocale, Record<Key, string>> = messages;
+const marketingLocales: readonly OpenBukLocale[] = ["en", "de", "vi"];
 const Context = createContext({
   locale: "en" as OpenBukLocale,
+  locales: corelyLocales as readonly OpenBukLocale[],
   setLocale: (_: OpenBukLocale) => {},
   t: (key: Key): string => messages.en[key],
 });
-export function LanguageProvider({ children }: { children: ReactNode }) {
+export function LanguageProvider({
+  children,
+  marketing = false,
+}: {
+  children: ReactNode;
+  marketing?: boolean;
+}) {
+  const locales = marketing ? marketingLocales : corelyLocales;
   const [locale, setValue] = useState<OpenBukLocale>(() => {
     const saved = localStorage.getItem("openbuk:locale");
+    if (marketing) {
+      const stored = normalizeCorelyLocale(saved) ?? "en";
+      return marketingLocales.includes(stored) ? stored : "en";
+    }
     const hint = new URLSearchParams(location.search).get("lang");
     return resolveCorelyLocale(hint, saved, navigator.language);
   });
@@ -43,29 +56,29 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       ?.setAttribute("content", `${translations[locale].tagline} ${translations[locale].intro}`);
   }, [locale]);
   return (
-    <Context.Provider value={{ locale, setLocale, t: (key) => translations[locale][key] }}>
+    <Context.Provider value={{ locale, locales, setLocale, t: (key) => translations[locale][key] }}>
       {children}
     </Context.Provider>
   );
 }
 export const useLanguage = () => useContext(Context);
 export function LanguageSwitch() {
-  const { locale, setLocale, t } = useLanguage();
+  const { locale, locales, setLocale, t } = useLanguage();
   return (
     <select
       className="language-select"
       value={locale}
       onChange={(event) => {
         const selected = normalizeCorelyLocale(event.target.value);
-        if (selected) {
+        if (selected && locales.includes(selected)) {
           setLocale(selected);
         }
       }}
       aria-label={t("interfaceLanguage")}
     >
-      {Object.entries(languageNames).map(([value, name]) => (
+      {locales.map((value) => (
         <option key={value} value={value} lang={value}>
-          {name}
+          {corelyLocaleDetails[value].name}
         </option>
       ))}
     </select>

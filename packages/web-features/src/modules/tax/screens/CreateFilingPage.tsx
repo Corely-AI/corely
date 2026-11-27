@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -50,6 +51,7 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 export const CreateFilingPage = () => {
+  const uiCopy = useUiCopy("ui.tax-createfilingpage");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -93,15 +95,15 @@ export const CreateFilingPage = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            aria-label="Go back"
+            aria-label={uiCopy("go-back")}
             className="-ml-2 shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground tracking-tight">New Tax Filing</h1>
+            <h1 className="text-h1 text-foreground tracking-tight">{uiCopy("new-tax-filing")}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Choose the filing type and period to create a new obligation.
+              {uiCopy("choose-the-filing-type")}
             </p>
           </div>
         </div>
@@ -110,7 +112,7 @@ export const CreateFilingPage = () => {
       {/* Form card — full width */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-medium">Filing details</CardTitle>
+          <CardTitle className="text-base font-medium">{uiCopy("filing-details")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -121,18 +123,18 @@ export const CreateFilingPage = () => {
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Filing Type</FormLabel>
+                    <FormLabel>{uiCopy("filing-type")}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder={uiCopy("select-type")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="vat">VAT Return</SelectItem>
-                        <SelectItem value="income-annual">Income Tax (Annual)</SelectItem>
-                        <SelectItem value="vat-annual">Annual VAT</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="vat">{uiCopy("vat-return")}</SelectItem>
+                        <SelectItem value="income-annual">{uiCopy("income-tax-annual")}</SelectItem>
+                        <SelectItem value="vat-annual">{uiCopy("annual-vat")}</SelectItem>
+                        <SelectItem value="other">{uiCopy("other")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -146,7 +148,7 @@ export const CreateFilingPage = () => {
                 name="year"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tax Year</FormLabel>
+                    <FormLabel>{uiCopy("tax-year")}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -178,9 +180,9 @@ export const CreateFilingPage = () => {
 
               <div className="flex justify-end gap-2 pt-2 border-t border-border">
                 <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                  Cancel
+                  {uiCopy("cancel")}
                 </Button>
-                <Button type="submit">Create Filing</Button>
+                <Button type="submit">{uiCopy("create-filing")}</Button>
               </div>
             </form>
           </Form>

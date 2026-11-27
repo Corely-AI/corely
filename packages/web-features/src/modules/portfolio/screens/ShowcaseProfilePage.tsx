@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -23,6 +24,7 @@ import {
 } from "../schemas/profile-form.schema";
 
 export default function ShowcaseProfilePage() {
+  const uiCopy = useUiCopy("ui.portfolio-showcaseprofilepage");
   const { showcaseId } = useParams<{ showcaseId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -63,7 +65,7 @@ export default function ShowcaseProfilePage() {
       return portfolioApi.upsertProfile(showcaseId, toUpsertProfileInput(data));
     },
     onSuccess: async () => {
-      toast.success("Profile updated");
+      toast.success(uiCopy("profile-updated"));
       await queryClient.invalidateQueries({ queryKey: ["portfolio", "profiles"] });
     },
     onError: (error) => {
@@ -88,97 +90,103 @@ export default function ShowcaseProfilePage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Profile</h1>
-            <p className="text-sm text-muted-foreground">{showcase?.name ?? "Showcase profile"}</p>
+            <h1 className="text-h1 text-foreground">{uiCopy("profile")}</h1>
+            <p className="text-sm text-muted-foreground">
+              {showcase?.name ?? uiCopy("showcase-profile")}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/portfolio/showcases")}>
-            Back to showcases
+            {uiCopy("back-to-showcases")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : "Save profile"}
+            {saveMutation.isPending ? uiCopy("saving") : uiCopy("save-profile")}
           </Button>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="text-sm text-muted-foreground">Loading profile...</div>
+        <div className="text-sm text-muted-foreground">{uiCopy("loading-profile")}</div>
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
             <CardContent className="p-8 space-y-6">
               <div>
-                <Label htmlFor="introLine">Intro line</Label>
-                <Input id="introLine" {...form.register("introLine")} placeholder="Hi, I'm..." />
+                <Label htmlFor="introLine">{uiCopy("intro-line")}</Label>
+                <Input
+                  id="introLine"
+                  {...form.register("introLine")}
+                  placeholder={uiCopy("hi-i-m")}
+                />
               </div>
               <div>
-                <Label htmlFor="headline">Headline</Label>
+                <Label htmlFor="headline">{uiCopy("headline")}</Label>
                 <Input
                   id="headline"
                   {...form.register("headline")}
-                  placeholder="Designing product experiences"
+                  placeholder={uiCopy("designing-product-experiences")}
                 />
               </div>
               <div>
-                <Label htmlFor="subheadline">Subheadline</Label>
+                <Label htmlFor="subheadline">{uiCopy("subheadline")}</Label>
                 <Input id="subheadline" {...form.register("subheadline")} />
               </div>
               <div>
-                <Label htmlFor="aboutShort">About short</Label>
+                <Label htmlFor="aboutShort">{uiCopy("about-short")}</Label>
                 <Textarea id="aboutShort" rows={3} {...form.register("aboutShort")} />
               </div>
               <div>
-                <Label htmlFor="aboutLong">About long</Label>
+                <Label htmlFor="aboutLong">{uiCopy("about-long")}</Label>
                 <Textarea id="aboutLong" rows={6} {...form.register("aboutLong")} />
               </div>
               <div>
-                <Label htmlFor="focusBullets">Focus bullets (comma separated)</Label>
+                <Label htmlFor="focusBullets">{uiCopy("focus-bullets-comma-separated")}</Label>
                 <Input
                   id="focusBullets"
                   {...form.register("focusBullets")}
-                  placeholder="AI product strategy, UI systems"
+                  placeholder={uiCopy("ai-product-strategy-ui")}
                 />
               </div>
               <div>
-                <Label htmlFor="ctaTitle">CTA title</Label>
+                <Label htmlFor="ctaTitle">{uiCopy("cta-title")}</Label>
                 <Input id="ctaTitle" {...form.register("ctaTitle")} />
               </div>
               <div>
-                <Label htmlFor="ctaText">CTA text</Label>
+                <Label htmlFor="ctaText">{uiCopy("cta-text")}</Label>
                 <Textarea id="ctaText" rows={2} {...form.register("ctaText")} />
               </div>
               <div>
-                <Label htmlFor="ctaUrl">CTA URL</Label>
+                <Label htmlFor="ctaUrl">{uiCopy("cta-url")}</Label>
                 <Input id="ctaUrl" {...form.register("ctaUrl")} placeholder="https://..." />
               </div>
               <div>
-                <Label htmlFor="techStacks">Tech stacks (comma separated)</Label>
+                <Label htmlFor="techStacks">{uiCopy("tech-stacks-comma-separated")}</Label>
                 <Input
                   id="techStacks"
                   {...form.register("techStacks")}
-                  placeholder="Figma, React, Tailwind"
+                  placeholder={uiCopy("figma-react-tailwind")}
                 />
               </div>
               <div>
-                <Label htmlFor="socialLinks">Social links (JSON)</Label>
+                <Label htmlFor="socialLinks">{uiCopy("social-links-json")}</Label>
                 <Textarea
                   id="socialLinks"
                   rows={3}
                   {...form.register("socialLinks")}
-                  placeholder='{"linkedin":"https://..."}'
+                  placeholder={uiCopy("linkedin-https")}
                 />
               </div>
               <div>
-                <Label htmlFor="homeSections">Home sections (comma separated)</Label>
+                <Label htmlFor="homeSections">{uiCopy("home-sections-comma-separated")}</Label>
                 <Input
                   id="homeSections"
                   {...form.register("homeSections")}
-                  placeholder="works, services, clients, blog, about"
+                  placeholder={uiCopy("works-services-clients-blog")}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -192,7 +200,7 @@ export default function ShowcaseProfilePage() {
                     />
                   )}
                 />
-                <Label htmlFor="isPublished">Published</Label>
+                <Label htmlFor="isPublished">{uiCopy("published")}</Label>
               </div>
             </CardContent>
           </Card>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,6 +22,7 @@ const getStatusVariant = (status: string) => {
 };
 
 export default function BookingDetailPage() {
+  const uiCopy = useUiCopy("ui.booking-bookingdetailpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
@@ -44,7 +46,7 @@ export default function BookingDetailPage() {
       await bookingApi.cancelBooking(id, { reason: "Cancelled from booking details" });
     },
     onSuccess: async () => {
-      toast.success("Booking cancelled");
+      toast.success(uiCopy("booking-cancelled"));
       await invalidateResourceQueries(queryClient, "booking/bookings", id ? { id } : undefined);
       await bookingQuery.refetch();
     },
@@ -58,7 +60,9 @@ export default function BookingDetailPage() {
     return (
       <div className="p-6 lg:p-8">
         <Card>
-          <CardContent className="p-6 text-sm text-destructive">Missing booking id.</CardContent>
+          <CardContent className="p-6 text-sm text-destructive">
+            {uiCopy("missing-booking-id")}
+          </CardContent>
         </Card>
       </div>
     );
@@ -72,9 +76,9 @@ export default function BookingDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Booking details</h1>
+            <h1 className="text-h1 text-foreground">{uiCopy("booking-details")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              View schedule, customer details, and current booking status.
+              {uiCopy("view-schedule-customer-details")}
             </p>
           </div>
         </div>
@@ -83,7 +87,7 @@ export default function BookingDetailPage() {
           <Button asChild variant="outline">
             <Link to={`/booking/bookings/${id}/edit`}>
               <Pencil className="h-4 w-4" />
-              Edit
+              {uiCopy("edit")}
             </Link>
           </Button>
           <ConfirmDeleteDialog
@@ -92,11 +96,11 @@ export default function BookingDetailPage() {
                 variant="destructive"
                 disabled={cancelMutation.isPending || bookingQuery.data?.status === "CANCELLED"}
               >
-                Cancel booking
+                {uiCopy("cancel-booking")}
               </Button>
             }
-            title="Cancel booking"
-            description="This action will mark the booking as cancelled."
+            title={uiCopy("cancel-booking")}
+            description={uiCopy("this-action-will-mark")}
             confirmLabel="Cancel booking"
             isLoading={cancelMutation.isPending}
             onConfirm={async () => {
@@ -109,7 +113,7 @@ export default function BookingDetailPage() {
       {bookingQuery.isLoading ? (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground">
-            Loading booking...
+            {uiCopy("loading-booking")}
           </CardContent>
         </Card>
       ) : null}
@@ -117,9 +121,9 @@ export default function BookingDetailPage() {
       {bookingQuery.isError ? (
         <Card>
           <CardContent className="p-6 flex items-center justify-between gap-3">
-            <div className="text-sm text-destructive">Failed to load booking.</div>
+            <div className="text-sm text-destructive">{uiCopy("failed-to-load-booking")}</div>
             <Button variant="outline" size="sm" onClick={() => void bookingQuery.refetch()}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </CardContent>
         </Card>
@@ -139,45 +143,45 @@ export default function BookingDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Start</Label>
+                <Label>{uiCopy("start")}</Label>
                 <p className="mt-1 inline-flex items-center gap-2">
                   <CalendarClock className="h-4 w-4 text-muted-foreground" />
                   {new Date(bookingQuery.data.startAt).toLocaleString()}
                 </p>
               </div>
               <div>
-                <Label>End</Label>
+                <Label>{uiCopy("end")}</Label>
                 <p className="mt-1">{new Date(bookingQuery.data.endAt).toLocaleString()}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label>Service offering</Label>
+                <Label>{uiCopy("service-offering")}</Label>
                 <p className="mt-1">{bookingQuery.data.serviceOfferingId || "-"}</p>
               </div>
               <div>
-                <Label>Booked by name</Label>
+                <Label>{uiCopy("booked-by-name")}</Label>
                 <p className="mt-1">{bookingQuery.data.bookedByName || "-"}</p>
               </div>
               <div>
-                <Label>Booked by email</Label>
+                <Label>{uiCopy("booked-by-email")}</Label>
                 <p className="mt-1">{bookingQuery.data.bookedByEmail || "-"}</p>
               </div>
             </div>
 
             <div>
-              <Label>Booked by party id</Label>
+              <Label>{uiCopy("booked-by-party-id")}</Label>
               <p className="mt-1">{bookingQuery.data.bookedByPartyId || "-"}</p>
             </div>
 
             <div>
-              <Label>Notes</Label>
+              <Label>{uiCopy("notes")}</Label>
               <p className="text-sm text-muted-foreground mt-1">{bookingQuery.data.notes || "-"}</p>
             </div>
 
             <div>
-              <Label>Allocated resources</Label>
+              <Label>{uiCopy("allocated-resources")}</Label>
               {(bookingQuery.data.allocations ?? []).length ? (
                 <div className="mt-2 space-y-2">
                   {bookingQuery.data.allocations?.map((allocation) => (
@@ -185,16 +189,20 @@ export default function BookingDetailPage() {
                       key={allocation.id}
                       className="rounded-md border border-border bg-muted/20 px-3 py-2 text-sm"
                     >
-                      <div>Resource: {allocation.resourceId}</div>
+                      <div>
+                        {uiCopy("resource") + " "}
+                        {allocation.resourceId}
+                      </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Role: {allocation.role} · {new Date(allocation.startAt).toLocaleString()} to{" "}
-                        {new Date(allocation.endAt).toLocaleString()}
+                        {uiCopy("role") + " "}
+                        {allocation.role} · {new Date(allocation.startAt).toLocaleString()}
+                        {" " + uiCopy("to")} {new Date(allocation.endAt).toLocaleString()}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground mt-1">No allocations</p>
+                <p className="text-sm text-muted-foreground mt-1">{uiCopy("no-allocations")}</p>
               )}
             </div>
           </CardContent>

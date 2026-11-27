@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useTranslation } from "react-i18next";
 import { useInvoicesApi } from "../invoice-runtime";
 import React, { useMemo, useState } from "react";
@@ -51,6 +52,7 @@ export function InvoiceCopilotPanel({
   amountDueCents,
   defaultLanguage,
 }: Props) {
+  const uiCopy = useUiCopy("ui.invoices-invoicecopilotpanel");
   const { t } = useTranslation();
   const invoicesApi = useInvoicesApi();
   const [language, setLanguage] = useState<InvoiceEmailDraftLanguage>(defaultLanguage);
@@ -129,7 +131,7 @@ export function InvoiceCopilotPanel({
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-semibold">Copilot</h3>
+              <h3 className="text-lg font-semibold">{uiCopy("copilot")}</h3>
               <p className="text-sm text-muted-foreground">{t("invoices.focused.copilot.intro")}</p>
             </div>
           </div>

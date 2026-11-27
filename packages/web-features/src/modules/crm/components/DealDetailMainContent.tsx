@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
@@ -120,6 +121,7 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
   onSelectChannel,
   contactContext,
 }) => {
+  const uiCopy = useUiCopy("ui.crm-dealdetailmaincontent");
   const { t } = useTranslation();
 
   return (
@@ -238,14 +240,14 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
           {aiEnabled ? (
             <Card data-testid="crm-deal-ai-summary-card">
               <CardHeader className="pb-3">
-                <CardTitle>Communication AI</CardTitle>
+                <CardTitle>{uiCopy("communication-ai")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex items-center justify-between rounded-md border px-3 py-2">
                   <div>
-                    <p className="font-medium">Inbound intent/sentiment</p>
+                    <p className="font-medium">{uiCopy("inbound-intent-sentiment")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Classify inbound communication intent and sentiment.
+                      {uiCopy("classify-inbound-communication-intent")}
                     </p>
                   </div>
                   <Switch
@@ -256,7 +258,9 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
                 </div>
 
                 {offline ? (
-                  <p className="text-xs text-muted-foreground">AI requires connection.</p>
+                  <p className="text-xs text-muted-foreground">
+                    {uiCopy("ai-requires-connection")}
+                  </p>
                 ) : null}
 
                 {summarizePending ? (
@@ -275,8 +279,10 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
                     <p>{summaryResult.result.summary}</p>
                     {summaryResult.intentSentiment ? (
                       <p className="text-xs text-muted-foreground">
-                        Intent: {summaryResult.intentSentiment.intentLabels.join(", ")} • Sentiment:{" "}
-                        {summaryResult.intentSentiment.sentiment} • Confidence:{" "}
+                        {uiCopy("intent") + " "}
+                        {summaryResult.intentSentiment.intentLabels.join(", ")}
+                        {" " + uiCopy("sentiment")} {summaryResult.intentSentiment.sentiment}
+                        {" " + uiCopy("confidence")}{" "}
                         {Math.round(summaryResult.intentSentiment.confidence * 100)}%
                       </p>
                     ) : null}
@@ -296,7 +302,7 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
                               variant="secondary"
                               onClick={() => onSelectFollowUpToolCard(toolCard)}
                             >
-                              Create follow-up
+                              {uiCopy("create-follow-up")}
                             </Button>
                           </div>
                         ))}
@@ -306,9 +312,7 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
                 ) : null}
 
                 {!summarizePending && !summaryError && !summaryResult ? (
-                  <p className="text-xs text-muted-foreground">
-                    Add a note or communication to generate summary and follow-up tasks.
-                  </p>
+                  <p className="text-xs text-muted-foreground">{uiCopy("add-a-note-or")}</p>
                 ) : null}
               </CardContent>
             </Card>

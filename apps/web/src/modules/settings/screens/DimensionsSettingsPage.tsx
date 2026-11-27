@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, ListFilter } from "lucide-react";
@@ -36,6 +37,7 @@ type ValueFormState = {
 };
 
 export default function DimensionsSettingsPage() {
+  const uiCopy = useUiCopy("ui.settings-dimensionssettingspage");
   const queryClient = useQueryClient();
   const [typeDialogOpen, setTypeDialogOpen] = React.useState(false);
   const [valueDialogOpen, setValueDialogOpen] = React.useState(false);
@@ -144,12 +146,12 @@ export default function DimensionsSettingsPage() {
   return (
     <>
       <CrudListPageLayout
-        title="Dimensions"
+        title={uiCopy("dimensions")}
         subtitle="Create reporting dimensions and manage their values"
         primaryAction={
           <Button onClick={openCreateType}>
             <Plus className="h-4 w-4 mr-2" />
-            New dimension
+            {uiCopy("new-dimension")}
           </Button>
         }
       >
@@ -162,27 +164,27 @@ export default function DimensionsSettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All entities</SelectItem>
-                  <SelectItem value="expense">Expense</SelectItem>
-                  <SelectItem value="party">Party</SelectItem>
+                  <SelectItem value="all">{uiCopy("all-entities")}</SelectItem>
+                  <SelectItem value="expense">{uiCopy("expense")}</SelectItem>
+                  <SelectItem value="party">{uiCopy("party")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {isLoading ? (
-              <div className="text-sm text-muted-foreground">Loading dimensions...</div>
+              <div className="text-sm text-muted-foreground">{uiCopy("loading-dimensions")}</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="py-2 text-left">Name</th>
-                      <th className="py-2 text-left">Code</th>
-                      <th className="py-2 text-left">Applies to</th>
-                      <th className="py-2 text-left">Required</th>
-                      <th className="py-2 text-left">Multiple</th>
-                      <th className="py-2 text-left">Status</th>
-                      <th className="py-2 text-right">Actions</th>
+                      <th className="py-2 text-left">{uiCopy("name")}</th>
+                      <th className="py-2 text-left">{uiCopy("code")}</th>
+                      <th className="py-2 text-left">{uiCopy("applies-to")}</th>
+                      <th className="py-2 text-left">{uiCopy("required")}</th>
+                      <th className="py-2 text-left">{uiCopy("multiple")}</th>
+                      <th className="py-2 text-left">{uiCopy("status")}</th>
+                      <th className="py-2 text-right">{uiCopy("actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -192,8 +194,12 @@ export default function DimensionsSettingsPage() {
                         <td className="py-2 font-mono text-xs">{type.code}</td>
                         <td className="py-2">{type.appliesTo.join(", ")}</td>
                         <td className="py-2">{type.requiredFor.join(", ") || "-"}</td>
-                        <td className="py-2">{type.allowMultiple ? "Yes" : "No"}</td>
-                        <td className="py-2">{type.isActive ? "Active" : "Archived"}</td>
+                        <td className="py-2">
+                          {type.allowMultiple ? uiCopy("yes") : uiCopy("no")}
+                        </td>
+                        <td className="py-2">
+                          {type.isActive ? uiCopy("active") : uiCopy("archived")}
+                        </td>
                         <td className="py-2">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -203,7 +209,7 @@ export default function DimensionsSettingsPage() {
                                 setSelectedTypeId(type.id);
                               }}
                             >
-                              Values
+                              {uiCopy("values")}
                             </Button>
                             <Button
                               size="icon"
@@ -228,11 +234,11 @@ export default function DimensionsSettingsPage() {
                             <ConfirmDeleteDialog
                               trigger={
                                 <Button size="sm" variant="destructive">
-                                  Archive
+                                  {uiCopy("archive")}
                                 </Button>
                               }
-                              title="Archive dimension"
-                              description="This will disable the dimension for future usage."
+                              title={uiCopy("archive-dimension")}
+                              description={uiCopy("this-will-disable-the")}
                               onConfirm={() => archiveTypeMutation.mutate(type.id)}
                               isLoading={archiveTypeMutation.isPending}
                             />
@@ -251,7 +257,7 @@ export default function DimensionsSettingsPage() {
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Dimension values</h3>
+                <h3 className="font-semibold">{uiCopy("dimension-values")}</h3>
                 <Button
                   size="sm"
                   onClick={() => {
@@ -260,12 +266,12 @@ export default function DimensionsSettingsPage() {
                   }}
                 >
                   <Plus className="h-4 w-4 mr-1" />
-                  Add value
+                  {uiCopy("add-value")}
                 </Button>
               </div>
 
               {isValuesLoading ? (
-                <div className="text-sm text-muted-foreground">Loading values...</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("loading-values")}</div>
               ) : (
                 <div className="space-y-2">
                   {values.map((value) => (
@@ -291,11 +297,11 @@ export default function DimensionsSettingsPage() {
                         <ConfirmDeleteDialog
                           trigger={
                             <Button size="sm" variant="destructive">
-                              Archive
+                              {uiCopy("archive")}
                             </Button>
                           }
-                          title="Archive value"
-                          description="This value will no longer be selectable."
+                          title={uiCopy("archive-value")}
+                          description={uiCopy("this-value-will-no")}
                           onConfirm={() => archiveValueMutation.mutate(value.id)}
                           isLoading={archiveValueMutation.isPending}
                         />
@@ -312,26 +318,28 @@ export default function DimensionsSettingsPage() {
       <Dialog open={typeDialogOpen} onOpenChange={setTypeDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingType?.id ? "Edit dimension" : "Create dimension"}</DialogTitle>
+            <DialogTitle>
+              {editingType?.id ? uiCopy("edit-dimension") : uiCopy("create-dimension")}
+            </DialogTitle>
           </DialogHeader>
           {editingType ? (
             <div className="space-y-3">
               <div>
-                <Label>Name</Label>
+                <Label>{uiCopy("name")}</Label>
                 <Input
                   value={editingType.name}
                   onChange={(event) => setEditingType({ ...editingType, name: event.target.value })}
                 />
               </div>
               <div>
-                <Label>Code</Label>
+                <Label>{uiCopy("code")}</Label>
                 <Input
                   value={editingType.code}
                   onChange={(event) => setEditingType({ ...editingType, code: event.target.value })}
                 />
               </div>
               <div>
-                <Label>Applies to</Label>
+                <Label>{uiCopy("applies-to")}</Label>
                 <Select
                   value={editingType.appliesTo}
                   onValueChange={(value) =>
@@ -342,8 +350,8 @@ export default function DimensionsSettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="expense">Expense</SelectItem>
-                    <SelectItem value="party">Party</SelectItem>
+                    <SelectItem value="expense">{uiCopy("expense")}</SelectItem>
+                    <SelectItem value="party">{uiCopy("party")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -356,7 +364,7 @@ export default function DimensionsSettingsPage() {
                     setEditingType({ ...editingType, allowMultiple: event.target.checked })
                   }
                 />
-                <Label htmlFor="allowMultiple">Allow multiple values</Label>
+                <Label htmlFor="allowMultiple">{uiCopy("allow-multiple-values")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -367,14 +375,14 @@ export default function DimensionsSettingsPage() {
                     setEditingType({ ...editingType, required: event.target.checked })
                   }
                 />
-                <Label htmlFor="required">Required for this entity type</Label>
+                <Label htmlFor="required">{uiCopy("required-for-this-entity")}</Label>
               </div>
               <Button
                 className="w-full"
                 onClick={() => saveTypeMutation.mutate(editingType)}
                 disabled={saveTypeMutation.isPending}
               >
-                {saveTypeMutation.isPending ? "Saving..." : "Save"}
+                {saveTypeMutation.isPending ? uiCopy("saving") : uiCopy("save")}
               </Button>
             </div>
           ) : null}
@@ -384,12 +392,14 @@ export default function DimensionsSettingsPage() {
       <Dialog open={valueDialogOpen} onOpenChange={setValueDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingValue?.id ? "Edit value" : "Create value"}</DialogTitle>
+            <DialogTitle>
+              {editingValue?.id ? uiCopy("edit-value") : uiCopy("create-value")}
+            </DialogTitle>
           </DialogHeader>
           {editingValue ? (
             <div className="space-y-3">
               <div>
-                <Label>Name</Label>
+                <Label>{uiCopy("name")}</Label>
                 <Input
                   value={editingValue.name}
                   onChange={(event) =>
@@ -398,7 +408,7 @@ export default function DimensionsSettingsPage() {
                 />
               </div>
               <div>
-                <Label>Code</Label>
+                <Label>{uiCopy("code")}</Label>
                 <Input
                   value={editingValue.code}
                   onChange={(event) =>
@@ -411,7 +421,7 @@ export default function DimensionsSettingsPage() {
                 onClick={() => saveValueMutation.mutate(editingValue)}
                 disabled={saveValueMutation.isPending}
               >
-                {saveValueMutation.isPending ? "Saving..." : "Save"}
+                {saveValueMutation.isPending ? uiCopy("saving") : uiCopy("save")}
               </Button>
             </div>
           ) : null}

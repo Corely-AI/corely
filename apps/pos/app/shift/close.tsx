@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import { useMemo, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,6 +25,7 @@ import {
 import { posTheme } from "@/ui/theme";
 
 export default function CloseShiftScreen() {
+  const uiCopy = useUiCopy("ui.shift-close");
   const { t } = useTranslation();
   const router = useRouter();
   const goBack = usePosBackNavigation("/(main)/settings");
@@ -224,8 +226,8 @@ export default function CloseShiftScreen() {
             />
           </Card>
           <RestaurantCopilotPanel
-            title="Shift close copilot"
-            helperText="Summarize open tables, unpaid orders, approvals, and cash variance before final confirmation."
+            title={uiCopy("shift-close-copilot")}
+            helperText={uiCopy("summarize-open-tables-unpaid")}
             quickActions={[
               {
                 label: "Generate shift summary",

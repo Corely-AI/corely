@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
@@ -51,6 +53,7 @@ const getFilterValue = (filters: any[] | undefined, field: string) => {
 };
 
 export default function IssuesListPage() {
+  const uiCopy = useUiCopy("ui.issues-issueslistpage");
   const navigate = useNavigate();
   const { t } = useTranslation();
   const userId = useAuth().user?.userId;
@@ -204,7 +207,7 @@ export default function IssuesListPage() {
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load issues"}
+                {(error as Error)?.message || uiCopy("failed-to-load-issues")}
               </div>
             ) : null}
           </ListToolbar>
@@ -233,7 +236,7 @@ export default function IssuesListPage() {
             ) : issues.length === 0 ? (
               <EmptyState
                 icon={Plus}
-                title="No issues yet"
+                title={uiCopy("no-issues-yet")}
                 description={t("requests.emptyDescription")}
                 action={
                   <Button variant="outline" onClick={() => navigate("/issues/submit")}>
@@ -248,22 +251,22 @@ export default function IssuesListPage() {
                     <thead>
                       <tr className="border-b border-border bg-muted/50">
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Title
+                          {uiCopy("title")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Status
+                          {uiCopy("status")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Priority
+                          {uiCopy("priority")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Site
+                          {uiCopy("site")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Assignee
+                          {uiCopy("assignee")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Created
+                          {uiCopy("created")}
                         </th>
                         <th className="w-[50px]"></th>
                       </tr>
@@ -280,12 +283,12 @@ export default function IssuesListPage() {
                           </td>
                           <td className="px-4 py-3">
                             <Badge variant={priorityColor(issue.priority)}>
-                              {issue.priority ?? "MEDIUM"}
+                              {issue.priority ?? uiCopy("medium")}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-sm">{issue.siteType}</td>
                           <td className="px-4 py-3 text-sm text-muted-foreground">
-                            {issue.assigneeUserId ?? "Unassigned"}
+                            {issue.assigneeUserId ?? uiCopy("unassigned")}
                           </td>
                           <td className="px-4 py-3 text-sm text-muted-foreground">
                             {formatDate(issue.createdAt, "en-US")}
@@ -307,7 +310,10 @@ export default function IssuesListPage() {
                     <PaginationContent>
                       <PaginationItem>
                         <span className="text-sm text-muted-foreground mr-4">
-                          Page {pageInfo.page} of {Math.ceil(pageInfo.total / pageInfo.pageSize)}
+                          <PaginationSummary
+                            page={pageInfo.page}
+                            pages={Math.ceil(pageInfo.total / pageInfo.pageSize)}
+                          />
                         </span>
                       </PaginationItem>
                       <PaginationItem>

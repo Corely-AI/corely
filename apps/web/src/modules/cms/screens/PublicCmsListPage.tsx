@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +16,7 @@ import { cmsPublicKeys } from "../queries";
 import { usePublicWorkspace } from "@/shared/public-workspace";
 
 export default function PublicCmsListPage() {
+  const uiCopy = useUiCopy("ui.cms-publiccmslistpage");
   const [listState, setListState] = useCrudUrlState({ pageSize: 6 });
   const { workspaceSlug } = usePublicWorkspace();
   const basePath = workspaceSlug ? `/w/${workspaceSlug}/cms` : "/cms";
@@ -36,11 +39,11 @@ export default function PublicCmsListPage() {
 
   const emptyState = (
     <EmptyState
-      title="No articles yet"
-      description="Check back soon for new content."
+      title={uiCopy("no-articles-yet")}
+      description={uiCopy("check-back-soon-for")}
       action={
         <Button variant="outline" onClick={() => setListState({ page: 1 })}>
-          Refresh
+          {uiCopy("refresh")}
         </Button>
       }
     />
@@ -52,10 +55,10 @@ export default function PublicCmsListPage() {
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to={basePath} className="flex items-center gap-2">
             <Logo size="sm" />
-            <span className="text-sm text-muted-foreground">Articles</span>
+            <span className="text-sm text-muted-foreground">{uiCopy("articles")}</span>
           </Link>
           <Link to="/auth/login" className="text-sm text-muted-foreground hover:text-foreground">
-            Staff login
+            {uiCopy("staff-login")}
           </Link>
         </div>
       </header>
@@ -63,15 +66,13 @@ export default function PublicCmsListPage() {
       <main className="max-w-5xl mx-auto px-6 py-10 space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-h1 text-foreground">Latest articles</h1>
-            <p className="text-sm text-muted-foreground">
-              Insights, updates, and guides from the Corely team.
-            </p>
+            <h1 className="text-h1 text-foreground">{uiCopy("latest-articles")}</h1>
+            <p className="text-sm text-muted-foreground">{uiCopy("insights-updates-and-guides")}</p>
           </div>
           <div className="relative w-full md:w-72">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search posts"
+              placeholder={uiCopy("search-posts")}
               className="pl-8"
               defaultValue={listState.q ?? ""}
               onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -80,10 +81,12 @@ export default function PublicCmsListPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center text-muted-foreground py-12">Loading articles...</div>
+          <div className="text-center text-muted-foreground py-12">
+            {uiCopy("loading-articles")}
+          </div>
         ) : isError ? (
           <div className="text-sm text-destructive">
-            {(error as Error)?.message || "Failed to load posts"}
+            {(error as Error)?.message || uiCopy("failed-to-load-posts")}
           </div>
         ) : posts.length === 0 ? (
           emptyState
@@ -107,11 +110,11 @@ export default function PublicCmsListPage() {
                     ) : null}
                     <CardContent className="p-5 space-y-2">
                       <div className="text-xs text-muted-foreground">
-                        {post.publishedAt ? formatDate(post.publishedAt, "en-US") : "Draft"}
+                        {post.publishedAt ? formatDate(post.publishedAt, "en-US") : uiCopy("draft")}
                       </div>
                       <h2 className="text-h3 text-foreground">{post.title}</h2>
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {post.excerpt ?? "No excerpt available."}
+                        {post.excerpt ?? uiCopy("no-excerpt-available")}
                       </p>
                     </CardContent>
                   </Card>
@@ -124,7 +127,7 @@ export default function PublicCmsListPage() {
         {data?.pageInfo ? (
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div>
-              Page {data.pageInfo.page} · {data.pageInfo.total} total
+              <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
             </div>
             <div className="flex gap-2">
               <Button
@@ -133,7 +136,7 @@ export default function PublicCmsListPage() {
                 disabled={listState.page <= 1}
                 onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
               >
-                Previous
+                {uiCopy("previous")}
               </Button>
               <Button
                 variant="outline"
@@ -141,7 +144,7 @@ export default function PublicCmsListPage() {
                 disabled={!data.pageInfo.hasNextPage}
                 onClick={() => setListState({ page: listState.page + 1 })}
               >
-                Next
+                {uiCopy("next")}
               </Button>
             </div>
           </div>

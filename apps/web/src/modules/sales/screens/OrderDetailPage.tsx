@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +12,7 @@ import { salesQueryKeys } from "../queries/sales.queryKeys";
 import { toast } from "sonner";
 
 export default function OrderDetailPage() {
+  const uiCopy = useUiCopy("ui.sales-orderdetailpage");
   const { orderId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -55,49 +57,49 @@ export default function OrderDetailPage() {
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.orders.detail(orderId ?? "") });
-      toast.success("Order updated");
+      toast.success(uiCopy("order-updated"));
     },
-    onError: () => toast.error("Failed to update order"),
+    onError: () => toast.error(uiCopy("failed-to-update-order")),
   });
 
   const confirmMutation = useMutation({
     mutationFn: () => salesApi.confirmOrder(orderId ?? ""),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.orders.detail(orderId ?? "") });
-      toast.success("Order confirmed");
+      toast.success(uiCopy("order-confirmed"));
     },
-    onError: () => toast.error("Failed to confirm order"),
+    onError: () => toast.error(uiCopy("failed-to-confirm-order")),
   });
 
   const fulfillMutation = useMutation({
     mutationFn: () => salesApi.fulfillOrder(orderId ?? ""),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.orders.detail(orderId ?? "") });
-      toast.success("Order fulfilled");
+      toast.success(uiCopy("order-fulfilled"));
     },
-    onError: () => toast.error("Failed to fulfill order"),
+    onError: () => toast.error(uiCopy("failed-to-fulfill-order")),
   });
 
   const createInvoiceMutation = useMutation({
     mutationFn: () => salesApi.createInvoiceFromOrder(orderId ?? ""),
     onSuccess: (data) => {
-      toast.success("Invoice created");
+      toast.success(uiCopy("invoice-created"));
       const opened = window.open(
         `/sales/invoices/${data.invoice.id}`,
         "_blank",
         "noopener,noreferrer"
       );
       if (!opened) {
-        toast.error("Unable to open invoice in a new tab. Please allow pop-ups.");
+        toast.error(uiCopy("unable-to-open-invoice"));
       }
     },
-    onError: () => toast.error("Failed to create invoice"),
+    onError: () => toast.error(uiCopy("failed-to-create-invoice")),
   });
 
   if (!order) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-muted-foreground">Loading order...</p>
+        <p className="text-muted-foreground">{uiCopy("loading-order")}</p>
       </div>
     );
   }
@@ -107,25 +109,28 @@ export default function OrderDetailPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-h1 text-foreground">Order {order.number ?? "Draft"}</h1>
+            <h1 className="text-h1 text-foreground">
+              {uiCopy("order") + " "}
+              {order.number ?? uiCopy("draft")}
+            </h1>
             <Badge variant={isDraft ? "muted" : "accent"}>{order.status}</Badge>
           </div>
-          <p className="text-muted-foreground">Manage order confirmation and fulfillment.</p>
+          <p className="text-muted-foreground">{uiCopy("manage-order-confirmation-and")}</p>
         </div>
         <div className="flex gap-2">
           {order.status === "DRAFT" && (
             <Button variant="accent" onClick={() => confirmMutation.mutate()}>
-              Confirm Order
+              {uiCopy("confirm-order")}
             </Button>
           )}
           {order.status === "CONFIRMED" && (
             <Button variant="secondary" onClick={() => fulfillMutation.mutate()}>
-              Mark Fulfilled
+              {uiCopy("mark-fulfilled")}
             </Button>
           )}
           {order.status !== "INVOICED" && order.status !== "CANCELED" && (
             <Button variant="secondary" onClick={() => createInvoiceMutation.mutate()}>
-              Create Invoice
+              {uiCopy("create-invoice")}
             </Button>
           )}
         </div>

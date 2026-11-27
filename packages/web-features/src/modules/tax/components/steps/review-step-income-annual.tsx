@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -25,6 +26,7 @@ export function ReviewStepIncomeAnnual({
   onRecalculate,
   isRecalculating,
 }: ReviewStepIncomeAnnualProps) {
+  const uiCopy = useUiCopy("ui.tax-steps-review-step-income-annual");
   const formatOrPlaceholder = (value: number | null | undefined) =>
     value == null ? "Not available yet" : formatMoney(value, "en-US", currency ?? "EUR");
 
@@ -77,34 +79,34 @@ export function ReviewStepIncomeAnnual({
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Summary totals</CardTitle>
+          <CardTitle>{uiCopy("summary-totals")}</CardTitle>
           <Button variant="outline" onClick={onRecalculate} disabled={isRecalculating}>
-            Recalculate
+            {uiCopy("recalculate")}
           </Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Gross income</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("gross-income")}</p>
             <p className="text-lg font-semibold">{formatOrPlaceholder(totals?.grossIncomeCents)}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Deductible expenses</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("deductible-expenses")}</p>
             <p className="text-lg font-semibold">
               {formatOrPlaceholder(totals?.deductibleExpensesCents)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Net profit</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("net-profit")}</p>
             <p className="text-lg font-semibold">{formatOrPlaceholder(totals?.netProfitCents)}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Estimated tax due</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("estimated-tax-due")}</p>
             <p className="text-lg font-semibold">
               {formatOrPlaceholder(totals?.estimatedTaxDueCents)}
             </p>
           </div>
           <div className="md:col-span-4 text-xs text-muted-foreground">
-            Last recalculated{" "}
+            {uiCopy("last-recalculated")}{" "}
             {totals?.lastRecalculatedAt ? formatDateTime(totals.lastRecalculatedAt, "en-US") : "—"}
           </div>
         </CardContent>
@@ -112,44 +114,47 @@ export function ReviewStepIncomeAnnual({
 
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="income-sources">
-          <AccordionTrigger>Income sources included</AccordionTrigger>
+          <AccordionTrigger>{uiCopy("income-sources-included")}</AccordionTrigger>
           <AccordionContent className="space-y-4">
             <p className="text-sm text-muted-foreground pb-2">
-              Review the invoices included in this filing.
+              {uiCopy("review-the-invoices-included")}
             </p>
             <FilingItemsList filingId={filingId} sourceType="income" />
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="expenses">
-          <AccordionTrigger>Expenses included</AccordionTrigger>
+          <AccordionTrigger>{uiCopy("expenses-included")}</AccordionTrigger>
           <AccordionContent className="space-y-4">
             <p className="text-sm text-muted-foreground pb-2">
-              Review deductible expenses and receipts.
+              {uiCopy("review-deductible-expenses-and")}
             </p>
             <FilingItemsList filingId={filingId} sourceType="expense" />
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="adjustments">
-          <AccordionTrigger>Adjustments (manual)</AccordionTrigger>
+          <AccordionTrigger>{uiCopy("adjustments-manual")}</AccordionTrigger>
           <AccordionContent className="text-sm text-muted-foreground">
-            Adjustments are coming soon. You can still review your totals above.
+            {uiCopy("adjustments-are-coming-soon")}
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Issues to fix</CardTitle>
+          <CardTitle>{uiCopy("issues-to-fix")}</CardTitle>
           {blockers.length > 0 ? (
-            <Badge variant="destructive">{blockers.length} blocker(s)</Badge>
+            <Badge variant="destructive">
+              {blockers.length}
+              {" " + uiCopy("blocker-s")}
+            </Badge>
           ) : (
-            <Badge variant="muted">No blockers</Badge>
+            <Badge variant="muted">{uiCopy("no-blockers")}</Badge>
           )}
         </CardHeader>
         <CardContent className="space-y-3">
           {visibleIssues.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No issues detected.</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("no-issues-detected")}</p>
           ) : (
             visibleIssues.map((issue) => (
               <div
@@ -169,7 +174,7 @@ export function ReviewStepIncomeAnnual({
                 </div>
                 {issue.deepLink ? (
                   <Button variant="outline" asChild>
-                    <Link to={issue.deepLink}>Fix</Link>
+                    <Link to={issue.deepLink}>{uiCopy("fix")}</Link>
                   </Button>
                 ) : null}
               </div>

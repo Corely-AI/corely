@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -39,6 +40,7 @@ const statusTone = (status: string): "default" | "secondary" | "destructive" => 
 };
 
 export function PosTransactionDetailScreen() {
+  const uiCopy = useUiCopy("ui.pos-transactions-postransactiondetailscreen");
   const { transactionId } = useParams<{ transactionId: string }>();
   const navigate = useNavigate();
 
@@ -57,15 +59,19 @@ export function PosTransactionDetailScreen() {
   }
 
   if (transactionQuery.isLoading) {
-    return <div className="p-6 text-sm text-muted-foreground">Loading transaction detail...</div>;
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        {uiCopy("loading-transaction-detail")}
+      </div>
+    );
   }
 
   if (transactionQuery.isError || !transactionQuery.data) {
     return (
       <div className="p-6">
         <EmptyState
-          title="Transaction not available"
-          description="The synced POS transaction could not be loaded from the current workspace."
+          title={uiCopy("transaction-not-available")}
+          description={uiCopy("the-synced-pos-transaction")}
         />
       </div>
     );
@@ -90,20 +96,20 @@ export function PosTransactionDetailScreen() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Totals</CardTitle>
+            <CardTitle className="text-base">{uiCopy("totals")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-muted-foreground">{uiCopy("subtotal")}</span>
               <span>{formatMoney(transaction.subtotalCents, undefined, transaction.currency)}</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">Tax</span>
+              <span className="text-muted-foreground">{uiCopy("tax")}</span>
               <span>{formatMoney(transaction.taxCents, undefined, transaction.currency)}</span>
             </div>
             <Separator />
             <div className="flex items-center justify-between gap-3 font-medium">
-              <span>Total</span>
+              <span>{uiCopy("total")}</span>
               <span>{formatMoney(transaction.totalCents, undefined, transaction.currency)}</span>
             </div>
           </CardContent>
@@ -111,51 +117,51 @@ export function PosTransactionDetailScreen() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Transaction</CardTitle>
+            <CardTitle className="text-base">{uiCopy("transaction")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div>
-              <div className="text-muted-foreground">Transaction ID</div>
+              <div className="text-muted-foreground">{uiCopy("transaction-id")}</div>
               <div className="break-all">{transaction.transactionId}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Status</div>
+              <div className="text-muted-foreground">{uiCopy("status")}</div>
               <Badge variant={statusTone(transaction.status)}>{transaction.status}</Badge>
             </div>
             <div>
-              <div className="text-muted-foreground">Cashier</div>
+              <div className="text-muted-foreground">{uiCopy("cashier")}</div>
               <div className="break-all">{transaction.cashierEmployeePartyId}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Session</div>
-              <div>{transaction.sessionId ?? "No linked session"}</div>
+              <div className="text-muted-foreground">{uiCopy("session")}</div>
+              <div>{transaction.sessionId ?? uiCopy("no-linked-session")}</div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Sync metadata</CardTitle>
+            <CardTitle className="text-base">{uiCopy("sync-metadata")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div>
-              <div className="text-muted-foreground">Receipt</div>
+              <div className="text-muted-foreground">{uiCopy("receipt")}</div>
               <div>{transaction.receiptNumber}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Synced at</div>
+              <div className="text-muted-foreground">{uiCopy("synced-at")}</div>
               <div>{formatTimestamp(transaction.syncedAt)}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Invoice</div>
-              <div>{transaction.serverInvoiceId ?? "Not linked yet"}</div>
+              <div className="text-muted-foreground">{uiCopy("invoice")}</div>
+              <div>{transaction.serverInvoiceId ?? uiCopy("not-linked-yet")}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Payment</div>
-              <div>{transaction.serverPaymentId ?? "Not linked yet"}</div>
+              <div className="text-muted-foreground">{uiCopy("payment")}</div>
+              <div>{transaction.serverPaymentId ?? uiCopy("not-linked-yet")}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Idempotency key</div>
+              <div className="text-muted-foreground">{uiCopy("idempotency-key")}</div>
               <div className="break-all">{transaction.idempotencyKey}</div>
             </div>
           </CardContent>
@@ -164,22 +170,22 @@ export function PosTransactionDetailScreen() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Payments</CardTitle>
+          <CardTitle className="text-base">{uiCopy("payments")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Method</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>{uiCopy("method")}</TableHead>
+                <TableHead>{uiCopy("reference")}</TableHead>
+                <TableHead className="text-right">{uiCopy("amount")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transaction.payments.map((payment) => (
                 <TableRow key={payment.paymentId}>
                   <TableCell>{payment.method}</TableCell>
-                  <TableCell>{payment.reference ?? "No reference"}</TableCell>
+                  <TableCell>{payment.reference ?? uiCopy("no-reference")}</TableCell>
                   <TableCell className="text-right">
                     {formatMoney(payment.amountCents, undefined, transaction.currency)}
                   </TableCell>
@@ -192,18 +198,18 @@ export function PosTransactionDetailScreen() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Line items</CardTitle>
+          <CardTitle className="text-base">{uiCopy("line-items")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Product</TableHead>
+                <TableHead>{uiCopy("product")}</TableHead>
                 <TableHead>SKU</TableHead>
-                <TableHead className="text-right">Qty</TableHead>
-                <TableHead className="text-right">Unit price</TableHead>
-                <TableHead className="text-right">Discount</TableHead>
-                <TableHead className="text-right">Line total</TableHead>
+                <TableHead className="text-right">{uiCopy("qty")}</TableHead>
+                <TableHead className="text-right">{uiCopy("unit-price")}</TableHead>
+                <TableHead className="text-right">{uiCopy("discount")}</TableHead>
+                <TableHead className="text-right">{uiCopy("line-total")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

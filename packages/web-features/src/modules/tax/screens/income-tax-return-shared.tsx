@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { AlertCircle, Check } from "lucide-react";
 import {
@@ -163,6 +164,7 @@ export const SegmentedControl = <T extends string>({
 );
 
 export const RequiredHint = ({ show }: { show: boolean }) => {
+  const uiCopy = useUiCopy("ui.tax-income-tax-return-shared");
   if (!show) {
     return null;
   }
@@ -170,7 +172,7 @@ export const RequiredHint = ({ show }: { show: boolean }) => {
   return (
     <p className="flex items-center gap-1 text-xs text-rose-500">
       <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-      Required
+      {uiCopy("required")}
     </p>
   );
 };

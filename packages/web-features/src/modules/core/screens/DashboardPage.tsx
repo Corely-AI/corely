@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -14,9 +15,7 @@ import {
   ShoppingCart,
   GraduationCap,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
-import { Button } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { formatMoney, formatRelativeTime } from "@corely/web-shared/shared/lib/formatters";
 import { CardSkeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
@@ -49,8 +48,9 @@ const invoiceStatusToBadgeVariant = (
 };
 
 export default function DashboardPage() {
+  const uiCopy = useUiCopy("ui.core-dashboardpage");
   const { t, i18n } = useTranslation();
-  const locale = i18n.language === "de" ? "de-DE" : "en-DE";
+  const locale = i18n.language === "en" ? "en-DE" : t("common.locale");
 
   const { config, hasCapability, navigationGroups } = useWorkspaceConfig();
   const canOpenQuotes = navigationGroups.some((group) =>
@@ -58,18 +58,7 @@ export default function DashboardPage() {
   );
   const { activeWorkspace } = useWorkspace();
   const portalUrl = getPortalUrl(activeWorkspace?.slug);
-  const terminology = config?.terminology ?? {
-    partyLabel: "Customer",
-    partyLabelPlural: "Customers",
-    invoiceLabel: "Invoice",
-    invoiceLabelPlural: "Invoices",
-    quoteLabel: "Quote",
-    quoteLabelPlural: "Quotes",
-    projectLabel: "Project",
-    projectLabelPlural: "Projects",
-    expenseLabel: "Expense",
-    expenseLabelPlural: "Expenses",
-  };
+  const partyLabel = config?.terminology.partyLabel ?? t("invoices.customer");
 
   const { data: invoicesData, isLoading: isLoadingInvoices } = useQuery({
     queryKey: workspaceQueryKeys.invoices.list(),
@@ -318,7 +307,9 @@ export default function DashboardPage() {
                   <div className="flex-1">
                     <div className="font-medium text-foreground">{t("dashboard.createQuote")}</div>
                     <div className="text-sm text-muted-foreground">
-                      For {terminology.partyLabel.toLowerCase()}
+                      {t("dashboard.quoteForParty", {
+                        party: partyLabel.toLocaleLowerCase(locale),
+                      })}
                     </div>
                   </div>
                   <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-warning transition-colors" />
@@ -376,8 +367,10 @@ export default function DashboardPage() {
                     <GraduationCap className="h-6 w-6 text-emerald-500" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-foreground">Student Portal</div>
-                    <div className="text-sm text-muted-foreground">View as student or guardian</div>
+                    <div className="font-medium text-foreground">{uiCopy("student-portal")}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {uiCopy("view-as-student-or")}
+                    </div>
                   </div>
                   <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
                 </CardContent>
@@ -418,10 +411,10 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <div className="text-sm font-medium text-foreground">
-                            {invoice.number || "Draft"}
+                            {invoice.number || uiCopy("draft")}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {customer?.displayName || "Unknown Customer"}
+                            {customer?.displayName || uiCopy("unknown-customer")}
                           </div>
                         </div>
                       </div>
@@ -433,7 +426,9 @@ export default function DashboardPage() {
                           variant={invoiceStatusToBadgeVariant(invoice.status)}
                           className="text-xs"
                         >
-                          {invoice.status}
+                          {t(`invoices.statuses.${invoice.status.toLowerCase()}`, {
+                            defaultValue: invoice.status,
+                          })}
                         </Badge>
                       </div>
                     </Link>
@@ -471,10 +466,10 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-foreground">
-                          {expense.merchantName || "Unknown Merchant"}
+                          {expense.merchantName || uiCopy("unknown-merchant")}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {expense.category || "Uncategorized"}
+                          {expense.category || uiCopy("uncategorized")}
                         </div>
                       </div>
                     </div>

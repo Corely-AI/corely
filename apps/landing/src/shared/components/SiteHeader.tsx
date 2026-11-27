@@ -1,8 +1,3 @@
-import {
-  BrowserLanguageSelect,
-  useBrowserLocale,
-} from "@corely/web-shared/shared/i18n/browser-locale";
-import messages from "@/shared/i18n/locales/landing.json";
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -12,7 +7,6 @@ import { Logo } from "@/shared/components/Logo";
 import { primaryNav } from "@/shared/lib/site";
 
 export function SiteHeader() {
-  const copy = messages[useBrowserLocale()];
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -21,7 +15,7 @@ export function SiteHeader() {
         <Link to="/" className="flex items-center gap-2">
           <Logo />
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
+        <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
           {primaryNav.map((item) => (
             <NavLink
               key={item.href}
@@ -33,35 +27,31 @@ export function SiteHeader() {
                 )
               }
             >
-              {copy[item.label]}
+              {item.label}
             </NavLink>
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <BrowserLanguageSelect className="max-w-28 rounded-md border border-input bg-background px-2 py-2 text-sm min-[375px]:max-w-44" />
           <a
             className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "hidden lg:inline-flex"
+              "hidden md:inline-flex",
+              buttonVariants({ variant: "ghost", size: "sm" })
             )}
             href="https://docs.corely.one"
           >
-            {copy.docs}
+            Read docs
           </a>
           <a
-            className={cn(
-              buttonVariants({ variant: "accent", size: "sm" }),
-              "hidden lg:inline-flex"
-            )}
+            className={buttonVariants({ variant: "accent", size: "sm" })}
             href="mailto:hello@corely.one"
           >
-            {copy.earlyAccess}
+            Get early access
           </a>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background lg:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={copy.menu}
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
@@ -69,7 +59,7 @@ export function SiteHeader() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-background p-6 shadow-lg lg:hidden animate-in slide-in-from-top-2">
+        <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-background p-6 shadow-lg md:hidden animate-in slide-in-from-top-2">
           <nav className="flex flex-col gap-4">
             {primaryNav.map((item) => (
               <NavLink
@@ -83,18 +73,15 @@ export function SiteHeader() {
                 }
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {copy[item.label]}
+                {item.label}
               </NavLink>
             ))}
             <hr className="border-border" />
-            <a className="text-sm font-medium text-foreground" href="mailto:hello@corely.one">
-              {copy.earlyAccess}
-            </a>
             <a
               className="text-sm font-medium text-muted-foreground hover:text-foreground"
               href="https://docs.corely.one"
             >
-              {copy.docs}
+              Read docs
             </a>
           </nav>
         </div>

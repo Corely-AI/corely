@@ -317,16 +317,8 @@
     "syncSnapshotTitle": "Sync snapshot",
     "unknownUser": "Unknown user",
     "workspaceBadge": "WS {{id}}",
-    "layoutMode": {
-      "auto": "Auto",
-      "phone": "Phone",
-      "tablet": "Tablet"
-    },
-    "languages": {
-      "en": "English",
-      "de": "Deutsch",
-      "vi": "Tiếng Việt"
-    }
+    "layoutMode": { "auto": "Auto", "phone": "Phone", "tablet": "Tablet" },
+    "languages": { "en": "English", "de": "Deutsch", "vi": "Tiếng Việt" }
   },
   "kiosk": {
     "brand": "Corely Check-In",
@@ -420,5 +412,70 @@
     "online": "Online",
     "queue": "Queue {{count}}",
     "syncing": "Syncing"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Select a register first",
+      "restaurant-pos-uses-the": "Restaurant POS uses the same register and shift context as the core POS flow.",
+      "open-a-shift-first": "Open a shift first",
+      "restaurant-tables-can-only": "Restaurant tables can only be opened while a cashier shift is active.",
+      "restaurant-floor": "Restaurant floor",
+      "open-and-resume-table": "Open and resume table sessions from the dining room map.",
+      "floor-plan-copilot": "Floor plan copilot",
+      "summarize-occupied-dirty-or": "Summarize occupied, dirty, or blocked tables without interrupting manual floor usage.",
+      "loading-floor-plan": "Loading floor plan…",
+      "seats": "· seats",
+      "tap-to-resume-check": "Tap to resume check"
+    },
+    "main-settings": {
+      "workspace": "Workspace",
+      "workspace-id": "Workspace ID",
+      "user-id": "User ID"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "Payment",
+      "load-the-table-order": "Load the table order before taking payment.",
+      "payment-close": "Payment / Close",
+      "settle-table": "Settle table",
+      "send-all-draft-items": "Send all draft items to kitchen before taking payment.",
+      "this-order-has-already": "This order has already been settled.",
+      "phase-1-keeps-settlement": "Phase 1 keeps settlement simple: exact cash or single card capture placeholder.",
+      "send-items-to-kitchen": "Send items to kitchen",
+      "cash": "Cash",
+      "card": "Card"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Table order",
+      "loading-table": "Loading table",
+      "opening-or-resuming-the": "Opening or resuming the selected table.",
+      "search-menu-items": "Search menu items",
+      "current-order": "Current order",
+      "add-menu-items-to": "Add menu items to start the check.",
+      "no-modifiers": "No modifiers",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total",
+      "send-to-kitchen": "Send to kitchen",
+      "take-payment": "Take payment",
+      "order-copilot": "Order copilot",
+      "parse-order-instructions-into": "Parse order instructions into explicit proposal cards. Apply still uses the normal restaurant commands.",
+      "try-2-margherita-1": "Try: \"2 margherita, 1 coke, extra cheese\"",
+      "included": "Included",
+      "add-item": "Add item"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Shift close copilot",
+      "summarize-open-tables-unpaid": "Summarize open tables, unpaid orders, approvals, and cash variance before final confirmation."
+    },
+    "errorbanner": { "trace-id": "Trace ID:", "copied": "✓ Copied", "copy": "Copy" },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Restaurant copilot",
+      "missing-required-modifier": "Missing required modifier:",
+      "apply-proposal": "Apply proposal",
+      "dismiss": "Dismiss",
+      "ticket": "Ticket",
+      "m": "m"
+    }
   }
 }

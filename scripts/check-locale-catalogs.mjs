@@ -72,6 +72,13 @@ const read = (file) => JSON.parse(readFileSync(file, "utf8"));
 for (const file of filenames) {
   if (basename(file) === "en.json") {
     const source = read(file);
+    if (source.ui) {
+      for (const locale of ["de", "vi"]) {
+        const path = `${dirname(file)}/${locale}.json`;
+        const translated = filenames.has(path) ? read(path) : {};
+        checkCatalog({ ui: source.ui }, { ui: translated.ui ?? {} }, locale, path);
+      }
+    }
     for (const locale of corelyLocales.filter((value) => !existingLocales.has(value))) {
       const path = `${dirname(file)}/${locale}.json`;
       if (!filenames.has(path)) {

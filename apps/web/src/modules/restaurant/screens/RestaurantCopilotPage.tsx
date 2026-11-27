@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { RestaurantAiToolCardSchema } from "@corely/contracts";
@@ -109,6 +110,7 @@ const renderCard = (result: unknown) => {
 };
 
 export default function RestaurantCopilotPage() {
+  const uiCopy = useUiCopy("ui.restaurant-restaurantcopilotpage");
   const chatOptions = useCopilotChatOptions({
     activeModule: "restaurant",
     locale: "en",
@@ -158,11 +160,8 @@ export default function RestaurantCopilotPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-foreground">Restaurant copilot</h1>
-        <p className="text-sm text-muted-foreground">
-          Use structured restaurant tools for floor attention, kitchen delays, manager approvals,
-          and safe draft proposals.
-        </p>
+        <h1 className="text-3xl font-semibold text-foreground">{uiCopy("restaurant-copilot")}</h1>
+        <p className="text-sm text-muted-foreground">{uiCopy("use-structured-restaurant-tools")}</p>
       </div>
 
       <Card>
@@ -172,19 +171,19 @@ export default function RestaurantCopilotPage() {
               variant="outline"
               onClick={() => setInput("Summarize which tables need attention right now.")}
             >
-              Floor attention
+              {uiCopy("floor-attention")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setInput("Summarize delayed kitchen tickets for the current queue.")}
             >
-              Kitchen delays
+              {uiCopy("kitchen-delays")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setInput("Summarize the pending restaurant approval queue.")}
             >
-              Approval queue
+              {uiCopy("approval-queue")}
             </Button>
           </div>
           <form onSubmit={handleSubmit} className="flex gap-2">
@@ -192,9 +191,9 @@ export default function RestaurantCopilotPage() {
               className="min-h-[88px]"
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask Restaurant Copilot..."
+              placeholder={uiCopy("ask-restaurant-copilot")}
             />
-            <Button type="submit">Send</Button>
+            <Button type="submit">{uiCopy("send")}</Button>
           </form>
         </CardContent>
       </Card>
@@ -224,7 +223,10 @@ export default function RestaurantCopilotPage() {
                 if (part.state === "output-error") {
                   return (
                     <div key={`${message.id}-${index}`} className="text-xs text-destructive">
-                      Tool {part.toolName} failed: {part.errorText ?? "Unknown error"}
+                      {uiCopy("tool") + " "}
+                      {part.toolName}
+                      {" " + uiCopy("failed") + " "}
+                      {part.errorText ?? uiCopy("unknown-error")}
                     </div>
                   );
                 }

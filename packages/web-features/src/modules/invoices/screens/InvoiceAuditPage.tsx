@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useInvoicesApi, useInvoiceNavigate } from "../invoice-runtime";
 import { useInvoiceKeys } from "../invoice-runtime";
 import React, { useMemo } from "react";
@@ -17,6 +18,7 @@ function formatDateTime(value: string): string {
 }
 
 export default function InvoiceAuditPage() {
+  const uiCopy = useUiCopy("ui.invoices-invoiceauditpage");
   const keys = useInvoiceKeys("invoice-audit");
   const invoicesApi = useInvoicesApi();
   const navigate = useInvoiceNavigate();
@@ -94,10 +96,10 @@ export default function InvoiceAuditPage() {
   if (!canLoadInvoice) {
     return (
       <div className="p-6 lg:p-8 space-y-4">
-        <h1 className="text-2xl font-semibold">Audit Trail</h1>
-        <p className="text-muted-foreground">Unsupported audit target.</p>
+        <h1 className="text-2xl font-semibold">{uiCopy("audit-trail")}</h1>
+        <p className="text-muted-foreground">{uiCopy("unsupported-audit-target")}</p>
         <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-          Back
+          {uiCopy("back")}
         </Button>
       </div>
     );
@@ -108,7 +110,7 @@ export default function InvoiceAuditPage() {
       <div className="p-6 lg:p-8">
         <div className="flex items-center gap-3 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Loading audit trail...
+          {uiCopy("loading-audit-trail")}
         </div>
       </div>
     );
@@ -117,10 +119,10 @@ export default function InvoiceAuditPage() {
   if (error || !invoiceData?.invoice) {
     return (
       <div className="p-6 lg:p-8 space-y-4">
-        <h1 className="text-2xl font-semibold">Audit Trail</h1>
-        <p className="text-muted-foreground">Could not load invoice audit trail.</p>
+        <h1 className="text-2xl font-semibold">{uiCopy("audit-trail")}</h1>
+        <p className="text-muted-foreground">{uiCopy("could-not-load-invoice")}</p>
         <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-          Back
+          {uiCopy("back")}
         </Button>
       </div>
     );
@@ -130,20 +132,21 @@ export default function InvoiceAuditPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Audit Trail</h1>
+          <h1 className="text-2xl font-semibold">{uiCopy("audit-trail")}</h1>
           <p className="text-muted-foreground">
-            Invoice {invoiceData.invoice.number ?? invoiceData.invoice.id}
+            {uiCopy("invoice") + " "}
+            {invoiceData.invoice.number ?? invoiceData.invoice.id}
           </p>
         </div>
         <Button type="button" variant="outline" onClick={() => navigate(`/invoices/${id}`)}>
-          Back to invoice
+          {uiCopy("back-to-invoice")}
         </Button>
       </div>
 
       <Card>
         <CardContent className="p-6 space-y-4">
           {entries.length === 0 ? (
-            <p className="text-muted-foreground">No audit events found.</p>
+            <p className="text-muted-foreground">{uiCopy("no-audit-events-found")}</p>
           ) : (
             entries.map((entry, index) => (
               <div

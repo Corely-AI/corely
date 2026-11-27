@@ -1,9 +1,11 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Badge, Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { sonnerToast } from "@corely/ui";
 import { useKitchenStations, useUpsertKitchenStation } from "../hooks/use-restaurant-admin";
 
 export default function RestaurantKitchenStationsPage() {
+  const uiCopy = useUiCopy("ui.restaurant-restaurantkitchenstationspage");
   const stationsQuery = useKitchenStations();
   const saveStation = useUpsertKitchenStation();
   const [name, setName] = useState("");
@@ -29,9 +31,9 @@ export default function RestaurantKitchenStationsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-foreground">Kitchen stations</h1>
+        <h1 className="text-3xl font-semibold text-foreground">{uiCopy("kitchen-stations")}</h1>
         <p className="text-sm text-muted-foreground">
-          Configure production stations used when restaurant orders are sent to kitchen.
+          {uiCopy("configure-production-stations-used")}
         </p>
       </div>
 
@@ -39,16 +41,16 @@ export default function RestaurantKitchenStationsPage() {
         <Card>
           <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="station-name">Name</Label>
+              <Label htmlFor="station-name">{uiCopy("name")}</Label>
               <Input
                 id="station-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Hot line"
+                placeholder={uiCopy("hot-line")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="station-code">Code</Label>
+              <Label htmlFor="station-code">{uiCopy("code")}</Label>
               <Input
                 id="station-code"
                 value={code}
@@ -57,7 +59,7 @@ export default function RestaurantKitchenStationsPage() {
               />
             </div>
             <Button onClick={() => void submit()} disabled={saveStation.isPending}>
-              Save station
+              {uiCopy("save-station")}
             </Button>
           </CardContent>
         </Card>
@@ -77,7 +79,7 @@ export default function RestaurantKitchenStationsPage() {
           {!stationsQuery.isLoading && (stationsQuery.data?.items.length ?? 0) === 0 ? (
             <Card>
               <CardContent className="p-6 text-sm text-muted-foreground">
-                No kitchen stations configured yet.
+                {uiCopy("no-kitchen-stations-configured")}
               </CardContent>
             </Card>
           ) : null}

@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,6 +40,7 @@ const statusVariant = (status: PortfolioContentStatus) => {
 };
 
 export default function ServicesPage() {
+  const uiCopy = useUiCopy("ui.portfolio-servicespage");
   const { showcaseId } = useParams<{ showcaseId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -79,7 +82,7 @@ export default function ServicesPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => portfolioApi.deleteService(id),
     onSuccess: async () => {
-      toast.success("Service deleted");
+      toast.success(uiCopy("service-deleted"));
       if (showcaseId) {
         await queryClient.invalidateQueries({
           queryKey: ["portfolio", "services", "list", showcaseId],
@@ -96,7 +99,7 @@ export default function ServicesPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search services"
+          placeholder={uiCopy("search-services")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -123,7 +126,7 @@ export default function ServicesPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load services"}
+          {(error as Error)?.message || uiCopy("failed-to-load-services")}
         </div>
       ) : null}
     </div>
@@ -136,13 +139,13 @@ export default function ServicesPage() {
       disabled={!showcaseId}
     >
       <Plus className="h-4 w-4" />
-      New service
+      {uiCopy("new-service")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Services"
+      title={uiCopy("services")}
       subtitle="Offerings for company or hybrid showcases"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -150,12 +153,14 @@ export default function ServicesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading services...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {uiCopy("loading-services")}
+            </div>
           ) : services.length === 0 ? (
             <EmptyState
               icon={Briefcase}
-              title="No services yet"
-              description="List your offerings to show what you deliver."
+              title={uiCopy("no-services-yet")}
+              description={uiCopy("list-your-offerings-to")}
               action={primaryAction}
             />
           ) : (
@@ -165,13 +170,13 @@ export default function ServicesPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Service
+                        {uiCopy("service")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th />
                     </tr>
@@ -216,7 +221,7 @@ export default function ServicesPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -225,7 +230,7 @@ export default function ServicesPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -233,7 +238,7 @@ export default function ServicesPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>
@@ -250,8 +255,8 @@ export default function ServicesPage() {
           }
         }}
         trigger={null}
-        title="Delete service"
-        description="This will permanently delete the service."
+        title={uiCopy("delete-service")}
+        description={uiCopy("this-will-permanently-delete")}
         isLoading={deleteMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

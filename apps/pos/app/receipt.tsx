@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,6 +15,7 @@ import { posTheme } from "@/ui/theme";
 const formatter = new ReceiptFormatter();
 
 export default function ReceiptScreen() {
+  const uiCopy = useUiCopy("ui.receipt");
   const { t } = useTranslation();
   const router = useRouter();
   const { isTablet } = useAdaptiveLayout();
@@ -122,7 +124,9 @@ export default function ReceiptScreen() {
                 <View style={styles.lineMain}>
                   <Text style={styles.lineTitle}>{line.description}</Text>
                   <Text style={styles.lineMeta}>
-                    {line.qty} × {line.unitPrice}
+                    {line.qty}
+                    {" " + uiCopy("message") + " "}
+                    {line.unitPrice}
                   </Text>
                 </View>
                 <Text style={styles.lineTotal}>{line.lineTotal}</Text>

@@ -317,16 +317,8 @@
     "syncSnapshotTitle": "Синхронизировать снимок",
     "unknownUser": "Неизвестный пользователь",
     "workspaceBadge": "WS {{id}}",
-    "layoutMode": {
-      "auto": "Авто",
-      "phone": "Телефон",
-      "tablet": "Таблетка"
-    },
-    "languages": {
-      "en": "английский",
-      "de": "немецкий",
-      "vi": "Тианг Вьет"
-    }
+    "layoutMode": { "auto": "Авто", "phone": "Телефон", "tablet": "Таблетка" },
+    "languages": { "en": "английский", "de": "немецкий", "vi": "Тианг Вьет" }
   },
   "kiosk": {
     "brand": "Corely Регистрация",
@@ -420,5 +412,74 @@
     "online": "Онлайн",
     "queue": "Очередь {{count}}",
     "syncing": "Синхронизация"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Сначала выберите регистр",
+      "restaurant-pos-uses-the": "POS ресторана использует тот же контекст регистра и смены, что и основной поток POS.",
+      "open-a-shift-first": "Сначала откройте смену",
+      "restaurant-tables-can-only": "Столы в ресторане можно открывать только во время активной кассовой смены.",
+      "restaurant-floor": "Этаж ресторана",
+      "open-and-resume-table": "Открывайте и возобновляйте сеансы за столом с карты столовой.",
+      "floor-plan-copilot": "План этажа, второй пилот",
+      "summarize-occupied-dirty-or": "Суммируйте занятые, грязные или заблокированные столы, не прерывая использование зала вручную.",
+      "loading-floor-plan": "Загрузка плана этажа…",
+      "seats": "· сиденья",
+      "tap-to-resume-check": "Нажмите, чтобы возобновить проверку"
+    },
+    "main-settings": {
+      "workspace": "Рабочая область",
+      "workspace-id": "Идентификатор рабочей области",
+      "user-id": "Идентификатор пользователя"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "Оплата",
+      "load-the-table-order": "Загрузите заказ стола перед получением оплаты.",
+      "payment-close": "Оплата / Закрытие",
+      "settle-table": "Расчетный стол",
+      "send-all-draft-items": "Перед тем, как принять оплату, отправьте все черновые продукты на кухню.",
+      "this-order-has-already": "Этот заказ уже выполнен.",
+      "phase-1-keeps-settlement": "На этапе 1 расчет становится проще: заполнитель для точной наличности или одной карты.",
+      "send-items-to-kitchen": "Отправьте продукты на кухню",
+      "cash": "Наличные",
+      "card": "Карта"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Порядок столов",
+      "loading-table": "Загрузочный стол",
+      "opening-or-resuming-the": "Открытие или возобновление выбранной таблицы.",
+      "search-menu-items": "Поиск пунктов меню",
+      "current-order": "Текущий заказ",
+      "add-menu-items-to": "Добавьте пункты меню, чтобы начать проверку.",
+      "no-modifiers": "Без модификаторов",
+      "subtotal": "Итого",
+      "tax": "Налог",
+      "total": "Итого",
+      "send-to-kitchen": "Отправить на кухню",
+      "take-payment": "Принять оплату",
+      "order-copilot": "Заказать второго пилота",
+      "parse-order-instructions-into": "Разобрать инструкции по заказу на подробные карточки предложений. Apply по-прежнему использует обычные команды ресторана.",
+      "try-2-margherita-1": "Попробуйте: «2 маргариты, 1 кола, еще сыра».",
+      "included": "Включено",
+      "add-item": "Добавить элемент"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Переключить ближний второй пилот",
+      "summarize-open-tables-unpaid": "Перед окончательным подтверждением суммируйте открытые столы, неоплаченные заказы, утверждения и денежные отклонения."
+    },
+    "errorbanner": {
+      "trace-id": "Идентификатор трассировки:",
+      "copied": "✓ Скопировано",
+      "copy": "Копировать"
+    },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Второй пилот ресторана",
+      "missing-required-modifier": "Отсутствует необходимый модификатор:",
+      "apply-proposal": "Применить предложение",
+      "dismiss": "Уволить",
+      "ticket": "Билет",
+      "m": "м"
+    }
   }
 }

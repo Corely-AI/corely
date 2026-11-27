@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -54,6 +55,7 @@ const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
 
 export default function DealDetailPage() {
+  const uiCopy = useUiCopy("ui.crm-dealdetailpage");
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -249,11 +251,11 @@ export default function DealDetailPage() {
 
   const ensureAiEnabledAndOnline = () => {
     if (!aiEnabled) {
-      toast.error("CRM AI is disabled for this workspace.");
+      toast.error(uiCopy("crm-ai-is-disabled"));
       return false;
     }
     if (offline) {
-      toast.error("AI requires connection.");
+      toast.error(uiCopy("ai-requires-connection"));
       return false;
     }
     return true;
@@ -477,14 +479,14 @@ export default function DealDetailPage() {
         const stageId = recommendation.toolCard.payload.stageId;
         if (stageId) {
           await crmApi.moveDealStage(deal.id, stageId);
-          toast.success("Deal stage updated");
+          toast.success(uiCopy("deal-stage-updated"));
         }
       } else if (recommendation.type === "closeDateUpdate") {
         await crmApi.updateDeal(deal.id, {
           expectedCloseDate: recommendation.toolCard.payload.expectedCloseDate ?? undefined,
           probability: recommendation.toolCard.payload.probability ?? undefined,
         });
-        toast.success("Deal details updated");
+        toast.success(uiCopy("deal-details-updated"));
       }
       invalidateDealData(deal.id);
       setPendingRecommendation(null);
@@ -504,7 +506,7 @@ export default function DealDetailPage() {
       if (deal?.id) {
         invalidateDealData(deal.id);
       }
-      toast.success("Follow-up activity created");
+      toast.success(uiCopy("follow-up-activity-created"));
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to create follow-up activity"));
     } finally {
@@ -612,7 +614,7 @@ export default function DealDetailPage() {
           updateAiSettings.mutate(
             { intentSentimentEnabled: enabled },
             {
-              onSuccess: () => toast.success("AI setting updated"),
+              onSuccess: () => toast.success(uiCopy("ai-setting-updated")),
               onError: (error) =>
                 toast.error(getErrorMessage(error, "Failed to update AI setting")),
             }
@@ -664,8 +666,8 @@ export default function DealDetailPage() {
         onCopyDraft={(text) => {
           void navigator.clipboard
             .writeText(text)
-            .then(() => toast.success("Copied to clipboard"))
-            .catch(() => toast.error("Failed to copy draft"));
+            .then(() => toast.success(uiCopy("copied-to-clipboard")))
+            .catch(() => toast.error(uiCopy("failed-to-copy-draft")));
         }}
         onCreateFollowUpFromDraft={(subject, body) => {
           const dueAt = new Date(Date.now() + 24 * 60 * 60 * 1000);

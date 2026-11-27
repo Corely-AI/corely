@@ -1,19 +1,16 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { type CashReportPreviewDto, type CashReportWarning } from "@corely/contracts";
 import { Card, CardContent } from "@corely/ui";
-import i18n from "@corely/web-shared/shared/i18n";
+import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
 
 export type CashReportPreviewProps = {
   report: CashReportPreviewDto;
 };
 
 export const CashReportPreview: React.FC<CashReportPreviewProps> = ({ report }) => {
-  const formatCents = (cents: number) => {
-    return new Intl.NumberFormat(i18n.language === "de" ? "de-DE" : "en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(cents / 100);
-  };
+  const uiCopy = useUiCopy("ui.cash-management-cash-report-preview");
+  const formatCents = (cents: number) => formatMoney(cents);
 
   const getWarningColor = (severity: CashReportWarning["severity"]) => {
     switch (severity) {
@@ -36,13 +33,16 @@ export const CashReportPreview: React.FC<CashReportPreviewProps> = ({ report }) 
         <div className="flex justify-between items-start border-b border-border/50 pb-4">
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
-              Kassenbericht (Preview)
+              {uiCopy("kassenbericht-preview")}
             </h2>
             <div className="text-sm text-muted-foreground mt-1">
               {report.business.name}{" "}
               {report.business.locationName ? `- ${report.business.locationName}` : ""}
             </div>
-            <div className="text-xs text-muted-foreground mt-0.5">Datum: {report.businessDate}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {uiCopy("datum") + " "}
+              {report.businessDate}
+            </div>
           </div>
           <div className="text-right">
             <div
@@ -97,7 +97,7 @@ export const CashReportPreview: React.FC<CashReportPreviewProps> = ({ report }) 
 
         {report.evidenceRequirements.length > 0 && (
           <div className="mt-8 pt-6 border-t border-border/50 print:hidden">
-            <h3 className="text-sm font-semibold mb-3">Fehlende Belege</h3>
+            <h3 className="text-sm font-semibold mb-3">{uiCopy("fehlende-belege")}</h3>
             <div className="space-y-2">
               {report.evidenceRequirements
                 .filter((req) => !req.satisfied)
@@ -107,14 +107,16 @@ export const CashReportPreview: React.FC<CashReportPreviewProps> = ({ report }) 
                     className="flex justify-between items-center text-xs p-2 bg-muted/30 rounded border border-border/50"
                   >
                     <span>
-                      {req.type} erforderlich für {req.movementType}
+                      {req.type}
+                      {" " + uiCopy("erforderlich-fu-r") + " "}
+                      {req.movementType}
                     </span>
-                    <span className="text-destructive font-medium">Fehlt</span>
+                    <span className="text-destructive font-medium">{uiCopy("fehlt")}</span>
                   </div>
                 ))}
               {report.evidenceRequirements.filter((req) => !req.satisfied).length === 0 && (
                 <div className="text-xs text-muted-foreground p-2">
-                  Alle notwendigen Belege sind vorhanden.
+                  {uiCopy("alle-notwendigen-belege-sind")}
                 </div>
               )}
             </div>
@@ -125,7 +127,7 @@ export const CashReportPreview: React.FC<CashReportPreviewProps> = ({ report }) 
           <div className="flex justify-between">
             <div className="text-center w-48">
               <div className="border-b border-black h-8"></div>
-              <div className="mt-1">Datum, Unterschrift</div>
+              <div className="mt-1">{uiCopy("datum-unterschrift")}</div>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { FileText, Paperclip, X, AlertTriangle, Info } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
@@ -36,6 +37,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   isSubmitting,
   submitLabel,
 }) => {
+  const uiCopy = useUiCopy("ui.expenses-expenseform");
   const { t } = useTranslation();
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseFormSchema),
@@ -163,8 +165,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="EUR">EUR (€)</SelectItem>
-                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="EUR">{uiCopy("eur")}</SelectItem>
+                      <SelectItem value="USD">{uiCopy("usd")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

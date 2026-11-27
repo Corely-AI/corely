@@ -14,6 +14,7 @@ import es from "./locales/es.json";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import * as Localization from "expo-localization";
+import { Platform } from "react-native";
 import en from "./locales/en.json";
 import de from "./locales/de.json";
 import vi from "./locales/vi.json";
@@ -72,9 +73,7 @@ export async function initializeI18n(preferredLanguage?: string | null): Promise
   await initPromise;
 
   const resolvedLanguage = normalizeLanguageTag(preferredLanguage) ?? resolveDeviceLanguage();
-  if (i18n.language !== resolvedLanguage) {
-    await i18n.changeLanguage(resolvedLanguage);
-  }
+  await applyLanguage(resolvedLanguage);
 
   return i18n;
 }
@@ -89,8 +88,15 @@ export async function setI18nLanguage(language: string): Promise<void> {
     await initializeI18n(resolvedLanguage);
     return;
   }
-  if (i18n.language !== resolvedLanguage) {
-    await i18n.changeLanguage(resolvedLanguage);
+  await applyLanguage(resolvedLanguage);
+}
+
+async function applyLanguage(locale: SupportedLanguage): Promise<void> {
+  if (i18n.language !== locale) {
+    await i18n.changeLanguage(locale);
+  }
+  if (Platform.OS === "web" && typeof document !== "undefined") {
+    document.documentElement.lang = locale;
   }
 }
 
