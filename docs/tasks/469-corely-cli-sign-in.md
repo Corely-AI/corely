@@ -24,3 +24,24 @@
 ## Impact
 
 Pilot activation requires the CLI flag and routing for `/sso/cli/*` on the registered login origin. Existing browser sign-out still revokes the central session family. CLI sign-out revokes only its own session.
+
+## Production routing follow-up
+
+The `app.corely.one` deployment returned Vercel `NOT_FOUND` for `/sso/cli/start`.
+The Backoffice web project now has host-scoped ingress for the CLI endpoints
+and their browser handoff. A transaction uses the existing SSO page at
+`/login?request=…`. Ordinary `/login` still redirects to `/auth/login`.
+
+Production uses the CLI-only registration in the [CLI runbook](../backend/corely-cli.md#production-on-appcorelyone).
+The existing production ledger records `0_init` as applied and all five SSO
+tables are present. Activation uses the existing database and email provider.
+
+- Five ingress tests and 29 Identity security and transport tests passed.
+- Twenty Identity integration tests passed against a disposable PostgreSQL database.
+- Local Chromium exercised the production web build and middleware against the
+  real Identity handlers with a synthetic account. The password handoff, code
+  exchange, workspace lookup, and logout passed. Ordinary `/login` still showed
+  the Backoffice sign-in form.
+- [Desktop CLI form, 1200 × 850](469-assets/cli-login-desktop.png) and
+  [phone error with focus, 390 × 844](469-assets/cli-login-expired-phone.png)
+  show the existing English SSO screen reached through the new route.
