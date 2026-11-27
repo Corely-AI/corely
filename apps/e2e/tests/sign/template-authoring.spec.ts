@@ -196,3 +196,74 @@ test("upload a PDF for a request and review the edited revision after an interru
   await page.getByRole("button", { name: "Review request" }).click();
   await expect(page).toHaveURL(/\/sign\/requests\/10000000-0000-4000-8000-000000000001$/);
 });
+
+test("keeps signing controls and PDF scrolling within the editor layout", async ({
+  page,
+}, info) => {
+  await mockSigningApi(page);
+  await page.setViewportSize({ width: 1180, height: 1000 });
+  await page.goto("/sign/requests/new");
+  const filename = "SampleAgreement".repeat(4) + ".pdf";
+  await page.getByLabel("PDF document").setInputFiles({
+    name: filename,
+    mimeType: "application/pdf",
+    buffer: await readFile(new URL("./sample-agreement.pdf", import.meta.url)),
+  });
+  const canvas = page.getByLabel("PDF page 1", { exact: true });
+  await expect(canvas).toBeVisible();
+
+  const signerRole = page.getByRole("combobox", { name: "Signer role", exact: true });
+  await expect(signerRole).toBeVisible();
+  await signerRole.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath("request-layout-desktop.png") });
+  const preview = page.locator("[data-sign-page]");
+  const scrollArea = preview.locator("..");
+  const previewBounds = (await scrollArea.boundingBox())!;
+  const titleBounds = (await page.getByLabel("Document title").boundingBox())!;
+  const roleBounds = (await signerRole.boundingBox())!;
+  const typeBounds = (await page
+    .getByRole("combobox", { name: "Field type", exact: true })
+    .boundingBox())!;
+  expect(titleBounds.x + titleBounds.width).toBeLessThan(previewBounds.x);
+  expect(roleBounds.x + roleBounds.width).toBeLessThan(previewBounds.x);
+  expect(typeBounds.x + typeBounds.width).toBeLessThan(previewBounds.x);
+
+  await page.getByRole("button", { name: "Add role" }).click();
+  await expect(signerRole.getByRole("option", { name: "Signer 2" })).toHaveJSProperty(
+    "selected",
+    true
+  );
+  await canvas.click({ position: { x: 80, y: 160 } });
+  const signature = page.getByRole("button", { name: "Signature for Signer 2", exact: true });
+  await expect(signature).toBeVisible();
+  const xPosition = page.getByLabel("X (%)", { exact: true });
+  const xBounds = (await xPosition.boundingBox())!;
+  expect(xBounds.x + xBounds.width).toBeLessThan(previewBounds.x);
+  await xPosition.fill("25");
+  await expect(xPosition).toHaveValue("25");
+  await page.screenshot({ path: info.outputPath("request-layout-desktop-field.png") });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const zoom = page.getByRole("combobox", { name: "Zoom", exact: true });
+  await zoom.selectOption("150");
+  expect(
+    await scrollArea.evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+      return element.scrollLeft;
+    })
+  ).toBeGreaterThan(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  await zoom.selectOption("100");
+  await canvas.scrollIntoViewIfNeeded();
+  await expect(canvas).toBeInViewport();
+  await page.screenshot({ path: info.outputPath("request-layout-mobile.png"), fullPage: true });
+
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Save layout", exact: true }).click();
+  const layoutFile = await (await download).path();
+  await page.getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(signature).toHaveCount(0);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByLabel("Restore layout", { exact: true }).setInputFiles(layoutFile);
+  await expect(signature).toBeVisible();
+});
