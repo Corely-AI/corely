@@ -31,9 +31,21 @@ export class ApproveVendorBillUseCase extends BaseUseCase<
       return err(new ValidationError("userId is required"));
     }
 
-    const vendorBill = await this.services.repo.findById(tenantId, input.vendorBillId);
+    const vendorBill = await this.services.repo.findById(
+      tenantId,
+      input.vendorBillId,
+      ctx.workspaceId
+    );
     if (!vendorBill) {
       return err(new NotFoundError("Vendor bill not found"));
+    }
+
+    if (
+      vendorBill.sourceFilename &&
+      vendorBill.supplierPartyId &&
+      !(await this.services.supplierQuery.getSupplierById(tenantId, vendorBill.supplierPartyId))
+    ) {
+      return err(new ValidationError("Supplier not found"));
     }
 
     const now = this.services.clock.now();

@@ -80,6 +80,7 @@ export interface WorkspaceRepositoryPort {
 
   // Workspace operations
   createWorkspace(input: CreateWorkspaceInput): Promise<Workspace>;
+  findActiveTenantForWorkspace(workspaceId: string): Promise<string | null>;
   getWorkspaceBySlug(slug: string): Promise<Workspace | null>;
   getWorkspaceById(
     tenantId: string,

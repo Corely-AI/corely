@@ -28,7 +28,11 @@ export class VoidVendorBillUseCase extends BaseUseCase<VoidVendorBillInput, Void
       return err(new ValidationError("userId is required"));
     }
 
-    const vendorBill = await this.services.repo.findById(tenantId, input.vendorBillId);
+    const vendorBill = await this.services.repo.findById(
+      tenantId,
+      input.vendorBillId,
+      ctx.workspaceId
+    );
     if (!vendorBill) {
       return err(new NotFoundError("Vendor bill not found"));
     }

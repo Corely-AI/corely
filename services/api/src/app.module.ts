@@ -18,7 +18,7 @@ import { WorkspacesModule } from "./modules/workspaces";
 import { AccountingModule } from "./modules/accounting";
 import { SalesModule } from "./modules/sales";
 import { PaymentMethodsModule } from "./modules/payment-methods/payment-methods.module";
-import { PurchasingModule } from "./modules/purchasing";
+import { PurchasingModule, InvoiceEmailModule } from "./modules/purchasing";
 import { InventoryModule } from "./modules/inventory";
 import { ImportModule } from "./modules/import";
 import { CatalogModule } from "./modules/catalog";
@@ -93,6 +93,7 @@ import { SignModule } from "./modules/sign/sign.module";
     SalesModule,
     PaymentMethodsModule,
     PurchasingModule,
+    InvoiceEmailModule,
     CatalogModule,
     InventoryModule,
     ImportModule,

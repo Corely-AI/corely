@@ -19,6 +19,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { AppSidebar, type AppSidebarProps, type WorkspaceSwitcherMode } from "./app-sidebar";
 import { PageLoadingSkeleton } from "../shared/components/page-loading-skeleton";
+import { filterSidebarNavigation } from "./sidebar-navigation";
 
 interface QuickActionConfig {
   id: string;
@@ -144,10 +145,18 @@ export function AppShell({
   const resolvedConfig = config ?? workspaceConfig;
   const resolvedIsConfigLoading = isConfigLoading ?? workspaceConfigLoading;
   const resolvedConfigError = configError ?? workspaceConfigError;
-  const resolvedNavigationGroups = navigationGroups ?? workspaceNavigationGroups;
+  const resolvedNavigationGroups =
+    sidebarProps?.navigationGroups ?? navigationGroups ?? workspaceNavigationGroups;
+  const isHostScope = user?.activeTenantId === null;
+  const hiddenItemIds = sidebarProps?.hiddenItemIds;
 
   const commands = useMemo(() => {
-    const navigationCommands: Command[] = resolvedNavigationGroups.flatMap((group) =>
+    const visibleNavigationGroups = filterSidebarNavigation(
+      resolvedNavigationGroups,
+      isHostScope,
+      hiddenItemIds
+    );
+    const navigationCommands: Command[] = visibleNavigationGroups.flatMap((group) =>
       group.items
         .filter((item) => Boolean(item.route))
         .map((item) => {
@@ -184,7 +193,7 @@ export function AppShell({
       .filter(
         ({ route }) =>
           route &&
-          resolvedNavigationGroups.some((group) =>
+          visibleNavigationGroups.some((group) =>
             group.items.some(
               (item) => item.route && (route === item.route || route.startsWith(`${item.route}/`))
             )
@@ -210,7 +219,14 @@ export function AppShell({
       });
 
     return [...navigationCommands, ...createCommands];
-  }, [resolvedNavigationGroups, resolvedConfig, includeWorkspaceQuickActions, t]);
+  }, [
+    resolvedNavigationGroups,
+    isHostScope,
+    hiddenItemIds,
+    resolvedConfig,
+    includeWorkspaceQuickActions,
+    t,
+  ]);
 
   const namespace = useMemo(
     () => `${user?.userId ?? "anon"}:${activeWorkspaceId ?? "default"}`,

@@ -29,17 +29,6 @@ export const salesAppManifest: AppManifest = {
       requiresCapabilities: ["sales.quotes"],
     },
     {
-      id: "projects",
-      scope: "web",
-      section: "projects",
-      labelKey: "nav.projects",
-      defaultLabel: "Projects",
-      route: "/projects",
-      icon: "Briefcase",
-      order: 13,
-      requiresCapabilities: ["sales.projects"],
-    },
-    {
       id: "sales-settings",
       scope: "web",
       section: "sales",

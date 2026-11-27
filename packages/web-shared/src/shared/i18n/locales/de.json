@@ -3404,6 +3404,73 @@
     }
   },
   "purchasing": {
+    "vendorBills": {
+      "amounts": {
+        "totals": "Summen",
+        "subtotal": "Zwischensumme",
+        "tax": "Steuer",
+        "paid": "Bezahlt",
+        "due": "Offener Betrag"
+      },
+      "loadFailed": "Eingangsrechnungen konnten nicht geladen werden.",
+      "title": "Eingangsrechnungen",
+      "detailTitle": "Eingangsrechnung",
+      "new": "Neue Rechnung",
+      "aiCreate": "Mit KI erstellen",
+      "emptyTitle": "Keine Eingangsrechnungen",
+      "emptyDescription": "Erstelle eine Rechnung oder leite eine Rechnung per E-Mail weiter.",
+      "columns": {
+        "number": "Rechnungsnummer"
+      }
+    },
+    "fields": {
+      "supplier": "Lieferant",
+      "billNumber": "Rechnungsnummer",
+      "billDate": "Rechnungsdatum",
+      "dueDate": "Fälligkeitsdatum",
+      "currency": "Währung",
+      "lineItems": "Positionen"
+    },
+    "actions": {
+      "saveDraft": "Entwurf speichern",
+      "approve": "Genehmigen",
+      "post": "Buchen",
+      "recordPayment": "Zahlung erfassen",
+      "void": "Stornieren"
+    },
+    "statuses": {
+      "draft": "Entwurf",
+      "approved": "Genehmigt",
+      "posted": "Gebucht",
+      "partially_paid": "Teilweise bezahlt",
+      "paid": "Bezahlt",
+      "void": "Storniert"
+    },
+    "invoiceEmail": {
+      "title": "Rechnungseingang per E-Mail",
+      "enable": "Rechnungseingang aktivieren",
+      "description": "Leite Rechnungen als PDF-, JPEG- oder PNG-Anhang hierher weiter. Jede Datei erstellt einen Rechnungsentwurf.",
+      "unavailable": "Der Rechnungseingang per E-Mail ist nicht verfügbar.",
+      "address": "Weiterleitungsadresse",
+      "copy": "Kopieren",
+      "copied": "Adresse kopiert",
+      "copyFailed": "Die Adresse konnte nicht kopiert werden.",
+      "loadFailed": "Die Einstellungen für den Rechnungseingang konnten nicht geladen werden.",
+      "retry": "Erneut versuchen",
+      "updateFailed": "Die Einstellungen für den Rechnungseingang konnten nicht gespeichert werden.",
+      "loading": "Wird geladen…",
+      "billFailed": "Diese Rechnung konnte nicht geöffnet werden.",
+      "reviewHint": "Ergänze die Rechnungsdaten und speichere den Entwurf vor der Genehmigung.",
+      "searchSuppliers": "Lieferanten suchen",
+      "chooseSupplier": "Lieferant auswählen",
+      "addLine": "Position hinzufügen",
+      "lineDescription": "Beschreibung",
+      "lineQuantity": "Menge",
+      "lineUnitCents": "Stückpreis in kleinster Währungseinheit",
+      "removeLine": "Position {{number}} entfernen",
+      "original": "Originalrechnung",
+      "openOriginal": "Original öffnen"
+    },
     "settings": {
       "title": "Einkaufseinstellungen",
       "save": "Einstellungen speichern",

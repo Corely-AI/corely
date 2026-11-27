@@ -101,6 +101,14 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     return this.mapWorkspaceFromPrisma(workspace);
   }
 
+  async findActiveTenantForWorkspace(workspaceId: string): Promise<string | null> {
+    const workspace = await this.prisma.workspace.findFirst({
+      where: { id: workspaceId, deletedAt: null },
+      select: { tenantId: true },
+    });
+    return workspace?.tenantId ?? null;
+  }
+
   async getWorkspaceBySlug(slug: string): Promise<Workspace | null> {
     const workspace = await this.prisma.workspace.findFirst({
       where: { slug, deletedAt: null } as any,

@@ -24,7 +24,11 @@ export class GetVendorBillUseCase extends BaseUseCase<GetVendorBillInput, GetVen
   ): Promise<Result<GetVendorBillOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
 
-    const vendorBill = await this.services.repo.findById(tenantId, input.vendorBillId);
+    const vendorBill = await this.services.repo.findById(
+      tenantId,
+      input.vendorBillId,
+      ctx.workspaceId
+    );
     if (!vendorBill) {
       return err(new NotFoundError("Vendor bill not found"));
     }

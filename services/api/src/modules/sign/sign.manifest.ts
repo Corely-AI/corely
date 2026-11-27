@@ -30,6 +30,7 @@ export const signAppManifest: AppManifest = {
       labelKey: "sign.overview",
       defaultLabel: "Corely Sign",
       route: "/sign",
+      exact: true,
       icon: "FileText",
       order: 59,
       requiresPermissions: ["sign.requests.read"],
