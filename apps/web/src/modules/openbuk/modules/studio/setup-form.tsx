@@ -12,6 +12,7 @@ import {
 import { api, json, storage } from "../../shared/api";
 import { Field, ErrorMessage } from "../../shared/ui";
 import { useLanguage, languageNames } from "../../shared/i18n";
+import { TeamBookingSettings } from "./team-booking-settings";
 export function SetupForm({
   workspace,
   studio,
@@ -367,6 +368,9 @@ export function SetupForm({
           </button>
         </div>
       </form>
+      {workspace?.publicEnabled && workspace.publicModules?.booking && studio ? (
+        <TeamBookingSettings key={workspace.id} />
+      ) : null}
     </section>
   );
 }

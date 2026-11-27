@@ -200,7 +200,7 @@ General developer guides and references.
 
 ## Products
 
-- [OpenBuk](products/openbuk/README.md) — focused booking product and implementation roadmap.
+- [OpenBuk](products/openbuk/README.md) — studio setup, small-team booking and release gates.
 - [Booking availability and write consistency](products/openbuk/booking-availability.md)
 - [OpenBuk screenshot walkthrough](products/openbuk/screenshots.md)
 

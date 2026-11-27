@@ -38,6 +38,7 @@ export interface KvListInput {
   tenantId: string;
   moduleId: string;
   scope?: string; // Optional filter
+  keys?: string[];
 }
 
 export interface KvEntry {

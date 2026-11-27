@@ -17,6 +17,8 @@ import {
   OpenBukSetupDraftSchema,
   OpenBukBookSchema,
   OpenBukAvailabilityQuerySchema,
+  OpenBukDaySchema,
+  OpenBukTeamUpdateSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "../../identity/adapters/http/auth.guard";
 import { buildUseCaseContext } from "../../../shared/http/usecase-mappers";
@@ -52,10 +54,17 @@ export class OpenBukAdminController {
   }
   @Get("bookings")
   bookings(@Query() query: Record<string, unknown>, @Req() req: Request) {
-    return this.app.appointments(
-      OpenBukAvailabilityQuerySchema.parse(query).day,
-      buildUseCaseContext(req)
-    );
+    return this.app.appointments(OpenBukDaySchema.parse(query.day), buildUseCaseContext(req));
+  }
+  @Get("team")
+  @Header("Cache-Control", "no-store")
+  team(@Req() req: Request) {
+    return this.app.getTeam(buildUseCaseContext(req));
+  }
+  @Put("team")
+  @Header("Cache-Control", "no-store")
+  saveTeam(@Body() body: unknown, @Req() req: Request) {
+    return this.app.saveTeam(OpenBukTeamUpdateSchema.parse(body), buildUseCaseContext(req));
   }
 }
 
@@ -72,9 +81,11 @@ export class OpenBukPublicController {
   @Get("availability")
   @Header("Cache-Control", "no-store")
   availability(@Query() query: Record<string, unknown>, @Req() req: Request) {
+    const { day, serviceId, staffId } = OpenBukAvailabilityQuerySchema.parse(query);
     return this.app.availability(
-      OpenBukAvailabilityQuerySchema.parse(query).day,
-      buildUseCaseContext(req)
+      day,
+      buildUseCaseContext(req),
+      serviceId && staffId ? { serviceId, staffId } : undefined
     );
   }
   @Post("bookings")
