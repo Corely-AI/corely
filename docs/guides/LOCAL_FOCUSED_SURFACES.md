@@ -163,11 +163,9 @@ The suite also checks dropped upstream bodies and real Vite file requests, inclu
 raw/URL query variants and file paths containing glob characters. Synthetic private
 markers are used; no actual keys or private file contents enter test output.
 
-[Focused local development CI](../../.github/workflows/focused-dev.yml) performs a
-frozen-lockfile install, initialization, disposable certificate generation, checks,
-login build and actual four-origin startup. Its self-signed certificate is never
-installed in the runner trust store. This CI smoke uses probes and a test-owned
-upstream, not real first-wave product screens or database-backed sign-in.
+The [archived focused development workflow](../../backup/github-actions/focused-dev.yml)
+records the previous clean-start smoke test. It used a disposable certificate, a test-owned
+upstream and probes across all four origins.
 
 For the existing full database-backed browser SSO suite, retain the isolated
 database requirements and commands in [central login](../backend/sso.md#reproduce-isolated-checks).

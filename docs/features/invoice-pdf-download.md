@@ -81,7 +81,7 @@ API service:
 - `API_BASE_URL` or `INTERNAL_API_URL`
 - `WORKER_API_SERVICE_TOKEN`
 
-Deploy workflow wiring is in `.github/workflows/deploy.yml`.
+Supply these variables through the [API deployment configuration](../devops/configuration.md).
 
 ## Durable idempotency model
 

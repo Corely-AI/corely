@@ -1,4 +1,7 @@
 {
+  "git": {
+    "deploymentEnabled": false
+  },
   "buildCommand": "cd ../.. && pnpm build:web",
   "outputDirectory": "dist",
   "redirects": [

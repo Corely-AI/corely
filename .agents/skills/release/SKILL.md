@@ -6,25 +6,22 @@ description: Prepare or execute explicitly requested Corely deployments, redeplo
 # Release Corely
 
 Read [AGENTS](../../../AGENTS.md), the requested environment/surface/action,
-[current deployment workflow](../../../.github/workflows/deploy.yml),
-[CI](../../../.github/workflows/ci.yml), affected Docker/configuration files and owner runbooks.
+affected Docker/configuration files and owner runbooks. The
+[GitHub Actions workflows](../../../backup/github-actions/README.md) are archived.
 For OpenBuk use [its deployment notes](../../../docs/products/openbuk/README.md).
 For `app.corely.one` and its production API, use the [production CLI runbook](references/app-corely-one-cli.md).
 
 1. Separate preparation from requested execution. Resolve actual environment, source SHA, selected
    surfaces/artifacts, configuration, migration needs and rollback from current evidence. Preserve
    already explicit authorization for its scope; do not infer production deployment from a PR.
-2. Discover the current remote/default branch and actual workflow triggers/inputs. The inspected
-   default is `development` while automatic Cloud Run deployment targets `main`. Deployment YAML
-   still has historical worker/configuration references. Compare its bindings with the live service.
-   Reconcile a material mismatch before execution and report the exact unresolved operation. Do
-   not recreate `services/worker` or import another repository's deployment labels/ticket engine.
+2. Discover the current remote/default branch and deployment inputs. Compare the runbook's
+   environment bindings with the live service. Reconcile a material mismatch before execution and
+   report the exact unresolved operation. Background execution belongs to the API service.
 3. Verify authenticated access, exact-source checks, artifact identity, current traffic/revision,
    actual environment bindings and data compatibility. Keep secrets as references/redacted facts.
    Saved config, successful build and workflow presence do not prove deployed consumption.
-4. For authorized execution use the existing supported mechanism with deliberate inputs. The
-   checked-in deploy workflow also runs a database migration job after API deployment; inspect
-   actual rollout compatibility/order before invoking it. Do not silently migrate a shared target,
+4. For authorized execution use the manual deployment runbook for the selected surface. Inspect
+   actual rollout compatibility and migration order first. Do not silently migrate a shared target,
    change IAM, bypass protection or broaden a deployment to unrelated clients. Do not install a
    new release infrastructure just to satisfy this procedure.
 5. Follow the run to a verified outcome. Check exact image/revision, traffic/readiness, configuration

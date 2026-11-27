@@ -29,7 +29,7 @@ pnpm --dir apps/e2e exec playwright test --config playwright.invoice.config.ts
 pnpm --dir packages/web-shared exec vitest run --config vitest.config.ts src/layout
 ```
 
-The new CI matrix entry runs the same focused UX suite independently. It starts three
+The focused UX suite runs independently and starts three
 loopback Vite origins with deterministic transport fixtures. It does not test real cookies,
 DNS, deployed headers or the production API. Authentication security remains covered by
 the separate SSO verification work. Traces are disabled; images contain synthetic records.

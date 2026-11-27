@@ -1,6 +1,6 @@
 # E2E Testing Guide for Corely
 
-This document describes the End-to-End (E2E) testing infrastructure for Corely, including how to run tests locally, in CI/CD pipelines, and how the test harness works.
+This guide explains how to run Corely's end-to-end (E2E) tests locally and how the test harness works.
 
 ## Overview
 
@@ -341,57 +341,9 @@ Key components have `data-testid` attributes for robust selectors:
 
 ---
 
-## CI/CD Integration
+## E2E stack environment variables
 
-### GitHub Actions Example
-
-```yaml
-name: E2E Tests
-
-on: [push, pull_request]
-
-jobs:
-  e2e:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "22"
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Start E2E stack
-        run: pnpm e2e:up
-
-      - name: Wait for services
-        run: |
-          sleep 10
-          docker compose -f docker-compose.e2e.yml ps
-
-      - name: Run E2E tests
-        run: pnpm e2e
-
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: playwright-report
-          path: apps/e2e/playwright-report/
-
-      - name: Cleanup
-        if: always()
-        run: pnpm e2e:down
-```
-
-### Environment Variables
-
-In CI, set:
+For the isolated Docker Compose stack, use these test values:
 
 ```bash
 CI=true
@@ -526,7 +478,6 @@ import { selectors } from "../utils/selectors";
 
 - Tests run in parallel (Chromium, Firefox)
 - ~2-5 minutes for full suite locally
-- ~5-10 minutes in CI (with build overhead)
 
 To speed up:
 

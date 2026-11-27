@@ -79,7 +79,7 @@ stay open until their own operational acceptance is demonstrated.
 ## Verification
 
 Run the smallest checks that establish the change, plus required checks for the affected scope.
-Inspect current `package.json`, configuration and CI before relying on a command from an old guide.
+Inspect current `package.json` and configuration before relying on a command from an old guide.
 Report the exact command, result and important skip; distinguish baseline failures from regressions.
 Do not weaken tests, guards or typing to make a check green.
 
@@ -164,11 +164,10 @@ Tie dependency changes to the [license](../LICENSE), [licensing notes](devops/li
 [EE boundary](../ee/README.md); do not copy another organization's approval machinery.
 
 Releases are separate authorized work. Verify the exact environment, source/artifact, current
-workflow, compatibility, migration behavior, rollback and runtime outcome. The inspected CI/deploy
-push triggers still name `main` although the observed default is `development`; deployment YAML
-also retains historical worker references. Resolve applicable drift before execution. Do not
-create a worker service or rewrite CI as a side effect of preparing a PR. A green build or dispatch
-is not a verified deployment, and application rollback does not reverse database changes.
+deployment runbook, compatibility, migration behavior, rollback and runtime outcome. The
+[GitHub Actions workflows](../backup/github-actions/README.md) are archived. The checked-in
+Vercel project configs disable Git-triggered deployments. Verify the deployed revision and runtime
+after a manual release. Application rollback does not reverse database changes.
 
 GitHub holds requirements and review decisions. Keep updates concise and evidence-based.
 Agents send messages or reports to other people only when explicitly requested; this guide

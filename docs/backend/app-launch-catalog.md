@@ -79,9 +79,8 @@ launch origins must use HTTPS; local HTTP values fail startup.
 These are not activated bindings or verified destinations. Local ports above are
 test examples, not a replacement for SURF-18's local origin decision. Provisioning,
 TLS, callback/session registration and deployment environment binding remain with
-their owning rollout tickets. The checked-in deployment workflow does not bind
-these variables; unset values intentionally produce no destination. This change
-sets no live configuration and changes no deployment workflow.
+their owning rollout tickets. Bind these variables in the target deployment
+environment. Unset values intentionally produce no destination.
 
 `buildAppLaunchUrl` accepts only a known launch ID and validated deployment map.
 It has no arbitrary path, return URL, workspace ID or tenant-config input. Unknown

@@ -29,7 +29,7 @@ The private fixture registry explicitly enables Invoice as a synthetic launch co
 
 The reporter stores only fixed source/line identifiers, browser/status, allowlisted phases and bounded HTTP operation/status pairs. Failure stacks contribute only source line numbers. Raw exception text, URLs/query strings, credentials, session proofs, DOM snapshots and Playwright traces are deliberately excluded. The pinned Playwright build's `PLAYWRIGHT_NO_COPY_PROMPT` setting disables automatic error-context snapshots. A regression test injects secret markers into failures and confirms they never enter output or saved reports.
 
-Only the stable App Center and masked Invoice shell screenshots are captured. Financial content inside `main` is masked. CI uploads only those PNGs and `safe-summary.json`; private metadata, keys, server logs and built clients are excluded. These screenshots document test execution; this ticket does not change product UI. Actual staging CDN/TLS/proxy validation remains #399, and live pilot acceptance remains #404.
+Only the stable App Center and masked Invoice shell screenshots are captured. Financial content inside `main` is masked. The [archived workflow](../../backup/github-actions/multi-origin-regressions.yml) uploaded those PNGs and `safe-summary.json`. These screenshots document test execution; this ticket does not change product UI. Actual staging CDN/TLS/proxy validation remains #399, and live pilot acceptance remains #404.
 
 ## Retained regressions
 

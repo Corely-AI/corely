@@ -105,6 +105,7 @@ Frontend guidelines and specific docs.
 Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
+- [GitHub Actions backup](../backup/github-actions/README.md)
 - [Deploy with Vercel and Supabase](./devops/vercel-supabase.md)
 - [Prisma Migration Baseline](./devops/prisma-baseline.md)
 - [Configuration](./devops/configuration.md)
@@ -198,7 +199,7 @@ General developer guides and references.
 - [Booking availability and write consistency](products/openbuk/booking-availability.md)
 - [OpenBuk screenshot walkthrough](products/openbuk/screenshots.md)
 
-- [Frontend consumer CI](frontend/consumer-ci.md) — focused and existing Vite consumer checks.
+- [Frontend consumer checks](frontend/consumer-ci.md) — local checks for focused and existing Vite consumers.
 
 - [Multi-origin session and authorization regressions](testing/multi-origin-regressions.md) — disposable real-session browser journeys and sanitized evidence.
 - [Native signing ownership](decisions/ADR-0005-native-sign.md)

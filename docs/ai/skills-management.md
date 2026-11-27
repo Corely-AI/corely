@@ -27,8 +27,8 @@ authorization remains valid; do not insert new confirmation steps for routine wo
 
 - Commands run from this repository root, not `truckerpoints-src`. Use actual package scripts and
   surface configs, not an assumed `validate:pr` wrapper or absent worker/mock-server runtime.
-- Discover the current remote/base. The observed `corely` / `development` differs from checked-in
-  `main` CI/deploy triggers; the release skill records this limit instead of modifying infrastructure.
+- Discover the current remote/base. Follow the deployment runbook for the requested surface.
+  The [GitHub Actions workflows](../../backup/github-actions/README.md) are archived.
 - Every implemented ticket has a separate Draft PR. Visible changes require screenshots/recording
   and manual UI/UX checks before review. Read-only/planning work does not generate empty PRs.
 - No imported CTO/reviewer accounts, Slack destinations, alert exemptions, fixed effort targets,
