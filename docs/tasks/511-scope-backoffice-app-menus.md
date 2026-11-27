@@ -22,7 +22,18 @@ The existing resolver uses app IDs from the registered workspace menu. The audit
 - Chrome opened all 22 directory entries at desktop and phone sizes, compared sidebar links with the registered app menus, and returned via **All apps**. Dashboard, Settings and subscription billing showed the general menu. The English synthetic workspace verified navigation without production sessions or live business data.
 - Sign direct links kept the Sign sidebar across templates, requests, and settings. Opening My signing requests selected it in the sidebar. The Sign and Tax command palettes showed only applicable app links.
 
+## Follow-up route audit
+
+- Reviewed 289 Backoffice route patterns and variants, including aliases, create/edit/detail screens, shared settings, and routes that use the dedicated CRM and POS hosts.
+- Fixed the scope on mixed-case Invoice URLs, Invoice audit links opened without a query, and the Tax payslip and child income-statement routes.
+- The sidebar and command palette now apply the same visibility filter to platform-only links and hidden entries. Platform settings remain available in host administration.
+- Compared actual sidebar links on 277 Backoffice routes in Chrome with a synthetic workspace. Also checked dedicated Invoice and HR menus on desktop and phone, CRM and POS web menus, and the standalone OpenBuk public shell.
+- Passed 96 Backoffice tests, 23 focused-shell tests, three App Center browser tests, and typechecks for Web and Web Shared.
+- The Classes session detail emitted a repeated render warning while the browser fixture returned missing data. Its menu ownership was reviewed from the route configuration.
+
 ## UI/UX evidence
 
 - [Sign overview and expanded sidebar at 1440 × 900](511-assets/sign-desktop.png)
 - [Sign navigation drawer at 390 × 844](511-assets/sign-mobile.png)
+- [Invoice audit opened without a target at 1440 × 900](511-assets/invoice-audit-menu.png)
+- [Tax payslip navigation drawer at 390 × 844](511-assets/tax-payslip-menu.png)

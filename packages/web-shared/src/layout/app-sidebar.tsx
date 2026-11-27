@@ -37,6 +37,7 @@ import {
 import { useCanManageTenants, useCanReadTenants } from "@corely/web-shared/shared/lib/permissions";
 import { getDocsBaseUrl } from "@corely/web-shared/shared/lib/docs-url";
 import { useSurfaceId } from "@corely/web-shared/shared/surface";
+import { filterSidebarNavigation } from "./sidebar-navigation";
 
 export type WorkspaceSwitcherMode = "always" | "multi" | "hidden";
 
@@ -67,23 +68,6 @@ const isWorkspaceSwitcherVisible = (mode: WorkspaceSwitcherMode, workspaceCount:
   }
 
   return true;
-};
-
-const removeHiddenItems = (
-  groups: WorkspaceNavigationGroup[],
-  hiddenItemIds: readonly string[]
-): WorkspaceNavigationGroup[] => {
-  if (hiddenItemIds.length === 0) {
-    return groups;
-  }
-
-  const hiddenIds = new Set(hiddenItemIds);
-  return groups
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => !hiddenIds.has(item.id)),
-    }))
-    .filter((group) => group.items.length > 0);
 };
 
 export function AppSidebar({
@@ -123,24 +107,11 @@ export function AppSidebar({
   const showSurfacePlatformAdminNav =
     showPlatformAdminNav && surfaceId === "platform" && (canReadTenants || canManageTenants);
 
-  const resolvedGroups = React.useMemo(() => {
-    const sourceGroups = navigationGroups ?? workspaceNavigationGroups;
-    const groupsWithoutHiddenItems = removeHiddenItems(sourceGroups, hiddenItemIds ?? []);
-
-    if (isHostScope) {
-      return groupsWithoutHiddenItems;
-    }
-
-    return groupsWithoutHiddenItems
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((item) => {
-          const route = item.route ?? "";
-          return !route.startsWith("/settings/platform");
-        }),
-      }))
-      .filter((group) => group.items.length > 0);
-  }, [hiddenItemIds, isHostScope, navigationGroups, workspaceNavigationGroups]);
+  const sourceGroups = navigationGroups ?? workspaceNavigationGroups;
+  const resolvedGroups = React.useMemo(
+    () => filterSidebarNavigation(sourceGroups, isHostScope, hiddenItemIds),
+    [sourceGroups, isHostScope, hiddenItemIds]
+  );
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");

@@ -27,6 +27,7 @@ const appRoutes = {
   expenses: ["/expenses/*"],
   forms: ["/forms/*"],
   import: ["/import/*"],
+  invoices: ["/audit"],
   issues: ["/issues/*"],
   parties: ["/customers/*", "/suppliers/*"],
   people: ["/people/*"],
@@ -36,7 +37,7 @@ const appRoutes = {
   sales: ["/sales/quotes/*", "/sales/orders/*", "/sales/settings", "/sales/copilot"],
   sign: ["/sign/*"],
   tasks: ["/tasks/*"],
-  tax: ["/tax/*", "/taxes", "/settings/tax"],
+  tax: ["/tax/*", "/taxes", "/settings/tax", "/income-statement/*"],
   website: ["/website/*"],
 } as const;
 
@@ -69,11 +70,8 @@ const accountSettings: WorkspaceNavigationItem = {
   exact: true,
 };
 
-function resolveAppId(pathname: string, search: string) {
-  if (
-    isLegacyInvoiceEntry(pathname) ||
-    (matchPath("/audit", pathname) && new URLSearchParams(search).get("entity") === "invoice")
-  ) {
+function resolveAppId(pathname: string) {
+  if (isLegacyInvoiceEntry(pathname)) {
     return "invoices";
   }
 
@@ -84,7 +82,6 @@ function resolveAppId(pathname: string, search: string) {
 
 export function resolveBackofficeNavigation(
   pathname: string,
-  search: string,
   groups: WorkspaceNavigationGroup[],
   surfaceId: SurfaceId = "platform"
 ) {
@@ -115,7 +112,7 @@ export function resolveBackofficeNavigation(
     };
   }
 
-  const appId = resolveAppId(pathname, search);
+  const appId = resolveAppId(pathname);
   if (appId) {
     return { groups: groups.filter((group) => group.id === appId), scope: "app" as const };
   }

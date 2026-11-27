@@ -28,6 +28,7 @@ let navigationGroupsState = [
 let surfaceIdState = "platform";
 let tenantPermissionState = { canRead: false, canManage: false };
 let paymentsEnabled = false;
+let activeTenantId: string | null = "tenant-a";
 
 vi.mock("react-i18next", async () => {
   const actual = await vi.importActual("react-i18next");
@@ -45,7 +46,10 @@ vi.mock("@/shared/theme/themeStore", () => ({
 }));
 
 vi.mock("@/lib/auth-provider", () => ({
-  useAuth: () => ({ user: { name: "Test User", email: "test@example.com" }, logout: vi.fn() }),
+  useAuth: () => ({
+    user: { name: "Test User", email: "test@example.com", activeTenantId },
+    logout: vi.fn(),
+  }),
 }));
 
 vi.mock("@/shared/workspaces/workspace-provider", () => ({
@@ -123,6 +127,7 @@ describe("AppSidebar", () => {
     surfaceIdState = "platform";
     tenantPermissionState = { canRead: false, canManage: false };
     paymentsEnabled = false;
+    activeTenantId = "tenant-a";
     navigationGroupsState = [
       {
         id: "tax",
@@ -192,6 +197,43 @@ describe("AppSidebar", () => {
 
     expect(screen.getByTestId("nav-import-shipments")).toHaveClass("bg-sidebar-accent");
   });
+
+  it.each([false, true])(
+    "keeps Platform settings visibility in sync for host scope %s",
+    async (hostScope) => {
+      activeTenantId = hostScope ? null : "tenant-a";
+      navigationGroupsState = [
+        {
+          id: "platform",
+          defaultLabel: "Platform",
+          items: [
+            {
+              id: "platform-settings",
+              label: "Platform administration",
+              route: "/settings/platform",
+              icon: "Settings",
+            },
+          ],
+        },
+      ];
+
+      render(
+        <MemoryRouter initialEntries={["/settings"]}>
+          <AppShell />
+        </MemoryRouter>
+      );
+
+      expect(screen.queryAllByTestId("nav-platform-settings")).toHaveLength(hostScope ? 2 : 0);
+      fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+      const palette = await screen.findByRole("dialog");
+      expect(palette).toHaveTextContent("Settings");
+      if (hostScope) {
+        expect(palette).toHaveTextContent("Platform administration");
+      } else {
+        expect(palette).not.toHaveTextContent("Platform administration");
+      }
+    }
+  );
 
   it("hides platform admin links outside the platform surface", () => {
     surfaceIdState = "crm";
