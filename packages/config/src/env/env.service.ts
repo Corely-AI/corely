@@ -307,6 +307,14 @@ export class EnvService {
     return this.config.RESEND_REPLY_TO;
   }
 
+  get INVOICE_EMAIL_DOMAIN(): string | undefined {
+    return this.config.INVOICE_EMAIL_DOMAIN;
+  }
+
+  get INVOICE_EMAIL_RESEND_WEBHOOK_SECRET(): string | undefined {
+    return this.config.INVOICE_EMAIL_RESEND_WEBHOOK_SECRET;
+  }
+
   get RESEND_WEBHOOK_SECRET(): string | undefined {
     return this.config.RESEND_WEBHOOK_SECRET;
   }

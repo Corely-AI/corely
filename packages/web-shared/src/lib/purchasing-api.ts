@@ -14,6 +14,8 @@ import type {
   CreateVendorBillInput,
   CreateVendorBillOutput,
   VendorBillDto,
+  InvoiceEmailSettings,
+  VendorBillOriginal,
   UpdateVendorBillInput,
   UpdateVendorBillOutput,
   ApproveVendorBillOutput,
@@ -37,6 +39,18 @@ import type {
 import { apiClient } from "./api-client";
 
 export class PurchasingApi {
+  getInvoiceEmailSettings(): Promise<InvoiceEmailSettings> {
+    return apiClient.get("/purchasing/invoice-email/settings");
+  }
+
+  setInvoiceEmailEnabled(enabled: boolean): Promise<InvoiceEmailSettings> {
+    return apiClient.patch("/purchasing/invoice-email/settings", { enabled });
+  }
+
+  getVendorBillOriginal(billId: string): Promise<VendorBillOriginal> {
+    return apiClient.get(`/purchasing/invoice-email/bills/${encodeURIComponent(billId)}/original`);
+  }
+
   async listSuppliers(params?: ListSuppliersInput): Promise<ListSuppliersOutput> {
     const queryParams = new URLSearchParams();
     if (params?.search) {

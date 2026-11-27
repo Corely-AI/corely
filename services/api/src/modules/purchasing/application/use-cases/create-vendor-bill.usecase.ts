@@ -74,7 +74,10 @@ export class CreateVendorBillUseCase extends BaseUseCase<
           new ValidationError(
             "Duplicate vendor bill",
             {
-              existingBillId: existing.id,
+              existingBillId:
+                !existing.workspaceId || existing.workspaceId === ctx.workspaceId
+                  ? existing.id
+                  : undefined,
               billNumber: existing.billNumber,
             },
             "DUPLICATE_BILL"

@@ -1,7 +1,9 @@
+import type { TransactionContext } from "@corely/kernel";
 import type { VendorBillAggregate } from "../../domain/vendor-bill.aggregate";
 import type { VendorBillStatus } from "../../domain/purchasing.types";
 
 export type ListVendorBillsFilters = {
+  workspaceId?: string | null;
   status?: VendorBillStatus;
   supplierPartyId?: string;
   fromDate?: string;
@@ -19,9 +21,14 @@ export type ListVendorBillsResult = {
 };
 
 export interface VendorBillRepositoryPort {
-  findById(tenantId: string, vendorBillId: string): Promise<VendorBillAggregate | null>;
+  findById(
+    tenantId: string,
+    vendorBillId: string,
+    workspaceId?: string | null
+  ): Promise<VendorBillAggregate | null>;
   list(tenantId: string, filters: ListVendorBillsFilters): Promise<ListVendorBillsResult>;
   create(tenantId: string, vendorBill: VendorBillAggregate): Promise<void>;
+  createEmailDraft(vendorBill: VendorBillAggregate, tx: TransactionContext): Promise<boolean>;
   save(tenantId: string, vendorBill: VendorBillAggregate): Promise<void>;
   findBySupplierBillNumber(
     tenantId: string,

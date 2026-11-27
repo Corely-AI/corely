@@ -64,6 +64,7 @@ Design and implementation of the AI features.
 
 Backend specific documentation.
 
+- [Incoming invoice email](./backend/incoming-invoice-email.md) — workspace forwarding, draft review, and Resend setup
 - [Staff self-service and departure](./backend/staff-self-service.md) — own-field edits, approved onboarding and explicit workspace access follow-up
 - [Recurring checklists](./backend/recurring-checklists.md) — one task per assignee/local day, checkbox snapshots and bounded background recurrence
 - [Employee tasks](./backend/employee-tasks.md) — Daily Work lifecycle, ownership, permissions and replay/version guarantees

@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, MoreHorizontal, Check, Upload, CreditCard, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -14,33 +14,39 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@corely/ui";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { purchasingApi } from "@/lib/purchasing-api";
-import { formatMoney, formatDate } from "@/shared/lib/formatters";
+import { formatMoney } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
 
 export default function VendorBillsPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { activeWorkspaceId } = useWorkspace();
 
-  const { data } = useQuery({
-    queryKey: ["vendorBills"],
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["vendorBills", activeWorkspaceId],
     queryFn: () => purchasingApi.listVendorBills(),
+    enabled: Boolean(activeWorkspaceId),
   });
 
   const approve = useMutation({
     mutationFn: (id: string) => purchasingApi.approveVendorBill(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendorBills"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["vendorBills", activeWorkspaceId] }),
   });
 
   const post = useMutation({
     mutationFn: (id: string) => purchasingApi.postVendorBill(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendorBills"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["vendorBills", activeWorkspaceId] }),
   });
 
   const voidBill = useMutation({
     mutationFn: (id: string) => purchasingApi.voidVendorBill(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendorBills"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["vendorBills", activeWorkspaceId] }),
   });
 
   const bills = data?.items ?? [];
@@ -62,7 +68,11 @@ export default function VendorBillsPage() {
 
       <Card>
         <CardContent className="p-0">
-          {bills.length === 0 ? (
+          {isPending || isError ? (
+            <p className="p-4" role={isError ? "alert" : "status"}>
+              {t(isError ? "purchasing.vendorBills.loadFailed" : "purchasing.invoiceEmail.loading")}
+            </p>
+          ) : bills.length === 0 ? (
             <EmptyState
               title={t("purchasing.vendorBills.emptyTitle")}
               description={t("purchasing.vendorBills.emptyDescription")}
@@ -97,17 +107,33 @@ export default function VendorBillsPage() {
                       className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                     >
                       <td className="px-4 py-3 text-sm font-medium">
-                        {bill.billNumber || t("purchasing.statuses.draft")}
+                        <Link
+                          className="hover:underline"
+                          to={`/purchasing/vendor-bills/${bill.id}`}
+                        >
+                          {bill.billNumber || bill.sourceFilename || t("purchasing.statuses.draft")}
+                        </Link>
                       </td>
-                      <td className="px-4 py-3 text-sm">{bill.supplierPartyId}</td>
+                      <td className="px-4 py-3 text-sm">{bill.supplierPartyId ?? "—"}</td>
                       <td className="px-4 py-3">
                         <Badge>{t(`purchasing.statuses.${bill.status.toLowerCase()}`)}</Badge>
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        {formatDate(bill.dueDate, i18n.t("common.locale"))}
+                        {bill.dueDate
+                          ? new Intl.DateTimeFormat(i18n.t("common.locale"), {
+                              dateStyle: "medium",
+                              timeZone: "UTC",
+                            }).format(new Date(bill.dueDate))
+                          : "—"}
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-medium">
-                        {formatMoney(bill.totals.totalCents, i18n.t("common.locale"))}
+                        {bill.currency && /^[A-Z]{3}$/.test(bill.currency)
+                          ? formatMoney(
+                              bill.totals.totalCents,
+                              i18n.t("common.locale"),
+                              bill.currency
+                            )
+                          : "—"}
                       </td>
                       <td className="px-2 py-3 text-right">
                         <DropdownMenu>
@@ -124,7 +150,7 @@ export default function VendorBillsPage() {
                             >
                               {t("common.view")}
                             </DropdownMenuItem>
-                            {bill.status === "DRAFT" && (
+                            {bill.status === "DRAFT" && !bill.sourceFilename && (
                               <DropdownMenuItem onClick={() => approve.mutate(bill.id)}>
                                 <Check className="mr-2 h-4 w-4" />
                                 {t("purchasing.actions.approve")}

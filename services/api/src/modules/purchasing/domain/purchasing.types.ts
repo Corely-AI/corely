@@ -71,14 +71,16 @@ export type PurchaseOrderProps = {
 export type VendorBillProps = {
   id: string;
   tenantId: string;
+  workspaceId?: string | null;
+  sourceFilename?: string | null;
   billNumber: string | null;
   internalBillRef?: string | null;
   status: VendorBillStatus;
-  supplierPartyId: string;
+  supplierPartyId: string | null;
   supplierContactPartyId?: string | null;
-  billDate: LocalDate;
-  dueDate: LocalDate;
-  currency: string;
+  billDate: LocalDate | null;
+  dueDate: LocalDate | null;
+  currency: string | null;
   paymentTerms?: string | null;
   notes?: string | null;
   lineItems: VendorBillLineItem[];

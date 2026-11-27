@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { getPrismaClient, PrismaService } from "@corely/data";
+import type { Prisma } from "@prisma/client";
 import type {
   VendorBillRepositoryPort,
   ListVendorBillsResult,
@@ -7,10 +8,13 @@ import type {
 } from "../../application/ports/vendor-bill-repository.port";
 import { VendorBillAggregate } from "../../domain/vendor-bill.aggregate";
 import type { VendorBillLineItem, BillPayment } from "../../domain/purchasing.types";
-import type { LocalDate } from "@corely/kernel";
+import { ConflictError, type LocalDate, type TransactionContext } from "@corely/kernel";
 
 const toPrismaDate = (localDate: LocalDate | null): Date | null =>
   localDate ? new Date(`${localDate}T00:00:00.000Z`) : null;
+
+const workspaceScope = (workspaceId?: string | null): Prisma.VendorBillWhereInput =>
+  workspaceId ? { OR: [{ workspaceId: null }, { workspaceId }] } : { workspaceId: null };
 
 const fromPrismaDate = (value: Date | null | undefined): LocalDate | null =>
   value ? (value.toISOString().slice(0, 10) as LocalDate) : null;
@@ -29,62 +33,78 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
     }
 
     await this.prisma.$transaction(async (tx) => {
-      await tx.vendorBill.upsert({
-        where: { id: vendorBill.id },
-        update: {
-          billNumber: vendorBill.billNumber,
-          internalBillRef: vendorBill.internalBillRef,
-          status: vendorBill.status as any,
-          supplierPartyId: vendorBill.supplierPartyId,
-          supplierContactPartyId: vendorBill.supplierContactPartyId,
-          billDate: toPrismaDate(vendorBill.billDate),
-          dueDate: toPrismaDate(vendorBill.dueDate),
-          currency: vendorBill.currency,
-          paymentTerms: vendorBill.paymentTerms,
-          notes: vendorBill.notes,
-          subtotalCents: vendorBill.totals.subtotalCents,
-          taxCents: vendorBill.totals.taxCents,
-          totalCents: vendorBill.totals.totalCents,
-          paidCents: vendorBill.totals.paidCents,
-          dueCents: vendorBill.totals.dueCents,
-          approvedAt: vendorBill.approvedAt,
-          postedAt: vendorBill.postedAt,
-          voidedAt: vendorBill.voidedAt,
-          purchaseOrderId: vendorBill.purchaseOrderId,
-          postedJournalEntryId: vendorBill.postedJournalEntryId,
-          possibleDuplicateOfBillId: vendorBill.possibleDuplicateOfBillId,
-          duplicateScore: vendorBill.duplicateScore,
-          updatedAt: vendorBill.updatedAt,
-        },
-        create: {
-          id: vendorBill.id,
-          tenantId: vendorBill.tenantId,
-          billNumber: vendorBill.billNumber,
-          internalBillRef: vendorBill.internalBillRef,
-          status: vendorBill.status as any,
-          supplierPartyId: vendorBill.supplierPartyId,
-          supplierContactPartyId: vendorBill.supplierContactPartyId,
-          billDate: toPrismaDate(vendorBill.billDate)!,
-          dueDate: toPrismaDate(vendorBill.dueDate)!,
-          currency: vendorBill.currency,
-          paymentTerms: vendorBill.paymentTerms,
-          notes: vendorBill.notes,
-          subtotalCents: vendorBill.totals.subtotalCents,
-          taxCents: vendorBill.totals.taxCents,
-          totalCents: vendorBill.totals.totalCents,
-          paidCents: vendorBill.totals.paidCents,
-          dueCents: vendorBill.totals.dueCents,
-          approvedAt: vendorBill.approvedAt,
-          postedAt: vendorBill.postedAt,
-          voidedAt: vendorBill.voidedAt,
-          purchaseOrderId: vendorBill.purchaseOrderId,
-          postedJournalEntryId: vendorBill.postedJournalEntryId,
-          possibleDuplicateOfBillId: vendorBill.possibleDuplicateOfBillId,
-          duplicateScore: vendorBill.duplicateScore,
-          createdAt: vendorBill.createdAt,
-          updatedAt: vendorBill.updatedAt,
-        },
-      });
+      const update = {
+        billNumber: vendorBill.billNumber,
+        internalBillRef: vendorBill.internalBillRef,
+        status: vendorBill.status,
+        supplierPartyId: vendorBill.supplierPartyId,
+        supplierContactPartyId: vendorBill.supplierContactPartyId,
+        billDate: toPrismaDate(vendorBill.billDate),
+        dueDate: toPrismaDate(vendorBill.dueDate),
+        currency: vendorBill.currency,
+        paymentTerms: vendorBill.paymentTerms,
+        notes: vendorBill.notes,
+        subtotalCents: vendorBill.totals.subtotalCents,
+        taxCents: vendorBill.totals.taxCents,
+        totalCents: vendorBill.totals.totalCents,
+        paidCents: vendorBill.totals.paidCents,
+        dueCents: vendorBill.totals.dueCents,
+        approvedAt: vendorBill.approvedAt,
+        postedAt: vendorBill.postedAt,
+        voidedAt: vendorBill.voidedAt,
+        purchaseOrderId: vendorBill.purchaseOrderId,
+        postedJournalEntryId: vendorBill.postedJournalEntryId,
+        possibleDuplicateOfBillId: vendorBill.possibleDuplicateOfBillId,
+        duplicateScore: vendorBill.duplicateScore,
+        updatedAt: vendorBill.updatedAt,
+      };
+      if (vendorBill.workspaceId) {
+        const { count } = await tx.vendorBill.updateMany({
+          where: {
+            id: vendorBill.id,
+            tenantId,
+            workspaceId: vendorBill.workspaceId,
+            updatedAt: vendorBill.loadedUpdatedAt,
+          },
+          data: update,
+        });
+        if (!count) {
+          throw new ConflictError("The bill changed. Refresh it before trying again.");
+        }
+      } else {
+        await tx.vendorBill.upsert({
+          where: { id: vendorBill.id, tenantId, workspaceId: null },
+          update,
+          create: {
+            id: vendorBill.id,
+            tenantId: vendorBill.tenantId,
+            billNumber: vendorBill.billNumber,
+            internalBillRef: vendorBill.internalBillRef,
+            status: vendorBill.status,
+            supplierPartyId: vendorBill.supplierPartyId,
+            supplierContactPartyId: vendorBill.supplierContactPartyId,
+            billDate: toPrismaDate(vendorBill.billDate),
+            dueDate: toPrismaDate(vendorBill.dueDate),
+            currency: vendorBill.currency,
+            paymentTerms: vendorBill.paymentTerms,
+            notes: vendorBill.notes,
+            subtotalCents: vendorBill.totals.subtotalCents,
+            taxCents: vendorBill.totals.taxCents,
+            totalCents: vendorBill.totals.totalCents,
+            paidCents: vendorBill.totals.paidCents,
+            dueCents: vendorBill.totals.dueCents,
+            approvedAt: vendorBill.approvedAt,
+            postedAt: vendorBill.postedAt,
+            voidedAt: vendorBill.voidedAt,
+            purchaseOrderId: vendorBill.purchaseOrderId,
+            postedJournalEntryId: vendorBill.postedJournalEntryId,
+            possibleDuplicateOfBillId: vendorBill.possibleDuplicateOfBillId,
+            duplicateScore: vendorBill.duplicateScore,
+            createdAt: vendorBill.createdAt,
+            updatedAt: vendorBill.updatedAt,
+          },
+        });
+      }
 
       await tx.vendorBillLine.deleteMany({ where: { vendorBillId: vendorBill.id } });
       if (vendorBill.lineItems.length) {
@@ -105,9 +125,33 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
     });
   }
 
-  async findById(tenantId: string, vendorBillId: string): Promise<VendorBillAggregate | null> {
+  async createEmailDraft(
+    vendorBill: VendorBillAggregate,
+    tx: TransactionContext
+  ): Promise<boolean> {
+    const { count } = await getPrismaClient(this.prisma, tx).vendorBill.createMany({
+      data: {
+        id: vendorBill.id,
+        tenantId: vendorBill.tenantId,
+        workspaceId: vendorBill.workspaceId,
+        sourceFilename: vendorBill.sourceFilename,
+        status: "DRAFT",
+        ...vendorBill.totals,
+        createdAt: vendorBill.createdAt,
+        updatedAt: vendorBill.updatedAt,
+      },
+      skipDuplicates: true,
+    });
+    return count === 1;
+  }
+
+  async findById(
+    tenantId: string,
+    vendorBillId: string,
+    workspaceId?: string | null
+  ): Promise<VendorBillAggregate | null> {
     const data = await this.prisma.vendorBill.findFirst({
-      where: { id: vendorBillId, tenantId },
+      where: { id: vendorBillId, tenantId, ...workspaceScope(workspaceId) },
       include: { lines: true, payments: true },
     });
     if (!data) {
@@ -131,7 +175,7 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
       amountCents: payment.amountCents,
       currency: payment.currency,
       paymentDate: fromPrismaDate(payment.paymentDate) as LocalDate,
-      method: payment.method as any,
+      method: payment.method,
       reference: payment.reference ?? null,
       notes: payment.notes ?? null,
       recordedAt: payment.recordedAt,
@@ -142,13 +186,15 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
     return new VendorBillAggregate({
       id: data.id,
       tenantId: data.tenantId,
+      workspaceId: data.workspaceId,
+      sourceFilename: data.sourceFilename,
       billNumber: data.billNumber ?? null,
       internalBillRef: data.internalBillRef ?? null,
-      status: data.status as any,
+      status: data.status,
       supplierPartyId: data.supplierPartyId,
       supplierContactPartyId: data.supplierContactPartyId ?? null,
-      billDate: fromPrismaDate(data.billDate) as LocalDate,
-      dueDate: fromPrismaDate(data.dueDate) as LocalDate,
+      billDate: fromPrismaDate(data.billDate),
+      dueDate: fromPrismaDate(data.dueDate),
       currency: data.currency,
       paymentTerms: data.paymentTerms ?? null,
       notes: data.notes ?? null,
@@ -174,7 +220,10 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
   }
 
   async list(tenantId: string, filters: ListVendorBillsFilters): Promise<ListVendorBillsResult> {
-    const where: any = { tenantId };
+    const where: Prisma.VendorBillWhereInput = {
+      tenantId,
+      AND: workspaceScope(filters.workspaceId),
+    };
     if (filters.status) {
       where.status = filters.status;
     }
@@ -188,22 +237,16 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
       ];
     }
     if (filters.fromDate || filters.toDate) {
-      where.billDate = {};
-      if (filters.fromDate) {
-        where.billDate.gte = new Date(`${filters.fromDate}T00:00:00.000Z`);
-      }
-      if (filters.toDate) {
-        where.billDate.lte = new Date(`${filters.toDate}T23:59:59.999Z`);
-      }
+      where.billDate = {
+        gte: filters.fromDate ? new Date(`${filters.fromDate}T00:00:00.000Z`) : undefined,
+        lte: filters.toDate ? new Date(`${filters.toDate}T23:59:59.999Z`) : undefined,
+      };
     }
     if (filters.dueFromDate || filters.dueToDate) {
-      where.dueDate = {};
-      if (filters.dueFromDate) {
-        where.dueDate.gte = new Date(`${filters.dueFromDate}T00:00:00.000Z`);
-      }
-      if (filters.dueToDate) {
-        where.dueDate.lte = new Date(`${filters.dueToDate}T23:59:59.999Z`);
-      }
+      where.dueDate = {
+        gte: filters.dueFromDate ? new Date(`${filters.dueFromDate}T00:00:00.000Z`) : undefined,
+        lte: filters.dueToDate ? new Date(`${filters.dueToDate}T23:59:59.999Z`) : undefined,
+      };
     }
 
     const take = filters.pageSize ?? 20;
@@ -231,13 +274,15 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
       return new VendorBillAggregate({
         id: row.id,
         tenantId: row.tenantId,
+        workspaceId: row.workspaceId,
+        sourceFilename: row.sourceFilename,
         billNumber: row.billNumber ?? null,
         internalBillRef: row.internalBillRef ?? null,
-        status: row.status as any,
+        status: row.status,
         supplierPartyId: row.supplierPartyId,
         supplierContactPartyId: row.supplierContactPartyId ?? null,
-        billDate: fromPrismaDate(row.billDate) as LocalDate,
-        dueDate: fromPrismaDate(row.dueDate) as LocalDate,
+        billDate: fromPrismaDate(row.billDate),
+        dueDate: fromPrismaDate(row.dueDate),
         currency: row.currency,
         paymentTerms: row.paymentTerms ?? null,
         notes: row.notes ?? null,
@@ -279,13 +324,15 @@ export class PrismaVendorBillRepository implements VendorBillRepositoryPort {
     return new VendorBillAggregate({
       id: data.id,
       tenantId: data.tenantId,
+      workspaceId: data.workspaceId,
+      sourceFilename: data.sourceFilename,
       billNumber: data.billNumber ?? null,
       internalBillRef: data.internalBillRef ?? null,
-      status: data.status as any,
+      status: data.status,
       supplierPartyId: data.supplierPartyId,
       supplierContactPartyId: data.supplierContactPartyId ?? null,
-      billDate: fromPrismaDate(data.billDate) as LocalDate,
-      dueDate: fromPrismaDate(data.dueDate) as LocalDate,
+      billDate: fromPrismaDate(data.billDate),
+      dueDate: fromPrismaDate(data.dueDate),
       currency: data.currency,
       paymentTerms: data.paymentTerms ?? null,
       notes: data.notes ?? null,
