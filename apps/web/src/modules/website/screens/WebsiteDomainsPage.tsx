@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { websiteDomainKeys } from "../queries";
 import { toast } from "sonner";
 
 export default function WebsiteDomainsPage() {
+  const uiCopy = useUiCopy("ui.website-websitedomainspage");
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -37,7 +39,7 @@ export default function WebsiteDomainsPage() {
       void queryClient.invalidateQueries({ queryKey: domainQueryKey });
       setHostname("");
       setIsPrimary(false);
-      toast.success("Domain added");
+      toast.success(uiCopy("domain-added"));
     },
     onError: (err: any) => {
       toast.error(err?.message || "Failed to add domain");
@@ -54,7 +56,7 @@ export default function WebsiteDomainsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: domainQueryKey });
       setDeleteTarget(null);
-      toast.success("Domain removed");
+      toast.success(uiCopy("domain-removed"));
     },
     onError: (err: any) => {
       toast.error(err?.message || "Failed to remove domain");
@@ -67,11 +69,13 @@ export default function WebsiteDomainsPage() {
         <div className="flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {uiCopy("back")}
           </Button>
           <div>
-            <div className="text-lg font-semibold">Domains</div>
-            <div className="text-sm text-muted-foreground">Attach custom domains to this site</div>
+            <div className="text-lg font-semibold">{uiCopy("domains")}</div>
+            <div className="text-sm text-muted-foreground">
+              {uiCopy("attach-custom-domains-to")}
+            </div>
           </div>
         </div>
       </div>
@@ -80,9 +84,9 @@ export default function WebsiteDomainsPage() {
         <CardContent className="p-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-[1fr_auto]">
             <div className="space-y-2">
-              <Label>Hostname</Label>
+              <Label>{uiCopy("hostname")}</Label>
               <Input
-                placeholder="example.com"
+                placeholder={uiCopy("example-com")}
                 value={hostname}
                 onChange={(event) => setHostname(event.target.value)}
               />
@@ -94,7 +98,7 @@ export default function WebsiteDomainsPage() {
                 onClick={() => void addMutation.mutate()}
               >
                 <Plus className="h-4 w-4" />
-                Add domain
+                {uiCopy("add-domain")}
               </Button>
             </div>
           </div>
@@ -104,7 +108,7 @@ export default function WebsiteDomainsPage() {
               checked={isPrimary}
               onChange={(event) => setIsPrimary(event.target.checked)}
             />
-            Set as primary
+            {uiCopy("set-as-primary")}
           </label>
         </CardContent>
       </Card>
@@ -116,10 +120,10 @@ export default function WebsiteDomainsPage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Hostname
+                    {uiCopy("hostname")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Primary
+                    {uiCopy("primary")}
                   </th>
                   <th />
                 </tr>
@@ -132,7 +136,7 @@ export default function WebsiteDomainsPage() {
                   >
                     <td className="px-4 py-3 text-sm font-medium">{domain.hostname}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {domain.isPrimary ? "Yes" : "—"}
+                      {domain.isPrimary ? uiCopy("yes") : "—"}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(domain.id)}>
@@ -144,7 +148,7 @@ export default function WebsiteDomainsPage() {
                 {domains.length === 0 ? (
                   <tr>
                     <td className="px-4 py-6 text-sm text-muted-foreground" colSpan={3}>
-                      No domains yet.
+                      {uiCopy("no-domains-yet")}
                     </td>
                   </tr>
                 ) : null}
@@ -156,8 +160,8 @@ export default function WebsiteDomainsPage() {
 
       <ConfirmDeleteDialog
         open={Boolean(deleteTarget)}
-        title="Remove domain?"
-        description="This domain will no longer resolve to the site."
+        title={uiCopy("remove-domain")}
+        description={uiCopy("this-domain-will-no")}
         confirmLabel="Remove"
         onConfirm={() => void deleteMutation.mutate()}
         onOpenChange={(open) => !open && setDeleteTarget(null)}

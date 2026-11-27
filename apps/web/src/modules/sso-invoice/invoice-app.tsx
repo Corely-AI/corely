@@ -10,7 +10,7 @@ import {
 } from "react-router-dom";
 import { Toaster } from "sonner";
 import { useTranslation } from "react-i18next";
-import { AppLaunchOriginSchema, isSafeSsoReturnPath } from "@corely/contracts";
+import { AppLaunchOriginSchema, isSafeSsoReturnPath, resolveCorelyLocale } from "@corely/contracts";
 import { WorkspaceSessionProviders } from "@corely/web-shared/session/workspace-session-provider";
 import { useWorkspaceSession } from "@corely/web-shared/session/workspace-session-context";
 import { useSession } from "@corely/web-shared/session/session-context";
@@ -27,11 +27,7 @@ function InvoiceLayout({ appCenterOrigin }: { appCenterOrigin: string }) {
   const workspace = useWorkspaceSession();
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const locale = i18n.language.startsWith("de")
-    ? "de"
-    : i18n.language.startsWith("vi")
-      ? "vi"
-      : "en";
+  const locale = resolveCorelyLocale(i18n.language);
   const runtime = useMemo(() => {
     const http = new SessionFeatureHttpClient(client, "request");
     return {
@@ -113,11 +109,7 @@ function NotFound() {
 }
 function InvoiceEntry({ appCenterOrigin }: { appCenterOrigin: string }) {
   const { i18n } = useTranslation();
-  const locale = i18n.language.startsWith("de")
-    ? "de"
-    : i18n.language.startsWith("vi")
-      ? "vi"
-      : "en";
+  const locale = resolveCorelyLocale(i18n.language);
   return (
     <WorkspaceSessionProviders appKey="invoice" homePath="/invoices" locale={locale}>
       <InvoiceLayout appCenterOrigin={appCenterOrigin} />

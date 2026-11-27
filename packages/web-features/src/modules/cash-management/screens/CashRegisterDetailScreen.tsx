@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -55,6 +56,7 @@ function buildDateRange(from: string, to: string): string[] {
 }
 
 export function CashRegisterDetailScreen() {
+  const uiCopy = useUiCopy("ui.cash-management-cashregisterdetailscreen");
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -159,7 +161,7 @@ export function CashRegisterDetailScreen() {
             {t("cash.ui.registerDetail.kassenbericht")}
           </Button>
           <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link to={`/cash/registers/${id}/kassenabrechnung`}>Kassenabrechnung</Link>
+            <Link to={`/cash/registers/${id}/kassenabrechnung`}>{uiCopy("kassenabrechnung")}</Link>
           </Button>
           {canExportCash ? (
             <Button variant="outline" asChild className="w-full sm:w-auto">

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import {
   Button,
@@ -26,6 +27,7 @@ import {
 import type { DeclarationType } from "./income-tax-return-shared";
 
 export const IncomeTaxReturnCivilStatusCard = () => {
+  const uiCopy = useUiCopy("ui.tax-income-tax-return-civil-status-card");
   const [civilStatus, setCivilStatus] = React.useState("married");
   const [marriedSince, setMarriedSince] = React.useState<Date | undefined>(new Date(2010, 8, 9));
   const [declarationType, setDeclarationType] = React.useState<DeclarationType>("joint");
@@ -38,29 +40,31 @@ export const IncomeTaxReturnCivilStatusCard = () => {
   return (
     <Card>
       <CardContent className="space-y-5 p-6">
-        <h2 className="text-h3 text-foreground">Civil status</h2>
+        <h2 className="text-h3 text-foreground">{uiCopy("civil-status")}</h2>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="civil-status" className="text-sm font-medium text-foreground">
-              What is your civil status?
+              {uiCopy("what-is-your-civil")}
             </Label>
             <Select value={civilStatus} onValueChange={setCivilStatus}>
               <SelectTrigger id="civil-status" className="h-10">
-                <SelectValue placeholder="Select a status" />
+                <SelectValue placeholder={uiCopy("select-a-status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="single">Single</SelectItem>
-                <SelectItem value="married">Married</SelectItem>
-                <SelectItem value="divorced">Divorced</SelectItem>
-                <SelectItem value="widowed">Widowed</SelectItem>
+                <SelectItem value="single">{uiCopy("single")}</SelectItem>
+                <SelectItem value="married">{uiCopy("married")}</SelectItem>
+                <SelectItem value="divorced">{uiCopy("divorced")}</SelectItem>
+                <SelectItem value="widowed">{uiCopy("widowed")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {civilStatus === "married" && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">Married since</Label>
+              <Label className="text-sm font-medium text-foreground">
+                {uiCopy("married-since")}
+              </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -74,7 +78,7 @@ export const IncomeTaxReturnCivilStatusCard = () => {
                     {marriedSince ? (
                       marriedSince.toLocaleDateString("de-DE")
                     ) : (
-                      <span>Select date</span>
+                      <span>{uiCopy("select-date")}</span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -87,9 +91,7 @@ export const IncomeTaxReturnCivilStatusCard = () => {
         </div>
 
         <div className="space-y-3">
-          <p className="text-body text-foreground">
-            Would you like to submit a joint declaration together with your spouse in 2025?
-          </p>
+          <p className="text-body text-foreground">{uiCopy("would-you-like-to")}</p>
           <SegmentedControl
             ariaLabel="Declaration type"
             value={declarationType}
@@ -99,24 +101,20 @@ export const IncomeTaxReturnCivilStatusCard = () => {
               { value: "individual", label: "Individual declaration" },
             ]}
           />
-          <p className="text-sm text-muted-foreground">
-            Joint declaration is only possible if you lived together for most of 2025
-          </p>
+          <p className="text-sm text-muted-foreground">{uiCopy("joint-declaration-is-only")}</p>
         </div>
 
         {declarationType === "joint" ? (
           <div className="space-y-3 rounded-lg border border-border p-4">
-            <p className="text-sm font-medium text-foreground">
-              Tax number for joint income tax declaration
-            </p>
+            <p className="text-sm font-medium text-foreground">{uiCopy("tax-number-for-joint")}</p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="joint-tax-state" className="text-xs text-muted-foreground">
-                  State register id
+                  {uiCopy("state-register-id")}
                 </Label>
                 <Select value={jointTaxStateRegister} onValueChange={setJointTaxStateRegister}>
                   <SelectTrigger id="joint-tax-state" className="h-10">
-                    <SelectValue placeholder="Select..." />
+                    <SelectValue placeholder={uiCopy("select")} />
                   </SelectTrigger>
                   <SelectContent>
                     {GERMAN_STATE_OPTIONS.map((state) => (
@@ -129,22 +127,19 @@ export const IncomeTaxReturnCivilStatusCard = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="joint-tax-number" className="text-xs text-muted-foreground">
-                  Tax number
+                  {uiCopy("tax-number")}
                 </Label>
                 <Input
                   id="joint-tax-number"
                   value={jointTaxNumber}
                   onChange={(event) => setJointTaxNumber(event.target.value)}
-                  placeholder="e.g. 12/345/67890"
+                  placeholder={uiCopy("e-g-12-345")}
                   className="h-10"
                 />
               </div>
             </div>
             <RequiredHint show={isJointTaxNumberMissing} />
-            <p className="text-xs text-muted-foreground">
-              As a couple, provide both tax numbers, one for your freelance work and one for your
-              joint income tax declaration.
-            </p>
+            <p className="text-xs text-muted-foreground">{uiCopy("as-a-couple-provide")}</p>
           </div>
         ) : null}
       </CardContent>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { normalizeError } from "@corely/api-client";
 import { QuoteSendGuidanceSlot } from "@corely/sales-ui";
@@ -15,6 +16,7 @@ import { salesQueryKeys } from "../queries/sales.queryKeys";
 import { toast } from "sonner";
 
 export default function QuoteDetailPage() {
+  const uiCopy = useUiCopy("ui.sales-quotedetailpage");
   const { quoteId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -79,16 +81,16 @@ export default function QuoteDetailPage() {
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.quotes.detail(quoteId ?? "") });
-      toast.success("Quote updated");
+      toast.success(uiCopy("quote-updated"));
     },
-    onError: () => toast.error("Failed to update quote"),
+    onError: () => toast.error(uiCopy("failed-to-update-quote")),
   });
 
   const sendMutation = useMutation({
     mutationFn: () => salesApi.sendQuote(quoteId ?? ""),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.quotes.detail(quoteId ?? "") });
-      toast.success("Quote sent");
+      toast.success(uiCopy("quote-sent"));
     },
     onError: (error) => {
       const problem = normalizeError(error);
@@ -102,49 +104,49 @@ export default function QuoteDetailPage() {
     mutationFn: () => salesApi.acceptQuote(quoteId ?? ""),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.quotes.detail(quoteId ?? "") });
-      toast.success("Quote accepted");
+      toast.success(uiCopy("quote-accepted"));
     },
-    onError: () => toast.error("Failed to accept quote"),
+    onError: () => toast.error(uiCopy("failed-to-accept-quote")),
   });
 
   const rejectMutation = useMutation({
     mutationFn: () => salesApi.rejectQuote(quoteId ?? ""),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: salesQueryKeys.quotes.detail(quoteId ?? "") });
-      toast.success("Quote rejected");
+      toast.success(uiCopy("quote-rejected"));
     },
-    onError: () => toast.error("Failed to reject quote"),
+    onError: () => toast.error(uiCopy("failed-to-reject-quote")),
   });
 
   const convertToOrderMutation = useMutation({
     mutationFn: () => salesApi.convertQuoteToOrder(quoteId ?? ""),
     onSuccess: (data) => {
-      toast.success("Sales order created");
+      toast.success(uiCopy("sales-order-created"));
       navigate(`/sales/orders/${data.order.id}`);
     },
-    onError: () => toast.error("Failed to convert quote"),
+    onError: () => toast.error(uiCopy("failed-to-convert-quote")),
   });
 
   const convertToInvoiceMutation = useMutation({
     mutationFn: () => salesApi.convertQuoteToInvoice(quoteId ?? ""),
     onSuccess: (data) => {
-      toast.success("Invoice created");
+      toast.success(uiCopy("invoice-created"));
       const opened = window.open(
         `/sales/invoices/${data.invoice.id}`,
         "_blank",
         "noopener,noreferrer"
       );
       if (!opened) {
-        toast.error("Unable to open invoice in a new tab. Please allow pop-ups.");
+        toast.error(uiCopy("unable-to-open-invoice"));
       }
     },
-    onError: () => toast.error("Failed to convert quote"),
+    onError: () => toast.error(uiCopy("failed-to-convert-quote")),
   });
 
   if (!quote) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-muted-foreground">Loading quote...</p>
+        <p className="text-muted-foreground">{uiCopy("loading-quote")}</p>
       </div>
     );
   }
@@ -154,38 +156,41 @@ export default function QuoteDetailPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-h1 text-foreground">Quote {quote.number ?? "Draft"}</h1>
+            <h1 className="text-h1 text-foreground">
+              {uiCopy("quote") + " "}
+              {quote.number ?? uiCopy("draft")}
+            </h1>
             <Badge variant={isDraft ? "muted" : "accent"}>{quote.status}</Badge>
           </div>
-          <p className="text-muted-foreground">Manage quote details and next steps.</p>
+          <p className="text-muted-foreground">{uiCopy("manage-quote-details-and")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => navigate("/sales/copilot")}>
             <Sparkles className="h-4 w-4" />
-            AI Assist
+            {uiCopy("ai-assist")}
           </Button>
           {isDraft && (
             <Button variant="accent" onClick={() => sendMutation.mutate()}>
-              Send Quote
+              {uiCopy("send-quote")}
             </Button>
           )}
           {quote.status === "SENT" && (
             <>
               <Button variant="secondary" onClick={() => acceptMutation.mutate()}>
-                Accept
+                {uiCopy("accept")}
               </Button>
               <Button variant="ghost" onClick={() => rejectMutation.mutate()}>
-                Reject
+                {uiCopy("reject")}
               </Button>
             </>
           )}
           {quote.status === "ACCEPTED" && (
             <>
               <Button variant="secondary" onClick={() => convertToOrderMutation.mutate()}>
-                Convert to Order
+                {uiCopy("convert-to-order")}
               </Button>
               <Button variant="accent" onClick={() => convertToInvoiceMutation.mutate()}>
-                Convert to Invoice
+                {uiCopy("convert-to-invoice")}
               </Button>
             </>
           )}

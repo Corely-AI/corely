@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,6 +19,7 @@ const money = (cents: number, currency: string) =>
   new Intl.NumberFormat("de-DE", { style: "currency", currency }).format(cents / 100);
 
 export function KassenabrechnungScreen() {
+  const uiCopy = useUiCopy("ui.cash-management-kassenabrechnungscreen");
   const { id } = useParams<{ id: string }>();
   const [params, setParams] = useSearchParams();
   const defaults = currentMonth();
@@ -66,22 +68,22 @@ export function KassenabrechnungScreen() {
         <Link to={`/cash/registers/${id}`}>
           <Button variant="ghost">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Zurück
+            {uiCopy("zuru-ck")}
           </Button>
         </Link>
         <Button onClick={print} disabled={!data}>
           <Printer className="mr-2 h-4 w-4" />
-          Als PDF exportieren
+          {uiCopy("als-pdf-exportieren")}
         </Button>
       </div>
       <Card className="print:hidden">
         <CardContent className="p-4 flex flex-col gap-3 md:flex-row md:items-end">
           <label className="grid gap-1 text-sm">
-            Von
+            {uiCopy("von")}
             <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           </label>
           <label className="grid gap-1 text-sm">
-            Bis
+            {uiCopy("bis")}
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </label>
           <Button
@@ -93,32 +95,28 @@ export function KassenabrechnungScreen() {
               setParams({ from: range.from, to: range.to });
             }}
           >
-            Aktueller Monat
+            {uiCopy("aktueller-monat")}
           </Button>
           <Button onClick={apply} disabled={from > to}>
-            Bericht erstellen
+            {uiCopy("bericht-erstellen")}
           </Button>
           <Button
             variant="outline"
             onClick={() => translate.mutate()}
             disabled={!data || translate.isPending}
           >
-            {translate.isPending ? "Übersetze…" : "Vietnamesisch → Deutsch"}
+            {translate.isPending ? uiCopy("u-bersetze") : uiCopy("vietnamesisch-deutsch")}
           </Button>
         </CardContent>
       </Card>
       {from > to && (
-        <p className="text-sm text-destructive">
-          Das Anfangsdatum darf nicht nach dem Enddatum liegen.
-        </p>
+        <p className="text-sm text-destructive">{uiCopy("das-anfangsdatum-darf-nicht")}</p>
       )}
       {report.isLoading && (
-        <p className="text-sm text-muted-foreground">Kassenabrechnung wird geladen…</p>
+        <p className="text-sm text-muted-foreground">{uiCopy("kassenabrechnung-wird-geladen")}</p>
       )}
       {report.isError && (
-        <p className="text-sm text-destructive">
-          Die Kassenabrechnung konnte nicht geladen werden.
-        </p>
+        <p className="text-sm text-destructive">{uiCopy("die-kassenabrechnung-konnte-nicht")}</p>
       )}
       {data && (
         <article
@@ -126,48 +124,52 @@ export function KassenabrechnungScreen() {
           data-testid="kassenabrechnung-report"
         >
           <header className="cash-form-header">
-            <h1>Kassenabrechnung</h1>
+            <h1>{uiCopy("kassenabrechnung")}</h1>
             <div className="cash-form-fields">
               <span>
-                von <b>{data.fromDate}</b>
+                {uiCopy("von-2") + " "}
+                <b>{data.fromDate}</b>
               </span>
               <span>
-                bis <b>{data.toDate}</b>
+                {uiCopy("bis-2") + " "}
+                <b>{data.toDate}</b>
               </span>
               <span>
-                Kasse / Filiale <b>{data.register.name}</b>
+                {uiCopy("kasse-filiale") + " "}
+                <b>{data.register.name}</b>
               </span>
               <span>
-                Währung <b>{data.register.currency}</b>
+                {uiCopy("wa-hrung") + " "}
+                <b>{data.register.currency}</b>
               </span>
             </div>
           </header>
           <table className="cash-form-table">
             <thead>
               <tr>
-                <th rowSpan={2}>Tag</th>
+                <th rowSpan={2}>{uiCopy("tag")}</th>
                 <th rowSpan={2}>
-                  Beleg-
+                  {uiCopy("beleg")}
                   <br />
-                  Nr.
+                  {uiCopy("nr")}
                 </th>
-                <th rowSpan={2}>Beschreibung / Art der Kassenbewegung</th>
-                <th colSpan={1}>Einnahmen</th>
-                <th colSpan={1}>Ausgaben</th>
+                <th rowSpan={2}>{uiCopy("beschreibung-art-der-kassenbewegung")}</th>
+                <th colSpan={1}>{uiCopy("einnahmen")}</th>
+                <th colSpan={1}>{uiCopy("ausgaben")}</th>
                 <th rowSpan={2}>
-                  Kassen-
+                  {uiCopy("kassen")}
                   <br />
-                  bestand
+                  {uiCopy("bestand")}
                 </th>
               </tr>
               <tr>
-                <th>Betrag</th>
-                <th>Betrag</th>
+                <th>{uiCopy("betrag")}</th>
+                <th>{uiCopy("betrag")}</th>
               </tr>
             </thead>
             <tbody>
               <tr className="cash-form-carry">
-                <td colSpan={3}>Übertrag / Kassenbestand vor dem ausgewählten Zeitraum</td>
+                <td colSpan={3}>{uiCopy("u-bertrag-kassenbestand-vor")}</td>
                 <td />
                 <td />
                 <td>{money(data.openingBalanceCents, data.register.currency)}</td>
@@ -200,19 +202,19 @@ export function KassenabrechnungScreen() {
           </table>
           <section className="cash-form-total">
             <div>
-              <span>Summe Einnahmen</span>
+              <span>{uiCopy("summe-einnahmen")}</span>
               <b>{money(data.totalIncomeCents, data.register.currency)}</b>
             </div>
             <div>
-              <span>Summe Ausgaben</span>
+              <span>{uiCopy("summe-ausgaben")}</span>
               <b>{money(data.totalExpenseCents, data.register.currency)}</b>
             </div>
             <div>
-              <span>Endbestand</span>
+              <span>{uiCopy("endbestand")}</span>
               <b>{money(data.calculatedClosingBalanceCents, data.register.currency)}</b>
             </div>
             <div>
-              <span>Gezählter Bestand / Differenz</span>
+              <span>{uiCopy("geza-hlter-bestand-differenz")}</span>
               <b>
                 {data.actualCountedClosingBalanceCents === null
                   ? "–"
@@ -221,10 +223,10 @@ export function KassenabrechnungScreen() {
             </div>
           </section>
           <footer className="cash-form-footer">
-            <span>Datum</span>
-            <span>Name</span>
-            <span>Unterschrift</span>
-            <span>Geprüft</span>
+            <span>{uiCopy("datum")}</span>
+            <span>{uiCopy("name")}</span>
+            <span>{uiCopy("unterschrift")}</span>
+            <span>{uiCopy("gepru-ft")}</span>
           </footer>
         </article>
       )}

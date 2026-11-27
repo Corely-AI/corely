@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import * as React from "react";
 import { Check, ChevronsUpDown, CalendarDays } from "lucide-react";
 import { cn } from "@corely/ui";
@@ -40,11 +41,12 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
   disabled = false,
   placeholder,
 }) => {
-  const { t, i18n } = useTranslation();
+  const uiCopy = useUiCopy("ui.tax-periodcombobox");
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
 
-  const locale = i18n.language === "de" ? "de-DE" : "en-US";
+  const locale = t("common.locale");
 
   const MONTH_NAMES = React.useMemo(() => {
     const formatter = new Intl.DateTimeFormat(locale, { month: "long" });
@@ -300,7 +302,9 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
             <p className="text-xs text-muted-foreground">
               {t("tax.periodCombobox.footerHint", {
                 qExample: (
-                  <kbd className="font-mono bg-muted px-1 rounded text-[10px]">2026-Q2</kbd>
+                  <kbd className="font-mono bg-muted px-1 rounded text-[10px]">
+                    {uiCopy("2026-q2")}
+                  </kbd>
                 ),
                 mExample: (
                   <kbd className="font-mono bg-muted px-1 rounded text-[10px]">2026-04</kbd>

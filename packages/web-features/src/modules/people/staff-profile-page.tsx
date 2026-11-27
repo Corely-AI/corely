@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { StaffProfileGuidanceSlot, type StaffProfileGuidanceRegistration } from "@corely/people-ui";
 import { PeopleLink as Link } from "./people-runtime";
 import { staffJourneyCopy } from "./staff-journey-copy";
@@ -29,8 +30,7 @@ export function StaffProfilePage({
     !create && !access.loading && access.can("directory.read")
   );
   const profile = result.data;
-  const journey =
-    staffJourneyCopy[access.locale === "de" || access.locale === "vi" ? access.locale : "en"];
+  const journey = staffJourneyCopy[resolveCorelyLocale(access.locale)];
   if (access.loading) {
     return <p role="status">{t.loading}</p>;
   }

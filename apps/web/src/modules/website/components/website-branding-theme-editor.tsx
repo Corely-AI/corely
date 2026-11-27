@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { toast } from "sonner";
 import {
@@ -41,6 +42,7 @@ export const WebsiteBrandingThemeEditor = ({
   onBrandingChange,
   onThemeChange,
 }: WebsiteBrandingThemeEditorProps) => {
+  const uiCopy = useUiCopy("ui.website-website-branding-theme-editor");
   const brandingValues = useMemo(() => {
     const parsed = brandingState.parsed;
     const obj = isPlainObject(parsed) ? parsed : {};
@@ -93,21 +95,19 @@ export const WebsiteBrandingThemeEditor = ({
         <AccordionContent className="space-y-4 pt-2">
           <Tabs defaultValue="guided" className="w-full">
             <TabsList>
-              <TabsTrigger value="guided">Guided</TabsTrigger>
-              <TabsTrigger value="advanced">Advanced JSON</TabsTrigger>
+              <TabsTrigger value="guided">{uiCopy("guided")}</TabsTrigger>
+              <TabsTrigger value="advanced">{uiCopy("advanced-json")}</TabsTrigger>
             </TabsList>
             <TabsContent value="guided" className="space-y-4">
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="space-y-4 rounded-lg border border-input bg-muted/20 p-4">
                   <div className="space-y-1">
-                    <Label>Branding</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Add a logo and contact details without touching JSON.
-                    </p>
+                    <Label>{uiCopy("branding")}</Label>
+                    <p className="text-xs text-muted-foreground">{uiCopy("add-a-logo-and")}</p>
                   </div>
                   <div className="grid gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs">Brand name</Label>
+                      <Label className="text-xs">{uiCopy("brand-name")}</Label>
                       <Input
                         value={brandingValues.brandName}
                         onChange={(event) =>
@@ -121,7 +121,7 @@ export const WebsiteBrandingThemeEditor = ({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Tagline</Label>
+                      <Label className="text-xs">{uiCopy("tagline")}</Label>
                       <Input
                         value={brandingValues.tagline}
                         onChange={(event) =>
@@ -131,11 +131,11 @@ export const WebsiteBrandingThemeEditor = ({
                             })
                           )
                         }
-                        placeholder="AI-native ERP for teams"
+                        placeholder={uiCopy("ai-native-erp-for")}
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Logo URL</Label>
+                      <Label className="text-xs">{uiCopy("logo-url")}</Label>
                       <Input
                         value={brandingValues.logoUrl}
                         onChange={(event) =>
@@ -149,7 +149,7 @@ export const WebsiteBrandingThemeEditor = ({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Logo alt text</Label>
+                      <Label className="text-xs">{uiCopy("logo-alt-text")}</Label>
                       <Input
                         value={brandingValues.logoAlt}
                         onChange={(event) =>
@@ -159,12 +159,12 @@ export const WebsiteBrandingThemeEditor = ({
                             })
                           )
                         }
-                        placeholder="Company logo"
+                        placeholder={uiCopy("company-logo")}
                       />
                     </div>
                     <div className="grid gap-3 md:grid-cols-2">
                       <div className="space-y-1">
-                        <Label className="text-xs">Support email</Label>
+                        <Label className="text-xs">{uiCopy("support-email")}</Label>
                         <Input
                           value={brandingValues.supportEmail}
                           onChange={(event) =>
@@ -178,7 +178,7 @@ export const WebsiteBrandingThemeEditor = ({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Support phone</Label>
+                        <Label className="text-xs">{uiCopy("support-phone")}</Label>
                         <Input
                           value={brandingValues.supportPhone}
                           onChange={(event) =>
@@ -197,15 +197,15 @@ export const WebsiteBrandingThemeEditor = ({
 
                 <div className="space-y-4 rounded-lg border border-input bg-muted/20 p-4">
                   <div className="space-y-1">
-                    <Label>Theme</Label>
+                    <Label>{uiCopy("theme")}</Label>
                     <p className="text-xs text-muted-foreground">
-                      Pick brand colors and typography tokens.
+                      {uiCopy("pick-brand-colors-and")}
                     </p>
                   </div>
                   <div className="grid gap-3">
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="space-y-1">
-                        <Label className="text-xs">Primary</Label>
+                        <Label className="text-xs">{uiCopy("primary")}</Label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -236,12 +236,12 @@ export const WebsiteBrandingThemeEditor = ({
                                 })
                               )
                             }
-                            placeholder="#0f172a"
+                            placeholder={uiCopy("0f172a")}
                           />
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Accent</Label>
+                        <Label className="text-xs">{uiCopy("accent")}</Label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -272,12 +272,12 @@ export const WebsiteBrandingThemeEditor = ({
                                 })
                               )
                             }
-                            placeholder="#38bdf8"
+                            placeholder={uiCopy("38bdf8")}
                           />
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Background</Label>
+                        <Label className="text-xs">{uiCopy("background")}</Label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -308,14 +308,14 @@ export const WebsiteBrandingThemeEditor = ({
                                 })
                               )
                             }
-                            placeholder="#ffffff"
+                            placeholder={uiCopy("ffffff")}
                           />
                         </div>
                       </div>
                     </div>
                     <div className="grid gap-3 md:grid-cols-2">
                       <div className="space-y-1">
-                        <Label className="text-xs">Heading font token</Label>
+                        <Label className="text-xs">{uiCopy("heading-font-token")}</Label>
                         <Input
                           value={themeValues.headingFont}
                           onChange={(event) =>
@@ -329,11 +329,11 @@ export const WebsiteBrandingThemeEditor = ({
                               })
                             )
                           }
-                          placeholder="var(--font-display)"
+                          placeholder={uiCopy("var-font-display")}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Body font token</Label>
+                        <Label className="text-xs">{uiCopy("body-font-token")}</Label>
                         <Input
                           value={themeValues.bodyFont}
                           onChange={(event) =>
@@ -347,12 +347,12 @@ export const WebsiteBrandingThemeEditor = ({
                               })
                             )
                           }
-                          placeholder="var(--font-body)"
+                          placeholder={uiCopy("var-font-body")}
                         />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Corner radius</Label>
+                      <Label className="text-xs">{uiCopy("corner-radius")}</Label>
                       <Input
                         value={themeValues.radius}
                         onChange={(event) =>
@@ -362,12 +362,12 @@ export const WebsiteBrandingThemeEditor = ({
                             })
                           )
                         }
-                        placeholder="8px"
+                        placeholder={uiCopy("8px")}
                       />
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Empty fields use default theme values.
+                    {uiCopy("empty-fields-use-default")}
                   </p>
                 </div>
               </div>
@@ -375,13 +375,13 @@ export const WebsiteBrandingThemeEditor = ({
             <TabsContent value="advanced" className="space-y-4">
               <div className="grid gap-4 lg:grid-cols-2">
                 <JsonEditorField
-                  label="Branding JSON"
-                  description="Logo, contact info, or custom brand metadata used by templates."
+                  label={uiCopy("branding-json")}
+                  description={uiCopy("logo-contact-info-or")}
                   value={brandingJson}
                   onChange={onBrandingChange}
                   onFormat={() => {
                     if (brandingState.status === "invalid") {
-                      toast.error("Branding JSON is invalid.");
+                      toast.error(uiCopy("branding-json-is-invalid"));
                       return;
                     }
                     onBrandingChange(formatJsonInput(brandingJson));
@@ -389,16 +389,16 @@ export const WebsiteBrandingThemeEditor = ({
                   onUseExample={() => onBrandingChange(JSON.stringify(brandingExample, null, 2))}
                   onClear={() => onBrandingChange("")}
                   state={brandingState}
-                  placeholder='{"logoUrl": "..."}'
+                  placeholder={uiCopy("logourl")}
                 />
                 <JsonEditorField
-                  label="Theme JSON"
-                  description="Theme tokens such as colors, typography, and radius values."
+                  label={uiCopy("theme-json")}
+                  description={uiCopy("theme-tokens-such-as")}
                   value={themeJson}
                   onChange={onThemeChange}
                   onFormat={() => {
                     if (themeState.status === "invalid") {
-                      toast.error("Theme JSON is invalid.");
+                      toast.error(uiCopy("theme-json-is-invalid"));
                       return;
                     }
                     onThemeChange(formatJsonInput(themeJson));
@@ -406,12 +406,10 @@ export const WebsiteBrandingThemeEditor = ({
                   onUseExample={() => onThemeChange(JSON.stringify(themeExample, null, 2))}
                   onClear={() => onThemeChange("")}
                   state={themeState}
-                  placeholder='{"colors": {"primary": "#0f172a"}}'
+                  placeholder={uiCopy("colors-primary-0f172a")}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Leave these empty to rely on default styles. Only valid JSON will be saved.
-              </p>
+              <p className="text-xs text-muted-foreground">{uiCopy("leave-these-empty-to")}</p>
             </TabsContent>
           </Tabs>
         </AccordionContent>

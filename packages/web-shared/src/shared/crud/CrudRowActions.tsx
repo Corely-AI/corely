@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
@@ -32,6 +33,7 @@ export const CrudRowActions: React.FC<CrudRowActionsProps> = ({
   secondaryActions = [],
   align = "end",
 }) => {
+  const uiCopy = useUiCopy("ui.shared-crud-crudrowactions");
   const renderActionButton = (action: CrudAction) => {
     if (action.href) {
       return (
@@ -67,7 +69,12 @@ export const CrudRowActions: React.FC<CrudRowActionsProps> = ({
       {secondaryActions.length ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open actions" title="Open actions">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={uiCopy("open-actions")}
+              title={uiCopy("open-actions")}
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

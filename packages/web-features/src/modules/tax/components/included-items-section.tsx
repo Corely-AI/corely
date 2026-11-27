@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@corely/ui";
@@ -46,6 +48,7 @@ export function IncludedItemsSection({
   presetSourceType,
   onPresetSourceTypeCleared,
 }: IncludedItemsSectionProps) {
+  const uiCopy = useUiCopy("ui.tax-included-items-section");
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -150,7 +153,7 @@ export function IncludedItemsSection({
     <>
       <Card data-testid="tax-filing-included-items">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Included items</CardTitle>
+          <CardTitle>{uiCopy("included-items")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 p-0">
           <div className="px-4 pt-4">
@@ -198,8 +201,8 @@ export function IncludedItemsSection({
               </div>
             ) : items.length === 0 ? (
               <EmptyState
-                title="No items included"
-                description="We haven't found any source items for this filing yet."
+                title={uiCopy("no-items-included")}
+                description={uiCopy("we-haven-t-found")}
               />
             ) : (
               <div className="overflow-x-auto">
@@ -207,31 +210,31 @@ export function IncludedItemsSection({
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Type
+                        {uiCopy("type")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Date
+                        {uiCopy("date")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Counterparty
+                        {uiCopy("counterparty")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Category
+                        {uiCopy("category")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        VAT treatment
+                        {uiCopy("vat-treatment")}
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                        Net
+                        {uiCopy("net")}
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                        Tax
+                        {uiCopy("tax")}
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                        Gross
+                        {uiCopy("gross")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Flags
+                        {uiCopy("flags")}
                       </th>
                     </tr>
                   </thead>
@@ -244,10 +247,10 @@ export function IncludedItemsSection({
                       >
                         <td className="px-4 py-3 text-sm font-medium">
                           {item.sourceType === "invoice"
-                            ? "Invoice"
+                            ? uiCopy("invoice")
                             : item.sourceType === "expense"
-                              ? "Expense"
-                              : "Transaction"}
+                              ? uiCopy("expense")
+                              : uiCopy("transaction")}
                         </td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
                           {formatDate(item.date, "en-US")}
@@ -267,15 +270,15 @@ export function IncludedItemsSection({
                         <td className="px-4 py-3 text-sm">
                           <div className="flex flex-wrap gap-1">
                             {item.flags.needsAttention ? (
-                              <Badge variant="destructive">Needs attention</Badge>
+                              <Badge variant="destructive">{uiCopy("needs-attention")}</Badge>
                             ) : (
                               <Badge variant="secondary">OK</Badge>
                             )}
                             {item.flags.missingCategory ? (
-                              <Badge variant="outline">No category</Badge>
+                              <Badge variant="outline">{uiCopy("no-category")}</Badge>
                             ) : null}
                             {item.flags.missingTaxTreatment ? (
-                              <Badge variant="outline">No VAT treatment</Badge>
+                              <Badge variant="outline">{uiCopy("no-vat-treatment")}</Badge>
                             ) : null}
                           </div>
                         </td>
@@ -306,8 +309,10 @@ export function IncludedItemsSection({
                 </PaginationItem>
                 <PaginationItem>
                   <span className="text-sm text-muted-foreground">
-                    Page {pageInfo.page} of{" "}
-                    {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    <PaginationSummary
+                      page={pageInfo.page}
+                      pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    />
                   </span>
                 </PaginationItem>
                 <PaginationItem>
@@ -330,9 +335,9 @@ export function IncludedItemsSection({
 
           {isError ? (
             <div className="px-4 pb-4 text-sm text-destructive flex items-center justify-between">
-              <span>Failed to load included items.</span>
+              <span>{uiCopy("failed-to-load-included")}</span>
               <Button variant="outline" size="sm" onClick={() => void refetch()}>
-                Retry
+                {uiCopy("retry")}
               </Button>
             </div>
           ) : null}

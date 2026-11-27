@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Package, Filter } from "lucide-react";
@@ -12,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import type { InventoryLotStatus } from "@corely/contracts";
 
 export default function LotsPage() {
+  const uiCopy = useUiCopy("ui.inventory-lotspage");
   const navigate = useNavigate();
 
   const [productIdFilter, setProductIdFilter] = useState("");
@@ -61,17 +63,17 @@ export default function LotsPage() {
         <div className="flex items-center gap-3">
           <Package className="h-8 w-8 text-muted-foreground" />
           <div>
-            <h1 className="text-h1 text-foreground">Inventory Lots</h1>
-            <p className="text-sm text-muted-foreground">Manage and track product lots</p>
+            <h1 className="text-h1 text-foreground">{uiCopy("inventory-lots")}</h1>
+            <p className="text-sm text-muted-foreground">{uiCopy("manage-and-track-product")}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
             <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? "Hide Filters" : "Show Filters"}
+            {showFilters ? uiCopy("hide-filters") : uiCopy("show-filters")}
           </Button>
           <Button variant="accent" onClick={() => navigate("/inventory/lots/new")}>
-            Create Lot
+            {uiCopy("create-lot")}
           </Button>
         </div>
       </div>
@@ -81,29 +83,29 @@ export default function LotsPage() {
           <CardContent className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label>Product ID</Label>
+                <Label>{uiCopy("product-id")}</Label>
                 <Input
                   value={productIdFilter}
                   onChange={(e) => setProductIdFilter(e.target.value)}
-                  placeholder="Filter by product..."
+                  placeholder={uiCopy("filter-by-product")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label>{uiCopy("status")}</Label>
                 <select
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as InventoryLotStatus | "")}
                 >
-                  <option value="">All Status</option>
-                  <option value="AVAILABLE">Available</option>
-                  <option value="QUARANTINE">Quarantine</option>
-                  <option value="BLOCKED">Blocked</option>
-                  <option value="DISPOSED">Disposed</option>
+                  <option value="">{uiCopy("all-status")}</option>
+                  <option value="AVAILABLE">{uiCopy("available")}</option>
+                  <option value="QUARANTINE">{uiCopy("quarantine")}</option>
+                  <option value="BLOCKED">{uiCopy("blocked")}</option>
+                  <option value="DISPOSED">{uiCopy("disposed")}</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Expiry After</Label>
+                <Label>{uiCopy("expiry-after")}</Label>
                 <Input
                   type="date"
                   value={expiryAfterFilter}
@@ -111,7 +113,7 @@ export default function LotsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Expiry Before</Label>
+                <Label>{uiCopy("expiry-before")}</Label>
                 <Input
                   type="date"
                   value={expiryBeforeFilter}
@@ -130,7 +132,7 @@ export default function LotsPage() {
                   setExpiryAfterFilter("");
                 }}
               >
-                Clear Filters
+                {uiCopy("clear-filters")}
               </Button>
             </div>
           </CardContent>
@@ -140,25 +142,29 @@ export default function LotsPage() {
       <Card>
         <CardContent className="p-6">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading lots...</div>
+            <div className="text-center py-8 text-muted-foreground">{uiCopy("loading-lots")}</div>
           ) : !data?.lots.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              No lots found. Create your first lot to get started.
+              {uiCopy("no-lots-found-create")}
             </div>
           ) : (
             <>
               <div className="mb-4 text-sm text-muted-foreground">
-                Showing {data.lots.length} of {data.total} lots
+                {uiCopy("showing") + " "}
+                {data.lots.length}
+                {" " + uiCopy("of") + " "}
+                {data.total}
+                {" " + uiCopy("lots")}
               </div>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-muted-foreground border-b">
-                    <th className="py-3">Lot Number</th>
-                    <th>Product ID</th>
-                    <th>Expiry Date</th>
-                    <th>Qty On Hand</th>
-                    <th>Qty Reserved</th>
-                    <th>Status</th>
+                    <th className="py-3">{uiCopy("lot-number")}</th>
+                    <th>{uiCopy("product-id")}</th>
+                    <th>{uiCopy("expiry-date")}</th>
+                    <th>{uiCopy("qty-on-hand")}</th>
+                    <th>{uiCopy("qty-reserved")}</th>
+                    <th>{uiCopy("status")}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -179,7 +185,7 @@ export default function LotsPage() {
                           size="sm"
                           onClick={() => navigate(`/inventory/lots/${lot.id}`)}
                         >
-                          View
+                          {uiCopy("view")}
                         </Button>
                       </td>
                     </tr>

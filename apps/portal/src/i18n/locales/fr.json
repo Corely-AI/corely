@@ -1,0 +1,88 @@
+{
+  "portal": {
+    "title": "Portail",
+    "dashboard": {
+      "title": "Tableau de bord",
+      "welcome": "Bienvenue",
+      "students": {
+        "title": "Étudiants",
+        "select": "Sélectionner un étudiant",
+        "linked": "Étudiants liés",
+        "viewing": "VISUALISATION",
+        "student": "ÉTUDIANT",
+        "none": "Aucun étudiant lié"
+      },
+      "sessions": {
+        "title": "Prochaines séances",
+        "subtitle": "Consultez votre horaire de cours à venir et les liens pour rejoindre les sessions en ligne.",
+        "open": "Horaire ouvert"
+      },
+      "materials": {
+        "title": "Matériaux",
+        "subtitle": "Tous les documents partagés avec vous et vos étudiants.",
+        "items_one": "ARTICLE {{count}}",
+        "items_other": "ARTICLES {{count}}",
+        "items": "ARTICLES",
+        "added": "Ajouté",
+        "download_failed": "Échec de l'obtention de l'URL de téléchargement",
+        "personal": "PERSONNEL",
+        "class_group": "GROUPE DE CLASSE",
+        "getFile": "Obtenir le fichier",
+        "empty": {
+          "title": "Rien ici encore",
+          "subtitle": "Votre matériel d’apprentissage apparaîtra ici une fois que votre professeur les aura téléchargés."
+        },
+        "items_many": "ARTICLES {{count}}"
+      },
+      "invoices": {
+        "title": "Factures",
+        "subtitle": "Téléchargez les factures de l'étudiant sélectionné.",
+        "items_one": "FACTURE {{count}}",
+        "items_other": "FACTURES {{count}}",
+        "items": "FACTURES",
+        "invoice": "Facture",
+        "issued": "Publié",
+        "due": "Due",
+        "amount_due": "Montant dû",
+        "download": "Télécharger la facture",
+        "download_failed": "Impossible d'obtenir le lien de téléchargement de la facture",
+        "empty": {
+          "title": "Pas encore de factures",
+          "subtitle": "Les factures de cet étudiant apparaîtront ici une fois émises."
+        },
+        "items_many": "FACTURES {{count}}"
+      }
+    },
+    "login": {
+      "title": "Portail des étudiants et des tuteurs",
+      "email_prompt": "Entrez votre email pour recevoir un code de connexion",
+      "code_sent": "Saisissez le code à 6 chiffres envoyé à {{email}}",
+      "email_label": "Courriel",
+      "email_placeholder": "nom@exemple.com",
+      "send_code": "Envoyer le code de connexion",
+      "code_label": "Code de connexion",
+      "code_placeholder": "000000",
+      "change_email": "Changer d'e-mail",
+      "resend_code": "Renvoyer le code",
+      "resend_in": "Renvoyer dans {{count}}s",
+      "verify_sign_in": "Vérifier et se connecter",
+      "errors": {
+        "send_failed": "Échec de l'envoi du code",
+        "verify_failed": "Code invalide ou expiré"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "Page introuvable",
+    "returnHome": "Retour à la maison"
+  },
+  "common": {
+    "logout": "Déconnexion",
+    "loading": "Chargement...",
+    "languages": {
+      "en": "FR",
+      "vi": "VI",
+      "de": "DE"
+    }
+  }
+}

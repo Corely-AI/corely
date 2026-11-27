@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 export default function ReorderDashboardPage() {
+  const uiCopy = useUiCopy("ui.inventory-reorderdashboardpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [warehouseIdFilter, setWarehouseIdFilter] = useState("");
@@ -55,9 +57,9 @@ export default function ReorderDashboardPage() {
       setWarehouseId("");
       setMinQty(0);
       setReorderPoint(0);
-      toast.success("Reorder policy created");
+      toast.success(uiCopy("reorder-policy-created"));
     },
-    onError: () => toast.error("Failed to create reorder policy"),
+    onError: () => toast.error(uiCopy("failed-to-create-reorder")),
   });
 
   const totalSuggestedQty = useMemo(
@@ -69,24 +71,24 @@ export default function ReorderDashboardPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-h1 text-foreground">Reorder Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Low-stock alerts and reorder suggestions</p>
+          <h1 className="text-h1 text-foreground">{uiCopy("reorder-dashboard")}</h1>
+          <p className="text-sm text-muted-foreground">{uiCopy("low-stock-alerts-and")}</p>
         </div>
         <Button variant="outline" onClick={() => navigate("/inventory/usage")}>
-          Usage report
+          {uiCopy("usage-report")}
         </Button>
       </div>
 
       <Card>
         <CardContent className="p-6 space-y-4">
           <div className="space-y-2 max-w-sm">
-            <Label>Filter warehouse</Label>
+            <Label>{uiCopy("filter-warehouse")}</Label>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={warehouseIdFilter}
               onChange={(event) => setWarehouseIdFilter(event.target.value)}
             >
-              <option value="">All warehouses</option>
+              <option value="">{uiCopy("all-warehouses")}</option>
               {warehouses?.items.map((warehouse) => (
                 <option key={warehouse.id} value={warehouse.id}>
                   {warehouse.name}
@@ -98,7 +100,7 @@ export default function ReorderDashboardPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Low-stock items
+                {uiCopy("low-stock-items")}
               </div>
               <div className="text-2xl font-semibold text-amber-600">
                 {lowStock?.items.length ?? 0}
@@ -106,13 +108,13 @@ export default function ReorderDashboardPage() {
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Suggested reorder rows
+                {uiCopy("suggested-reorder-rows")}
               </div>
               <div className="text-2xl font-semibold">{suggestions?.items.length ?? 0}</div>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Total suggested qty
+                {uiCopy("total-suggested-qty")}
               </div>
               <div className="text-2xl font-semibold">{totalSuggestedQty}</div>
             </div>
@@ -122,7 +124,8 @@ export default function ReorderDashboardPage() {
             <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <AlertTriangle className="h-4 w-4" />
-                {(lowStock?.items.length ?? 0).toString()} products need immediate attention
+                {(lowStock?.items.length ?? 0).toString()}
+                {" " + uiCopy("products-need-immediate-attention")}
               </div>
             </div>
           ) : null}
@@ -131,20 +134,20 @@ export default function ReorderDashboardPage() {
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">Create reorder policy</h2>
+          <h2 className="text-lg font-semibold">{uiCopy("create-reorder-policy")}</h2>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Product Id</Label>
+              <Label>{uiCopy("product-id")}</Label>
               <Input value={productId} onChange={(event) => setProductId(event.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Warehouse</Label>
+              <Label>{uiCopy("warehouse")}</Label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={warehouseId}
                 onChange={(event) => setWarehouseId(event.target.value)}
               >
-                <option value="">Select warehouse</option>
+                <option value="">{uiCopy("select-warehouse")}</option>
                 {warehouses?.items.map((warehouse) => (
                   <option key={warehouse.id} value={warehouse.id}>
                     {warehouse.name}
@@ -153,7 +156,7 @@ export default function ReorderDashboardPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Min Qty</Label>
+              <Label>{uiCopy("min-qty")}</Label>
               <Input
                 type="number"
                 min="0"
@@ -162,7 +165,7 @@ export default function ReorderDashboardPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Reorder Point</Label>
+              <Label>{uiCopy("reorder-point")}</Label>
               <Input
                 type="number"
                 min="0"
@@ -176,23 +179,23 @@ export default function ReorderDashboardPage() {
             onClick={() => createPolicy.mutate()}
             disabled={!productId || !warehouseId || createPolicy.isPending}
           >
-            Add Policy
+            {uiCopy("add-policy")}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="p-6">
-          <h2 className="mb-3 text-lg font-semibold">Low-stock alerts</h2>
+          <h2 className="mb-3 text-lg font-semibold">{uiCopy("low-stock-alerts")}</h2>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground">
-                <th className="py-2">Product</th>
-                <th>Warehouse</th>
-                <th>Available</th>
-                <th>Reorder point</th>
-                <th>Suggested Qty</th>
-                <th>Status</th>
+                <th className="py-2">{uiCopy("product")}</th>
+                <th>{uiCopy("warehouse")}</th>
+                <th>{uiCopy("available")}</th>
+                <th>{uiCopy("reorder-point-2")}</th>
+                <th>{uiCopy("suggested-qty")}</th>
+                <th>{uiCopy("status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -207,7 +210,7 @@ export default function ReorderDashboardPage() {
                   <td>{item.reorderPoint ?? item.minQty ?? "-"}</td>
                   <td>{item.suggestedQty}</td>
                   <td>
-                    <Badge variant="outline">Low stock</Badge>
+                    <Badge variant="outline">{uiCopy("low-stock")}</Badge>
                   </td>
                 </tr>
               ))}
@@ -218,14 +221,14 @@ export default function ReorderDashboardPage() {
 
       <Card>
         <CardContent className="p-6">
-          <h2 className="mb-3 text-lg font-semibold">Reorder suggestions</h2>
+          <h2 className="mb-3 text-lg font-semibold">{uiCopy("reorder-suggestions")}</h2>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground">
-                <th className="py-2">Product</th>
-                <th>Warehouse</th>
-                <th>Available</th>
-                <th>Suggested Qty</th>
+                <th className="py-2">{uiCopy("product")}</th>
+                <th>{uiCopy("warehouse")}</th>
+                <th>{uiCopy("available")}</th>
+                <th>{uiCopy("suggested-qty")}</th>
               </tr>
             </thead>
             <tbody>

@@ -1,3 +1,4 @@
+import { type CorelyLocale } from "@corely/contracts";
 import React, { useLayoutEffect, useSyncExternalStore } from "react";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -19,7 +20,7 @@ export function WorkspacePicker({
 }: {
   choices: SessionWorkspaceChoice[];
   select: (id: string) => void;
-  locale: "en" | "de" | "vi";
+  locale: CorelyLocale;
 }) {
   return (
     <nav aria-label={workspaceSessionCopy[locale].choose} className="flex flex-wrap gap-3 p-6">
@@ -55,7 +56,7 @@ export function WorkspaceAccessGate({
   workspace: SessionWorkspaceChoice;
   choices: SessionWorkspaceChoice[];
   selectWorkspace: (id: string) => void;
-  locale: "en" | "de" | "vi";
+  locale: CorelyLocale;
   hasUnsavedChanges: boolean;
   pendingWrites: number;
   registerDraft: WorkspaceSessionContextValue["registerDraft"];

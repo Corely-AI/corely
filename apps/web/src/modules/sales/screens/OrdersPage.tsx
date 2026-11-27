@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +29,7 @@ const getStatusVariant = (status: SalesOrderDto["status"]) => {
 };
 
 export default function OrdersPage() {
+  const uiCopy = useUiCopy("ui.sales-orderspage");
   const navigate = useNavigate();
 
   const { data: ordersData } = useQuery({
@@ -49,12 +51,12 @@ export default function OrdersPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-h1 text-foreground">Orders</h1>
-          <p className="text-muted-foreground">Track order confirmations and fulfillment.</p>
+          <h1 className="text-h1 text-foreground">{uiCopy("orders")}</h1>
+          <p className="text-muted-foreground">{uiCopy("track-order-confirmations-and")}</p>
         </div>
         <Button variant="accent" onClick={() => navigate("/sales/orders/new")}>
           <Plus className="h-4 w-4" />
-          New Order
+          {uiCopy("new-order")}
         </Button>
       </div>
 
@@ -62,8 +64,8 @@ export default function OrdersPage() {
         <CardContent className="p-0">
           {orders.length === 0 ? (
             <EmptyState
-              title="No orders yet"
-              description="Convert a quote or create a new order."
+              title={uiCopy("no-orders-yet")}
+              description={uiCopy("convert-a-quote-or")}
             />
           ) : (
             <div className="overflow-x-auto">
@@ -71,19 +73,19 @@ export default function OrdersPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Order #
+                      {uiCopy("order")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Customer
+                      {uiCopy("customer")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Status
+                      {uiCopy("status")}
                     </th>
                     <th className="text-right text-sm font-medium text-muted-foreground px-4 py-3">
-                      Total
+                      {uiCopy("total")}
                     </th>
                     <th className="text-right text-sm font-medium text-muted-foreground px-4 py-3">
-                      Actions
+                      {uiCopy("actions")}
                     </th>
                   </tr>
                 </thead>
@@ -93,7 +95,9 @@ export default function OrdersPage() {
                       key={order.id}
                       className="border-b border-border last:border-0 hover:bg-muted/30"
                     >
-                      <td className="px-4 py-3 text-sm font-medium">{order.number ?? "Draft"}</td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        {order.number ?? uiCopy("draft")}
+                      </td>
                       <td className="px-4 py-3 text-sm">
                         {getCustomerName(order.customerPartyId)}
                       </td>
@@ -109,7 +113,7 @@ export default function OrdersPage() {
                           size="sm"
                           onClick={() => navigate(`/sales/orders/${order.id}`)}
                         >
-                          View
+                          {uiCopy("view")}
                         </Button>
                       </td>
                     </tr>

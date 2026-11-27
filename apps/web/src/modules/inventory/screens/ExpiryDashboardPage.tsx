@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Clock, Package } from "lucide-react";
@@ -11,6 +12,7 @@ import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 import { useNavigate } from "react-router-dom";
 
 export default function ExpiryDashboardPage() {
+  const uiCopy = useUiCopy("ui.inventory-expirydashboardpage");
   const navigate = useNavigate();
   const [daysAhead, setDaysAhead] = useState(30);
 
@@ -58,14 +60,14 @@ export default function ExpiryDashboardPage() {
         <div className="flex items-center gap-3">
           <Clock className="h-8 w-8 text-muted-foreground" />
           <div>
-            <h1 className="text-h1 text-foreground">Expiry Dashboard</h1>
+            <h1 className="text-h1 text-foreground">{uiCopy("expiry-dashboard")}</h1>
             <p className="text-sm text-muted-foreground">
-              Monitor expiring and expired inventory lots
+              {uiCopy("monitor-expiring-and-expired")}
             </p>
           </div>
         </div>
         <Button variant="outline" onClick={() => navigate("/inventory/lots")}>
-          View All Lots
+          {uiCopy("view-all-lots")}
         </Button>
       </div>
 
@@ -73,7 +75,7 @@ export default function ExpiryDashboardPage() {
         <CardContent className="p-6">
           <div className="flex items-end gap-4">
             <div className="space-y-2">
-              <Label>Days Ahead to Check</Label>
+              <Label>{uiCopy("days-ahead-to-check")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -84,7 +86,9 @@ export default function ExpiryDashboardPage() {
               />
             </div>
             <div className="text-sm text-muted-foreground">
-              Checking for lots expiring within the next {daysAhead} days
+              {uiCopy("checking-for-lots-expiring") + " "}
+              {daysAhead}
+              {" " + uiCopy("days")}
             </div>
           </div>
         </CardContent>
@@ -96,11 +100,13 @@ export default function ExpiryDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-red-500" />
-                <h2 className="text-lg font-semibold">Expired</h2>
+                <h2 className="text-lg font-semibold">{uiCopy("expired")}</h2>
               </div>
               <Badge variant="destructive">{data?.totalExpired || 0}</Badge>
             </div>
-            <div className="text-sm text-muted-foreground mb-4">Lots that have already expired</div>
+            <div className="text-sm text-muted-foreground mb-4">
+              {uiCopy("lots-that-have-already")}
+            </div>
           </CardContent>
         </Card>
 
@@ -109,12 +115,14 @@ export default function ExpiryDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-orange-500" />
-                <h2 className="text-lg font-semibold">Expiring Soon</h2>
+                <h2 className="text-lg font-semibold">{uiCopy("expiring-soon")}</h2>
               </div>
               <Badge variant="outline">{data?.totalExpiringSoon || 0}</Badge>
             </div>
             <div className="text-sm text-muted-foreground mb-4">
-              Lots expiring within {daysAhead} days
+              {uiCopy("lots-expiring-within") + " "}
+              {daysAhead}
+              {" " + uiCopy("days")}
             </div>
           </CardContent>
         </Card>
@@ -123,7 +131,9 @@ export default function ExpiryDashboardPage() {
       {isLoading ? (
         <Card>
           <CardContent className="p-6">
-            <div className="text-center py-8 text-muted-foreground">Loading expiry data...</div>
+            <div className="text-center py-8 text-muted-foreground">
+              {uiCopy("loading-expiry-data")}
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -134,17 +144,18 @@ export default function ExpiryDashboardPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <AlertTriangle className="h-5 w-5 text-red-500" />
                   <h2 className="text-lg font-semibold text-red-700">
-                    Expired Lots ({data.expired.length})
+                    {uiCopy("expired-lots")}
+                    {data.expired.length})
                   </h2>
                 </div>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-muted-foreground border-b">
-                      <th className="py-3">Lot Number</th>
-                      <th>Product</th>
-                      <th>Expiry Date</th>
-                      <th>Qty On Hand</th>
-                      <th>Days Since Expiry</th>
+                      <th className="py-3">{uiCopy("lot-number")}</th>
+                      <th>{uiCopy("product")}</th>
+                      <th>{uiCopy("expiry-date")}</th>
+                      <th>{uiCopy("qty-on-hand")}</th>
+                      <th>{uiCopy("days-since-expiry")}</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -168,7 +179,7 @@ export default function ExpiryDashboardPage() {
                             size="sm"
                             onClick={() => navigate(`/inventory/lots/${item.lotId}`)}
                           >
-                            View
+                            {uiCopy("view")}
                           </Button>
                         </td>
                       </tr>
@@ -185,17 +196,18 @@ export default function ExpiryDashboardPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <Clock className="h-5 w-5 text-orange-500" />
                   <h2 className="text-lg font-semibold text-orange-700">
-                    Expiring Soon ({data.expiringSoon.length})
+                    {uiCopy("expiring-soon-2")}
+                    {data.expiringSoon.length})
                   </h2>
                 </div>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-muted-foreground border-b">
-                      <th className="py-3">Lot Number</th>
-                      <th>Product</th>
-                      <th>Expiry Date</th>
-                      <th>Qty On Hand</th>
-                      <th>Days Until Expiry</th>
+                      <th className="py-3">{uiCopy("lot-number")}</th>
+                      <th>{uiCopy("product")}</th>
+                      <th>{uiCopy("expiry-date")}</th>
+                      <th>{uiCopy("qty-on-hand")}</th>
+                      <th>{uiCopy("days-until-expiry")}</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -217,7 +229,7 @@ export default function ExpiryDashboardPage() {
                             size="sm"
                             onClick={() => navigate(`/inventory/lots/${item.lotId}`)}
                           >
-                            View
+                            {uiCopy("view")}
                           </Button>
                         </td>
                       </tr>
@@ -234,9 +246,11 @@ export default function ExpiryDashboardPage() {
                 <div className="text-center py-8 space-y-4">
                   <Package className="h-12 w-12 mx-auto text-muted-foreground" />
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">All Clear!</h3>
+                    <h3 className="text-lg font-semibold mb-2">{uiCopy("all-clear")}</h3>
                     <p className="text-sm text-muted-foreground">
-                      No expired or expiring lots found within the next {daysAhead} days.
+                      {uiCopy("no-expired-or-expiring") + " "}
+                      {daysAhead}
+                      {" " + uiCopy("days-2")}
                     </p>
                   </div>
                 </div>

@@ -1,3 +1,4 @@
+import { localizedValue } from "@corely/contracts";
 import React from "react";
 import { Grid2X2 } from "lucide-react";
 import type { AppCatalogItem, AppLaunchId } from "@corely/contracts";
@@ -82,7 +83,7 @@ export function AppSwitcher({
               >
                 <AppLogo logo={item.directory?.logo} iconKey={item.launch?.iconKey} compact />
                 <span className="flex flex-col items-start">
-                  <span>{launch.displayName[locale]}</span>
+                  <span>{localizedValue(launch.displayName, locale, item.appId)}</span>
                   {!enabled && <span className="text-xs">{reason}</span>}
                 </span>
               </DropdownMenuItem>

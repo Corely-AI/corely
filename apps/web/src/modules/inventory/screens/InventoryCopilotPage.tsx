@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import {
@@ -77,6 +78,7 @@ const ProposalCard: React.FC<{
 );
 
 export default function InventoryCopilotPage() {
+  const uiCopy = useUiCopy("ui.inventory-inventorycopilotpage");
   const {
     options: chatOptions,
     runId,
@@ -129,8 +131,18 @@ export default function InventoryCopilotPage() {
     }
     return (
       <div className="text-xs text-muted-foreground space-y-1">
-        {missingFields?.length ? <div>Missing: {missingFields.join(", ")}</div> : null}
-        {followUpQuestions?.length ? <div>Questions: {followUpQuestions.join(" | ")}</div> : null}
+        {missingFields?.length ? (
+          <div>
+            {uiCopy("missing") + " "}
+            {missingFields.join(", ")}
+          </div>
+        ) : null}
+        {followUpQuestions?.length ? (
+          <div>
+            {uiCopy("questions") + " "}
+            {followUpQuestions.join(" | ")}
+          </div>
+        ) : null}
       </div>
     );
   };
@@ -142,7 +154,7 @@ export default function InventoryCopilotPage() {
       const canApply = Boolean(proposal.sku && proposal.name && proposal.unitOfMeasure);
       return (
         <ProposalCard
-          title="Product Proposal"
+          title={uiCopy("product-proposal")}
           summary={`Confidence ${Math.round(productCard.data.confidence * 100)}%`}
           meta={{
             confidence: productCard.data.confidence,
@@ -175,7 +187,7 @@ export default function InventoryCopilotPage() {
         proposal.lineItems.length > 0 && proposal.lineItems.every((line) => line.productId);
       return (
         <ProposalCard
-          title="Receipt Draft"
+          title={uiCopy("receipt-draft")}
           summary={`Confidence ${Math.round(receiptCard.data.confidence * 100)}%`}
           meta={{
             confidence: receiptCard.data.confidence,
@@ -212,7 +224,7 @@ export default function InventoryCopilotPage() {
         proposal.lineItems.length > 0 && proposal.lineItems.every((line) => line.productId);
       return (
         <ProposalCard
-          title="Delivery Draft"
+          title={uiCopy("delivery-draft")}
           summary={`Confidence ${Math.round(deliveryCard.data.confidence * 100)}%`}
           meta={{
             confidence: deliveryCard.data.confidence,
@@ -247,7 +259,7 @@ export default function InventoryCopilotPage() {
       const canApply = Boolean(proposal.productId && proposal.warehouseId);
       return (
         <ProposalCard
-          title="Reorder Policy Proposal"
+          title={uiCopy("reorder-policy-proposal")}
           summary={`Confidence ${Math.round(reorderCard.data.confidence * 100)}%`}
           meta={{
             confidence: reorderCard.data.confidence,
@@ -276,7 +288,7 @@ export default function InventoryCopilotPage() {
     if (anomalyCard.success) {
       return (
         <ProposalCard
-          title="Anomaly Scan"
+          title={uiCopy("anomaly-scan")}
           summary={`Confidence ${Math.round(anomalyCard.data.confidence * 100)}%`}
           meta={{
             confidence: anomalyCard.data.confidence,
@@ -295,7 +307,7 @@ export default function InventoryCopilotPage() {
     if (pickCard.success) {
       return (
         <ProposalCard
-          title="Pick List"
+          title={uiCopy("pick-list")}
           summary={`Confidence ${Math.round(pickCard.data.confidence * 100)}%`}
           meta={{
             confidence: pickCard.data.confidence,
@@ -314,7 +326,7 @@ export default function InventoryCopilotPage() {
     if (explainCard.success) {
       return (
         <ProposalCard
-          title="Stock Change Explanation"
+          title={uiCopy("stock-change-explanation")}
           summary={`Confidence ${Math.round(explainCard.data.confidence * 100)}%`}
           meta={{
             confidence: explainCard.data.confidence,
@@ -329,7 +341,7 @@ export default function InventoryCopilotPage() {
       );
     }
 
-    return <div className="text-xs text-muted-foreground">No structured output.</div>;
+    return <div className="text-xs text-muted-foreground">{uiCopy("no-structured-output")}</div>;
   };
 
   const renderPart = (part: MessagePart) => {
@@ -348,7 +360,8 @@ export default function InventoryCopilotPage() {
         return (
           <div className="flex flex-col gap-2 text-sm">
             <div className="text-muted-foreground">
-              Approval required for <span className="font-semibold">{part.toolName}</span>
+              {uiCopy("approval-required-for") + " "}
+              <span className="font-semibold">{part.toolName}</span>
             </div>
             <div className="flex gap-2">
               <Button
@@ -358,7 +371,7 @@ export default function InventoryCopilotPage() {
                   addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: true })
                 }
               >
-                Allow
+                {uiCopy("allow")}
               </Button>
               <Button
                 size="sm"
@@ -367,7 +380,7 @@ export default function InventoryCopilotPage() {
                   addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: false })
                 }
               >
-                Deny
+                {uiCopy("deny")}
               </Button>
             </div>
           </div>
@@ -379,11 +392,19 @@ export default function InventoryCopilotPage() {
       if (part.state === "output-error" || part.state === "output-denied") {
         return (
           <div className="text-xs text-destructive">
-            Tool {part.toolName} failed: {part.errorText ?? "Denied"}
+            {uiCopy("tool") + " "}
+            {part.toolName}
+            {" " + uiCopy("failed") + " "}
+            {part.errorText ?? uiCopy("denied")}
           </div>
         );
       }
-      return <div className="text-xs text-muted-foreground">Tool call: {part.toolName}</div>;
+      return (
+        <div className="text-xs text-muted-foreground">
+          {uiCopy("tool-call") + " "}
+          {part.toolName}
+        </div>
+      );
     }
     return null;
   };
@@ -405,19 +426,19 @@ export default function InventoryCopilotPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Inventory Copilot</h1>
+        <h1 className="text-h1 text-foreground">{uiCopy("inventory-copilot")}</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={() => setPrompt("Create a product from this text: ...")}
           >
-            Prompt: Product
+            {uiCopy("prompt-product")}
           </Button>
           <Button
             variant="outline"
             onClick={() => setPrompt("Create a receipt from this text: ...")}
           >
-            Prompt: Receipt
+            {uiCopy("prompt-receipt")}
           </Button>
         </div>
       </div>
@@ -442,9 +463,9 @@ export default function InventoryCopilotPage() {
               className="flex-1 border rounded px-3 py-2 text-sm"
               value={input}
               onChange={handleInputChange}
-              placeholder="Ask Inventory Copilot..."
+              placeholder={uiCopy("ask-inventory-copilot")}
             />
-            <Button type="submit">Send</Button>
+            <Button type="submit">{uiCopy("send")}</Button>
           </form>
         </CardContent>
       </Card>

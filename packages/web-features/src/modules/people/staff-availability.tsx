@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { PeopleLink as Link } from "./people-runtime";
 import { useState } from "react";
 
@@ -9,8 +10,7 @@ import { StaffAvailabilityForm } from "./staff-availability-form";
 export function StaffAvailability({ id, archived }: { id: string; archived: boolean }) {
   const peopleApi = usePeopleApi();
   const access = usePeopleAccess();
-  const t =
-    availabilityCopy[access.locale === "de" || access.locale === "vi" ? access.locale : "en"];
+  const t = availabilityCopy[resolveCorelyLocale(access.locale)];
   const [saved, setSaved] = useState(false);
   const result = usePeopleLoad(
     (signal) => peopleApi.availability(id, signal),

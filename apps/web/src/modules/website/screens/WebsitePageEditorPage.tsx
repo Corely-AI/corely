@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -44,6 +45,7 @@ import { useWebsitePageEditorSavePreset } from "./use-website-page-editor-save-p
 const DEFAULT_PRESET = WebsitePageEditorPresetRegistry.fallback();
 
 export default function WebsitePageEditorPage() {
+  const uiCopy = useUiCopy("ui.website-websitepageeditorpage");
   const { siteId, pageId } = useParams<{ siteId: string; pageId: string }>();
   const isEdit = Boolean(pageId);
   const navigate = useNavigate();
@@ -349,7 +351,7 @@ export default function WebsitePageEditorPage() {
 
   const openPreview = () => {
     if (!previewUrl) {
-      toast.error("Preview URL is unavailable.");
+      toast.error(uiCopy("preview-url-is-unavailable"));
       return;
     }
     openWebsitePreviewWindow(previewUrl);

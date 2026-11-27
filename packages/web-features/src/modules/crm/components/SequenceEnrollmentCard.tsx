@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Play, Loader2, Check } from "lucide-react";
@@ -23,6 +24,7 @@ interface SequenceEnrollmentCardProps {
 }
 
 export function SequenceEnrollmentCard({ entityType, entityId }: SequenceEnrollmentCardProps) {
+  const uiCopy = useUiCopy("ui.crm-sequenceenrollmentcard");
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
 
   const { data: sequences, isLoading: isLoadingSequences } = useQuery({
@@ -38,11 +40,11 @@ export function SequenceEnrollmentCard({ entityType, entityId }: SequenceEnrollm
         entityId,
       }),
     onSuccess: () => {
-      toast.success("Enrolled in sequence successfully");
+      toast.success(uiCopy("enrolled-in-sequence-successfully"));
       setSelectedSequenceId(null);
     },
     onError: (error) => {
-      toast.error("Failed to enroll");
+      toast.error(uiCopy("failed-to-enroll"));
       console.error(error);
     },
   });
@@ -60,10 +62,12 @@ export function SequenceEnrollmentCard({ entityType, entityId }: SequenceEnrollm
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Play className="h-4 w-4" />
-          Automation
+          {uiCopy("automation")}
         </CardTitle>
         <CardDescription>
-          Enroll this {entityType} in a sequence to automate follow-ups.
+          {uiCopy("enroll-this") + " "}
+          {entityType}
+          {" " + uiCopy("in-a-sequence-to")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -73,13 +77,13 @@ export function SequenceEnrollmentCard({ entityType, entityId }: SequenceEnrollm
           </div>
         ) : sequenceList.length === 0 ? (
           <div className="text-sm text-muted-foreground">
-            No sequences available. Create one first.
+            {uiCopy("no-sequences-available-create")}
           </div>
         ) : (
           <div className="flex gap-2">
             <Select value={selectedSequenceId || ""} onValueChange={setSelectedSequenceId}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a sequence..." />
+                <SelectValue placeholder={uiCopy("select-a-sequence")} />
               </SelectTrigger>
               <SelectContent>
                 {sequenceList.map((seq: any) => (
@@ -93,7 +97,11 @@ export function SequenceEnrollmentCard({ entityType, entityId }: SequenceEnrollm
               onClick={handleEnroll}
               disabled={!selectedSequenceId || enrollMutation.isPending}
             >
-              {enrollMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enroll"}
+              {enrollMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                uiCopy("enroll")
+              )}
             </Button>
           </div>
         )}

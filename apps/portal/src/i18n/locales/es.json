@@ -1,0 +1,88 @@
+{
+  "portal": {
+    "title": "Portal",
+    "dashboard": {
+      "title": "Panel de control",
+      "welcome": "Bienvenido",
+      "students": {
+        "title": "estudiantes",
+        "select": "Seleccionar estudiante",
+        "linked": "Estudiantes vinculados",
+        "viewing": "VIENDO",
+        "student": "ESTUDIANTE",
+        "none": "No hay estudiantes vinculados"
+      },
+      "sessions": {
+        "title": "Próximas Sesiones",
+        "subtitle": "Vea su próximo horario de clases y enlaces para unirse a sesiones en línea.",
+        "open": "Horario abierto"
+      },
+      "materials": {
+        "title": "Materiales",
+        "subtitle": "Todos los documentos compartidos con usted y sus estudiantes.",
+        "items_one": "ARTÍCULO {{count}}",
+        "items_other": "ARTÍCULOS {{count}}",
+        "items": "ARTÍCULOS",
+        "added": "Añadido",
+        "download_failed": "No se pudo obtener la URL de descarga",
+        "personal": "PERSONALES",
+        "class_group": "GRUPO DE CLASE",
+        "getFile": "Obtener archivo",
+        "empty": {
+          "title": "Nada aquí todavía",
+          "subtitle": "Tus materiales de aprendizaje aparecerán aquí una vez que tu profesor los cargue."
+        },
+        "items_many": "ARTÍCULOS {{count}}"
+      },
+      "invoices": {
+        "title": "Facturas",
+        "subtitle": "Descargar facturas del estudiante seleccionado.",
+        "items_one": "FACTURA {{count}}",
+        "items_other": "FACTURAS {{count}}",
+        "items": "FACTURAS",
+        "invoice": "factura",
+        "issued": "Emitido",
+        "due": "debido",
+        "amount_due": "Monto adeudado",
+        "download": "Descargar Factura",
+        "download_failed": "No se pudo obtener el enlace de descarga de la factura",
+        "empty": {
+          "title": "Aún no hay facturas",
+          "subtitle": "Las facturas de este estudiante aparecerán aquí una vez que se emitan."
+        },
+        "items_many": "FACTURAS {{count}}"
+      }
+    },
+    "login": {
+      "title": "Portal para estudiantes y tutores",
+      "email_prompt": "Ingrese su correo electrónico para recibir un código de inicio de sesión",
+      "code_sent": "Ingresa el código de 6 dígitos enviado a {{email}}",
+      "email_label": "Correo electrónico",
+      "email_placeholder": "nombre@ejemplo.com",
+      "send_code": "Enviar código de inicio de sesión",
+      "code_label": "Código de inicio de sesión",
+      "code_placeholder": "000000",
+      "change_email": "Cambiar correo electrónico",
+      "resend_code": "Reenviar código",
+      "resend_in": "Reenviar en {{count}}s",
+      "verify_sign_in": "Verificar e iniciar sesión",
+      "errors": {
+        "send_failed": "No se pudo enviar el código",
+        "verify_failed": "Código no válido o caducado"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "Página no encontrada",
+    "returnHome": "Regresar a casa"
+  },
+  "common": {
+    "logout": "Cerrar sesión",
+    "loading": "Cargando...",
+    "languages": {
+      "en": "ES",
+      "vi": "VI",
+      "de": "DE"
+    }
+  }
+}

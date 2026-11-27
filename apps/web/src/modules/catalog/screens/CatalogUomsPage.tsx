@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, CardContent } from "@corely/ui";
@@ -6,6 +7,7 @@ import { catalogApi } from "@/lib/catalog-api";
 import { catalogUomKeys } from "../queries";
 
 export default function CatalogUomsPage() {
+  const uiCopy = useUiCopy("ui.catalog-cataloguomspage");
   const queryClient = useQueryClient();
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
@@ -25,28 +27,28 @@ export default function CatalogUomsPage() {
   });
 
   return (
-    <CrudListPageLayout title="Units of Measure" subtitle="Manage catalog units">
+    <CrudListPageLayout title={uiCopy("units-of-measure")} subtitle="Manage catalog units">
       <Card>
         <CardContent className="space-y-4 p-4">
           <div className="grid gap-2 md:grid-cols-3">
             <input
               className="rounded-md border border-input bg-background px-3 py-2"
-              placeholder="Code"
+              placeholder={uiCopy("code")}
               value={code}
               onChange={(event) => setCode(event.target.value)}
             />
             <input
               className="rounded-md border border-input bg-background px-3 py-2"
-              placeholder="Name"
+              placeholder={uiCopy("name")}
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
             <Button variant="outline" onClick={() => upsert.mutate()} disabled={!code || !name}>
-              Save UOM
+              {uiCopy("save-uom")}
             </Button>
           </div>
           {isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading...</div>
+            <div className="text-sm text-muted-foreground">{uiCopy("loading")}</div>
           ) : (
             <div className="space-y-2">
               {(data?.items ?? []).map((uom) => (

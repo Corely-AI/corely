@@ -1,28 +1,36 @@
-import i18n from "i18next";
+import i18n, { type BackendModule } from "i18next";
 import { initReactI18next } from "react-i18next";
-import { resources } from "./resources";
-import { resolveFocusedLocale } from "../../session/focused-locale";
+import { loadSharedCatalog, resources } from "./resources";
+import { corelyLocales, resolveCorelyLocale } from "@corely/contracts";
+import { loadFocusedLocale } from "../../session/focused-locale";
 
-let savedLanguage: string | null = null;
-try {
-  savedLanguage = localStorage.getItem("Corely One ERP-language");
-} catch {
-  /* Browser fallback remains available. */
-}
-const language = resolveFocusedLocale(
-  savedLanguage,
-  navigator.language,
-  new URLSearchParams(location.search).get("lang")
-);
+const language = loadFocusedLocale();
 
-void i18n.use(initReactI18next).init({
-  resources,
-  lng: language,
-  fallbackLng: "en",
-  interpolation: {
-    escapeValue: false,
+const catalogBackend: BackendModule = {
+  type: "backend",
+  init() {},
+  read(locale, _namespace, callback) {
+    void loadSharedCatalog(resolveCorelyLocale(locale)).then(
+      (catalog) => callback(null, catalog),
+      (error: Error) => callback(error, false)
+    );
   },
-});
+};
+
+void i18n
+  .use(catalogBackend)
+  .use(initReactI18next)
+  .init({
+    resources,
+    partialBundledLanguages: true,
+    supportedLngs: [...corelyLocales],
+    lng: language,
+    load: "currentOnly",
+    fallbackLng: "en",
+    interpolation: {
+      escapeValue: false,
+    },
+  });
 document.documentElement.lang = language;
 
 export default i18n;

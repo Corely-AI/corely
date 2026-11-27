@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,6 +47,7 @@ const normalizeSingleImageFileIds = (fileIds: string[]): string[] => {
 };
 
 export default function WebsiteWallOfLovePage() {
+  const uiCopy = useUiCopy("ui.website-websitewalloflovepage");
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -148,7 +150,7 @@ export default function WebsiteWallOfLovePage() {
     mutationFn: async (itemId: string) => websiteApi.publishWallOfLoveItem(itemId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: listQueryKey });
-      toast.success("Item published");
+      toast.success(uiCopy("item-published"));
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : "Failed to publish item");
@@ -159,7 +161,7 @@ export default function WebsiteWallOfLovePage() {
     mutationFn: async (itemId: string) => websiteApi.unpublishWallOfLoveItem(itemId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: listQueryKey });
-      toast.success("Item unpublished");
+      toast.success(uiCopy("item-unpublished"));
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : "Failed to unpublish item");
@@ -175,7 +177,7 @@ export default function WebsiteWallOfLovePage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: listQueryKey });
-      toast.success("Order saved");
+      toast.success(uiCopy("order-saved"));
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : "Failed to save order");
@@ -245,7 +247,7 @@ export default function WebsiteWallOfLovePage() {
         ...prev,
         imageFileIds: [uploaded.fileId],
       }));
-      toast.success("Uploaded image");
+      toast.success(uiCopy("uploaded-image"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to upload images");
     } finally {
@@ -262,12 +264,13 @@ export default function WebsiteWallOfLovePage() {
         <div className="flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {uiCopy("back")}
           </Button>
           <div>
-            <div className="text-lg font-semibold">Wall Of Love</div>
+            <div className="text-lg font-semibold">{uiCopy("wall-of-love")}</div>
             <div className="text-sm text-muted-foreground">
-              Manage testimonials for {siteQuery.data?.site?.name ?? "this website"}.
+              {uiCopy("manage-testimonials-for") + " "}
+              {siteQuery.data?.site?.name ?? uiCopy("this-website")}.
             </div>
           </div>
         </div>
@@ -277,12 +280,12 @@ export default function WebsiteWallOfLovePage() {
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Star className="h-4 w-4" />
-            {editingItemId ? "Edit item" : "Create item"}
+            {editingItemId ? uiCopy("edit-item") : uiCopy("create-item")}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Type</Label>
+              <Label>{uiCopy("type")}</Label>
               <select
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={form.type}
@@ -293,14 +296,14 @@ export default function WebsiteWallOfLovePage() {
                   }))
                 }
               >
-                <option value="image">Image</option>
-                <option value="youtube">YouTube</option>
-                <option value="x">X</option>
+                <option value="image">{uiCopy("image")}</option>
+                <option value="youtube">{uiCopy("youtube")}</option>
+                <option value="x">{uiCopy("x")}</option>
               </select>
             </div>
             {(form.type === "youtube" || form.type === "x") && (
               <div className="space-y-2">
-                <Label>Link URL</Label>
+                <Label>{uiCopy("link-url")}</Label>
                 <Input
                   value={form.linkUrl}
                   onChange={(event) =>
@@ -317,60 +320,60 @@ export default function WebsiteWallOfLovePage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Quote</Label>
+            <Label>{uiCopy("quote")}</Label>
             <Textarea
               rows={4}
               value={form.quote}
               onChange={(event) => setForm((prev) => ({ ...prev, quote: event.target.value }))}
-              placeholder="What did the customer say?"
+              placeholder={uiCopy("what-did-the-customer")}
             />
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Author name</Label>
+              <Label>{uiCopy("author-name")}</Label>
               <Input
                 value={form.authorName}
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, authorName: event.target.value }))
                 }
-                placeholder="Jane Doe"
+                placeholder={uiCopy("jane-doe")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Author title</Label>
+              <Label>{uiCopy("author-title")}</Label>
               <Input
                 value={form.authorTitle}
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, authorTitle: event.target.value }))
                 }
-                placeholder="Founder, Example Inc."
+                placeholder={uiCopy("founder-example-inc")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Source label</Label>
+              <Label>{uiCopy("source-label")}</Label>
               <Input
                 value={form.sourceLabel}
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, sourceLabel: event.target.value }))
                 }
-                placeholder="Twitter / YouTube / Customer story"
+                placeholder={uiCopy("twitter-youtube-customer-story")}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Image attachment (fileId)</Label>
+            <Label>{uiCopy("image-attachment-fileid")}</Label>
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={manualFileId}
                 onChange={(event) => setManualFileId(event.target.value)}
-                placeholder="Paste fileId (replaces current)"
+                placeholder={uiCopy("paste-fileid-replaces-current")}
                 className="max-w-sm"
               />
               <Button type="button" variant="outline" onClick={addManualFileId}>
                 <ImagePlus className="h-4 w-4" />
-                Set
+                {uiCopy("set")}
               </Button>
               <Button
                 type="button"
@@ -379,7 +382,7 @@ export default function WebsiteWallOfLovePage() {
                 disabled={isUploadingImages}
               >
                 <UploadCloud className="h-4 w-4" />
-                {isUploadingImages ? "Uploading..." : "Upload image"}
+                {isUploadingImages ? uiCopy("uploading") : uiCopy("upload-image")}
               </Button>
               <input
                 ref={fileInputRef}
@@ -412,25 +415,27 @@ export default function WebsiteWallOfLovePage() {
                         }))
                       }
                     >
-                      Remove
+                      {uiCopy("remove")}
                     </Button>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-muted-foreground">No images attached yet.</div>
+              <div className="text-sm text-muted-foreground">
+                {uiCopy("no-images-attached-yet")}
+              </div>
             )}
           </div>
 
           <div className="flex justify-end gap-2">
             {editingItemId ? (
               <Button type="button" variant="outline" onClick={resetForm}>
-                Cancel edit
+                {uiCopy("cancel-edit")}
               </Button>
             ) : null}
             <Button type="button" variant="accent" onClick={() => void upsertMutation.mutate()}>
               <Save className="h-4 w-4" />
-              {editingItemId ? "Update item" : "Create item"}
+              {editingItemId ? uiCopy("update-item") : uiCopy("create-item")}
             </Button>
           </div>
         </CardContent>

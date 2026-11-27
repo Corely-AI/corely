@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +37,7 @@ const publishedOptions = [
 const publishedVariant = (published: boolean) => (published ? "success" : "warning");
 
 export default function ShowcasesPage() {
+  const uiCopy = useUiCopy("ui.portfolio-showcasespage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
@@ -72,7 +75,7 @@ export default function ShowcasesPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => portfolioApi.deleteShowcase(id),
     onSuccess: async () => {
-      toast.success("Showcase deleted");
+      toast.success(uiCopy("showcase-deleted"));
       await queryClient.invalidateQueries({ queryKey: ["portfolio", "showcases", "list"] });
     },
     onError: (err) => {
@@ -85,7 +88,7 @@ export default function ShowcasesPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search showcases"
+          placeholder={uiCopy("search-showcases")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -131,7 +134,7 @@ export default function ShowcasesPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load showcases"}
+          {(error as Error)?.message || uiCopy("failed-to-load-showcases")}
         </div>
       ) : null}
     </div>
@@ -140,13 +143,13 @@ export default function ShowcasesPage() {
   const primaryAction = (
     <Button variant="accent" onClick={() => navigate("/portfolio/showcases/new")}>
       <Plus className="h-4 w-4" />
-      New showcase
+      {uiCopy("new-showcase")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Portfolio Showcases"
+      title={uiCopy("portfolio-showcases")}
       subtitle="Manage freelancer and company profiles"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -154,12 +157,14 @@ export default function ShowcasesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading showcases...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {uiCopy("loading-showcases")}
+            </div>
           ) : showcases.length === 0 ? (
             <EmptyState
               icon={Briefcase}
-              title="No showcases yet"
-              description="Create your first showcase to start building a public portfolio."
+              title={uiCopy("no-showcases-yet")}
+              description={uiCopy("create-your-first-showcase")}
               action={primaryAction}
             />
           ) : (
@@ -169,16 +174,16 @@ export default function ShowcasesPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Name
+                        {uiCopy("name")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Type
+                        {uiCopy("type")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th />
                     </tr>
@@ -238,7 +243,7 @@ export default function ShowcasesPage() {
                           <td className="px-4 py-3 text-sm capitalize">{showcase.type}</td>
                           <td className="px-4 py-3 text-sm">
                             <Badge variant={publishedVariant(showcase.isPublished)}>
-                              {showcase.isPublished ? "Published" : "Draft"}
+                              {showcase.isPublished ? uiCopy("published") : uiCopy("draft")}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-sm text-muted-foreground">
@@ -262,7 +267,7 @@ export default function ShowcasesPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -271,7 +276,7 @@ export default function ShowcasesPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -279,7 +284,7 @@ export default function ShowcasesPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>
@@ -296,8 +301,8 @@ export default function ShowcasesPage() {
           }
         }}
         trigger={null}
-        title="Delete showcase"
-        description="This will permanently delete the showcase and all related records."
+        title={uiCopy("delete-showcase")}
+        description={uiCopy("this-will-permanently-delete")}
         isLoading={deleteMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

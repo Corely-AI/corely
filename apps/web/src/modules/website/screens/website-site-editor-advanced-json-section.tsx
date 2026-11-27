@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import {
   Accordion,
   AccordionContent,
@@ -29,18 +30,17 @@ export function WebsiteSiteEditorAdvancedJsonSection({
   onApplyCommonJson,
   onApplyThemeJson,
 }: WebsiteSiteEditorAdvancedJsonSectionProps) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-advanced-json-section");
   return (
     <Accordion type="single" collapsible>
       <AccordionItem value="advanced-json">
-        <AccordionTrigger>Advanced JSON</AccordionTrigger>
+        <AccordionTrigger>{uiCopy("advanced-json")}</AccordionTrigger>
         <AccordionContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Directly edit raw common/theme JSON. Apply to overwrite structured fields.
-          </p>
+          <p className="text-sm text-muted-foreground">{uiCopy("directly-edit-raw-common")}</p>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Common JSON</Label>
+              <Label>{uiCopy("common-json")}</Label>
               <Textarea
                 rows={10}
                 className="font-mono text-xs"
@@ -51,12 +51,12 @@ export function WebsiteSiteEditorAdvancedJsonSection({
                 <p className="text-xs text-destructive">{commonJsonError}</p>
               ) : null}
               <Button type="button" variant="ghost" size="sm" onClick={onApplyCommonJson}>
-                Apply common JSON
+                {uiCopy("apply-common-json")}
               </Button>
             </div>
 
             <div className="space-y-2">
-              <Label>Theme JSON</Label>
+              <Label>{uiCopy("theme-json")}</Label>
               <Textarea
                 rows={10}
                 className="font-mono text-xs"
@@ -65,7 +65,7 @@ export function WebsiteSiteEditorAdvancedJsonSection({
               />
               {themeJsonError ? <p className="text-xs text-destructive">{themeJsonError}</p> : null}
               <Button type="button" variant="ghost" size="sm" onClick={onApplyThemeJson}>
-                Apply theme JSON
+                {uiCopy("apply-theme-json")}
               </Button>
             </div>
           </div>

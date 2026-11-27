@@ -1,9 +1,10 @@
+import { corelyLocales } from "../localization";
 import { z } from "zod";
 
 export const OpenBukProductKey = "openbuk" as const;
 export const OpenBukBookingEnabledKey = "openbuk.booking.enabled" as const;
 
-export const OpenBukLocaleSchema = z.enum(["en", "de", "vi"]);
+export const OpenBukLocaleSchema = z.enum(corelyLocales);
 export type OpenBukLocale = z.infer<typeof OpenBukLocaleSchema>;
 
 const TimeSchema = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);

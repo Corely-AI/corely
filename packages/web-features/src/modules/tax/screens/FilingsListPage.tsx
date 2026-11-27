@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
@@ -95,6 +96,7 @@ const getNextAction = (status: TaxFilingStatus, id: string) => {
 };
 
 export const FilingsListPage = () => {
+  const uiCopy = useUiCopy("ui.tax-filingslistpage");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -266,11 +268,11 @@ export const FilingsListPage = () => {
       return (
         <EmptyState
           icon={FileText}
-          title="No annual filings found"
-          description="Create a new annual income tax filing to get started."
+          title={uiCopy("no-annual-filings-found")}
+          description={uiCopy("create-a-new-annual")}
           action={
             <Button variant="outline" onClick={() => navigate(createAnnualHref)}>
-              Create annual filing
+              {uiCopy("create-annual-filing")}
             </Button>
           }
         />
@@ -281,10 +283,10 @@ export const FilingsListPage = () => {
         <EmptyState
           icon={FileText}
           title={`No filing for ${periodKey}`}
-          description="Start the VAT filing for the selected period."
+          description={uiCopy("start-the-vat-filing")}
           action={
             <Button variant="outline" onClick={() => navigate(createVatHref)}>
-              Create VAT filing
+              {uiCopy("create-vat-filing")}
             </Button>
           }
         />
@@ -293,11 +295,11 @@ export const FilingsListPage = () => {
     return (
       <EmptyState
         icon={FileText}
-        title="No filings found"
-        description="Try adjusting your filters or creating a new filing."
+        title={uiCopy("no-filings-found")}
+        description={uiCopy("try-adjusting-your-filters")}
         action={
           <Button variant="outline" onClick={() => setUrlState({ q: "", filters: [] })}>
-            Clear filters
+            {uiCopy("clear-filters")}
           </Button>
         }
       />
@@ -307,22 +309,22 @@ export const FilingsListPage = () => {
   return (
     <>
       <CrudListPageLayout
-        title="Filings"
+        title={uiCopy("filings")}
         subtitle="All tax obligations and returns in one place."
         primaryAction={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="accent">
                 <Plus className="h-4 w-4" />
-                Create filing
+                {uiCopy("create-filing")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigate(createVatHref)}>
-                VAT filing
+                {uiCopy("vat-filing")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(createAnnualHref)}>
-                Income tax (annual)
+                {uiCopy("income-tax-annual")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -355,7 +357,7 @@ export const FilingsListPage = () => {
             >
               {isError ? (
                 <div className="text-sm text-destructive">
-                  {(error as Error)?.message || "Failed to load filings"}
+                  {(error as Error)?.message || uiCopy("failed-to-load-filings")}
                 </div>
               ) : null}
             </ListToolbar>
@@ -393,19 +395,19 @@ export const FilingsListPage = () => {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Type
+                      {uiCopy("type")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                       {t("tax.createFiling.form.period")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Due date
+                      {uiCopy("due-date")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Status
+                      {uiCopy("status")}
                     </th>
                     <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                      Amount (est.)
+                      {uiCopy("amount-est")}
                     </th>
                     <th className="w-[120px]"></th>
                   </tr>
@@ -422,11 +424,11 @@ export const FilingsListPage = () => {
           ) : isError ? (
             <EmptyState
               icon={AlertTriangle}
-              title="Unable to load filings"
-              description="Check your connection and try again."
+              title={uiCopy("unable-to-load-filings")}
+              description={uiCopy("check-your-connection-and")}
               action={
                 <Button variant="outline" onClick={() => refetch()}>
-                  Retry
+                  {uiCopy("retry")}
                 </Button>
               }
             />
@@ -439,19 +441,19 @@ export const FilingsListPage = () => {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Type
+                        {uiCopy("type")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                         {t("tax.createFiling.form.period")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Due date
+                        {uiCopy("due-date")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                        Amount (est.)
+                        {uiCopy("amount-est")}
                       </th>
                       <th className="w-[120px]"></th>
                     </tr>
@@ -478,7 +480,7 @@ export const FilingsListPage = () => {
                         </td>
                         <td className="px-4 py-3">
                           <Badge variant="outline" className={getStatusBadgeClass(filing.status)}>
-                            {STATUS_LABELS[filing.status] ?? "Draft"}
+                            {STATUS_LABELS[filing.status] ?? uiCopy("draft")}
                           </Badge>
                         </td>
                         <td className="px-4 py-3 text-sm text-right font-medium">

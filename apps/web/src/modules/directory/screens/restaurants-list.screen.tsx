@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search, Store } from "lucide-react";
@@ -28,6 +30,7 @@ const statusVariant = (status: "ACTIVE" | "HIDDEN") => {
 };
 
 export default function RestaurantsListScreen() {
+  const uiCopy = useUiCopy("ui.directory-restaurants-list-screen");
   const navigate = useNavigate();
   const [listState, setListState] = useCrudUrlState({ pageSize: 20, sort: "updatedAt:desc" });
   const [pendingStatusAction, setPendingStatusAction] = useState<StatusAction>(null);
@@ -99,7 +102,7 @@ export default function RestaurantsListScreen() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search restaurants"
+          placeholder={uiCopy("search-restaurants")}
           className="w-72 pl-8"
           value={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -118,12 +121,12 @@ export default function RestaurantsListScreen() {
           })
         }
       >
-        <option value="">All statuses</option>
-        <option value="ACTIVE">ACTIVE</option>
-        <option value="HIDDEN">HIDDEN</option>
+        <option value="">{uiCopy("all-statuses")}</option>
+        <option value="ACTIVE">{uiCopy("active")}</option>
+        <option value="HIDDEN">{uiCopy("hidden")}</option>
       </select>
       <Input
-        placeholder="Neighborhood"
+        placeholder={uiCopy("neighborhood")}
         className="w-44"
         value={neighborhoodFilter}
         onChange={(event) =>
@@ -137,7 +140,7 @@ export default function RestaurantsListScreen() {
         }
       />
       <Input
-        placeholder="Dish tag"
+        placeholder={uiCopy("dish-tag")}
         className="w-40"
         value={dishFilter}
         onChange={(event) =>
@@ -156,7 +159,7 @@ export default function RestaurantsListScreen() {
   const primaryAction = (
     <Button variant="accent" onClick={() => navigate("/directory/restaurants/new")}>
       <Plus className="h-4 w-4" />
-      Add restaurant
+      {uiCopy("add-restaurant")}
     </Button>
   );
 
@@ -165,7 +168,7 @@ export default function RestaurantsListScreen() {
   return (
     <>
       <CrudListPageLayout
-        title="Restaurants"
+        title={uiCopy("restaurants")}
         subtitle="Manage Berlin Vietnamese directory entries"
         primaryAction={primaryAction}
         toolbar={toolbar}
@@ -173,19 +176,21 @@ export default function RestaurantsListScreen() {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">Loading restaurants...</div>
+              <div className="p-8 text-center text-muted-foreground">
+                {uiCopy("loading-restaurants")}
+              </div>
             ) : isError ? (
               <div className="space-y-3 p-8 text-center">
                 <p className="text-sm text-destructive">{getApiErrorDetail(error)}</p>
                 <Button variant="outline" onClick={() => void refetch()} disabled={isRefetching}>
-                  {isRefetching ? "Retrying..." : "Retry"}
+                  {isRefetching ? uiCopy("retrying") : uiCopy("retry")}
                 </Button>
               </div>
             ) : restaurants.length === 0 ? (
               <EmptyState
                 icon={Store}
-                title="No restaurants yet"
-                description="Add your first restaurant to publish it in the directory."
+                title={uiCopy("no-restaurants-yet")}
+                description={uiCopy("add-your-first-restaurant")}
                 action={primaryAction}
               />
             ) : (
@@ -195,19 +200,19 @@ export default function RestaurantsListScreen() {
                     <thead>
                       <tr className="border-b border-border bg-muted/50">
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Name
+                          {uiCopy("name")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Neighborhood
+                          {uiCopy("neighborhood")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Dish tags
+                          {uiCopy("dish-tags")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Status
+                          {uiCopy("status")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Updated
+                          {uiCopy("updated")}
                         </th>
                         <th />
                       </tr>
@@ -277,7 +282,7 @@ export default function RestaurantsListScreen() {
                 {data?.pageInfo ? (
                   <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm text-muted-foreground">
                     <div>
-                      Page {data.pageInfo.page} · {data.pageInfo.total} total
+                      <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -286,7 +291,7 @@ export default function RestaurantsListScreen() {
                         disabled={listState.page <= 1}
                         onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                       >
-                        Previous
+                        {uiCopy("previous")}
                       </Button>
                       <Button
                         variant="outline"
@@ -294,7 +299,7 @@ export default function RestaurantsListScreen() {
                         disabled={!data.pageInfo.hasNextPage}
                         onClick={() => setListState({ page: listState.page + 1 })}
                       >
-                        Next
+                        {uiCopy("next")}
                       </Button>
                     </div>
                   </div>

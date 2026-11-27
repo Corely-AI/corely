@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { normalizeError } from "@corely/api-client";
@@ -30,6 +31,7 @@ import { downloadTaxPdfWithPolling } from "../lib/download-tax-pdf-with-polling"
 import { buildFilingFlow, getDefaultStep } from "../lib/filing-flow-config";
 
 export const FilingDetailPage = () => {
+  const uiCopy = useUiCopy("ui.tax-filingdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -137,7 +139,7 @@ export const FilingDetailPage = () => {
       setTransitionErrorMessage(null);
       try {
         await recalcMutation.mutateAsync();
-        toast.success("Recalculation queued");
+        toast.success(uiCopy("recalculation-queued"));
       } catch (mutationError) {
         setTransitionError(mutationError);
       }
@@ -153,26 +155,26 @@ export const FilingDetailPage = () => {
         );
         if (result.status === "READY") {
           window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
-          toast.success("Download started");
+          toast.success(uiCopy("download-started"));
         } else if (result.status === "PENDING") {
-          toast.info("PDF is being prepared. Try again shortly.");
+          toast.info(uiCopy("pdf-is-being-prepared"));
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to export PDF");
+        toast.error(uiCopy("failed-to-export-pdf"));
       } finally {
         toast.dismiss(loadingToastId);
       }
       return;
     }
     if (actionKey === "exportCsv") {
-      toast.info("CSV export coming soon");
+      toast.info(uiCopy("csv-export-coming-soon"));
       return;
     }
     if (actionKey === "delete") {
       try {
         await deleteMutation.mutateAsync();
-        toast.success("Filing deleted");
+        toast.success(uiCopy("filing-deleted"));
         navigate("/tax/filings");
       } catch (mutationError) {
         setTransitionError(mutationError);
@@ -203,11 +205,11 @@ export const FilingDetailPage = () => {
       return (
         <div className="p-6 lg:p-8 space-y-4">
           <Button variant="ghost" onClick={() => navigate("/tax/filings")}>
-            Back to filings
+            {uiCopy("back-to-filings")}
           </Button>
           <Card>
             <CardContent className="p-6">
-              <p className="text-muted-foreground">Filing not found.</p>
+              <p className="text-muted-foreground">{uiCopy("filing-not-found")}</p>
             </CardContent>
           </Card>
         </div>
@@ -217,16 +219,16 @@ export const FilingDetailPage = () => {
     return (
       <div className="p-6 lg:p-8 space-y-4">
         <Button variant="ghost" onClick={() => navigate("/tax/filings")}>
-          Back to filings
+          {uiCopy("back-to-filings")}
         </Button>
         <Card>
           <CardContent className="p-6">
             <p className="text-destructive">
-              {normalizedError?.detail || "Failed to load filing details."}
+              {normalizedError?.detail || uiCopy("failed-to-load-filing")}
             </p>
             <div className="mt-4">
               <Button variant="outline" size="sm" onClick={() => void refetchDetail()}>
-                Retry
+                {uiCopy("retry")}
               </Button>
             </div>
           </CardContent>
@@ -271,14 +273,14 @@ export const FilingDetailPage = () => {
       <div className="flex flex-col gap-4">
         {transitionErrorMessage ? (
           <Alert variant="destructive">
-            <AlertTitle>Transition blocked</AlertTitle>
+            <AlertTitle>{uiCopy("transition-blocked")}</AlertTitle>
             <AlertDescription>{transitionErrorMessage}</AlertDescription>
           </Alert>
         ) : null}
         {submittedBanner ? (
           <Alert>
-            <AlertTitle>Submitted</AlertTitle>
-            <AlertDescription>Filing submission is recorded successfully.</AlertDescription>
+            <AlertTitle>{uiCopy("submitted")}</AlertTitle>
+            <AlertDescription>{uiCopy("filing-submission-is-recorded")}</AlertDescription>
           </Alert>
         ) : null}
         <FilingStepper steps={steps} activeStep={activeStep} onStepChange={setActiveStep} />
@@ -315,7 +317,7 @@ export const FilingDetailPage = () => {
               setTransitionErrorMessage(null);
               try {
                 await submitMutation.mutateAsync(payload);
-                toast.success("Filing submitted");
+                toast.success(uiCopy("filing-submitted"));
                 if (filing.capabilities.paymentsEnabled) {
                   setActiveStep("pay");
                 } else {
@@ -333,7 +335,7 @@ export const FilingDetailPage = () => {
               setTransitionErrorMessage(null);
               try {
                 await markPaidMutation.mutateAsync(payload);
-                toast.success("Marked as paid");
+                toast.success(uiCopy("marked-as-paid"));
               } catch (mutationError) {
                 setTransitionError(mutationError);
               }

@@ -50,7 +50,7 @@ setup and operations under `/app`, and public `/book/:studioSlug`. The first sli
 supports one location, one service and one staff member, recurring hours, blocked
 periods, buffers, authoritative availability and guest booking visible in the admin.
 The app is deliberately independent of Corely navigation. Marketing, authentication,
-studio administration and public booking support English, Deutsch and Tiếng Việt.
+studio administration and public booking use the [shared Corely locale registry](../../frontend/localization.md).
 The language selector persists the visitor's choice. Studios can set any of these
 three languages as their public booking default; an explicit visitor choice takes
 precedence. Dates, times and prices use the selected locale. Service and staff names

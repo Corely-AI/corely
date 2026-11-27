@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileUp, Trash2 } from "lucide-react";
@@ -91,6 +92,7 @@ interface MaterialsSectionProps {
 }
 
 export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps) => {
+  const uiCopy = useUiCopy("ui.portal-materialssection");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -110,7 +112,7 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
 
   const handleUpload = async () => {
     if (!file || !displayName) {
-      toast.error("Please provide a name and select a file");
+      toast.error(uiCopy("please-provide-a-name"));
       return;
     }
 
@@ -136,7 +138,7 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
         entityType,
       });
 
-      toast.success("Material added successfully");
+      toast.success(uiCopy("material-added-successfully"));
       setIsUploadOpen(false);
       setDisplayName("");
       setFile(null);
@@ -152,7 +154,7 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
     mutationFn: (documentId: string) =>
       apiClient.post(`/documents/${documentId}/unlink`, { entityId, entityType }),
     onSuccess: () => {
-      toast.success("Material unlinked");
+      toast.success(uiCopy("material-unlinked"));
       void queryClient.invalidateQueries({ queryKey: ["materials", entityType, entityId] });
     },
   });
@@ -161,10 +163,10 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
     <Card>
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold">Learning Materials</div>
+          <div className="text-sm font-semibold">{uiCopy("learning-materials")}</div>
           <Button variant="outline" size="sm" onClick={() => setIsUploadOpen(true)}>
             <FileUp className="h-4 w-4 mr-2" />
-            Upload
+            {uiCopy("upload")}
           </Button>
         </div>
 
@@ -173,16 +175,16 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                  Name
+                  {uiCopy("name")}
                 </th>
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                  Type
+                  {uiCopy("type")}
                 </th>
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                  Added
+                  {uiCopy("added")}
                 </th>
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                  Actions
+                  {uiCopy("actions")}
                 </th>
               </tr>
             </thead>
@@ -190,7 +192,7 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
               {isLoading ? (
                 <tr>
                   <td className="px-4 py-8 text-center text-muted-foreground" colSpan={4}>
-                    Loading...
+                    {uiCopy("loading")}
                   </td>
                 </tr>
               ) : (
@@ -200,7 +202,7 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
                     className="border-b border-border hover:bg-muted/30 transition-colors"
                   >
                     <td className="px-4 py-3 text-sm font-medium">
-                      {m.title || m.displayName || "Untitled"}
+                      {m.title || m.displayName || uiCopy("untitled")}
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
                       {m.contentType ? getFileExtension(m.contentType, m.title) : "FILE"}
@@ -217,7 +219,7 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
                             try {
                               const fileId = m.files?.[0]?.id;
                               if (!fileId) {
-                                toast.error("No file available");
+                                toast.error(uiCopy("no-file-available"));
                                 return;
                               }
                               const result: any = await apiClient.get(
@@ -226,14 +228,14 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
                               if (result.url) {
                                 window.open(result.url, "_blank");
                               } else {
-                                toast.error("No download URL in response");
+                                toast.error(uiCopy("no-download-url-in"));
                               }
                             } catch (err: any) {
-                              toast.error("Failed to get download link");
+                              toast.error(uiCopy("failed-to-get-download"));
                             }
                           }}
                         >
-                          Download
+                          {uiCopy("download")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -255,8 +257,8 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
               {!isLoading && materials?.length === 0 && (
                 <tr>
                   <td className="px-4 py-8 text-center text-muted-foreground" colSpan={4}>
-                    No materials linked yet. Shared with{" "}
-                    {entityType.replace("_", " ").toLowerCase()}.
+                    {uiCopy("no-materials-linked-yet")} {entityType.replace("_", " ").toLowerCase()}
+                    .
                   </td>
                 </tr>
               )}
@@ -267,28 +269,28 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
         <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Upload Material</DialogTitle>
+              <DialogTitle>{uiCopy("upload-material")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Display Name</Label>
+                <Label>{uiCopy("display-name")}</Label>
                 <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="e.g. Maths Exercises Week 1"
+                  placeholder={uiCopy("e-g-maths-exercises")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>File</Label>
+                <Label>{uiCopy("file")}</Label>
                 <Input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsUploadOpen(false)}>
-                Cancel
+                {uiCopy("cancel")}
               </Button>
               <Button onClick={handleUpload} disabled={uploading}>
-                {uploading ? "Uploading..." : "Upload & Link"}
+                {uploading ? uiCopy("uploading") : uiCopy("upload-link")}
               </Button>
             </DialogFooter>
           </DialogContent>

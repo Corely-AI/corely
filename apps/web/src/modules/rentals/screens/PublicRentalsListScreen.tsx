@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +15,7 @@ import { rentalsPublicKeys } from "../queries";
 import { usePublicWorkspace } from "@/shared/public-workspace";
 
 export default function PublicRentalsListScreen() {
+  const uiCopy = useUiCopy("ui.rentals-publicrentalslistscreen");
   const [listState, setListState] = useCrudUrlState({ pageSize: 12 });
   const { workspaceSlug } = usePublicWorkspace();
   const basePath = workspaceSlug ? `/w/${workspaceSlug}/rental` : "/rental";
@@ -42,11 +44,11 @@ export default function PublicRentalsListScreen() {
 
   const emptyState = (
     <EmptyState
-      title="No vacation rentals found"
-      description="We couldn't find any properties matching your search. Try adjusting your filters."
+      title={uiCopy("no-vacation-rentals-found")}
+      description={uiCopy("we-couldn-t-find")}
       action={
         <Button variant="outline" onClick={() => setListState({ q: "", page: 1 })}>
-          Clear search
+          {uiCopy("clear-search")}
         </Button>
       }
     />
@@ -60,17 +62,19 @@ export default function PublicRentalsListScreen() {
             <div className="bg-accent/10 p-1.5 rounded-lg group-hover:bg-accent/20 transition-colors">
               <Logo size="sm" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-foreground">Stays</span>
+            <span className="text-lg font-bold tracking-tight text-foreground">
+              {uiCopy("stays")}
+            </span>
           </Link>
           <div className="flex items-center gap-6">
             <Link
               to="/auth/login"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Staff login
+              {uiCopy("staff-login")}
             </Link>
             <Button variant="accent" size="sm" className="hidden sm:flex">
-              List your property
+              {uiCopy("list-your-property")}
             </Button>
           </div>
         </div>
@@ -80,19 +84,19 @@ export default function PublicRentalsListScreen() {
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-border pb-10">
           <div className="space-y-4 max-w-2xl">
             <h1 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight leading-tight">
-              Find your next{" "}
+              {uiCopy("find-your-next")}{" "}
               <span className="text-accent underline decoration-accent/30 underline-offset-8">
-                escape
+                {uiCopy("escape")}
               </span>
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Discover a curated collection of unique vacation rentals for your next adventure.
+              {uiCopy("discover-a-curated-collection")}
             </p>
           </div>
           <div className="relative w-full md:w-96 shadow-sm border rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-accent/20 transition-all">
             <Search className="absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Where are you going?"
+              placeholder={uiCopy("where-are-you-going")}
               className="pl-11 h-12 border-none focus-visible:ring-0 text-base"
               defaultValue={listState.q ?? ""}
               onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -113,7 +117,7 @@ export default function PublicRentalsListScreen() {
                 })
               }
             >
-              All Stays
+              {uiCopy("all-stays")}
             </Button>
             {categories.map((cat) => (
               <Button
@@ -146,9 +150,9 @@ export default function PublicRentalsListScreen() {
           </div>
         ) : isError ? (
           <div className="p-8 rounded-2xl bg-destructive/5 border border-destructive/10 text-destructive text-center">
-            <p className="font-semibold">Oops! Failed to load properties</p>
+            <p className="font-semibold">{uiCopy("oops-failed-to-load")}</p>
             <p className="text-sm opacity-80">
-              {(error as Error)?.message || "Please check your connection and try again."}
+              {(error as Error)?.message || uiCopy("please-check-your-connection")}
             </p>
           </div>
         ) : properties.length === 0 ? (
@@ -172,7 +176,8 @@ export default function PublicRentalsListScreen() {
                       <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                         <Badge className="bg-white/90 text-black hover:bg-white border-none shadow-sm backdrop-blur-sm">
                           <Users className="h-3 w-3 mr-1" />
-                          {property.maxGuests || 2} guests
+                          {property.maxGuests || 2}
+                          {" " + uiCopy("guests")}
                         </Badge>
                       </div>
                     </div>
@@ -195,7 +200,7 @@ export default function PublicRentalsListScreen() {
                         </div>
                       )}
                       <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
-                        {property.summary || "No summary available."}
+                        {property.summary || uiCopy("no-summary-available")}
                       </p>
                     </CardContent>
                     <CardFooter className="p-0 mt-4 flex items-center justify-between border-t border-border pt-4">
@@ -208,12 +213,12 @@ export default function PublicRentalsListScreen() {
                               maximumFractionDigits: 0,
                             }).format(property.price)}{" "}
                             <span className="text-muted-foreground font-normal text-xs">
-                              / night
+                              {uiCopy("night")}
                             </span>
                           </span>
                         ) : (
                           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-                            Details
+                            {uiCopy("details")}
                           </span>
                         )}
                       </div>
@@ -232,71 +237,77 @@ export default function PublicRentalsListScreen() {
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <Logo />
-              <span className="text-xl font-bold tracking-tight">Corely Stays</span>
+              <span className="text-xl font-bold tracking-tight">{uiCopy("corely-stays")}</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Exceptional vacation rentals curated for the modern traveler. Book your next stay with
-              confidence.
+              {uiCopy("exceptional-vacation-rentals-curated")}
             </p>
           </div>
           <div className="space-y-4">
-            <h4 className="font-bold uppercase tracking-widest text-xs text-foreground">Explore</h4>
+            <h4 className="font-bold uppercase tracking-widest text-xs text-foreground">
+              {uiCopy("explore")}
+            </h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link to={basePath} className="hover:text-accent transition-colors">
-                  All Properties
+                  {uiCopy("all-properties")}
                 </Link>
               </li>
               <li>
                 <Link to={`${basePath}?type=cabin`} className="hover:text-accent transition-colors">
-                  Cabins
+                  {uiCopy("cabins")}
                 </Link>
               </li>
               <li>
                 <Link to={`${basePath}?type=beach`} className="hover:text-accent transition-colors">
-                  Beachfront
+                  {uiCopy("beachfront")}
                 </Link>
               </li>
             </ul>
           </div>
           <div className="space-y-4">
-            <h4 className="font-bold uppercase tracking-widest text-xs text-foreground">Support</h4>
+            <h4 className="font-bold uppercase tracking-widest text-xs text-foreground">
+              {uiCopy("support")}
+            </h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <a href="#" className="hover:text-accent transition-colors">
-                  Help Center
+                  {uiCopy("help-center")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-accent transition-colors">
-                  Safety Information
+                  {uiCopy("safety-information")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-accent transition-colors">
-                  Cancellation Options
+                  {uiCopy("cancellation-options")}
                 </a>
               </li>
             </ul>
           </div>
           <div className="space-y-4">
-            <h4 className="font-bold uppercase tracking-widest text-xs text-foreground">Legal</h4>
+            <h4 className="font-bold uppercase tracking-widest text-xs text-foreground">
+              {uiCopy("legal")}
+            </h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <a href="#" className="hover:text-accent transition-colors">
-                  Privacy Policy
+                  {uiCopy("privacy-policy")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-accent transition-colors">
-                  Terms of Service
+                  {uiCopy("terms-of-service")}
                 </a>
               </li>
             </ul>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 border-t border-border mt-16 pt-8 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Corely AI Platform. All rights reserved.
+          © {new Date().getFullYear()}
+          {" " + uiCopy("corely-ai-platform-all")}
         </div>
       </footer>
     </div>

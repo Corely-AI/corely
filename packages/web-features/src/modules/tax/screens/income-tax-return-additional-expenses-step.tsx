@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import type { AdditionalExpensesSectionPayload, ChildEntry } from "@corely/contracts";
 import { CircleAlert } from "lucide-react";
@@ -52,6 +53,7 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
   childrenEntries = [],
   onNext,
 }: IncomeTaxReturnAdditionalExpensesStepProps) => {
+  const uiCopy = useUiCopy("ui.tax-income-tax-return-additional-expenses-step");
   const navigate = useNavigate();
   const taxYear = new Date().getFullYear() - 1;
   const update = (patch: Partial<AdditionalExpensesSectionPayload>) =>
@@ -69,11 +71,11 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-4">
-            <h2 className="text-h3 text-foreground">Children expenses</h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("children-expenses")}</h2>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Do you or your spouse have any children under the age of 18?
+                {uiCopy("do-you-or-your")}
               </Label>
               <SegmentedControl
                 ariaLabel="Children under 18"
@@ -89,22 +91,26 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
             {hasChildrenUnder18 === "yes" ? (
               <div className="space-y-4">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <p className="text-body text-foreground">Children expenses</p>
+                  <p className="text-body text-foreground">{uiCopy("children-expenses")}</p>
                   <Button
                     type="button"
                     variant="outline"
                     className="rounded-full border-sky-500 px-6 text-sky-500 hover:bg-sky-50 hover:text-sky-600"
                     onClick={() => navigate(`/income-statement/child/${taxYear}`)}
                   >
-                    Add child
+                    {uiCopy("add-child")}
                   </Button>
                 </div>
 
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/60 bg-card/70">
-                      <TableHead className="font-semibold text-foreground">Child name</TableHead>
-                      <TableHead className="w-[120px] font-semibold text-foreground">Age</TableHead>
+                      <TableHead className="font-semibold text-foreground">
+                        {uiCopy("child-name")}
+                      </TableHead>
+                      <TableHead className="w-[120px] font-semibold text-foreground">
+                        {uiCopy("age")}
+                      </TableHead>
                       <TableHead className="w-[60px]" />
                     </TableRow>
                   </TableHeader>
@@ -115,13 +121,13 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
                           colSpan={3}
                           className="py-10 text-center text-body text-foreground/75"
                         >
-                          No children added yet.{" "}
+                          {uiCopy("no-children-added-yet")}{" "}
                           <button
                             type="button"
                             className="text-sky-500 hover:text-sky-400"
                             onClick={() => navigate(`/income-statement/child/${taxYear}`)}
                           >
-                            Add child
+                            {uiCopy("add-child")}
                           </button>
                         </TableCell>
                       </TableRow>
@@ -135,7 +141,7 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
                           <TableRow key={child.id} className="border-border/60 bg-card/30">
                             <TableCell className="text-body text-foreground">
                               {[child.firstName, child.lastName].filter(Boolean).join(" ") ||
-                                "Unnamed child"}
+                                uiCopy("unnamed-child")}
                             </TableCell>
                             <TableCell className="text-body text-foreground">{age}</TableCell>
                             <TableCell />
@@ -154,11 +160,11 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-4">
-            <h2 className="text-h3 text-foreground">Donations</h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("donations")}</h2>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Have you or your spouse made any donations?
+                {uiCopy("have-you-or-your")}
               </Label>
               <SegmentedControl
                 ariaLabel="Donations"
@@ -175,25 +181,25 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
               <div className="space-y-4">
                 <MoneyField
                   id="donations-national-charities"
-                  label="Donations to national charities (Optional)"
+                  label={uiCopy("donations-to-national-charities")}
                   value={donationsNationalCharities}
                   onChange={(next) => update({ donationsNationalCharities: next })}
                 />
                 <MoneyField
                   id="donations-eu-institutions"
-                  label="Donations to charitable institutions (EU/EEA) (Optional)"
+                  label={uiCopy("donations-to-charitable-institutions")}
                   value={donationsEuInstitutions}
                   onChange={(next) => update({ donationsEuInstitutions: next })}
                 />
                 <MoneyField
                   id="donations-political-parties"
-                  label="Donations to political parties (Optional)"
+                  label={uiCopy("donations-to-political-parties")}
                   value={donationsPoliticalParties}
                   onChange={(next) => update({ donationsPoliticalParties: next })}
                 />
                 <MoneyField
                   id="donations-voter-unions"
-                  label="Donations to independent voter unions (Optional)"
+                  label={uiCopy("donations-to-independent-voter")}
                   value={donationsVoterUnions}
                   onChange={(next) => update({ donationsVoterUnions: next })}
                 />
@@ -207,17 +213,15 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
         <CardContent className="space-y-6 p-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <h2 className="text-h3 text-foreground">Expenses as an employee</h2>
+              <h2 className="text-h3 text-foreground">{uiCopy("expenses-as-an-employee")}</h2>
               <p className="max-w-4xl text-body text-muted-foreground">
-                Includes expenses that were not paid by your employer, e.g. daily commuting to work,
-                training, etc... The tax office takes into account 1000 EUR per year as
-                income-related expenses which will be automatically deducted from taxable income
+                {uiCopy("includes-expenses-that-were")}
               </p>
             </div>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Do you have expenses as an employee of more than 1000 EUR?
+                {uiCopy("do-you-have-expenses")}
               </Label>
               <SegmentedControl
                 ariaLabel="Employee expenses over threshold"
@@ -239,14 +243,14 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
                     <CircleAlert className="h-6 w-6" />
                   </div>
                   <p className="max-w-3xl text-body leading-relaxed">
-                    You can declare those expenses with a tax consultant on the{" "}
-                    <span className="text-sky-300">Paid add ons</span> section.
+                    {uiCopy("you-can-declare-those")}{" "}
+                    <span className="text-sky-300">{uiCopy("paid-add-ons")}</span>
+                    {" " + uiCopy("section")}
                   </p>
                 </div>
 
                 <p className="text-xs text-muted-foreground">
-                  Usually relevant for employees with a long commute to workplace or with two
-                  households
+                  {uiCopy("usually-relevant-for-employees")}
                 </p>
               </div>
             ) : null}
@@ -257,7 +261,7 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
       {onNext ? (
         <div className="flex justify-end">
           <Button type="button" onClick={onNext} className="rounded-full px-8">
-            Next: Info for the tax office
+            {uiCopy("next-info-for-the")}
           </Button>
         </div>
       ) : null}

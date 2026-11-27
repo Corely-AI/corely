@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -47,6 +49,7 @@ const statusVariant = (status: PortfolioContentStatus) => {
 };
 
 export default function ProjectsPage() {
+  const uiCopy = useUiCopy("ui.portfolio-projectspage");
   const { showcaseId } = useParams<{ showcaseId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -91,7 +94,7 @@ export default function ProjectsPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => portfolioApi.deleteProject(id),
     onSuccess: async () => {
-      toast.success("Project deleted");
+      toast.success(uiCopy("project-deleted"));
       if (showcaseId) {
         await queryClient.invalidateQueries({
           queryKey: ["portfolio", "projects", "list", showcaseId],
@@ -108,7 +111,7 @@ export default function ProjectsPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search projects"
+          placeholder={uiCopy("search-projects")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -154,7 +157,7 @@ export default function ProjectsPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load projects"}
+          {(error as Error)?.message || uiCopy("failed-to-load-projects")}
         </div>
       ) : null}
     </div>
@@ -167,13 +170,13 @@ export default function ProjectsPage() {
       disabled={!showcaseId}
     >
       <Plus className="h-4 w-4" />
-      New project
+      {uiCopy("new-project")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Projects"
+      title={uiCopy("projects")}
       subtitle="Showcase the work you want clients to see"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -181,12 +184,14 @@ export default function ProjectsPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading projects...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {uiCopy("loading-projects")}
+            </div>
           ) : projects.length === 0 ? (
             <EmptyState
               icon={FolderOpen}
-              title="No projects yet"
-              description="Add your first project to highlight your work."
+              title={uiCopy("no-projects-yet")}
+              description={uiCopy("add-your-first-project")}
               action={primaryAction}
             />
           ) : (
@@ -196,19 +201,19 @@ export default function ProjectsPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Title
+                        {uiCopy("title")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Type
+                        {uiCopy("type")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Featured
+                        {uiCopy("featured")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th />
                     </tr>
@@ -233,7 +238,7 @@ export default function ProjectsPage() {
                           {project.featured ? (
                             <span className="inline-flex items-center gap-1 text-amber-500">
                               <Star className="h-4 w-4" />
-                              Featured
+                              {uiCopy("featured")}
                             </span>
                           ) : (
                             "—"
@@ -266,7 +271,7 @@ export default function ProjectsPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -275,7 +280,7 @@ export default function ProjectsPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -283,7 +288,7 @@ export default function ProjectsPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>
@@ -300,8 +305,8 @@ export default function ProjectsPage() {
           }
         }}
         trigger={null}
-        title="Delete project"
-        description="This will permanently delete the project."
+        title={uiCopy("delete-project")}
+        description={uiCopy("this-will-permanently-delete")}
         isLoading={deleteMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

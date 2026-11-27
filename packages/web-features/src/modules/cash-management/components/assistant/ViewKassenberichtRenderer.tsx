@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link, createSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -15,6 +16,7 @@ const locales: Record<string, Locale> = {
 };
 
 export const ViewKassenberichtRenderer: React.FC<ToolRendererProps> = ({ state, output }) => {
+  const uiCopy = useUiCopy("ui.cash-management-assistant-viewkassenberichtrenderer");
   const { t, i18n } = useTranslation();
 
   if (state !== "output-available" || !output) {
@@ -30,7 +32,7 @@ export const ViewKassenberichtRenderer: React.FC<ToolRendererProps> = ({ state, 
     return (
       <Alert variant="destructive" className="my-2">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
+        <AlertTitle>{uiCopy("error")}</AlertTitle>
         <AlertDescription>{errorMsg}</AlertDescription>
       </Alert>
     );

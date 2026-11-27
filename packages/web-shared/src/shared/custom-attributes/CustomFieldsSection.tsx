@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Checkbox } from "@corely/ui";
@@ -49,6 +50,7 @@ export function CustomFieldsSection({
   value,
   onChange,
 }: CustomFieldsSectionProps) {
+  const uiCopy = useUiCopy("ui.shared-custom-attributes-customfieldssection");
   const { t } = useTranslation();
   const { data: definitions = [], isLoading: isDefinitionsLoading } =
     useCustomFieldDefinitions(entityType);
@@ -195,7 +197,7 @@ export function CustomFieldsSection({
                     }
                   >
                     <SelectTrigger data-testid={`custom-field-input-${definition.key}`}>
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder={uiCopy("select")} />
                     </SelectTrigger>
                     <SelectContent>
                       {(definition.options ?? []).map((option) => (

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { UserPlus, Shield, Mail, Loader2 } from "lucide-react";
 import { Button } from "@corely/ui";
@@ -12,6 +13,7 @@ import { useToast } from "@corely/ui";
 import type { WorkspaceMemberDto } from "@corely/contracts";
 
 export const WorkspaceMembersPage: React.FC = () => {
+  const uiCopy = useUiCopy("ui.workspaces-workspacememberspage");
   const { activeWorkspaceId } = useWorkspace();
   const { toast } = useToast();
   const [members, setMembers] = useState<WorkspaceMemberDto[]>([]);
@@ -69,22 +71,21 @@ export const WorkspaceMembersPage: React.FC = () => {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-h1">Members & access</h1>
-          <p className="text-muted-foreground">
-            Invite teammates and manage their roles per workspace.
-          </p>
+          <h1 className="text-h1">{uiCopy("members-access")}</h1>
+          <p className="text-muted-foreground">{uiCopy("invite-teammates-and-manage")}</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" /> Invite member
+            <Shield className="h-5 w-5" />
+            {" " + uiCopy("invite-member")}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2 md:col-span-2">
-            <Label>Email</Label>
+            <Label>{uiCopy("email")}</Label>
             <Input
               placeholder="teammate@company.com"
               value={inviteForm.email}
@@ -92,7 +93,7 @@ export const WorkspaceMembersPage: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label>Role</Label>
+            <Label>{uiCopy("role")}</Label>
             <Select
               value={inviteForm.role}
               onValueChange={(v) => setInviteForm((f) => ({ ...f, role: v }))}
@@ -101,11 +102,11 @@ export const WorkspaceMembersPage: React.FC = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="OWNER">Owner</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="MEMBER">Member</SelectItem>
-                <SelectItem value="ACCOUNTANT">Accountant</SelectItem>
-                <SelectItem value="VIEWER">Viewer</SelectItem>
+                <SelectItem value="OWNER">{uiCopy("owner")}</SelectItem>
+                <SelectItem value="ADMIN">{uiCopy("admin")}</SelectItem>
+                <SelectItem value="MEMBER">{uiCopy("member")}</SelectItem>
+                <SelectItem value="ACCOUNTANT">{uiCopy("accountant")}</SelectItem>
+                <SelectItem value="VIEWER">{uiCopy("viewer")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -119,29 +120,29 @@ export const WorkspaceMembersPage: React.FC = () => {
             ) : (
               <Mail className="h-4 w-4 mr-2" />
             )}
-            Send invite
+            {uiCopy("send-invite")}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Members</CardTitle>
+          <CardTitle>{uiCopy("members")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{uiCopy("name")}</TableHead>
+                <TableHead>{uiCopy("email")}</TableHead>
+                <TableHead>{uiCopy("role")}</TableHead>
+                <TableHead>{uiCopy("status")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {members.map((member) => (
                 <TableRow key={member.membershipId}>
-                  <TableCell>{member.name ?? "Pending invite"}</TableCell>
+                  <TableCell>{member.name ?? uiCopy("pending-invite")}</TableCell>
                   <TableCell>{member.email ?? "—"}</TableCell>
                   <TableCell className="uppercase text-xs font-semibold">{member.role}</TableCell>
                   <TableCell className="capitalize text-sm">
@@ -152,7 +153,7 @@ export const WorkspaceMembersPage: React.FC = () => {
               {!members.length && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground text-center">
-                    {isLoading ? "Loading members..." : "No members yet."}
+                    {isLoading ? uiCopy("loading-members") : uiCopy("no-members-yet")}
                   </TableCell>
                 </TableRow>
               )}

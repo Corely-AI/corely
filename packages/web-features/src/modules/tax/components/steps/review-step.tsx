@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@corely/ui";
@@ -79,6 +80,7 @@ export function ReviewStep({
   isRecalculating,
   onViewIncludedItems,
 }: ReviewStepProps) {
+  const uiCopy = useUiCopy("ui.tax-steps-review-step");
   const issueList = issues.length > 0 ? issues : DEFAULT_ISSUES;
   const visibleIssues = issueList.filter(
     (issue) => typeof issue.count !== "number" || issue.count > 0
@@ -91,26 +93,26 @@ export function ReviewStep({
     <div className="space-y-6" data-testid="tax-filing-review-step">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Summary totals</CardTitle>
+          <CardTitle>{uiCopy("summary-totals")}</CardTitle>
           <Button variant="outline" onClick={onRecalculate} disabled={isRecalculating}>
-            Recalculate
+            {uiCopy("recalculate")}
           </Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
-            <p className="text-sm text-muted-foreground">VAT collected</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("vat-collected")}</p>
             <p className="text-lg font-semibold">{formatAmount(totals?.vatCollectedCents)}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">VAT paid</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("vat-paid")}</p>
             <p className="text-lg font-semibold">{formatAmount(totals?.vatPaidCents)}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Payable / receivable</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("payable-receivable")}</p>
             <p className="text-lg font-semibold">{formatAmount(totals?.netPayableCents)}</p>
           </div>
           <div className="md:col-span-3 text-xs text-muted-foreground">
-            Last recalculated{" "}
+            {uiCopy("last-recalculated")}{" "}
             {totals?.lastRecalculatedAt ? formatDateTime(totals.lastRecalculatedAt, "en-US") : "—"}
           </div>
         </CardContent>
@@ -118,58 +120,62 @@ export function ReviewStep({
 
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="sales">
-          <AccordionTrigger>Sales / invoices included</AccordionTrigger>
+          <AccordionTrigger>{uiCopy("sales-invoices-included")}</AccordionTrigger>
           <AccordionContent className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              {totals?.salesCount ?? 0} invoice item(s) • Net {formatAmount(totals?.salesNetCents)}
+              {totals?.salesCount ?? 0}
+              {" " + uiCopy("invoice-item-s-net") + " "}
+              {formatAmount(totals?.salesNetCents)}
             </p>
             <Button variant="outline" onClick={() => onViewIncludedItems("invoice")}>
-              View included items
+              {uiCopy("view-included-items")}
             </Button>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="purchases">
-          <AccordionTrigger>Purchases / expenses included</AccordionTrigger>
+          <AccordionTrigger>{uiCopy("purchases-expenses-included")}</AccordionTrigger>
           <AccordionContent className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              {totals?.purchaseCount ?? 0} expense item(s) • Net{" "}
-              {formatAmount(totals?.purchaseNetCents)}
+              {totals?.purchaseCount ?? 0}
+              {" " + uiCopy("expense-item-s-net")} {formatAmount(totals?.purchaseNetCents)}
             </p>
             <Button variant="outline" onClick={() => onViewIncludedItems("expense")}>
-              View included items
+              {uiCopy("view-included-items")}
             </Button>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="adjustments">
-          <AccordionTrigger>Adjustments (manual)</AccordionTrigger>
+          <AccordionTrigger>{uiCopy("adjustments-manual")}</AccordionTrigger>
           <AccordionContent className="text-sm text-muted-foreground">
-            Adjustments are coming soon.
+            {uiCopy("adjustments-are-coming-soon")}
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
       {blockerCount > 0 ? (
         <Alert variant="destructive">
-          <AlertTitle>Resolve blockers to submit</AlertTitle>
+          <AlertTitle>{uiCopy("resolve-blockers-to-submit")}</AlertTitle>
           <AlertDescription>
-            {blockerCount} blocker issue{blockerCount === 1 ? "" : "s"} must be fixed before
-            submission.
+            {blockerCount}
+            {" " + uiCopy("blocker-issue")}
+            {blockerCount === 1 ? "" : uiCopy("s")}
+            {" " + uiCopy("must-be-fixed-before")}
           </AlertDescription>
         </Alert>
       ) : null}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Issues to fix</CardTitle>
+          <CardTitle>{uiCopy("issues-to-fix")}</CardTitle>
           <Badge variant={blockerCount > 0 ? "destructive" : "secondary"}>
-            {blockerCount > 0 ? `${blockerCount} blocker(s)` : "No blockers"}
+            {blockerCount > 0 ? `${blockerCount} blocker(s)` : uiCopy("no-blockers")}
           </Badge>
         </CardHeader>
         <CardContent className="space-y-3">
           {visibleIssues.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No issues detected.</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("no-issues-detected")}</p>
           ) : (
             visibleIssues.map((issue) => (
               <div
@@ -193,7 +199,7 @@ export function ReviewStep({
 
                 {issue.deepLink ? (
                   <Button variant="outline" asChild>
-                    <Link to={issue.deepLink}>Fix</Link>
+                    <Link to={issue.deepLink}>{uiCopy("fix")}</Link>
                   </Button>
                 ) : null}
               </div>

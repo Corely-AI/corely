@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useCallback, useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import {
@@ -58,6 +59,7 @@ const getOrderedKeys = (
 export function WebsiteSiteEditorGeneratedContentForm(
   props: WebsiteSiteEditorGeneratedContentFormProps
 ) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-generated-content-form");
   const [openRootGroups, setOpenRootGroups] = useState<string[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -163,7 +165,7 @@ export function WebsiteSiteEditorGeneratedContentForm(
             <div className="flex items-center justify-end gap-2">
               <Button type="button" size="sm" variant="outline" onClick={openSearchDialog}>
                 <Search className="mr-2 h-4 w-4" />
-                Search fields
+                {uiCopy("search-fields")}
               </Button>
               <Button
                 type="button"
@@ -172,7 +174,7 @@ export function WebsiteSiteEditorGeneratedContentForm(
                 disabled={openRootGroups.length === 0}
                 onClick={() => setOpenRootGroups([])}
               >
-                Collapse all
+                {uiCopy("collapse-all")}
               </Button>
             </div>
             <Accordion
@@ -225,12 +227,12 @@ export function WebsiteSiteEditorGeneratedContentForm(
               variant="outline"
               onClick={() => addArrayItem(path, value)}
             >
-              Add item
+              {uiCopy("add-item")}
             </Button>
           </div>
 
           {value.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No items yet.</p>
+            <p className="text-xs text-muted-foreground">{uiCopy("no-items-yet")}</p>
           ) : (
             value.map((item, index) => {
               const itemPath = [...path, index];
@@ -238,14 +240,17 @@ export function WebsiteSiteEditorGeneratedContentForm(
               return (
                 <div key={itemKey} className="space-y-2 rounded-md border border-border/60 p-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs uppercase">Item {index + 1}</Label>
+                    <Label className="text-xs uppercase">
+                      {uiCopy("item") + " "}
+                      {index + 1}
+                    </Label>
                     <Button
                       type="button"
                       size="sm"
                       variant="ghost"
                       onClick={() => removeArrayItem(path, value, index)}
                     >
-                      Remove
+                      {uiCopy("remove")}
                     </Button>
                   </div>
                   {renderNode(item, itemPath, `item ${index + 1}`)}

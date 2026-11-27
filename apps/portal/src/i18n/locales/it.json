@@ -1,0 +1,88 @@
+{
+  "portal": {
+    "title": "Portale",
+    "dashboard": {
+      "title": "Cruscotto",
+      "welcome": "Benvenuto",
+      "students": {
+        "title": "Studenti",
+        "select": "Seleziona Studente",
+        "linked": "Studenti collegati",
+        "viewing": "VISUALIZZAZIONE",
+        "student": "STUDENTE",
+        "none": "Nessuno studente collegato"
+      },
+      "sessions": {
+        "title": "Prossime sessioni",
+        "subtitle": "Visualizza il programma delle tue prossime lezioni e i link per partecipare alle sessioni online.",
+        "open": "Apri il programma"
+      },
+      "materials": {
+        "title": "Materiali",
+        "subtitle": "Tutti i documenti condivisi con te e i tuoi studenti.",
+        "items_one": "ARTICOLO {{count}}",
+        "items_other": "ARTICOLI {{count}}",
+        "items": "ARTICOLI",
+        "added": "Aggiunto",
+        "download_failed": "Impossibile ottenere l'URL di download",
+        "personal": "PERSONALE",
+        "class_group": "GRUPPO DI CLASSE",
+        "getFile": "Ottieni file",
+        "empty": {
+          "title": "Niente qui ancora",
+          "subtitle": "I tuoi materiali didattici appariranno qui una volta che il tuo insegnante li avrà caricati."
+        },
+        "items_many": "ARTICOLI {{count}}"
+      },
+      "invoices": {
+        "title": "Fatture",
+        "subtitle": "Scarica le fatture dello studente selezionato.",
+        "items_one": "FATTURA {{count}}",
+        "items_other": "{{count}} FATTURE",
+        "items": "FATTURE",
+        "invoice": "Fattura",
+        "issued": "Rilasciato",
+        "due": "Dovuto",
+        "amount_due": "Importo dovuto",
+        "download": "Scarica Fattura",
+        "download_failed": "Impossibile ottenere il collegamento per il download della fattura",
+        "empty": {
+          "title": "Ancora nessuna fattura",
+          "subtitle": "Le fatture per questo studente verranno visualizzate qui una volta emesse."
+        },
+        "items_many": "{{count}} FATTURE"
+      }
+    },
+    "login": {
+      "title": "Portale per studenti e tutori",
+      "email_prompt": "Inserisci la tua email per ricevere un codice di accesso",
+      "code_sent": "Inserisci il codice di 6 cifre inviato a {{email}}",
+      "email_label": "E-mail",
+      "email_placeholder": "nome@esempio.com",
+      "send_code": "Invia codice di accesso",
+      "code_label": "Codice di accesso",
+      "code_placeholder": "000000",
+      "change_email": "Cambia e-mail",
+      "resend_code": "Invia nuovamente il codice",
+      "resend_in": "Invia nuovamente in {{count}}s",
+      "verify_sign_in": "Verifica e accedi",
+      "errors": {
+        "send_failed": "Impossibile inviare il codice",
+        "verify_failed": "Codice non valido o scaduto"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "Pagina non trovata",
+    "returnHome": "Ritorno a casa"
+  },
+  "common": {
+    "logout": "Esci",
+    "loading": "Caricamento...",
+    "languages": {
+      "en": "IT",
+      "vi": "VI",
+      "de": "DE"
+    }
+  }
+}

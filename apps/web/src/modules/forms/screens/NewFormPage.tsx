@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -19,6 +20,7 @@ import {
 } from "../schemas/form-create.schema";
 
 export default function NewFormPage() {
+  const uiCopy = useUiCopy("ui.forms-newformpage");
   const navigate = useNavigate();
   const form = useForm<FormCreateValues>({
     resolver: zodResolver(formCreateSchema),
@@ -28,10 +30,10 @@ export default function NewFormPage() {
   const createMutation = useMutation({
     mutationFn: async (data: FormCreateValues) => formsApi.createForm(data),
     onSuccess: (created) => {
-      toast.success("Form created");
+      toast.success(uiCopy("form-created"));
       navigate(`/forms/${created.id}`);
     },
-    onError: () => toast.error("Failed to create form"),
+    onError: () => toast.error(uiCopy("failed-to-create-form")),
   });
 
   const onSubmit = (data: FormCreateValues) => {
@@ -45,18 +47,18 @@ export default function NewFormPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/forms")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Create new form</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("create-new-form")}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/forms")}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={createMutation.isPending}
           >
-            {createMutation.isPending ? "Creating..." : "Create form"}
+            {createMutation.isPending ? uiCopy("creating") : uiCopy("create-form")}
           </Button>
         </div>
       </div>
@@ -65,8 +67,8 @@ export default function NewFormPage() {
         <Card>
           <CardContent className="p-8 space-y-6">
             <div>
-              <Label htmlFor="name">Form name</Label>
-              <Input id="name" {...form.register("name")} placeholder="Contact us" />
+              <Label htmlFor="name">{uiCopy("form-name")}</Label>
+              <Input id="name" {...form.register("name")} placeholder={uiCopy("contact-us")} />
               {form.formState.errors.name && (
                 <p className="text-sm text-destructive mt-1">
                   {form.formState.errors.name.message}
@@ -74,12 +76,12 @@ export default function NewFormPage() {
               )}
             </div>
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{uiCopy("description")}</Label>
               <Textarea
                 id="description"
                 rows={3}
                 {...form.register("description")}
-                placeholder="Tell respondents what this form is for"
+                placeholder={uiCopy("tell-respondents-what-this")}
               />
             </div>
           </CardContent>

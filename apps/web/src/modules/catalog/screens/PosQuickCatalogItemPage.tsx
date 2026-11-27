@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ const NEW_CATEGORY = "__new__";
 const toCode = (value: string) => value.trim().replace(/\s+/g, "-").toUpperCase();
 
 export default function PosQuickCatalogItemPage() {
+  const uiCopy = useUiCopy("ui.catalog-posquickcatalogitempage");
   const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient();
@@ -198,12 +200,10 @@ export default function PosQuickCatalogItemPage() {
         </Button>
         <div>
           <h1 className="text-h1 text-foreground">
-            {isEditing ? "Edit POS Item" : "Quick Add POS Item"}
+            {isEditing ? uiCopy("edit-pos-item") : uiCopy("quick-add-pos-item")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {isEditing
-              ? "Update the POS-safe selling fields without opening full catalog back-office."
-              : "Create a sellable item fast from the POS surface. Advanced catalog setup stays in back-office."}
+            {isEditing ? uiCopy("update-the-pos-safe") : uiCopy("create-a-sellable-item")}
           </p>
         </div>
       </div>
@@ -211,28 +211,31 @@ export default function PosQuickCatalogItemPage() {
       <Card>
         <CardContent className="space-y-6 p-6">
           {isEditing && itemQuery.isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading POS item...</div>
+            <div className="text-sm text-muted-foreground">{uiCopy("loading-pos-item")}</div>
           ) : null}
 
           {isEditing && itemQuery.isError ? (
-            <div className="text-sm text-destructive">POS item could not be loaded.</div>
+            <div className="text-sm text-destructive">{uiCopy("pos-item-could-not")}</div>
           ) : null}
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="pos-quick-item-name">Item name</Label>
+              <Label htmlFor="pos-quick-item-name">{uiCopy("item-name")}</Label>
               <Input
                 id="pos-quick-item-name"
                 value={form.name}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, name: event.target.value }))
                 }
-                placeholder="Pho dac biet"
+                placeholder={uiCopy("pho-dac-biet")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pos-quick-item-price">Price ({currency})</Label>
+              <Label htmlFor="pos-quick-item-price">
+                {uiCopy("price")}
+                {currency})
+              </Label>
               <Input
                 id="pos-quick-item-price"
                 value={form.amount}
@@ -245,7 +248,7 @@ export default function PosQuickCatalogItemPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Tax profile</Label>
+              <Label>{uiCopy("tax-profile")}</Label>
               <Select
                 value={form.taxProfileId || "none"}
                 onValueChange={(value) =>
@@ -256,10 +259,10 @@ export default function PosQuickCatalogItemPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="No tax profile" />
+                  <SelectValue placeholder={uiCopy("no-tax-profile")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No tax profile</SelectItem>
+                  <SelectItem value="none">{uiCopy("no-tax-profile")}</SelectItem>
                   {(taxProfilesData?.items ?? []).map((taxProfile) => (
                     <SelectItem key={taxProfile.id} value={taxProfile.id}>
                       {taxProfile.name}
@@ -270,7 +273,7 @@ export default function PosQuickCatalogItemPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>{uiCopy("category")}</Label>
               <Select
                 value={categorySelection || "none"}
                 onValueChange={(value) =>
@@ -282,30 +285,30 @@ export default function PosQuickCatalogItemPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Optional category" />
+                  <SelectValue placeholder={uiCopy("optional-category")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No category</SelectItem>
+                  <SelectItem value="none">{uiCopy("no-category")}</SelectItem>
                   {(categoriesData?.items ?? []).map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value={NEW_CATEGORY}>Create new category</SelectItem>
+                  <SelectItem value={NEW_CATEGORY}>{uiCopy("create-new-category")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {categorySelection === NEW_CATEGORY ? (
               <div className="space-y-2">
-                <Label htmlFor="pos-quick-item-category-name">New category name</Label>
+                <Label htmlFor="pos-quick-item-category-name">{uiCopy("new-category-name")}</Label>
                 <Input
                   id="pos-quick-item-category-name"
                   value={form.categoryName}
                   onChange={(event) =>
                     setForm((current) => ({ ...current, categoryName: event.target.value }))
                   }
-                  placeholder="Dinner Specials"
+                  placeholder={uiCopy("dinner-specials")}
                 />
               </div>
             ) : null}
@@ -323,26 +326,26 @@ export default function PosQuickCatalogItemPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pos-quick-item-barcode">Barcode</Label>
+              <Label htmlFor="pos-quick-item-barcode">{uiCopy("barcode")}</Label>
               <Input
                 id="pos-quick-item-barcode"
                 value={form.barcode}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, barcode: event.target.value }))
                 }
-                placeholder="Optional barcode"
+                placeholder={uiCopy("optional-barcode")}
               />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="pos-quick-item-description">Description</Label>
+              <Label htmlFor="pos-quick-item-description">{uiCopy("description")}</Label>
               <Textarea
                 id="pos-quick-item-description"
                 value={form.description}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, description: event.target.value }))
                 }
-                placeholder="Optional short POS description"
+                placeholder={uiCopy("optional-short-pos-description")}
                 rows={4}
               />
             </div>
@@ -350,18 +353,18 @@ export default function PosQuickCatalogItemPage() {
 
           <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
             <div>
-              {isEditing ? "Item code" : "Generated code"}:{" "}
-              {generatedCode || "Will be generated from the item name"}
+              {isEditing ? uiCopy("item-code") : uiCopy("generated-code")}:{" "}
+              {generatedCode || uiCopy("will-be-generated-from")}
             </div>
             <div>
-              {isEditing ? "Current SKU" : "Generated SKU"}:{" "}
-              {generatedSku || "Will be generated from the item name"}
+              {isEditing ? uiCopy("current-sku") : uiCopy("generated-sku")}:{" "}
+              {generatedSku || uiCopy("will-be-generated-from")}
             </div>
           </div>
 
           <div className="flex items-center justify-end gap-3">
             <Button variant="outline" onClick={() => navigate("/pos/catalog")}>
-              Cancel
+              {uiCopy("cancel")}
             </Button>
             <Button
               variant="accent"
@@ -373,11 +376,11 @@ export default function PosQuickCatalogItemPage() {
               <PackagePlus className="h-4 w-4" />
               {saveMutation.isPending
                 ? isEditing
-                  ? "Saving..."
-                  : "Creating..."
+                  ? uiCopy("saving")
+                  : uiCopy("creating")
                 : isEditing
-                  ? "Save Changes"
-                  : "Create POS Item"}
+                  ? uiCopy("save-changes")
+                  : uiCopy("create-pos-item")}
             </Button>
           </div>
         </CardContent>

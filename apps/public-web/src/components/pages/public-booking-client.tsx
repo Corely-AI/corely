@@ -3,15 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CalendarDays, Clock3, MapPin, Star, UserRound } from "lucide-react";
+import { CalendarDays, Clock3, UserRound } from "lucide-react";
 import {
-  Badge,
   Button,
   Calendar,
   Card,
   CardContent,
   CardHeader,
-  Input,
   Label,
   Select,
   SelectContent,
@@ -25,7 +23,20 @@ import {
   TabsTrigger,
   TimezoneSelect,
 } from "@/components/ui";
+import {
+  addDays,
+  formatDuration,
+  formatPrice,
+  formatSlotDate,
+  formatSlotTime,
+  getBrowserTimezone,
+  toDateKey,
+  toUtcIsoStartOfDay,
+} from "./public-booking-format";
+import { BookingHeader, BookingServiceMenu, BookingInfo } from "./public-booking-sections";
+import type { PublicBookingMessages } from "./public-booking-messages";
 import type {
+  CorelyLocale,
   PublicBookingPage,
   PublicBookingService,
   PublicBookingStaff,
@@ -39,105 +50,6 @@ type AvailabilityState = {
   timeSlots: PublicBookingTimeSlot[];
 };
 
-const toDateKey = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const toUtcIsoStartOfDay = (date: Date): string =>
-  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())).toISOString();
-
-const addDays = (date: Date, days: number): Date => {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
-};
-
-const getBrowserTimezone = (): string | null => {
-  try {
-    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (!timezone) {
-      return null;
-    }
-
-    new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(new Date());
-    return timezone;
-  } catch {
-    return null;
-  }
-};
-
-const formatSlotTime = (iso: string, timezone: string): string => {
-  const date = new Date(iso);
-
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      timeZone: timezone,
-    }).format(date);
-  } catch {
-    return new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    }).format(date);
-  }
-};
-
-const formatSlotDate = (iso: string, timezone: string): string => {
-  const date = new Date(iso);
-
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      timeZone: timezone,
-    }).format(date);
-  } catch {
-    return new Intl.DateTimeFormat("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    }).format(date);
-  }
-};
-
-const formatDuration = (minutes: number): string => {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-  const hours = Math.floor(minutes / 60);
-  const rem = minutes % 60;
-  if (rem === 0) {
-    return `${hours}h`;
-  }
-  return `${hours}h ${rem}m`;
-};
-
-const formatPrice = (service: PublicBookingService): string => {
-  if (!service.priceCents || !service.currency) {
-    return "Price on request";
-  }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: service.currency,
-  }).format(service.priceCents / 100);
-};
-
-const groupServices = (services: PublicBookingService[]) => {
-  const map = new Map<string, PublicBookingService[]>();
-  for (const service of services) {
-    const category = service.category?.trim() || "Services";
-    const group = map.get(category) ?? [];
-    group.push(service);
-    map.set(category, group);
-  }
-  return Array.from(map.entries());
-};
-
 export function PublicBookingClient({
   routeSlug,
   page,
@@ -146,7 +58,11 @@ export function PublicBookingClient({
   basePath,
   workspaceSlug,
   initial,
+  locale,
+  copy,
 }: {
+  locale: CorelyLocale;
+  copy: PublicBookingMessages;
   routeSlug: string;
   page: PublicBookingPage;
   services: PublicBookingService[];
@@ -162,8 +78,6 @@ export function PublicBookingClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const grouped = useMemo(() => groupServices(services), [services]);
 
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
     initial?.serviceId && services.some((service) => service.id === initial.serviceId)
@@ -293,7 +207,7 @@ export function PublicBookingClient({
       })
       .catch(() => {
         if (!cancelled) {
-          setAvailabilityError("Could not load available slots. Please try again.");
+          setAvailabilityError(copy.availabilityError);
           setAvailability(null);
         }
       })
@@ -373,6 +287,7 @@ export function PublicBookingClient({
     }
 
     const params = new URLSearchParams({
+      lang: locale,
       serviceId: selectedService.id,
       startAt: selectedSlot.startAt,
       endAt: selectedSlot.endAt,
@@ -387,124 +302,38 @@ export function PublicBookingClient({
   })();
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-6 py-8 lg:py-10">
-      <div className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-accent">Book Online</p>
-        <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{page.venueName}</h1>
-        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <Star className="h-4 w-4" /> 4.9 (120)
-          </span>
-          {page.address?.city ? (
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="h-4 w-4" /> {page.address.city}
-            </span>
-          ) : null}
-          <span className="inline-flex items-center gap-1">
-            <CalendarDays className="h-4 w-4" /> Timezone: {selectedTimezone}
-          </span>
-        </div>
-        {page.description ? (
-          <p className="max-w-3xl text-muted-foreground">{page.description}</p>
-        ) : null}
-      </div>
+    <div lang={locale} className="mx-auto w-full max-w-7xl px-6 py-8 lg:py-10">
+      <BookingHeader page={page} selectedTimezone={selectedTimezone} copy={copy} />
 
       <Tabs defaultValue="book" className="mt-8">
         <TabsList>
-          <TabsTrigger value="book">Book</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          <TabsTrigger value="info">Info</TabsTrigger>
+          <TabsTrigger value="book">{copy.book}</TabsTrigger>
+          <TabsTrigger value="reviews">{copy.reviews}</TabsTrigger>
+          <TabsTrigger value="info">{copy.info}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="book" className="mt-6">
           <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
             <div className="space-y-8">
-              <section className="space-y-4 rounded-2xl border bg-card p-5">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold">Service Menu</h2>
-                  <Badge variant="outline">{services.length} services</Badge>
-                </div>
-
-                {grouped.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No services are currently available.
-                  </p>
-                ) : (
-                  <div className="space-y-6">
-                    {grouped.map(([groupName, items]) => (
-                      <div key={groupName} className="space-y-3">
-                        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                          {groupName}
-                        </h3>
-                        <div className="space-y-2">
-                          {items.map((service) => {
-                            const selected = selectedService?.id === service.id;
-
-                            return (
-                              <Card
-                                key={service.id}
-                                className={
-                                  selected ? "border-accent shadow-sm shadow-accent/20" : ""
-                                }
-                              >
-                                <CardContent className="flex items-start justify-between gap-4 p-4">
-                                  <div className="space-y-1">
-                                    <p className="font-semibold">{service.name}</p>
-                                    {service.description ? (
-                                      <p className="text-sm text-muted-foreground">
-                                        {service.description}
-                                      </p>
-                                    ) : null}
-                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                      <span className="inline-flex items-center gap-1">
-                                        <Clock3 className="h-3.5 w-3.5" />
-                                        {formatDuration(service.durationMinutes)}
-                                      </span>
-                                      {service.badges.map((badge) => (
-                                        <Badge
-                                          key={badge}
-                                          variant="secondary"
-                                          className="text-[10px] uppercase"
-                                        >
-                                          {badge}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-2 text-right">
-                                    <p className="font-semibold">{formatPrice(service)}</p>
-                                    <Button
-                                      size="sm"
-                                      variant={selected ? "accent" : "outline"}
-                                      onClick={() => onServiceSelect(service.id)}
-                                      data-testid={`booking-service-select-${service.id}`}
-                                    >
-                                      {selected ? "Selected" : "Select"}
-                                    </Button>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
+              <BookingServiceMenu
+                services={services}
+                selectedServiceId={selectedService?.id}
+                onServiceSelect={onServiceSelect}
+                locale={locale}
+                copy={copy}
+              />
 
               <section className="space-y-4 rounded-2xl border bg-card p-5">
-                <h2 className="text-lg font-bold">Choose Date & Time</h2>
+                <h2 className="text-lg font-bold">{copy.chooseDateTime}</h2>
 
                 {page.allowStaffSelection && staff.length > 0 ? (
                   <div className="max-w-sm">
                     <Select value={selectedStaffId} onValueChange={onStaffSelect}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Choose staff" />
+                        <SelectValue placeholder={copy.chooseStaff} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="first-available">First available</SelectItem>
+                        <SelectItem value="first-available">{copy.firstAvailable}</SelectItem>
                         {staff.map((item) => (
                           <SelectItem key={item.id} value={item.id}>
                             {item.name}
@@ -516,7 +345,7 @@ export function PublicBookingClient({
                 ) : null}
 
                 <div className="max-w-sm space-y-1">
-                  <Label htmlFor="public-booking-timezone">Display timezone</Label>
+                  <Label htmlFor="public-booking-timezone">{copy.displayTimezone}</Label>
                   <TimezoneSelect
                     id="public-booking-timezone"
                     value={selectedTimezone}
@@ -528,6 +357,15 @@ export function PublicBookingClient({
                   <div className="rounded-xl border p-2">
                     <Calendar
                       mode="single"
+                      formatters={{
+                        formatCaption: (date) =>
+                          new Intl.DateTimeFormat(locale, {
+                            month: "long",
+                            year: "numeric",
+                          }).format(date),
+                        formatWeekdayName: (date) =>
+                          new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date),
+                      }}
                       selected={selectedDay ? new Date(`${selectedDay}T00:00:00`) : undefined}
                       onSelect={onDaySelect}
                       disabled={(date) => !availableDaysSet.has(toDateKey(date))}
@@ -536,9 +374,7 @@ export function PublicBookingClient({
 
                   <div className="space-y-3">
                     {loadingAvailability ? (
-                      <p className="text-sm text-muted-foreground">
-                        Loading available time slots...
-                      </p>
+                      <p className="text-sm text-muted-foreground">{copy.loadingSlots}</p>
                     ) : availabilityError ? (
                       <p className="text-sm text-destructive">{availabilityError}</p>
                     ) : availability?.timeSlots.length ? (
@@ -558,10 +394,10 @@ export function PublicBookingClient({
                               onClick={() => onSlotSelect(slot)}
                             >
                               <p className="font-semibold">
-                                {formatSlotTime(slot.startAt, selectedTimezone)}
+                                {formatSlotTime(slot.startAt, selectedTimezone, locale)}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {formatSlotDate(slot.startAt, selectedTimezone)}
+                                {formatSlotDate(slot.startAt, selectedTimezone, locale)}
                               </p>
                             </button>
                           );
@@ -569,9 +405,7 @@ export function PublicBookingClient({
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        {selectedService
-                          ? "No slots available for this date. Try another day or staff member."
-                          : "Select a service to see available time slots."}
+                        {selectedService ? copy.noSlots : copy.selectService}
                       </p>
                     )}
                   </div>
@@ -582,7 +416,7 @@ export function PublicBookingClient({
             <aside className="lg:sticky lg:top-8 lg:self-start">
               <Card>
                 <CardHeader>
-                  <h2 className="text-lg font-bold">Your Booking</h2>
+                  <h2 className="text-lg font-bold">{copy.yourBooking}</h2>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {selectedService ? (
@@ -591,10 +425,12 @@ export function PublicBookingClient({
                       <p className="text-sm text-muted-foreground">
                         {formatDuration(selectedService.durationMinutes)}
                       </p>
-                      <p className="text-sm font-semibold">{formatPrice(selectedService)}</p>
+                      <p className="text-sm font-semibold">
+                        {formatPrice(selectedService, locale, copy.priceOnRequest)}
+                      </p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Choose a service to begin.</p>
+                    <p className="text-sm text-muted-foreground">{copy.begin}</p>
                   )}
 
                   <Separator />
@@ -604,28 +440,31 @@ export function PublicBookingClient({
                       <UserRound className="h-4 w-4 text-muted-foreground" />
                       {selectedSlot?.staffName ??
                         (selectedStaffId === "first-available"
-                          ? "First available staff"
+                          ? copy.firstAvailableStaff
                           : (staff.find((item) => item.id === selectedStaffId)?.name ??
-                            "Not selected"))}
+                            copy.notSelected))}
                     </p>
                     <p className="inline-flex items-center gap-2">
                       <CalendarDays className="h-4 w-4 text-muted-foreground" />
                       {selectedSlot
-                        ? formatSlotDate(selectedSlot.startAt, selectedTimezone)
-                        : "Date not selected"}
+                        ? formatSlotDate(selectedSlot.startAt, selectedTimezone, locale)
+                        : copy.dateNotSelected}
                     </p>
                     <p className="inline-flex items-center gap-2">
                       <Clock3 className="h-4 w-4 text-muted-foreground" />
                       {selectedSlot
-                        ? `${formatSlotTime(selectedSlot.startAt, selectedTimezone)} - ${formatSlotTime(
+                        ? `${formatSlotTime(selectedSlot.startAt, selectedTimezone, locale)} - ${formatSlotTime(
                             selectedSlot.endAt,
-                            selectedTimezone
+                            selectedTimezone,
+                            locale
                           )}`
-                        : "Time not selected"}
+                        : copy.timeNotSelected}
                     </p>
                   </div>
 
-                  <p className="text-xs text-muted-foreground">Times shown in {selectedTimezone}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {copy.timesShown.replace("{{timezone}}", selectedTimezone)}
+                  </p>
 
                   <Button
                     asChild
@@ -634,57 +473,25 @@ export function PublicBookingClient({
                     variant="accent"
                     data-testid="booking-continue"
                   >
-                    <Link href={checkoutHref ?? `${normalizedBase}/${routeSlug}`}>Continue</Link>
+                    <Link href={checkoutHref ?? `${normalizedBase}/${routeSlug}`}>
+                      {copy.continue}
+                    </Link>
                   </Button>
 
-                  <p className="text-xs text-muted-foreground">
-                    By continuing, you agree to our booking and cancellation policy.
-                  </p>
+                  <p className="text-xs text-muted-foreground">{copy.policyAgreement}</p>
                 </CardContent>
               </Card>
             </aside>
           </div>
         </TabsContent>
 
-        <TabsContent value="reviews" className="mt-6">
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-muted-foreground">
-                Reviews are coming soon. Your clients will be able to share feedback after
-                appointments.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="info" className="mt-6">
-          <Card>
-            <CardContent className="space-y-4 p-6">
-              <div>
-                <p className="text-sm font-semibold">Opening hours</p>
-                <p className="text-sm text-muted-foreground">
-                  {page.openingHoursText ?? "Contact venue for opening hours."}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Cancellation policy</p>
-                <p className="text-sm text-muted-foreground">
-                  {page.cancellationPolicyText ??
-                    "Please cancel at least 24 hours before your appointment."}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Contact</p>
-                <Input value={page.venueName} readOnly />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        <BookingInfo page={page} copy={copy} />
       </Tabs>
 
       <div className="mt-8 text-center text-xs text-muted-foreground">
-        Powered by Corely Booking
-        {workspaceSlug ? <span> for workspace {workspaceSlug}</span> : null}
+        {workspaceSlug
+          ? copy.poweredByWorkspace.replace("{{workspace}}", workspaceSlug)
+          : copy.poweredBy}
       </div>
     </div>
   );

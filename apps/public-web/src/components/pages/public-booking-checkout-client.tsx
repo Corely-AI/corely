@@ -18,39 +18,14 @@ import {
 } from "@/components/ui";
 import {
   PublicConfirmBookingInputSchema,
+  type CorelyLocale,
   type PublicBookingPage,
   type PublicBookingService,
   type PublicBookingStaff,
 } from "@corely/contracts";
+import { formatBookingDateTime, formatDuration, formatPrice } from "./public-booking-format";
+import type { PublicBookingMessages } from "./public-booking-messages";
 import { publicApi } from "@/lib/public-api";
-
-const formatPrice = (service: PublicBookingService): string => {
-  if (!service.priceCents || !service.currency) {
-    return "Price on request";
-  }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: service.currency,
-  }).format(service.priceCents / 100);
-};
-
-const formatDateTime = (iso: string): string =>
-  new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(iso));
-
-const formatDuration = (minutes: number): string => {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
-};
 
 const createClientId = (prefix: string): string => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -69,7 +44,11 @@ export function PublicBookingCheckoutClient({
   startAt,
   endAt,
   resourceId,
+  locale,
+  copy,
 }: {
+  locale: CorelyLocale;
+  copy: PublicBookingMessages;
   routeSlug: string;
   page: PublicBookingPage;
   basePath: string;
@@ -156,7 +135,7 @@ export function PublicBookingCheckoutClient({
       setHoldId(response.hold.id);
       setHoldExpiresAt(response.hold.expiresAt);
     } catch {
-      setHoldError("Could not reserve this slot. Please go back and choose another time.");
+      setHoldError(copy.reserveFailed);
       setHoldId(null);
       setHoldExpiresAt(null);
     } finally {
@@ -173,12 +152,12 @@ export function PublicBookingCheckoutClient({
     setSubmitError(null);
 
     if (!holdId) {
-      setSubmitError("Your slot is not currently reserved. Please try again.");
+      setSubmitError(copy.slotNotReserved);
       return;
     }
 
     if (holdExpired) {
-      setSubmitError("Your reservation expired. Please return to choose another slot.");
+      setSubmitError(copy.reservationExpired);
       return;
     }
 
@@ -198,7 +177,7 @@ export function PublicBookingCheckoutClient({
 
     const parsed = PublicConfirmBookingInputSchema.safeParse(payload);
     if (!parsed.success) {
-      setSubmitError("Please complete all required fields and accept the cancellation policy.");
+      setSubmitError(copy.requiredFields);
       return;
     }
 
@@ -211,36 +190,38 @@ export function PublicBookingCheckoutClient({
         },
       });
 
-      router.push(`${normalizedBase}/${routeSlug}/success/${response.booking.id}`);
+      router.push(`${normalizedBase}/${routeSlug}/success/${response.booking.id}?lang=${locale}`);
     } catch {
-      setSubmitError("Could not confirm your booking. Please refresh availability and try again.");
+      setSubmitError(copy.confirmFailed);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-6 py-8">
+    <div lang={locale} className="mx-auto w-full max-w-6xl px-6 py-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-accent">Checkout</p>
-          <h1 className="text-3xl font-extrabold tracking-tight">Confirm your appointment</h1>
+          <p className="text-sm font-semibold uppercase tracking-wider text-accent">
+            {copy.checkout}
+          </p>
+          <h1 className="text-3xl font-extrabold tracking-tight">{copy.confirmAppointment}</h1>
         </div>
         <Button asChild variant="outline">
-          <Link href={`${normalizedBase}/${routeSlug}`}>Back to time selection</Link>
+          <Link href={`${normalizedBase}/${routeSlug}?lang=${locale}`}>{copy.backToTime}</Link>
         </Button>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-bold">Your details</h2>
+            <h2 className="text-lg font-bold">{copy.yourDetails}</h2>
           </CardHeader>
           <CardContent>
             <form className="space-y-5" onSubmit={onConfirm}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
+                  <Label htmlFor="firstName">{copy.firstName}</Label>
                   <Input
                     id="firstName"
                     value={firstName}
@@ -249,7 +230,7 @@ export function PublicBookingCheckoutClient({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
+                  <Label htmlFor="lastName">{copy.lastName}</Label>
                   <Input
                     id="lastName"
                     value={lastName}
@@ -261,7 +242,7 @@ export function PublicBookingCheckoutClient({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{copy.email}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -271,13 +252,13 @@ export function PublicBookingCheckoutClient({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone (optional)</Label>
+                  <Label htmlFor="phone">{copy.phone}</Label>
                   <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes (optional)</Label>
+                <Label htmlFor="notes">{copy.notes}</Label>
                 <Textarea
                   id="notes"
                   value={notes}
@@ -287,10 +268,9 @@ export function PublicBookingCheckoutClient({
               </div>
 
               <div className="rounded-xl border bg-muted/20 p-4 text-sm">
-                <p className="font-semibold">Cancellation policy</p>
+                <p className="font-semibold">{copy.cancellationPolicy}</p>
                 <p className="mt-1 text-muted-foreground">
-                  {page.cancellationPolicyText ??
-                    "Cancellations must be made at least 24 hours before your appointment."}
+                  {page.cancellationPolicyText ?? copy.checkoutCancelBefore}
                 </p>
                 {typeof page.cancellationCutoffHours === "number" ? (
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -305,14 +285,14 @@ export function PublicBookingCheckoutClient({
                     checked={consentAccepted}
                     onCheckedChange={(value) => setConsentAccepted(Boolean(value))}
                   />
-                  <span>I agree to the cancellation policy and privacy terms.</span>
+                  <span>{copy.agree}</span>
                 </label>
                 <label className="flex items-start gap-2 text-sm">
                   <Checkbox
                     checked={marketingConsent}
                     onCheckedChange={(value) => setMarketingConsent(Boolean(value))}
                   />
-                  <span>Send me occasional promotions and updates.</span>
+                  <span>{copy.promotions}</span>
                 </label>
               </div>
 
@@ -338,7 +318,7 @@ export function PublicBookingCheckoutClient({
                   !email
                 }
               >
-                {submitting ? "Confirming..." : "Confirm Booking"}
+                {submitting ? copy.confirming : copy.confirmBooking}
               </Button>
             </form>
           </CardContent>
@@ -347,26 +327,26 @@ export function PublicBookingCheckoutClient({
         <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-bold">Booking summary</h2>
+              <h2 className="text-lg font-bold">{copy.bookingSummary}</h2>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <p className="font-semibold">{service.name}</p>
               <p className="text-muted-foreground">{formatDuration(service.durationMinutes)}</p>
-              <p className="font-semibold">{formatPrice(service)}</p>
+              <p className="font-semibold">{formatPrice(service, locale, copy.priceOnRequest)}</p>
 
               <Separator />
 
               <p className="inline-flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                {formatDateTime(startAt)}
+                {formatBookingDateTime(startAt, locale)}
               </p>
               <p className="inline-flex items-center gap-2">
                 <Clock3 className="h-4 w-4 text-muted-foreground" />
-                {formatDateTime(startAt)} - {formatDateTime(endAt)}
+                {formatBookingDateTime(startAt, locale)} - {formatBookingDateTime(endAt, locale)}
               </p>
               <p className="inline-flex items-center gap-2">
                 <UserRound className="h-4 w-4 text-muted-foreground" />
-                {staff?.name ?? "First available staff"}
+                {staff?.name ?? copy.firstAvailableStaff}
               </p>
 
               <Separator />
@@ -381,7 +361,7 @@ export function PublicBookingCheckoutClient({
           <Card>
             <CardContent className="space-y-3 p-4">
               {holdLoading ? (
-                <p className="text-sm text-muted-foreground">Reserving your slot...</p>
+                <p className="text-sm text-muted-foreground">{copy.reserving}</p>
               ) : holdError ? (
                 <p className="inline-flex items-start gap-2 text-sm text-destructive">
                   <AlertCircle className="mt-0.5 h-4 w-4" />
@@ -390,20 +370,24 @@ export function PublicBookingCheckoutClient({
               ) : holdExpired ? (
                 <p className="inline-flex items-start gap-2 text-sm text-destructive">
                   <AlertCircle className="mt-0.5 h-4 w-4" />
-                  Your hold expired. Return to the schedule and choose a new slot.
+                  {copy.holdExpired}
                 </p>
               ) : (
                 <>
                   <p className="inline-flex items-center gap-2 text-sm text-accent">
                     <CheckCircle2 className="h-4 w-4" />
-                    Slot reserved
+                    {copy.slotReserved}
                   </p>
-                  <Badge variant="outline">Expires in {remainingLabel}</Badge>
+                  {remainingLabel && (
+                    <Badge variant="outline">
+                      {copy.expires.replace("{{time}}", remainingLabel)}
+                    </Badge>
+                  )}
                 </>
               )}
 
               <Button asChild variant="outline" className="w-full">
-                <Link href={`${normalizedBase}/${routeSlug}`}>Refresh Availability</Link>
+                <Link href={`${normalizedBase}/${routeSlug}?lang=${locale}`}>{copy.refresh}</Link>
               </Button>
             </CardContent>
           </Card>

@@ -20,17 +20,32 @@ describe("shared language choice", () => {
     localStorage.setItem("Corely One ERP-language", "en");
     const user = userEvent.setup();
     const view = render(<Harness />);
-    await user.click(screen.getByRole("button", { name: "Language" }));
+    await user.click(screen.getByRole("button", { name: "EN Language" }));
     await user.click(screen.getByRole("menuitem", { name: "Deutsch" }));
     expect(document.documentElement.lang).toBe("de");
     expect(localStorage.getItem("Corely One ERP-language")).toBe("de");
-    expect(screen.getByRole("button", { name: "Sprache" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "DE Sprache" })).toBeTruthy();
     view.unmount();
     render(<Harness />);
-    expect(screen.getByRole("button", { name: "Sprache" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "DE Sprache" })).toBeTruthy();
   });
   it("accepts only supported navigation language hints", () => {
     expect(resolveFocusedLocale("en", "en-US", "vi")).toBe("vi");
     expect(resolveFocusedLocale("de", "en-US", "javascript:bad")).toBe("de");
+    expect(resolveFocusedLocale("de", "en-US", "pt-PT")).toBe("pt-PT");
+    expect(resolveFocusedLocale(null, "pt-PT")).toBe("pt-PT");
+  });
+
+  it("keeps an explicit navigation language in sync with the picker", async () => {
+    window.history.replaceState({}, "", "/?lang=fr&workspaceId=studio");
+    const user = userEvent.setup();
+    const view = render(<Harness />);
+    await user.click(screen.getByRole("button", { name: "FR Langue" }));
+    await user.click(screen.getByRole("menuitem", { name: "Português (Portugal)" }));
+    expect(document.documentElement.lang).toBe("pt-PT");
+    expect(window.location.search).toBe("?lang=pt-PT&workspaceId=studio");
+    view.unmount();
+    render(<Harness />);
+    expect(screen.getByRole("button", { name: "PT-PT Idioma" })).toBeTruthy();
   });
 });

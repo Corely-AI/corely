@@ -2,7 +2,12 @@ import { BookingConfirmation } from "@corely/booking-ui";
 import { confirmationFooters } from "../../confirmation-extensions";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
-import type { OpenBukPublicStudio, OpenBukSlot, OpenBukReceipt } from "@corely/contracts";
+import {
+  normalizeCorelyLocale,
+  type OpenBukPublicStudio,
+  type OpenBukSlot,
+  type OpenBukReceipt,
+} from "@corely/contracts";
 import { publicApi, json, BookingPolicyError } from "../../shared/api";
 import { LanguageSwitch, useLanguage } from "../../shared/i18n";
 import { Logo, Loading, ErrorMessage, Field, localDay, money, time } from "../../shared/ui";
@@ -29,7 +34,10 @@ export default function BookingPage() {
         if (!abort.signal.aborted) {
           setStudio(r.studio);
           setDay(localDay(r.studio.timezone));
-          if (!localStorage.getItem("openbuk:locale")) {
+          const requestedLocale = normalizeCorelyLocale(
+            new URLSearchParams(location.search).get("lang")
+          );
+          if (!requestedLocale && !localStorage.getItem("openbuk:locale")) {
             setLocale(r.studio.locale);
           }
         }

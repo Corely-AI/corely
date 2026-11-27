@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import {
   Button,
@@ -40,6 +41,7 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
   onLog,
   onCreateFollowUp,
 }) => {
+  const uiCopy = useUiCopy("ui.crm-dealaimessagedraftdialog");
   const [personalizeWithTimeline, setPersonalizeWithTimeline] = useState(true);
   const [translateToWorkspaceLanguage, setTranslateToWorkspaceLanguage] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<string>("normal");
@@ -55,7 +57,10 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>AI Message Draft ({channel})</DialogTitle>
+          <DialogTitle>
+            {uiCopy("ai-message-draft")}
+            {channel})
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -66,7 +71,7 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
                 onCheckedChange={setPersonalizeWithTimeline}
                 id="crm-ai-personalize"
               />
-              <Label htmlFor="crm-ai-personalize">Personalize with timeline</Label>
+              <Label htmlFor="crm-ai-personalize">{uiCopy("personalize-with-timeline")}</Label>
             </div>
             <div className="flex items-center gap-2">
               <Switch
@@ -74,7 +79,7 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
                 onCheckedChange={setTranslateToWorkspaceLanguage}
                 id="crm-ai-translate"
               />
-              <Label htmlFor="crm-ai-translate">Translate to workspace language</Label>
+              <Label htmlFor="crm-ai-translate">{uiCopy("translate-to-workspace-language")}</Label>
             </div>
             <Button
               size="sm"
@@ -82,12 +87,12 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
               onClick={() => onGenerate({ personalizeWithTimeline, translateToWorkspaceLanguage })}
               disabled={offline || loading}
             >
-              {loading ? "Generating..." : "Generate"}
+              {loading ? uiCopy("generating") : uiCopy("generate")}
             </Button>
           </div>
 
           {offline ? (
-            <p className="text-xs text-muted-foreground">AI requires connection.</p>
+            <p className="text-xs text-muted-foreground">{uiCopy("ai-requires-connection")}</p>
           ) : null}
 
           {draft?.variants?.length ? (
@@ -108,7 +113,8 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
                 <div className="rounded-md border p-3 space-y-2">
                   {selectedVariant.subject ? (
                     <p className="text-sm">
-                      <span className="font-semibold">Subject:</span> {selectedVariant.subject}
+                      <span className="font-semibold">{uiCopy("subject")}</span>{" "}
+                      {selectedVariant.subject}
                     </p>
                   ) : null}
                   <p className="text-sm whitespace-pre-wrap">{selectedVariant.body}</p>
@@ -125,13 +131,13 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
               ) : null}
             </>
           ) : (
-            <p className="text-xs text-muted-foreground">Generate a draft to see variants.</p>
+            <p className="text-xs text-muted-foreground">{uiCopy("generate-a-draft-to")}</p>
           )}
         </div>
 
         <DialogFooter className="flex flex-wrap gap-2 justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {uiCopy("close")}
           </Button>
           <Button
             variant="secondary"
@@ -146,7 +152,7 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
               onCopy(text);
             }}
           >
-            Copy
+            {uiCopy("copy")}
           </Button>
           <Button
             variant="secondary"
@@ -158,7 +164,7 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
               onLog(selectedVariant.subject, selectedVariant.body);
             }}
           >
-            Log communication
+            {uiCopy("log-communication")}
           </Button>
           <Button
             variant="accent"
@@ -173,7 +179,7 @@ export const DealAiMessageDraftDialog: React.FC<DealAiMessageDraftDialogProps> =
               );
             }}
           >
-            Create follow-up activity
+            {uiCopy("create-follow-up-activity")}
           </Button>
         </DialogFooter>
       </DialogContent>

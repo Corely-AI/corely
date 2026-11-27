@@ -1,25 +1,21 @@
-export type FocusedLocale = "en" | "de" | "vi";
+import { resolveCorelyLocale, type CorelyLocale } from "@corely/contracts";
+import { loadBrowserLocale, saveBrowserLocale } from "../shared/i18n/browser-language-preference";
+
+const preferenceKey = "Corely One ERP-language";
+
+export type FocusedLocale = CorelyLocale;
+
+export function loadFocusedLocale() {
+  return loadBrowserLocale(preferenceKey);
+}
+
 export function persistFocusedLocale(locale: FocusedLocale) {
-  document.documentElement.lang = locale;
-  try {
-    localStorage.setItem("Corely One ERP-language", locale);
-  } catch {
-    /* Keep the current language in memory. */
-  }
-  const url = new URL(window.location.href);
-  if (url.searchParams.has("lang")) {
-    url.searchParams.set("lang", locale);
-    window.history.replaceState(window.history.state, "", url.href);
-  }
+  saveBrowserLocale(locale, preferenceKey);
 }
 export function resolveFocusedLocale(
   saved: string | null | undefined,
   browserLanguage: string,
   hint?: string | null
 ): FocusedLocale {
-  if (hint === "en" || hint === "de" || hint === "vi") {
-    return hint;
-  }
-  const language = (saved || browserLanguage).toLowerCase().split("-")[0];
-  return language === "de" || language === "vi" ? language : "en";
+  return resolveCorelyLocale(hint, saved, browserLanguage);
 }

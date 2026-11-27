@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import type { BillingInvoiceSendProgress, BillingPreviewOutput } from "@corely/contracts";
 import { FileText, Facebook, ExternalLink, RefreshCcw } from "lucide-react";
@@ -62,6 +63,7 @@ export function ClassesBillingContent({
   onCopyShareLink,
   onRequestRegenerateShareLink,
 }: Props) {
+  const uiCopy = useUiCopy("ui.classes-classesbillingcontent");
   const { t } = useTranslation();
 
   return (
@@ -77,7 +79,8 @@ export function ClassesBillingContent({
         <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary flex items-center gap-2">
           <RefreshCcw className="h-4 w-4 animate-spin" />
           {t("classes.billing.sendInvoices")}: {sendProgress.processedInvoiceCount}/
-          {sendProgress.expectedInvoiceCount} processed
+          {sendProgress.expectedInvoiceCount}
+          {" " + uiCopy("processed")}
         </div>
       ) : null}
 
@@ -139,7 +142,9 @@ export function ClassesBillingContent({
                             {emailByClient.get(item.payerClientId)}
                           </span>
                         ) : (
-                          <span className="text-destructive font-medium italic">Missing email</span>
+                          <span className="text-destructive font-medium italic">
+                            {uiCopy("missing-email")}
+                          </span>
                         )
                       ) : (
                         <span className="text-muted-foreground">
@@ -152,7 +157,7 @@ export function ClassesBillingContent({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-                          title="Open Facebook profile"
+                          title={uiCopy("open-facebook-profile")}
                         >
                           <Facebook className="h-3 w-3" />
                           <ExternalLink className="h-2.5 w-2.5 opacity-50" />

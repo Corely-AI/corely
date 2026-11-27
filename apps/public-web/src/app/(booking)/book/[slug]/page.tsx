@@ -1,3 +1,4 @@
+import { getPublicBookingMessages } from "@/components/pages/public-booking-messages";
 import { getRequestContext } from "@/lib/request-context";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { PublicBookingClient } from "@/components/pages/public-booking-client";
@@ -17,6 +18,7 @@ export default async function PublicBookingPage({
 }: {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{
+    lang?: string;
     serviceId?: string;
     staffId?: string;
     day?: string;
@@ -34,6 +36,7 @@ export default async function PublicBookingPage({
 
   return (
     <PublicBookingClient
+      {...getPublicBookingMessages(initial?.lang, ctx.acceptLanguage)}
       routeSlug={slug}
       page={result.page}
       services={result.services}

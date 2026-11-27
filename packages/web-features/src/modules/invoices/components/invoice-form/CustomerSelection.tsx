@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useInvoiceCustomersApi, useInvoiceKeys } from "../../invoice-runtime";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -52,6 +53,7 @@ interface CustomerSelectionProps {
 }
 
 export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionProps) {
+  const uiCopy = useUiCopy("ui.invoices-invoice-form-customerselection");
   const customersApi = useInvoiceCustomersApi();
   const customerKeys = useInvoiceKeys("customers");
   const { t } = useTranslation();
@@ -261,7 +263,7 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
                     <div className="flex flex-col gap-1 py-1">
                       <span className="font-medium">{customer.displayName}</span>
                       <span className="text-xs text-muted-foreground">
-                        {address || customer.email || "No contact details"}
+                        {address || customer.email || uiCopy("no-contact-details")}
                       </span>
                     </div>
                   </CommandItem>

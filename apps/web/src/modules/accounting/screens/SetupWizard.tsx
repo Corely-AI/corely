@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { type FC } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +36,7 @@ type SetupFormData = z.infer<typeof setupFormSchema>;
  * Setup wizard for initializing accounting module
  */
 export const SetupWizard: FC = () => {
+  const uiCopy = useUiCopy("ui.accounting-setupwizard");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const setupMutation = useSetupAccounting();
@@ -118,10 +120,22 @@ export const SetupWizard: FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="EUR">EUR - {t("common.currencies.eur")}</SelectItem>
-                        <SelectItem value="USD">USD - {t("common.currencies.usd")}</SelectItem>
-                        <SelectItem value="GBP">GBP - {t("common.currencies.gbp")}</SelectItem>
-                        <SelectItem value="CHF">CHF - {t("common.currencies.chf")}</SelectItem>
+                        <SelectItem value="EUR">
+                          {uiCopy("eur") + " "}
+                          {t("common.currencies.eur")}
+                        </SelectItem>
+                        <SelectItem value="USD">
+                          {uiCopy("usd") + " "}
+                          {t("common.currencies.usd")}
+                        </SelectItem>
+                        <SelectItem value="GBP">
+                          {uiCopy("gbp") + " "}
+                          {t("common.currencies.gbp")}
+                        </SelectItem>
+                        <SelectItem value="CHF">
+                          {uiCopy("chf") + " "}
+                          {t("common.currencies.chf")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription>{t("accounting.setup.baseCurrencyHelp")}</FormDescription>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -22,6 +23,7 @@ export const DealAiInsightsCard: React.FC<DealAiInsightsCardProps> = ({
   insights,
   onGenerate,
 }) => {
+  const uiCopy = useUiCopy("ui.crm-dealaiinsightscard");
   if (!enabled) {
     return null;
   }
@@ -30,12 +32,14 @@ export const DealAiInsightsCard: React.FC<DealAiInsightsCardProps> = ({
     <Card data-testid="crm-deal-ai-insights">
       <CardHeader className="space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle>AI Insights</CardTitle>
+          <CardTitle>{uiCopy("ai-insights")}</CardTitle>
           <Button size="sm" variant="outline" onClick={onGenerate} disabled={offline || loading}>
-            {loading ? "Generating..." : "Generate insights"}
+            {loading ? uiCopy("generating") : uiCopy("generate-insights")}
           </Button>
         </div>
-        {offline ? <p className="text-xs text-muted-foreground">AI requires connection.</p> : null}
+        {offline ? (
+          <p className="text-xs text-muted-foreground">{uiCopy("ai-requires-connection")}</p>
+        ) : null}
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         {loading ? (
@@ -51,12 +55,30 @@ export const DealAiInsightsCard: React.FC<DealAiInsightsCardProps> = ({
         {!loading && !error && insights ? (
           <>
             <div className="space-y-1">
-              <p>Situation: {insights.summary.situation}</p>
-              <p>Last interaction: {insights.summary.lastInteraction}</p>
-              <p>Stakeholders: {insights.summary.keyStakeholders}</p>
-              <p>Needs: {insights.summary.needs}</p>
-              <p>Objections: {insights.summary.objections}</p>
-              <p>Next step: {insights.summary.nextStep}</p>
+              <p>
+                {uiCopy("situation") + " "}
+                {insights.summary.situation}
+              </p>
+              <p>
+                {uiCopy("last-interaction") + " "}
+                {insights.summary.lastInteraction}
+              </p>
+              <p>
+                {uiCopy("stakeholders") + " "}
+                {insights.summary.keyStakeholders}
+              </p>
+              <p>
+                {uiCopy("needs") + " "}
+                {insights.summary.needs}
+              </p>
+              <p>
+                {uiCopy("objections") + " "}
+                {insights.summary.objections}
+              </p>
+              <p>
+                {uiCopy("next-step") + " "}
+                {insights.summary.nextStep}
+              </p>
             </div>
 
             <div>
@@ -70,12 +92,14 @@ export const DealAiInsightsCard: React.FC<DealAiInsightsCardProps> = ({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">No critical gaps detected.</p>
+                <p className="text-xs text-muted-foreground">
+                  {uiCopy("no-critical-gaps-detected")}
+                </p>
               )}
             </div>
 
             <div>
-              <p className="text-xs font-medium mb-1">Entities</p>
+              <p className="text-xs font-medium mb-1">{uiCopy("entities")}</p>
               {insights.keyEntities.length ? (
                 <div className="flex flex-wrap gap-2">
                   {insights.keyEntities.map((entity, index) => (
@@ -85,19 +109,20 @@ export const DealAiInsightsCard: React.FC<DealAiInsightsCardProps> = ({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">No extracted entities.</p>
+                <p className="text-xs text-muted-foreground">{uiCopy("no-extracted-entities")}</p>
               )}
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Confidence: {Math.round(insights.confidence * 100)}% • Freshness:{" "}
-              {new Date(insights.freshnessTimestamp).toLocaleString()}
+              {uiCopy("confidence") + " "}
+              {Math.round(insights.confidence * 100)}
+              {uiCopy("freshness")} {new Date(insights.freshnessTimestamp).toLocaleString()}
             </p>
           </>
         ) : null}
 
         {!loading && !error && !insights ? (
-          <p className="text-xs text-muted-foreground">Generate insights to view deal context.</p>
+          <p className="text-xs text-muted-foreground">{uiCopy("generate-insights-to-view")}</p>
         ) : null}
       </CardContent>
     </Card>

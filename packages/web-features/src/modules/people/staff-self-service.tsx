@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { usePeopleDraftGuard } from "./people-runtime";
 import { PeopleLink as Link } from "./people-runtime";
 import { useCallback, useRef, useState, useEffect, type FormEvent } from "react";
@@ -101,7 +102,7 @@ export function StaffSelfService({
   locale?: string;
   tasksHref?: string | null;
 }) {
-  const t = staffJourneyCopy[locale === "de" || locale === "vi" ? locale : "en"];
+  const t = staffJourneyCopy[resolveCorelyLocale(locale)];
   const load = useCallback((signal: AbortSignal) => client.self(signal), [client]);
   const state = useStaffJourney(load),
     data = state.data;

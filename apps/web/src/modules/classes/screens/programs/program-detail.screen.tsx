@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -40,6 +41,7 @@ type MilestoneTemplateRow = {
 };
 
 export default function ProgramDetailScreen() {
+  const uiCopy = useUiCopy("ui.classes-programs-program-detail-screen");
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -103,7 +105,7 @@ export default function ProgramDetailScreen() {
 
   const saveProgram = async () => {
     if (!title.trim()) {
-      toast.error("Title is required.");
+      toast.error(uiCopy("title-is-required"));
       return;
     }
 
@@ -134,7 +136,7 @@ export default function ProgramDetailScreen() {
     try {
       if (isNew) {
         const created = await programMutations.create.mutateAsync(payload);
-        toast.success("Combo created");
+        toast.success(uiCopy("combo-created"));
         navigate(`/classes/programs/${created.program.id}`);
         return;
       }
@@ -151,7 +153,7 @@ export default function ProgramDetailScreen() {
       await programMutations.replaceMilestoneTemplates.mutateAsync({
         items: payload.milestoneTemplates,
       });
-      toast.success("Combo updated");
+      toast.success(uiCopy("combo-updated"));
       if (id) {
         navigate(`/classes/programs/${id}`);
       }
@@ -165,7 +167,7 @@ export default function ProgramDetailScreen() {
       return;
     }
     if (!cohortName.trim()) {
-      toast.error("Cohort name is required.");
+      toast.error(uiCopy("cohort-name-is-required"));
       return;
     }
     try {
@@ -178,7 +180,7 @@ export default function ProgramDetailScreen() {
         timezone: defaultTimezone || "Europe/Berlin",
         generateSessionsFromTemplates: false,
       });
-      toast.success("Cohort created from combo");
+      toast.success(uiCopy("cohort-created-from-combo"));
       navigate(`/classes/cohorts/${created.classGroup.id}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create cohort");
@@ -194,16 +196,16 @@ export default function ProgramDetailScreen() {
     createCohortMutation.isPending;
 
   if (!isNew && isLoading) {
-    return <div className="p-6 text-sm text-muted-foreground">Loading combo...</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{uiCopy("loading-combo")}</div>;
   }
 
   if (!isNew && isError) {
     return (
       <div className="p-6">
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4">
-          <div className="mb-3 text-sm text-destructive">Failed to load combo.</div>
+          <div className="mb-3 text-sm text-destructive">{uiCopy("failed-to-load-combo")}</div>
           <Button variant="outline" onClick={() => void refetch()}>
-            Retry
+            {uiCopy("retry")}
           </Button>
         </div>
       </div>
@@ -215,11 +217,9 @@ export default function ProgramDetailScreen() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">
-            {isNew ? "New combo" : title || "Combo detail"}
+            {isNew ? uiCopy("new-combo") : title || uiCopy("combo-detail")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Define templates and spin up cohorts from this combo.
-          </p>
+          <p className="text-sm text-muted-foreground">{uiCopy("define-templates-and-spin")}</p>
         </div>
         <div className="flex items-center gap-2">
           {!isNew && !isEdit ? (
@@ -228,7 +228,7 @@ export default function ProgramDetailScreen() {
               data-testid="classes-program-edit-button"
               onClick={() => navigate(`/classes/programs/${id}/edit`)}
             >
-              Edit
+              {uiCopy("edit")}
             </Button>
           ) : null}
           {!isNew ? (
@@ -242,14 +242,14 @@ export default function ProgramDetailScreen() {
                 }
                 try {
                   await programMutations.remove.mutateAsync(id);
-                  toast.success("Combo deleted");
+                  toast.success(uiCopy("combo-deleted"));
                   navigate("/classes/programs");
                 } catch (error) {
                   toast.error(error instanceof Error ? error.message : "Failed to delete combo");
                 }
               }}
             >
-              Delete
+              {uiCopy("delete")}
             </Button>
           ) : null}
           {isEdit ? (
@@ -259,7 +259,7 @@ export default function ProgramDetailScreen() {
               disabled={pending}
               onClick={() => void saveProgram()}
             >
-              Save
+              {uiCopy("save")}
             </Button>
           ) : null}
         </div>
@@ -268,7 +268,7 @@ export default function ProgramDetailScreen() {
       <Card>
         <CardContent className="grid gap-4 p-6 md:grid-cols-2">
           <div className="space-y-2">
-            <Label>Title</Label>
+            <Label>{uiCopy("title")}</Label>
             <Input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -277,17 +277,17 @@ export default function ProgramDetailScreen() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Level tag</Label>
+            <Label>{uiCopy("level-tag")}</Label>
             <Input
               value={levelTag}
               onChange={(event) => setLevelTag(event.target.value)}
-              placeholder="A1.1, A1.2, B1..."
+              placeholder={uiCopy("a1-1-a1-2")}
               disabled={!isEdit}
               data-testid="classes-program-level-tag-input"
             />
           </div>
           <div className="space-y-2">
-            <Label>Expected sessions</Label>
+            <Label>{uiCopy("expected-sessions")}</Label>
             <Input
               type="number"
               min="0"
@@ -298,7 +298,7 @@ export default function ProgramDetailScreen() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Default timezone</Label>
+            <Label>{uiCopy("default-timezone")}</Label>
             <Input
               value={defaultTimezone}
               onChange={(event) => setDefaultTimezone(event.target.value)}
@@ -307,7 +307,7 @@ export default function ProgramDetailScreen() {
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label>Description</Label>
+            <Label>{uiCopy("description")}</Label>
             <Textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
@@ -321,7 +321,7 @@ export default function ProgramDetailScreen() {
       <Card>
         <CardContent className="space-y-4 p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">Session templates</h2>
+            <h2 className="text-base font-semibold">{uiCopy("session-templates")}</h2>
             {isEdit ? (
               <Button
                 variant="outline"
@@ -338,13 +338,15 @@ export default function ProgramDetailScreen() {
                   ])
                 }
               >
-                Add session template
+                {uiCopy("add-session-template")}
               </Button>
             ) : null}
           </div>
           <div className="space-y-3">
             {sessionTemplates.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No session templates configured.</div>
+              <div className="text-sm text-muted-foreground">
+                {uiCopy("no-session-templates-configured")}
+              </div>
             ) : (
               sessionTemplates.map((item, index) => (
                 <div
@@ -369,7 +371,7 @@ export default function ProgramDetailScreen() {
                   <Input
                     className="md:col-span-5"
                     value={item.title}
-                    placeholder="Template title"
+                    placeholder={uiCopy("template-title")}
                     onChange={(event) =>
                       setSessionTemplates((current) =>
                         current.map((row, rowIndex) =>
@@ -433,7 +435,7 @@ export default function ProgramDetailScreen() {
                         )
                       }
                     >
-                      Remove
+                      {uiCopy("remove")}
                     </Button>
                   ) : null}
                 </div>
@@ -446,7 +448,7 @@ export default function ProgramDetailScreen() {
       <Card>
         <CardContent className="space-y-4 p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">Milestone templates</h2>
+            <h2 className="text-base font-semibold">{uiCopy("milestone-templates")}</h2>
             {isEdit ? (
               <Button
                 variant="outline"
@@ -463,14 +465,14 @@ export default function ProgramDetailScreen() {
                   ])
                 }
               >
-                Add milestone template
+                {uiCopy("add-milestone-template")}
               </Button>
             ) : null}
           </div>
           <div className="space-y-3">
             {milestoneTemplates.length === 0 ? (
               <div className="text-sm text-muted-foreground">
-                No milestone templates configured.
+                {uiCopy("no-milestone-templates-configured")}
               </div>
             ) : (
               milestoneTemplates.map((item, index) => (
@@ -496,7 +498,7 @@ export default function ProgramDetailScreen() {
                   <Input
                     className="md:col-span-6"
                     value={item.title}
-                    placeholder="Milestone title"
+                    placeholder={uiCopy("milestone-title")}
                     onChange={(event) =>
                       setMilestoneTemplates((current) =>
                         current.map((row, rowIndex) =>
@@ -545,7 +547,7 @@ export default function ProgramDetailScreen() {
                       )
                     }
                   >
-                    {item.required ? "Required" : "Optional"}
+                    {item.required ? uiCopy("required") : uiCopy("optional")}
                   </Button>
                   {isEdit ? (
                     <Button
@@ -558,7 +560,7 @@ export default function ProgramDetailScreen() {
                         )
                       }
                     >
-                      Remove
+                      {uiCopy("remove")}
                     </Button>
                   ) : null}
                 </div>
@@ -572,12 +574,12 @@ export default function ProgramDetailScreen() {
         <Card data-testid="classes-program-create-cohort-panel">
           <CardContent className="space-y-4 p-6">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold">Create cohort from this combo</h2>
-              <Badge variant="outline">Quick flow</Badge>
+              <h2 className="text-base font-semibold">{uiCopy("create-cohort-from-this")}</h2>
+              <Badge variant="outline">{uiCopy("quick-flow")}</Badge>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>Cohort name</Label>
+                <Label>{uiCopy("cohort-name")}</Label>
                 <Input
                   value={cohortName}
                   onChange={(event) => setCohortName(event.target.value)}
@@ -585,7 +587,7 @@ export default function ProgramDetailScreen() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Subject</Label>
+                <Label>{uiCopy("subject")}</Label>
                 <Input
                   value={cohortSubject}
                   onChange={(event) => setCohortSubject(event.target.value)}
@@ -593,7 +595,7 @@ export default function ProgramDetailScreen() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Level</Label>
+                <Label>{uiCopy("level")}</Label>
                 <Input
                   value={cohortLevel}
                   onChange={(event) => setCohortLevel(event.target.value)}
@@ -601,7 +603,7 @@ export default function ProgramDetailScreen() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Timezone</Label>
+                <Label>{uiCopy("timezone")}</Label>
                 <Input
                   value={defaultTimezone}
                   onChange={(event) => setDefaultTimezone(event.target.value)}
@@ -609,7 +611,7 @@ export default function ProgramDetailScreen() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Default price per session</Label>
+                <Label>{uiCopy("default-price-per-session")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -620,7 +622,7 @@ export default function ProgramDetailScreen() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Currency</Label>
+                <Label>{uiCopy("currency")}</Label>
                 <Input
                   value={currency}
                   onChange={(event) => setCurrency(event.target.value)}
@@ -634,7 +636,7 @@ export default function ProgramDetailScreen() {
               disabled={pending}
               onClick={() => void createCohort()}
             >
-              Create cohort
+              {uiCopy("create-cohort")}
             </Button>
           </CardContent>
         </Card>

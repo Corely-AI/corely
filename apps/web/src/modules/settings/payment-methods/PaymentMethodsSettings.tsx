@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
@@ -6,35 +7,39 @@ import { PaymentMethodsList } from "./PaymentMethodsList";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export function PaymentMethodsSettings() {
+  const uiCopy = useUiCopy("ui.settings-payment-methods-paymentmethodssettings");
   const { activeWorkspace } = useWorkspace();
   const legalEntityId = activeWorkspace?.legalEntityId ?? activeWorkspace?.id;
 
   if (!activeWorkspace?.id || !legalEntityId) {
-    return <div className="text-center py-8 text-muted-foreground">Please select a workspace</div>;
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        {uiCopy("please-select-a-workspace")}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-h1 text-foreground">Payment Methods</h1>
+        <h1 className="text-h1 text-foreground">{uiCopy("payment-methods")}</h1>
         <p className="text-muted-foreground">
-          Manage bank accounts and payment methods for {activeWorkspace.name}
+          {uiCopy("manage-bank-accounts-and") + " "}
+          {activeWorkspace.name}
         </p>
       </div>
 
       <Tabs keepMounted defaultValue="accounts" className="w-full">
         <TabsList>
-          <TabsTrigger value="accounts">Bank Accounts</TabsTrigger>
-          <TabsTrigger value="methods">Payment Methods</TabsTrigger>
+          <TabsTrigger value="accounts">{uiCopy("bank-accounts")}</TabsTrigger>
+          <TabsTrigger value="methods">{uiCopy("payment-methods")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="accounts" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Bank Accounts</CardTitle>
-              <CardDescription>
-                Configure bank accounts that can be used for bank transfer payments
-              </CardDescription>
+              <CardTitle>{uiCopy("bank-accounts")}</CardTitle>
+              <CardDescription>{uiCopy("configure-bank-accounts-that")}</CardDescription>
             </CardHeader>
             <CardContent>
               <BankAccountsList legalEntityId={legalEntityId} />
@@ -45,10 +50,8 @@ export function PaymentMethodsSettings() {
         <TabsContent value="methods" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Payment Methods</CardTitle>
-              <CardDescription>
-                Set up payment methods to offer to your customers on invoices
-              </CardDescription>
+              <CardTitle>{uiCopy("payment-methods")}</CardTitle>
+              <CardDescription>{uiCopy("set-up-payment-methods")}</CardDescription>
             </CardHeader>
             <CardContent>
               <PaymentMethodsList legalEntityId={legalEntityId} />
@@ -59,24 +62,24 @@ export function PaymentMethodsSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">How It Works</CardTitle>
+          <CardTitle className="text-base">{uiCopy("how-it-works")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <div>
-            <strong>1. Bank Accounts:</strong> Add your bank account details (IBAN, BIC, etc.) for
-            customers who want to pay via bank transfer.
+            <strong>{uiCopy("1-bank-accounts")}</strong>
+            {" " + uiCopy("add-your-bank-account")}
           </div>
           <div>
-            <strong>2. Payment Methods:</strong> Create payment methods that reference your bank
-            accounts or specify other payment instructions (PayPal, Cash, etc.).
+            <strong>{uiCopy("2-payment-methods")}</strong>
+            {" " + uiCopy("create-payment-methods-that")}
           </div>
           <div>
-            <strong>3. Invoices:</strong> When creating an invoice, select a payment method. The
-            payment details will be frozen and displayed on the PDF.
+            <strong>{uiCopy("3-invoices")}</strong>
+            {" " + uiCopy("when-creating-an-invoice")}
           </div>
           <div>
-            <strong>4. Immutability:</strong> Once an invoice is issued, payment details cannot be
-            changed, ensuring historical accuracy.
+            <strong>{uiCopy("4-immutability")}</strong>
+            {" " + uiCopy("once-an-invoice-is")}
           </div>
         </CardContent>
       </Card>

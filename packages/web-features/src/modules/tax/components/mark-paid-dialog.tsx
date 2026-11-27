@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import {
   Dialog,
@@ -26,14 +27,13 @@ export function MarkPaidDialog({
   isSubmitting,
   defaultAmountCents,
 }: MarkPaidDialogProps) {
+  const uiCopy = useUiCopy("ui.tax-mark-paid-dialog");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle>Mark as paid</DialogTitle>
-          <DialogDescription>
-            Record the payment details and optionally attach a receipt.
-          </DialogDescription>
+          <DialogTitle>{uiCopy("mark-as-paid")}</DialogTitle>
+          <DialogDescription>{uiCopy("record-the-payment-details")}</DialogDescription>
         </DialogHeader>
         <MarkPaidForm
           onSubmit={onSubmit}
@@ -47,7 +47,7 @@ export function MarkPaidDialog({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>

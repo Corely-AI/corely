@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -18,6 +19,7 @@ import CustomerFormFields from "../components/CustomerFormFields";
 import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function NewSupplierPage() {
+  const uiCopy = useUiCopy("ui.customers-newsupplierpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
@@ -41,11 +43,11 @@ export default function NewSupplierPage() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: withWorkspace(["suppliers"]) });
-      toast.success("Supplier created");
+      toast.success(uiCopy("supplier-created"));
       navigate("/suppliers");
     },
     onError: () => {
-      toast.error("Failed to create supplier. Please try again.");
+      toast.error(uiCopy("failed-to-create-supplier"));
     },
   });
 
@@ -60,7 +62,7 @@ export default function NewSupplierPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/suppliers")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Create Supplier</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("create-supplier")}</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -68,14 +70,14 @@ export default function NewSupplierPage() {
             onClick={() => navigate("/suppliers")}
             disabled={createSupplierMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={createSupplierMutation.isPending}
           >
-            {createSupplierMutation.isPending ? "Creating..." : "Create Supplier"}
+            {createSupplierMutation.isPending ? uiCopy("creating") : uiCopy("create-supplier")}
           </Button>
         </div>
       </div>

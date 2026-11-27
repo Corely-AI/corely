@@ -1,3 +1,4 @@
+import { corelyLocaleDetails, corelyLocales, normalizeCorelyLocale } from "@corely/contracts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button, Input, Logo } from "@corely/ui/auth-primitives";
 import {
@@ -9,7 +10,8 @@ import {
   SsoRedirectSchema,
   type SsoContext,
 } from "@corely/contracts/identity/sso";
-import { loginCopy, type LoginLocale } from "./login-copy";
+import { useFocusedLocale } from "@corely/web-shared/session/use-focused-locale";
+import { loginCopy } from "./login-copy";
 
 type Failure = "unavailable" | "invalid" | "expired" | "limit" | "conflict";
 class LoginFailure extends Error {
@@ -102,9 +104,7 @@ const appNames = {
 } as const;
 
 export function LoginPage() {
-  const [locale, setLocale] = useState<LoginLocale>(() =>
-    navigator.language.startsWith("de") ? "de" : navigator.language.startsWith("vi") ? "vi" : "en"
-  );
+  const [locale, setLocale] = useFocusedLocale();
   const copy = loginCopy[locale];
   const [context, setContext] = useState<SsoContext | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
@@ -116,9 +116,6 @@ export function LoginPage() {
   const [reload, setReload] = useState(0);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const requestId = new URLSearchParams(window.location.search).get("request");
-  useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
   useEffect(() => {
     const controller = new AbortController();
     setFailure(null);
@@ -252,11 +249,13 @@ export function LoginPage() {
           <select
             aria-label={copy.language}
             value={locale}
-            onChange={(event) => setLocale(event.target.value as LoginLocale)}
+            onChange={(event) => setLocale(normalizeCorelyLocale(event.target.value) ?? "en")}
           >
-            <option value="en">English</option>
-            <option value="de">Deutsch</option>
-            <option value="vi">Tiếng Việt</option>
+            {corelyLocales.map((language) => (
+              <option key={language} value={language} lang={language}>
+                {corelyLocaleDetails[language].name}
+              </option>
+            ))}
           </select>
         </label>
       </header>

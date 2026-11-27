@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -18,6 +19,7 @@ import { classesApi } from "@/lib/classes-api";
 import { classGroupListKey } from "../queries";
 
 export default function ClassGroupsListPage() {
+  const uiCopy = useUiCopy("ui.classes-classgroupslistpage");
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -84,7 +86,7 @@ export default function ClassGroupsListPage() {
   const primaryAction = (
     <>
       <Button asChild variant="outline">
-        <Link to="/settings/classes">Classes settings</Link>
+        <Link to="/settings/classes">{uiCopy("classes-settings")}</Link>
       </Button>
       <Button variant="accent" onClick={() => navigate("/class-groups/new")}>
         <Plus className="h-4 w-4" />

@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -47,6 +49,7 @@ const getSelectFilterValue = (filters: FilterSpec[] | undefined, field: string) 
 };
 
 export default function CatalogItemsPage() {
+  const uiCopy = useUiCopy("ui.catalog-catalogitemspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [state, setUrlState] = useListUrlState(
@@ -148,10 +151,10 @@ export default function CatalogItemsPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: catalogItemKeys.list(undefined) });
       await queryClient.invalidateQueries({ queryKey: catalogItemKeys.all() });
-      toast.success("Catalog item archived");
+      toast.success(uiCopy("catalog-item-archived"));
     },
     onError: () => {
-      toast.error("Failed to archive catalog item");
+      toast.error(uiCopy("failed-to-archive-catalog"));
     },
   });
 
@@ -160,12 +163,12 @@ export default function CatalogItemsPage() {
   return (
     <>
       <CrudListPageLayout
-        title="Catalog Items"
+        title={uiCopy("catalog-items")}
         subtitle="Manage products and services for purchasing, import, and sales"
         primaryAction={
           <Button variant="accent" onClick={() => navigate("/catalog/items/new")}>
             <Plus className="h-4 w-4" />
-            New item
+            {uiCopy("new-item")}
           </Button>
         }
         toolbar={
@@ -203,7 +206,7 @@ export default function CatalogItemsPage() {
           <CardContent className="p-0">
             {isError ? (
               <div className="p-6 flex items-center justify-between gap-4">
-                <div className="text-sm text-destructive">Catalog items could not be loaded.</div>
+                <div className="text-sm text-destructive">{uiCopy("catalog-items-could-not")}</div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -213,7 +216,7 @@ export default function CatalogItemsPage() {
                     })
                   }
                 >
-                  Retry
+                  {uiCopy("retry")}
                 </Button>
               </div>
             ) : null}
@@ -229,14 +232,14 @@ export default function CatalogItemsPage() {
             {!isError && !isLoading && (data?.items.length ?? 0) === 0 ? (
               <EmptyState
                 icon={Package}
-                title="No catalog items found"
-                description="Create your first item to make products available in operations."
+                title={uiCopy("no-catalog-items-found")}
+                description={uiCopy("create-your-first-item")}
                 action={
                   <Button
                     variant="outline"
                     onClick={() => setUrlState({ q: "", filters: [], page: 1 })}
                   >
-                    Clear filters
+                    {uiCopy("clear-filters")}
                   </Button>
                 }
               />
@@ -249,19 +252,19 @@ export default function CatalogItemsPage() {
                     <thead>
                       <tr className="border-b border-border bg-muted/50">
                         <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                          Code
+                          {uiCopy("code")}
                         </th>
                         <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                          Name
+                          {uiCopy("name")}
                         </th>
                         <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                          Type
+                          {uiCopy("type")}
                         </th>
                         <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                          Status
+                          {uiCopy("status")}
                         </th>
                         <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                          Updated
+                          {uiCopy("updated")}
                         </th>
                         <th className="w-[50px]" />
                       </tr>
@@ -323,8 +326,10 @@ export default function CatalogItemsPage() {
                         </PaginationItem>
                         <PaginationItem>
                           <span className="px-3 py-2 text-sm text-muted-foreground">
-                            Page {pageInfo.page} of{" "}
-                            {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                            <PaginationSummary
+                              page={pageInfo.page}
+                              pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                            />
                           </span>
                         </PaginationItem>
                         <PaginationItem>
@@ -364,8 +369,8 @@ export default function CatalogItemsPage() {
         open={archiveTarget !== null}
         onOpenChange={(open) => !open && setArchiveTarget(null)}
         trigger={null}
-        title="Archive item"
-        description="This item will be archived and hidden from active catalog lists."
+        title={uiCopy("archive-item")}
+        description={uiCopy("this-item-will-be")}
         isLoading={archiveMutation.isPending}
         onConfirm={() => {
           if (!archiveTarget) {

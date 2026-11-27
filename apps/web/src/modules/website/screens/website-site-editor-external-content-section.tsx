@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
@@ -65,6 +66,7 @@ export function WebsiteSiteEditorExternalContentSection({
   siteId,
   defaultLocale,
 }: WebsiteSiteEditorExternalContentSectionProps) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-external-content-section");
   const queryClient = useQueryClient();
   const [localeInput, setLocaleInput] = useState("");
   const [jsonValue, setJsonValue] = useState("{}");
@@ -142,7 +144,7 @@ export function WebsiteSiteEditorExternalContentSection({
         return next;
       });
     } catch {
-      toast.error("Invalid JSON for this generated field.");
+      toast.error(uiCopy("invalid-json-for-this"));
     }
   };
 
@@ -233,7 +235,7 @@ export function WebsiteSiteEditorExternalContentSection({
     }
 
     if (!isRecord(baseValue)) {
-      toast.error("Generated value must be an object.");
+      toast.error(uiCopy("generated-value-must-be"));
       return;
     }
 
@@ -249,7 +251,7 @@ export function WebsiteSiteEditorExternalContentSection({
       nextSchemaRootKeys = extractSchemaRootKeys(schemaSource);
       nextSchemaFieldHints = extractSchemaFieldHints(schemaSource);
       if (nextSchemaRootKeys.length === 0) {
-        toast.error("Could not parse keys from siteCopy.schema.ts. Using default key order.");
+        toast.error(uiCopy("could-not-parse-keys"));
       }
     }
 
@@ -262,7 +264,7 @@ export function WebsiteSiteEditorExternalContentSection({
     setUploadingPathStates({});
     setJsonValue(formatJson(nextValue));
     setIsDirty(true);
-    toast.success("Generated external content editor.");
+    toast.success(uiCopy("generated-external-content-editor"));
   };
 
   const saveMutation = useMutation({
@@ -290,7 +292,7 @@ export function WebsiteSiteEditorExternalContentSection({
     onSuccess: async () => {
       setIsDirty(false);
       await queryClient.invalidateQueries({ queryKey });
-      toast.success("External content draft saved.");
+      toast.success(uiCopy("external-content-draft-saved"));
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : "Failed to save external content.");
@@ -305,7 +307,7 @@ export function WebsiteSiteEditorExternalContentSection({
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey });
-      toast.success("External content published.");
+      toast.success(uiCopy("external-content-published"));
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : "Failed to publish external content.");
@@ -316,16 +318,13 @@ export function WebsiteSiteEditorExternalContentSection({
     <Card>
       <CardContent className="space-y-4 p-6">
         <div className="space-y-1">
-          <h3 className="text-base font-semibold">External Content</h3>
-          <p className="text-sm text-muted-foreground">
-            Paste `siteCopy.schema.ts` and `siteCopy.default.ts`, then generate an editor to update
-            website content. Leave locale empty to edit the `default` slot.
-          </p>
+          <h3 className="text-base font-semibold">{uiCopy("external-content")}</h3>
+          <p className="text-sm text-muted-foreground">{uiCopy("paste-sitecopy-schema-ts")}</p>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="site-copy-locale">Locale (optional)</Label>
+            <Label htmlFor="site-copy-locale">{uiCopy("locale-optional")}</Label>
             <Input
               id="site-copy-locale"
               placeholder={defaultLocale}
@@ -337,44 +336,37 @@ export function WebsiteSiteEditorExternalContentSection({
             />
           </div>
           <div className="space-y-2">
-            <Label>Key</Label>
+            <Label>{uiCopy("key")}</Label>
             <Input value="siteCopy" readOnly />
           </div>
         </div>
 
         <div className="space-y-3 rounded-md border border-border/60 p-4">
           <div className="space-y-1">
-            <h4 className="text-sm font-semibold">Generate Editor</h4>
-            <p className="text-xs text-muted-foreground">
-              Paste source from `siteCopy.schema.ts` and `siteCopy.default.ts`. If default input is
-              empty, current JSON is used. Imported aliases in default source are resolved from
-              current `siteCopy` JSON when possible. Generate keeps current `siteCopy` values and
-              fills missing fields from default source. For explicit media editors use schema
-              descriptions like `z.string().describe("file:image")` or
-              `z.array(z.string()).describe("file:image-list")`.
-            </p>
+            <h4 className="text-sm font-semibold">{uiCopy("generate-editor")}</h4>
+            <p className="text-xs text-muted-foreground">{uiCopy("paste-source-from-sitecopy")}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="site-copy-schema-source">siteCopy.schema.ts</Label>
+            <Label htmlFor="site-copy-schema-source">{uiCopy("sitecopy-schema-ts")}</Label>
             <Textarea
               id="site-copy-schema-source"
               rows={6}
               className="font-mono text-xs"
               value={schemaSource}
-              placeholder="export const SiteCopySchema = z.object({ ... })"
+              placeholder={uiCopy("export-const-sitecopyschema-z")}
               onChange={(event) => setSchemaSource(event.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="site-copy-default-source">siteCopy.default.ts</Label>
+            <Label htmlFor="site-copy-default-source">{uiCopy("sitecopy-default-ts")}</Label>
             <Textarea
               id="site-copy-default-source"
               rows={8}
               className="font-mono text-xs"
               value={defaultSource}
-              placeholder="export const siteCopyDefault = { ... }"
+              placeholder={uiCopy("export-const-sitecopydefault")}
               onChange={(event) => setDefaultSource(event.target.value)}
             />
           </div>
@@ -386,7 +378,7 @@ export function WebsiteSiteEditorExternalContentSection({
               disabled={saveMutation.isPending || publishMutation.isPending}
               onClick={handleGenerateEditor}
             >
-              Generate Editor
+              {uiCopy("generate-editor")}
             </Button>
           </div>
         </div>
@@ -394,9 +386,9 @@ export function WebsiteSiteEditorExternalContentSection({
         {generatedEditorValue ? (
           <div className="space-y-3 rounded-md border border-border/60 p-4">
             <div className="space-y-1">
-              <h4 className="text-sm font-semibold">Generated Content Editor</h4>
+              <h4 className="text-sm font-semibold">{uiCopy("generated-content-editor")}</h4>
               <p className="text-xs text-muted-foreground">
-                Changes here automatically update `siteCopy` JSON below.
+                {uiCopy("changes-here-automatically-update")}
               </p>
             </div>
             <WebsiteSiteEditorGeneratedContentForm
@@ -415,7 +407,7 @@ export function WebsiteSiteEditorExternalContentSection({
         ) : null}
 
         <div className="space-y-2">
-          <Label htmlFor="site-copy-json">siteCopy JSON</Label>
+          <Label htmlFor="site-copy-json">{uiCopy("sitecopy-json")}</Label>
           <Textarea
             id="site-copy-json"
             rows={18}
@@ -430,10 +422,10 @@ export function WebsiteSiteEditorExternalContentSection({
 
         <div className="text-xs text-muted-foreground">
           {draftQuery.isLoading
-            ? "Loading draft..."
+            ? uiCopy("loading-draft")
             : draftQuery.data
               ? `Draft updated at ${new Date(draftQuery.data.updatedAt).toLocaleString()}`
-              : "No draft found yet. Save a draft to create one."}
+              : uiCopy("no-draft-found-yet")}
         </div>
 
         <div className="flex items-center gap-2">
@@ -443,7 +435,7 @@ export function WebsiteSiteEditorExternalContentSection({
             disabled={saveMutation.isPending || publishMutation.isPending}
             onClick={() => saveMutation.mutate()}
           >
-            Save Draft
+            {uiCopy("save-draft")}
           </Button>
           <Button
             type="button"
@@ -451,7 +443,7 @@ export function WebsiteSiteEditorExternalContentSection({
             disabled={saveMutation.isPending || publishMutation.isPending}
             onClick={() => publishMutation.mutate()}
           >
-            Publish
+            {uiCopy("publish")}
           </Button>
         </div>
       </CardContent>

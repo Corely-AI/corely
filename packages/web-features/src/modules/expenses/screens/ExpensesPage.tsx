@@ -283,7 +283,7 @@ export default function ExpensesPage() {
                 {selectedIds.size > 0 ? (
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
                     <div className="text-sm text-muted-foreground">
-                      {t("expenses.list.selectedCount", { count: selectedIds.size })}
+                      {t("common.selectedCount", { count: selectedIds.size })}
                     </div>
                     <ConfirmDeleteDialog
                       trigger={

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { usePeopleDraftGuard } from "./people-runtime";
 import { useRef, useState } from "react";
 import { Button, Input, Label } from "@corely/ui";
@@ -44,6 +45,7 @@ export function StaffAvailabilityForm({
   onSaved: () => void;
   onReload: () => void;
 }) {
+  const uiCopy = useUiCopy("ui.people-staff-availability-form");
   const peopleApi = usePeopleApi();
   const [dirty, setDirty] = useState(false);
   usePeopleDraftGuard(dirty);
@@ -106,7 +108,7 @@ export function StaffAvailabilityForm({
               required
               value={pattern.timezone}
               onChange={(e) => update({ timezone: e.target.value })}
-              placeholder="Europe/Berlin"
+              placeholder={uiCopy("europe-berlin")}
             />
           </div>
           <div className="space-y-2">

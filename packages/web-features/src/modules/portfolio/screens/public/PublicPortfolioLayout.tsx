@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { createContext, useContext } from "react";
 import { Outlet, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -18,6 +19,7 @@ export const usePublicPortfolioContext = () => {
 };
 
 export const PublicPortfolioLayout = () => {
+  const uiCopy = useUiCopy("ui.portfolio-public-publicportfoliolayout");
   const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
 
@@ -76,7 +78,7 @@ export const PublicPortfolioLayout = () => {
         </p>
         {isSlugMode && (
           <Link to="/">
-            <Button variant="outline">Go Home</Button>
+            <Button variant="outline">{uiCopy("go-home")}</Button>
           </Link>
         )}
       </div>
@@ -151,7 +153,7 @@ export const PublicPortfolioLayout = () => {
         <footer className="border-t py-6 md:py-0">
           <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              Built with Corely.
+              {uiCopy("built-with-corely")}
             </p>
           </div>
         </footer>

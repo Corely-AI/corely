@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -30,6 +31,7 @@ const statusOptions: { label: string; value: PortfolioContentStatus }[] = [
 ];
 
 export default function TeamEditorPage() {
+  const uiCopy = useUiCopy("ui.portfolio-teameditorpage");
   const { id, showcaseId: routeShowcaseId } = useParams<{ id?: string; showcaseId?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -110,31 +112,31 @@ export default function TeamEditorPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-h1 text-foreground">
-            {isEdit ? "Edit team member" : "Add team member"}
+            {isEdit ? uiCopy("edit-team-member") : uiCopy("add-team-member")}
           </h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : "Save"}
+            {saveMutation.isPending ? uiCopy("saving") : uiCopy("save")}
           </Button>
         </div>
       </div>
 
       {isLoading && isEdit ? (
-        <div className="text-sm text-muted-foreground">Loading team member...</div>
+        <div className="text-sm text-muted-foreground">{uiCopy("loading-team-member")}</div>
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
             <CardContent className="p-8 space-y-6">
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{uiCopy("name")}</Label>
                 <Input id="name" {...form.register("name")} />
                 {form.formState.errors.name && (
                   <p className="text-sm text-destructive mt-1">
@@ -143,7 +145,7 @@ export default function TeamEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="roleTitle">Role title</Label>
+                <Label htmlFor="roleTitle">{uiCopy("role-title")}</Label>
                 <Input id="roleTitle" {...form.register("roleTitle")} />
                 {form.formState.errors.roleTitle && (
                   <p className="text-sm text-destructive mt-1">
@@ -152,7 +154,7 @@ export default function TeamEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">{uiCopy("bio")}</Label>
                 <Textarea id="bio" rows={4} {...form.register("bio")} />
                 {form.formState.errors.bio && (
                   <p className="text-sm text-destructive mt-1">
@@ -161,29 +163,33 @@ export default function TeamEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="skills">Skills (comma separated)</Label>
-                <Input id="skills" {...form.register("skills")} placeholder="Brand, UX, Research" />
+                <Label htmlFor="skills">{uiCopy("skills-comma-separated")}</Label>
+                <Input
+                  id="skills"
+                  {...form.register("skills")}
+                  placeholder={uiCopy("brand-ux-research")}
+                />
               </div>
               <div>
-                <Label htmlFor="photoUrl">Photo URL</Label>
+                <Label htmlFor="photoUrl">{uiCopy("photo-url")}</Label>
                 <Input id="photoUrl" {...form.register("photoUrl")} placeholder="https://..." />
               </div>
               <div>
-                <Label htmlFor="socialLinks">Social links (JSON)</Label>
+                <Label htmlFor="socialLinks">{uiCopy("social-links-json")}</Label>
                 <Textarea
                   id="socialLinks"
                   rows={3}
                   {...form.register("socialLinks")}
-                  placeholder='{"linkedin":"https://..."}'
+                  placeholder={uiCopy("linkedin-https")}
                 />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="sortOrder">Sort order</Label>
+                  <Label htmlFor="sortOrder">{uiCopy("sort-order")}</Label>
                   <Input id="sortOrder" type="number" {...form.register("sortOrder")} />
                 </div>
                 <div>
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="status">{uiCopy("status")}</Label>
                   <select
                     id="status"
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"

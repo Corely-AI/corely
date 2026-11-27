@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@corely/ui";
@@ -10,6 +11,7 @@ import { salesQueryKeys } from "../queries/sales.queryKeys";
 import { toast } from "sonner";
 
 export default function SalesSettingsPage() {
+  const uiCopy = useUiCopy("ui.sales-salessettingspage");
   const { data } = useQuery({
     queryKey: salesQueryKeys.settings(),
     queryFn: () => salesApi.getSettings(),
@@ -70,22 +72,22 @@ export default function SalesSettingsPage() {
           autoPostOnPayment: formState.autoPostOnPayment,
         },
       }),
-    onSuccess: () => toast.success("Settings updated"),
-    onError: () => toast.error("Failed to update settings"),
+    onSuccess: () => toast.success(uiCopy("settings-updated")),
+    onError: () => toast.error(uiCopy("failed-to-update-settings")),
   });
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-h1 text-foreground">Sales Settings</h1>
-        <p className="text-muted-foreground">Defaults and accounting mappings for sales.</p>
+        <h1 className="text-h1 text-foreground">{uiCopy("sales-settings")}</h1>
+        <p className="text-muted-foreground">{uiCopy("defaults-and-accounting-mappings")}</p>
       </div>
 
       <Card>
         <CardContent className="p-6 space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Default Currency</Label>
+              <Label>{uiCopy("default-currency")}</Label>
               <Input
                 value={formState.defaultCurrency}
                 onChange={(e) =>
@@ -94,7 +96,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Default Payment Terms</Label>
+              <Label>{uiCopy("default-payment-terms")}</Label>
               <Input
                 value={formState.defaultPaymentTerms}
                 onChange={(e) =>
@@ -106,7 +108,7 @@ export default function SalesSettingsPage() {
 
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Quote Prefix</Label>
+              <Label>{uiCopy("quote-prefix")}</Label>
               <Input
                 value={formState.quoteNumberPrefix}
                 onChange={(e) =>
@@ -115,7 +117,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Quote Next #</Label>
+              <Label>{uiCopy("quote-next")}</Label>
               <Input
                 type="number"
                 value={formState.quoteNextNumber}
@@ -125,7 +127,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Order Prefix</Label>
+              <Label>{uiCopy("order-prefix")}</Label>
               <Input
                 value={formState.orderNumberPrefix}
                 onChange={(e) =>
@@ -134,7 +136,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Order Next #</Label>
+              <Label>{uiCopy("order-next")}</Label>
               <Input
                 type="number"
                 value={formState.orderNextNumber}
@@ -144,7 +146,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Invoice Prefix</Label>
+              <Label>{uiCopy("invoice-prefix")}</Label>
               <Input
                 value={formState.invoiceNumberPrefix}
                 onChange={(e) =>
@@ -153,7 +155,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Invoice Next #</Label>
+              <Label>{uiCopy("invoice-next")}</Label>
               <Input
                 type="number"
                 value={formState.invoiceNextNumber}
@@ -166,7 +168,7 @@ export default function SalesSettingsPage() {
 
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Default Revenue Account</Label>
+              <Label>{uiCopy("default-revenue-account")}</Label>
               <Input
                 value={formState.defaultRevenueAccountId}
                 onChange={(e) =>
@@ -175,7 +177,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Default AR Account</Label>
+              <Label>{uiCopy("default-ar-account")}</Label>
               <Input
                 value={formState.defaultAccountsReceivableAccountId}
                 onChange={(e) =>
@@ -187,7 +189,7 @@ export default function SalesSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Default Bank Account</Label>
+              <Label>{uiCopy("default-bank-account")}</Label>
               <Input
                 value={formState.defaultBankAccountId}
                 onChange={(e) =>
@@ -199,9 +201,9 @@ export default function SalesSettingsPage() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label>Auto-post on Issue</Label>
+              <Label>{uiCopy("auto-post-on-issue")}</Label>
               <p className="text-sm text-muted-foreground">
-                Create journal entries when invoices are issued.
+                {uiCopy("create-journal-entries-when")}
               </p>
             </div>
             <Switch
@@ -214,9 +216,9 @@ export default function SalesSettingsPage() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label>Auto-post on Payment</Label>
+              <Label>{uiCopy("auto-post-on-payment")}</Label>
               <p className="text-sm text-muted-foreground">
-                Create journal entries when payments are recorded.
+                {uiCopy("create-journal-entries-when-2")}
               </p>
             </div>
             <Switch
@@ -228,7 +230,7 @@ export default function SalesSettingsPage() {
           </div>
 
           <Button variant="accent" onClick={() => updateMutation.mutate()}>
-            Save Settings
+            {uiCopy("save-settings")}
           </Button>
         </CardContent>
       </Card>

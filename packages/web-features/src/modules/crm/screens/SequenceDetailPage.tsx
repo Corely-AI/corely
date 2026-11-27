@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,6 +59,7 @@ const NAILS_PRESET_STEPS: EditableStep[] = [
 ];
 
 export default function SequenceDetailPage() {
+  const uiCopy = useUiCopy("ui.crm-sequencedetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -105,7 +107,7 @@ export default function SequenceDetailPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["sequences"] });
       void queryClient.invalidateQueries({ queryKey: ["sequence", id] });
-      toast.success("Sequence updated");
+      toast.success(uiCopy("sequence-updated"));
       setIsEditing(false);
     },
     onError: (error) => {
@@ -125,7 +127,7 @@ export default function SequenceDetailPage() {
       <div className="p-6 lg:p-8">
         <Card>
           <CardContent className="py-6 text-sm text-muted-foreground">
-            Invalid sequence id.
+            {uiCopy("invalid-sequence-id")}
           </CardContent>
         </Card>
       </div>
@@ -138,11 +140,11 @@ export default function SequenceDetailPage() {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Sequence name is required");
+      toast.error(uiCopy("sequence-name-is-required"));
       return;
     }
     if (steps.length === 0) {
-      toast.error("Add at least one step");
+      toast.error(uiCopy("add-at-least-one"));
       return;
     }
 
@@ -225,7 +227,7 @@ export default function SequenceDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-h1 text-foreground">
-            {isLoading ? "Sequence" : (sequence?.name ?? "Sequence")}
+            {isLoading ? uiCopy("sequence") : (sequence?.name ?? "Sequence")}
           </h1>
         </div>
         {!isLoading && !isError && (
@@ -234,17 +236,17 @@ export default function SequenceDetailPage() {
               <>
                 <Button type="button" variant="outline" onClick={onCancelEdit}>
                   <X className="h-4 w-4" />
-                  Cancel
+                  {uiCopy("cancel")}
                 </Button>
                 <Button type="submit" form="sequence-detail-form" variant="accent">
                   <Save className="h-4 w-4" />
-                  {updateMutation.isPending ? "Saving..." : "Save"}
+                  {updateMutation.isPending ? uiCopy("saving") : uiCopy("save")}
                 </Button>
               </>
             ) : (
               <Button type="button" variant="accent" onClick={() => setIsEditing(true)}>
                 <Pencil className="h-4 w-4" />
-                Edit
+                {uiCopy("edit")}
               </Button>
             )}
           </div>
@@ -254,15 +256,15 @@ export default function SequenceDetailPage() {
       {isLoading ? (
         <Card>
           <CardContent className="py-6 text-sm text-muted-foreground">
-            Loading sequence...
+            {uiCopy("loading-sequence")}
           </CardContent>
         </Card>
       ) : isError || !sequence ? (
         <Card>
           <CardContent className="py-6 space-y-3">
-            <p className="text-sm text-muted-foreground">Could not load this sequence.</p>
+            <p className="text-sm text-muted-foreground">{uiCopy("could-not-load-this")}</p>
             <Button variant="outline" onClick={() => void refetch()}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </CardContent>
         </Card>
@@ -270,7 +272,9 @@ export default function SequenceDetailPage() {
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle>{isEditing ? "Edit Sequence" : "Sequence Details"}</CardTitle>
+              <CardTitle>
+                {isEditing ? uiCopy("edit-sequence") : uiCopy("sequence-details")}
+              </CardTitle>
               <Button
                 type="button"
                 variant="outline"
@@ -278,7 +282,7 @@ export default function SequenceDetailPage() {
                 disabled={setReadonly || isPresetDisabled}
               >
                 <Sparkles className="h-4 w-4" />
-                Apply Nails 3-step preset
+                {uiCopy("apply-nails-3-step")}
               </Button>
             </div>
           </CardHeader>
@@ -290,7 +294,7 @@ export default function SequenceDetailPage() {
               data-testid="crm-sequence-detail-form"
             >
               <div>
-                <Label htmlFor="sequence-name">Name</Label>
+                <Label htmlFor="sequence-name">{uiCopy("name")}</Label>
                 <Input
                   id="sequence-name"
                   value={name}
@@ -300,7 +304,7 @@ export default function SequenceDetailPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="sequence-description">Description</Label>
+                <Label htmlFor="sequence-description">{uiCopy("description")}</Label>
                 <Input
                   id="sequence-description"
                   value={description}
@@ -314,7 +318,10 @@ export default function SequenceDetailPage() {
                   <Card key={step.id} className="border-dashed">
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between gap-2">
-                        <CardTitle className="text-base">Step {index + 1}</CardTitle>
+                        <CardTitle className="text-base">
+                          {uiCopy("step") + " "}
+                          {index + 1}
+                        </CardTitle>
                         <Button
                           type="button"
                           variant="ghost"
@@ -330,7 +337,9 @@ export default function SequenceDetailPage() {
                     <CardContent className="space-y-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor={`sequence-step-type-${step.id}`}>Step Type</Label>
+                          <Label htmlFor={`sequence-step-type-${step.id}`}>
+                            {uiCopy("step-type")}
+                          </Label>
                           <select
                             id={`sequence-step-type-${step.id}`}
                             value={step.type}
@@ -342,14 +351,16 @@ export default function SequenceDetailPage() {
                             }
                             className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                           >
-                            <option value="TASK">Task</option>
-                            <option value="CALL">Call</option>
-                            <option value="EMAIL_MANUAL">Email Manual</option>
-                            <option value="EMAIL_AUTO">Email Auto</option>
+                            <option value="TASK">{uiCopy("task")}</option>
+                            <option value="CALL">{uiCopy("call")}</option>
+                            <option value="EMAIL_MANUAL">{uiCopy("email-manual")}</option>
+                            <option value="EMAIL_AUTO">{uiCopy("email-auto")}</option>
                           </select>
                         </div>
                         <div>
-                          <Label htmlFor={`sequence-day-delay-${step.id}`}>Day Delay</Label>
+                          <Label htmlFor={`sequence-day-delay-${step.id}`}>
+                            {uiCopy("day-delay")}
+                          </Label>
                           <Input
                             id={`sequence-day-delay-${step.id}`}
                             type="number"
@@ -363,7 +374,9 @@ export default function SequenceDetailPage() {
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor={`sequence-step-subject-${step.id}`}>Step Subject</Label>
+                        <Label htmlFor={`sequence-step-subject-${step.id}`}>
+                          {uiCopy("step-subject")}
+                        </Label>
                         <Input
                           id={`sequence-step-subject-${step.id}`}
                           value={step.templateSubject}
@@ -374,7 +387,9 @@ export default function SequenceDetailPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`sequence-step-body-${step.id}`}>Step Body</Label>
+                        <Label htmlFor={`sequence-step-body-${step.id}`}>
+                          {uiCopy("step-body")}
+                        </Label>
                         <Textarea
                           id={`sequence-step-body-${step.id}`}
                           rows={4}
@@ -392,7 +407,7 @@ export default function SequenceDetailPage() {
 
               <Button type="button" variant="outline" onClick={addStep} disabled={setReadonly}>
                 <Plus className="h-4 w-4" />
-                Add Step
+                {uiCopy("add-step")}
               </Button>
             </form>
           </CardContent>

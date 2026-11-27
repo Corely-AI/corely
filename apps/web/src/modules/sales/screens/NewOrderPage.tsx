@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -8,6 +9,7 @@ import { OrderForm, type OrderFormValues } from "../components/OrderForm";
 import { toast } from "sonner";
 
 export default function NewOrderPage() {
+  const uiCopy = useUiCopy("ui.sales-neworderpage");
   const navigate = useNavigate();
   const { data: customersData } = useQuery({
     queryKey: ["customers"],
@@ -35,15 +37,15 @@ export default function NewOrderPage() {
         })),
       }),
     onSuccess: (data) => {
-      toast.success("Order created");
+      toast.success(uiCopy("order-created"));
       navigate(`/sales/orders/${data.order.id}`);
     },
-    onError: () => toast.error("Failed to create order"),
+    onError: () => toast.error(uiCopy("failed-to-create-order")),
   });
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <h1 className="text-h1 text-foreground">New Order</h1>
+      <h1 className="text-h1 text-foreground">{uiCopy("new-order")}</h1>
       <Card>
         <CardContent className="p-6">
           <OrderForm customers={customers} onSubmit={(values) => createMutation.mutate(values)} />

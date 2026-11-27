@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { ArrowDown, ArrowUp, Pencil } from "lucide-react";
 import { Badge, Button, Card, CardContent } from "@corely/ui";
@@ -25,15 +26,16 @@ export function WebsiteWallOfLoveItemsList({
   onUnpublishItem,
   onSaveOrder,
 }: WebsiteWallOfLoveItemsListProps) {
+  const uiCopy = useUiCopy("ui.website-website-wall-of-love-items-list");
   return (
     <Card>
       <CardContent className="p-6 space-y-4">
-        <div className="text-base font-semibold">Items</div>
+        <div className="text-base font-semibold">{uiCopy("items")}</div>
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading items...</div>
+          <div className="text-sm text-muted-foreground">{uiCopy("loading-items")}</div>
         ) : items.length === 0 ? (
           <div className="rounded-md border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
-            No Wall Of Love items yet.
+            {uiCopy("no-wall-of-love")}
           </div>
         ) : (
           <div className="space-y-2">
@@ -51,18 +53,29 @@ export function WebsiteWallOfLoveItemsList({
                     />
                   ) : null}
                   <div className="space-y-1">
-                    <div className="font-medium line-clamp-2">{item.quote || "(No quote)"}</div>
+                    <div className="font-medium line-clamp-2">
+                      {item.quote || uiCopy("no-quote")}
+                    </div>
                     <div className="text-sm text-muted-foreground">
-                      {item.authorName || "Unknown author"}
+                      {item.authorName || uiCopy("unknown-author")}
                       {item.authorTitle ? ` · ${item.authorTitle}` : ""}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Badge variant={item.status === "published" ? "success" : "warning"}>
                         {item.status}
                       </Badge>
-                      <span>type: {item.type}</span>
-                      <span>images: {item.imageFileIds.length}</span>
-                      <span>order: {index + 1}</span>
+                      <span>
+                        {uiCopy("type") + " "}
+                        {item.type}
+                      </span>
+                      <span>
+                        {uiCopy("images") + " "}
+                        {item.imageFileIds.length}
+                      </span>
+                      <span>
+                        {uiCopy("order") + " "}
+                        {index + 1}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -99,11 +112,11 @@ export function WebsiteWallOfLoveItemsList({
                       variant="outline"
                       onClick={() => onUnpublishItem(item.id)}
                     >
-                      Unpublish
+                      {uiCopy("unpublish")}
                     </Button>
                   ) : (
                     <Button type="button" variant="outline" onClick={() => onPublishItem(item.id)}>
-                      Publish
+                      {uiCopy("publish")}
                     </Button>
                   )}
                 </div>
@@ -115,7 +128,7 @@ export function WebsiteWallOfLoveItemsList({
         {items.length > 0 ? (
           <div className="flex justify-end">
             <Button type="button" variant="accent" disabled={!isOrderDirty} onClick={onSaveOrder}>
-              Save order
+              {uiCopy("save-order")}
             </Button>
           </div>
         ) : null}

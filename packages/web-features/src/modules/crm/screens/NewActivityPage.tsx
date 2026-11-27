@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -79,6 +80,7 @@ const normalizeWhatsAppPhone = (phone: string | null | undefined) => {
 };
 
 export default function NewActivityPage() {
+  const uiCopy = useUiCopy("ui.crm-newactivitypage");
   const { t, i18n } = useTranslation();
   const { data: channels = [] } = useCrmChannels();
   const { data: aiSettings } = useCrmAiSettings();
@@ -214,7 +216,7 @@ export default function NewActivityPage() {
       }
     },
     onSuccess: () => {
-      toast.success("Follow-up tasks created");
+      toast.success(uiCopy("follow-up-tasks-created"));
       void queryClient.invalidateQueries({ queryKey: ["activities"] });
       setConfirmCreateFollowUpsOpen(false);
     },
@@ -414,7 +416,7 @@ export default function NewActivityPage() {
     if (parsed.suggestedContacts[0]) {
       form.setValue("partyId", parsed.suggestedContacts[0].id, { shouldDirty: true });
     }
-    toast.success("Parsed fields applied");
+    toast.success(uiCopy("parsed-fields-applied"));
   };
 
   const onSubmit = (values: ActivityFormValues) => {
@@ -460,25 +462,23 @@ export default function NewActivityPage() {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
-              Describe it
+              {uiCopy("describe-it")}
             </CardTitle>
-            <CardDescription>
-              Example: Call John tomorrow 10:00 about pricing, then send a follow-up email.
-            </CardDescription>
+            <CardDescription>{uiCopy("example-call-john-tomorrow")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 value={describeText}
                 onChange={(event) => setDescribeText(event.target.value)}
-                placeholder="Describe the activity in plain language"
+                placeholder={uiCopy("describe-the-activity-in")}
                 data-testid="crm-activity-describe-input"
               />
               <Button
                 variant="outline"
                 onClick={() => {
                   if (!describeText.trim()) {
-                    toast.error("Describe the activity first.");
+                    toast.error(uiCopy("describe-the-activity-first"));
                     return;
                   }
                   parseMutation.mutate(describeText.trim());
@@ -486,7 +486,7 @@ export default function NewActivityPage() {
                 disabled={!canUseAi || parseMutation.isPending}
                 data-testid="crm-activity-describe-parse"
               >
-                {parseMutation.isPending ? "Parsing..." : "Parse"}
+                {parseMutation.isPending ? uiCopy("parsing") : uiCopy("parse")}
               </Button>
               <Button
                 variant="secondary"
@@ -494,31 +494,43 @@ export default function NewActivityPage() {
                 disabled={!parseResult}
                 data-testid="crm-activity-describe-apply"
               >
-                Apply
+                {uiCopy("apply")}
               </Button>
             </div>
 
             {offline ? (
-              <p className="text-xs text-muted-foreground">AI requires connection.</p>
+              <p className="text-xs text-muted-foreground">{uiCopy("ai-requires-connection")}</p>
             ) : null}
 
             {parseResult ? (
               <div className="rounded-md border p-3 space-y-2 text-sm">
                 <div className="flex flex-wrap gap-2">
                   {parseResult.result.activityType ? (
-                    <Badge variant="secondary">Type: {parseResult.result.activityType}</Badge>
+                    <Badge variant="secondary">
+                      {uiCopy("type") + " "}
+                      {parseResult.result.activityType}
+                    </Badge>
                   ) : null}
                   <Badge variant="outline">
-                    Confidence: {Math.round(parseResult.result.confidence * 100)}%
+                    {uiCopy("confidence") + " "}
+                    {Math.round(parseResult.result.confidence * 100)}%
                   </Badge>
                 </div>
-                {parseResult.result.subject ? <p>Subject: {parseResult.result.subject}</p> : null}
+                {parseResult.result.subject ? (
+                  <p>
+                    {uiCopy("subject") + " "}
+                    {parseResult.result.subject}
+                  </p>
+                ) : null}
                 {parseResult.result.dueAt ? (
-                  <p>Due: {new Date(parseResult.result.dueAt).toLocaleString(i18n.language)}</p>
+                  <p>
+                    {uiCopy("due") + " "}
+                    {new Date(parseResult.result.dueAt).toLocaleString(i18n.language)}
+                  </p>
                 ) : null}
                 {parseResult.result.suggestedDeals.length ? (
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Suggested deals</p>
+                    <p className="text-xs text-muted-foreground">{uiCopy("suggested-deals")}</p>
                     <div className="flex flex-wrap gap-2">
                       {parseResult.result.suggestedDeals.map((item) => (
                         <Button
@@ -535,7 +547,7 @@ export default function NewActivityPage() {
                 ) : null}
                 {parseResult.result.suggestedContacts.length ? (
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Suggested contacts</p>
+                    <p className="text-xs text-muted-foreground">{uiCopy("suggested-contacts")}</p>
                     <div className="flex flex-wrap gap-2">
                       {parseResult.result.suggestedContacts.map((item) => (
                         <Button
@@ -573,7 +585,7 @@ export default function NewActivityPage() {
                       <div className="flex items-center justify-between gap-2">
                         <FormLabel>{t("crm.activity.subject")}</FormLabel>
                         <Button type="button" variant="outline" size="sm" onClick={generateSubject}>
-                          Generate subject
+                          {uiCopy("generate-subject")}
                         </Button>
                       </div>
                       <FormControl>
@@ -789,10 +801,12 @@ export default function NewActivityPage() {
                             </PopoverTrigger>
                             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                               <Command>
-                                <CommandInput placeholder="Search deals..." />
+                                <CommandInput placeholder={uiCopy("search-deals")} />
                                 <CommandList>
                                   <CommandEmpty>
-                                    {selectableDealsLoading ? "Loading deals..." : "No deals found"}
+                                    {selectableDealsLoading
+                                      ? uiCopy("loading-deals")
+                                      : uiCopy("no-deals-found")}
                                   </CommandEmpty>
                                   <CommandGroup>
                                     {field.value ? (
@@ -803,7 +817,7 @@ export default function NewActivityPage() {
                                           setDealComboboxOpen(false);
                                         }}
                                       >
-                                        Clear selection
+                                        {uiCopy("clear-selection")}
                                       </CommandItem>
                                     ) : null}
                                     {selectableDealOptions.map((deal) => (
@@ -849,7 +863,7 @@ export default function NewActivityPage() {
                         >
                           <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                             <MessageCircle className="mr-2 h-4 w-4" />
-                            Chat on WhatsApp
+                            {uiCopy("chat-on-whatsapp")}
                           </a>
                         </Button>
                       ) : null}
@@ -880,7 +894,7 @@ export default function NewActivityPage() {
                             onValueChange={field.onChange}
                             placeholder={t("crm.activity.partyIdPlaceholder")}
                             searchPlaceholder="Search contacts..."
-                            emptyText="No contacts found"
+                            emptyText={uiCopy("no-contacts-found")}
                             testId="crm-new-activity-party-picker"
                             optionTestIdPrefix="crm-new-activity-party-option"
                           />
@@ -894,10 +908,10 @@ export default function NewActivityPage() {
 
                 {aiEnabled && (dealSuggestions.length || contactSuggestions.length) ? (
                   <div className="md:col-span-2 space-y-2 rounded-md border p-3">
-                    <p className="text-sm font-medium">Smart linking suggestions</p>
+                    <p className="text-sm font-medium">{uiCopy("smart-linking-suggestions")}</p>
                     {dealSuggestions.length ? (
                       <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Deals</p>
+                        <p className="text-xs text-muted-foreground">{uiCopy("deals")}</p>
                         <div className="flex flex-wrap gap-2">
                           {dealSuggestions.map((dealSuggestion) => (
                             <Button
@@ -917,7 +931,7 @@ export default function NewActivityPage() {
                     ) : null}
                     {contactSuggestions.length ? (
                       <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Contacts</p>
+                        <p className="text-xs text-muted-foreground">{uiCopy("contacts")}</p>
                         <div className="flex flex-wrap gap-2">
                           {contactSuggestions.map((contactSuggestion) => (
                             <Button
@@ -957,7 +971,7 @@ export default function NewActivityPage() {
                             onClick={() => extractMutation.mutate(notesValue)}
                             disabled={!canUseAi || !notesValue.trim() || extractMutation.isPending}
                           >
-                            Summarize
+                            {uiCopy("summarize")}
                           </Button>
                           <Button
                             type="button"
@@ -966,7 +980,7 @@ export default function NewActivityPage() {
                             onClick={() => extractMutation.mutate(notesValue)}
                             disabled={!canUseAi || !notesValue.trim() || extractMutation.isPending}
                           >
-                            Extract action items
+                            {uiCopy("extract-action-items")}
                           </Button>
                           <Button
                             type="button"
@@ -983,7 +997,7 @@ export default function NewActivityPage() {
                               !canUseAi || !notesValue.trim() || createFollowUpsMutation.isPending
                             }
                           >
-                            Create follow-ups
+                            {uiCopy("create-follow-ups")}
                           </Button>
                         </div>
                       ) : null}
@@ -997,7 +1011,9 @@ export default function NewActivityPage() {
                       />
                     </FormControl>
                     {aiEnabled && offline ? (
-                      <p className="text-xs text-muted-foreground">AI requires connection.</p>
+                      <p className="text-xs text-muted-foreground">
+                        {uiCopy("ai-requires-connection")}
+                      </p>
                     ) : null}
                     <FormMessage />
                   </FormItem>
@@ -1009,14 +1025,15 @@ export default function NewActivityPage() {
                   className="space-y-3 rounded-md border p-3"
                   data-testid="crm-activity-ai-extract"
                 >
-                  <p className="text-sm font-medium">AI Notes Summary</p>
+                  <p className="text-sm font-medium">{uiCopy("ai-notes-summary")}</p>
                   <p className="text-sm">{extractResult.result.summary}</p>
                   <p className="text-xs text-muted-foreground">
-                    Confidence: {Math.round(extractResult.result.confidence * 100)}%
+                    {uiCopy("confidence") + " "}
+                    {Math.round(extractResult.result.confidence * 100)}%
                   </p>
                   {extractResult.result.actionItems.length ? (
                     <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground">Action items</p>
+                      <p className="text-xs text-muted-foreground">{uiCopy("action-items")}</p>
                       {extractResult.followUpToolCards.map((toolCard) => {
                         const key = toolCard.idempotencyKey ?? toolCard.payload.subject;
                         return (
@@ -1057,7 +1074,7 @@ export default function NewActivityPage() {
               <div>{t("crm.activity.tipTwo")}</div>
               <div>{t("crm.activity.tipThree")}</div>
               <Alert>
-                <AlertTitle>Quality checks (non-blocking)</AlertTitle>
+                <AlertTitle>{uiCopy("quality-checks-non-blocking")}</AlertTitle>
                 <AlertDescription className="space-y-1">
                   {qualityNudges.map((nudge) => (
                     <p key={nudge}>{nudge}</p>
@@ -1072,9 +1089,10 @@ export default function NewActivityPage() {
       <AlertDialog open={confirmCreateFollowUpsOpen} onOpenChange={setConfirmCreateFollowUpsOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Create follow-up tasks</AlertDialogTitle>
+            <AlertDialogTitle>{uiCopy("create-follow-up-tasks")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {selectedFollowUpCards.length} selected follow-up task(s) will be created.
+              {selectedFollowUpCards.length}
+              {" " + uiCopy("selected-follow-up-task")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1084,7 +1102,7 @@ export default function NewActivityPage() {
                 void createFollowUpsMutation.mutateAsync(selectedFollowUpCards);
               }}
             >
-              Create selected
+              {uiCopy("create-selected")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

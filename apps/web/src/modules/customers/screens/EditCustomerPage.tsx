@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -22,6 +23,7 @@ import CustomerLoyaltySection from "../components/CustomerLoyaltySection";
 import CustomerPackagesSection from "../components/CustomerPackagesSection";
 
 export default function EditCustomerPage() {
+  const uiCopy = useUiCopy("ui.customers-editcustomerpage");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -59,12 +61,12 @@ export default function EditCustomerPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["customers"] });
       void queryClient.invalidateQueries({ queryKey: ["customers", customerId] });
-      toast.success("Customer updated successfully!");
+      toast.success(uiCopy("customer-updated-successfully"));
       navigate("/customers");
     },
     onError: (error) => {
       console.error("Error updating customer:", error);
-      toast.error("Failed to update customer. Please try again.");
+      toast.error(uiCopy("failed-to-update-customer"));
     },
   });
 
@@ -75,7 +77,7 @@ export default function EditCustomerPage() {
   if (isLoading) {
     return (
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-center">Loading customer...</div>
+        <div className="text-center">{uiCopy("loading-customer")}</div>
       </div>
     );
   }
@@ -83,7 +85,7 @@ export default function EditCustomerPage() {
   if (!customer) {
     return (
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-center">Customer not found</div>
+        <div className="text-center">{uiCopy("customer-not-found")}</div>
       </div>
     );
   }
@@ -95,18 +97,18 @@ export default function EditCustomerPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/customers")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Edit Customer</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("edit-customer")}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/customers/birthdays")}>
-            Birthday reminders
+            {uiCopy("birthday-reminders")}
           </Button>
           <Button
             variant="outline"
             onClick={() => navigate("/customers")}
             disabled={updateCustomerMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
@@ -114,7 +116,7 @@ export default function EditCustomerPage() {
             disabled={updateCustomerMutation.isPending}
             data-testid="submit-customer-button"
           >
-            {updateCustomerMutation.isPending ? "Saving..." : "Save Changes"}
+            {updateCustomerMutation.isPending ? uiCopy("saving") : uiCopy("save-changes")}
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { resolveCorelyLocale } from "@corely/contracts";
 import { usePeopleRoute } from "./people-runtime";
 import { PeopleLink as Link } from "./people-runtime";
 import { useSearchParams } from "react-router-dom";
@@ -65,7 +66,7 @@ export function PeopleDirectoryPage() {
         <>
           {can("self.read") && (
             <Link className="underline" to="/people/me">
-              {staffJourneyCopy[locale === "de" || locale === "vi" ? locale : "en"].title}
+              {staffJourneyCopy[resolveCorelyLocale(locale)].title}
             </Link>
           )}
           <Input

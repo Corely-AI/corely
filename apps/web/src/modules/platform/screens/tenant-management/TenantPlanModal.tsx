@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,6 +51,7 @@ export function TenantPlanModal({
   onSave,
   isSaving,
 }: TenantPlanModalProps) {
+  const uiCopy = useUiCopy("ui.platform-tenant-management-tenantplanmodal");
   const { t } = useTranslation();
 
   const form = useForm<PlanSettingsFormValues>({
@@ -95,9 +97,10 @@ export function TenantPlanModal({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]" data-testid="tenant-plan-modal">
         <DialogHeader>
-          <DialogTitle>Manage Subscription Plan</DialogTitle>
+          <DialogTitle>{uiCopy("manage-subscription-plan")}</DialogTitle>
           <DialogDescription>
-            Update the active plan and billing details for {tenant.name}.
+            {uiCopy("update-the-active-plan") + " "}
+            {tenant.name}.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -107,7 +110,7 @@ export function TenantPlanModal({
               name="plan"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Plan</FormLabel>
+                  <FormLabel>{uiCopy("plan")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value ?? undefined}
@@ -115,21 +118,21 @@ export function TenantPlanModal({
                   >
                     <FormControl>
                       <SelectTrigger data-testid="plan-select-trigger">
-                        <SelectValue placeholder="Select a plan" />
+                        <SelectValue placeholder={uiCopy("select-a-plan")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="free" data-testid="plan-option-free">
-                        Free
+                        {uiCopy("free")}
                       </SelectItem>
                       <SelectItem value="starter" data-testid="plan-option-starter">
-                        Starter
+                        {uiCopy("starter")}
                       </SelectItem>
                       <SelectItem value="pro" data-testid="plan-option-pro">
-                        Pro
+                        {uiCopy("pro")}
                       </SelectItem>
                       <SelectItem value="multi_location" data-testid="plan-option-multi_location">
-                        Multi Location
+                        {uiCopy("multi-location")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -143,7 +146,7 @@ export function TenantPlanModal({
               name="planStatus"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Plan Status</FormLabel>
+                  <FormLabel>{uiCopy("plan-status")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value ?? undefined}
@@ -151,18 +154,18 @@ export function TenantPlanModal({
                   >
                     <FormControl>
                       <SelectTrigger data-testid="plan-status-select-trigger">
-                        <SelectValue placeholder="Select plan status" />
+                        <SelectValue placeholder={uiCopy("select-plan-status")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="active" data-testid="plan-status-option-active">
-                        Active
+                        {uiCopy("active")}
                       </SelectItem>
                       <SelectItem value="trial" data-testid="plan-status-option-trial">
-                        Trial
+                        {uiCopy("trial")}
                       </SelectItem>
                       <SelectItem value="inactive" data-testid="plan-status-option-inactive">
-                        Inactive
+                        {uiCopy("inactive")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -176,7 +179,7 @@ export function TenantPlanModal({
               name="billingMethod"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Billing Method</FormLabel>
+                  <FormLabel>{uiCopy("billing-method")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value ?? undefined}
@@ -184,7 +187,7 @@ export function TenantPlanModal({
                   >
                     <FormControl>
                       <SelectTrigger data-testid="billing-method-select-trigger">
-                        <SelectValue placeholder="Select billing method" />
+                        <SelectValue placeholder={uiCopy("select-billing-method")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -195,13 +198,13 @@ export function TenantPlanModal({
                         value="bank_transfer"
                         data-testid="billing-method-option-bank_transfer"
                       >
-                        Bank Transfer
+                        {uiCopy("bank-transfer")}
                       </SelectItem>
                       <SelectItem value="cash" data-testid="billing-method-option-cash">
-                        Cash
+                        {uiCopy("cash")}
                       </SelectItem>
                       <SelectItem value="manual" data-testid="billing-method-option-manual">
-                        Manual/Other
+                        {uiCopy("manual-other")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -215,10 +218,10 @@ export function TenantPlanModal({
               name="billingNote"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Billing Note (Reference, Bank details, etc.)</FormLabel>
+                  <FormLabel>{uiCopy("billing-note-reference-bank")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g. Paid in cash, reference #12345"
+                      placeholder={uiCopy("e-g-paid-in")}
                       className="resize-none"
                       {...field}
                       value={field.value ?? ""}

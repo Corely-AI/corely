@@ -1,0 +1,86 @@
+{
+  "portal": {
+    "title": "Portal",
+    "dashboard": {
+      "title": "Kontrol Paneli",
+      "welcome": "Hoş geldiniz",
+      "students": {
+        "title": "Öğrenciler",
+        "select": "Öğrenci Seç",
+        "linked": "Bağlantılı Öğrenciler",
+        "viewing": "GÖRÜNTÜLEME",
+        "student": "ÖĞRENCİ",
+        "none": "Bağlı öğrenci yok"
+      },
+      "sessions": {
+        "title": "Sonraki Oturumlar",
+        "subtitle": "Yaklaşan ders programınızı ve çevrimiçi oturumlara katılma bağlantılarını görüntüleyin.",
+        "open": "Programı Aç"
+      },
+      "materials": {
+        "title": "Malzemeler",
+        "subtitle": "Tüm dokümanlar sizinle ve öğrencilerinizle paylaşılmaktadır.",
+        "items_one": "{{count}} ÜRÜN",
+        "items_other": "{{count}} ÜRÜNLER",
+        "items": "ÜRÜNLER",
+        "added": "Eklendi",
+        "download_failed": "İndirme URL'si alınamadı",
+        "personal": "KİŞİSEL",
+        "class_group": "SINIF GRUP",
+        "getFile": "Dosyayı Al",
+        "empty": {
+          "title": "Henüz burada hiçbir şey yok",
+          "subtitle": "Öğretmeniniz bunları yükledikten sonra öğrenme materyalleriniz burada görünecek."
+        }
+      },
+      "invoices": {
+        "title": "Faturalar",
+        "subtitle": "Seçilen öğrenciye ait faturaları indirin.",
+        "items_one": "{{count}} FATURA",
+        "items_other": "{{count}} FATURALAR",
+        "items": "FATURALAR",
+        "invoice": "Fatura",
+        "issued": "Yayınlandı",
+        "due": "Vadesi gelmiş",
+        "amount_due": "Ödenecek Tutar",
+        "download": "Faturayı İndir",
+        "download_failed": "Fatura indirme bağlantısı alınamadı",
+        "empty": {
+          "title": "Henüz fatura yok",
+          "subtitle": "Bu öğrencinin faturaları düzenlendikten sonra burada görünecek."
+        }
+      }
+    },
+    "login": {
+      "title": "Öğrenci ve Veli Portalı",
+      "email_prompt": "Giriş kodunu almak için e-postanızı girin",
+      "code_sent": "{{email}}'ye gönderilen 6 haneli kodu girin",
+      "email_label": "E-posta",
+      "email_placeholder": "isim@example.com",
+      "send_code": "Giriş Kodunu Gönder",
+      "code_label": "Giriş Kodu",
+      "code_placeholder": "000000",
+      "change_email": "E-postayı değiştir",
+      "resend_code": "Kodu yeniden gönder",
+      "resend_in": "{{count}}'lerde yeniden gönder",
+      "verify_sign_in": "Doğrula ve Oturum Aç",
+      "errors": {
+        "send_failed": "Kod gönderilemedi",
+        "verify_failed": "Geçersiz veya süresi dolmuş kod"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "Sayfa bulunamadı",
+    "returnHome": "Eve Dönüş"
+  },
+  "common": {
+    "logout": "Oturumu kapat",
+    "loading": "Yükleniyor...",
+    "languages": {
+      "en": "TR",
+      "vi": "VI",
+      "de": "Almanya"
+    }
+  }
+}

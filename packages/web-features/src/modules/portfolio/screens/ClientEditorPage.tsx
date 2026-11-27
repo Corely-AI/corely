@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -33,6 +34,7 @@ const typeOptions: { label: string; value: PortfolioClientType }[] = [
 ];
 
 export default function ClientEditorPage() {
+  const uiCopy = useUiCopy("ui.portfolio-clienteditorpage");
   const { id, showcaseId: routeShowcaseId } = useParams<{ id?: string; showcaseId?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -109,30 +111,32 @@ export default function ClientEditorPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">{isEdit ? "Edit client" : "Create client"}</h1>
+          <h1 className="text-h1 text-foreground">
+            {isEdit ? uiCopy("edit-client") : uiCopy("create-client")}
+          </h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : "Save"}
+            {saveMutation.isPending ? uiCopy("saving") : uiCopy("save")}
           </Button>
         </div>
       </div>
 
       {isLoading && isEdit ? (
-        <div className="text-sm text-muted-foreground">Loading client...</div>
+        <div className="text-sm text-muted-foreground">{uiCopy("loading-client")}</div>
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
             <CardContent className="p-8 space-y-6">
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">{uiCopy("name")}</Label>
                 <Input
                   id="name"
                   value={form.watch("name")}
@@ -151,7 +155,7 @@ export default function ClientEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="slug">Slug</Label>
+                <Label htmlFor="slug">{uiCopy("slug")}</Label>
                 <Input
                   id="slug"
                   value={form.watch("slug")}
@@ -167,7 +171,7 @@ export default function ClientEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="clientType">Client type</Label>
+                <Label htmlFor="clientType">{uiCopy("client-type")}</Label>
                 <select
                   id="clientType"
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -190,11 +194,11 @@ export default function ClientEditorPage() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="locationText">Location</Label>
+                <Label htmlFor="locationText">{uiCopy("location")}</Label>
                 <Input
                   id="locationText"
                   {...form.register("locationText")}
-                  placeholder="Remote / San Francisco"
+                  placeholder={uiCopy("remote-san-francisco")}
                 />
                 {form.formState.errors.locationText && (
                   <p className="text-sm text-destructive mt-1">
@@ -204,7 +208,7 @@ export default function ClientEditorPage() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="websiteUrl">Website</Label>
+                  <Label htmlFor="websiteUrl">{uiCopy("website")}</Label>
                   <Input
                     id="websiteUrl"
                     {...form.register("websiteUrl")}
@@ -212,7 +216,7 @@ export default function ClientEditorPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="logoImageUrl">Logo URL</Label>
+                  <Label htmlFor="logoImageUrl">{uiCopy("logo-url")}</Label>
                   <Input
                     id="logoImageUrl"
                     {...form.register("logoImageUrl")}
@@ -221,20 +225,20 @@ export default function ClientEditorPage() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="summary">Summary</Label>
+                <Label htmlFor="summary">{uiCopy("summary")}</Label>
                 <Textarea id="summary" rows={3} {...form.register("summary")} />
               </div>
               <div>
-                <Label htmlFor="testimonialQuote">Testimonial quote</Label>
+                <Label htmlFor="testimonialQuote">{uiCopy("testimonial-quote")}</Label>
                 <Textarea id="testimonialQuote" rows={3} {...form.register("testimonialQuote")} />
               </div>
               <div>
-                <Label htmlFor="testimonialAuthor">Testimonial author</Label>
+                <Label htmlFor="testimonialAuthor">{uiCopy("testimonial-author")}</Label>
                 <Input id="testimonialAuthor" {...form.register("testimonialAuthor")} />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="sortOrder">Sort order</Label>
+                  <Label htmlFor="sortOrder">{uiCopy("sort-order")}</Label>
                   <Input id="sortOrder" type="number" {...form.register("sortOrder")} />
                 </div>
                 <div className="flex items-center gap-2 pt-7">
@@ -248,7 +252,7 @@ export default function ClientEditorPage() {
                       />
                     )}
                   />
-                  <Label htmlFor="featured">Featured client</Label>
+                  <Label htmlFor="featured">{uiCopy("featured-client")}</Label>
                 </div>
               </div>
             </CardContent>

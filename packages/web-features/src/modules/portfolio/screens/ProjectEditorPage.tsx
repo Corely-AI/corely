@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -40,6 +41,7 @@ const typeOptions: { label: string; value: PortfolioProjectType }[] = [
 ];
 
 export default function ProjectEditorPage() {
+  const uiCopy = useUiCopy("ui.portfolio-projecteditorpage");
   const { id, showcaseId: routeShowcaseId } = useParams<{ id?: string; showcaseId?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -151,35 +153,38 @@ export default function ProjectEditorPage() {
           </Button>
           <div>
             <h1 className="text-h1 text-foreground">
-              {isEdit ? "Edit project" : "Create project"}
+              {isEdit ? uiCopy("edit-project") : uiCopy("create-project")}
             </h1>
             {showcaseLabel ? (
-              <p className="text-sm text-muted-foreground">Showcase: {showcaseLabel}</p>
+              <p className="text-sm text-muted-foreground">
+                {uiCopy("showcase") + " "}
+                {showcaseLabel}
+              </p>
             ) : null}
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : "Save"}
+            {saveMutation.isPending ? uiCopy("saving") : uiCopy("save")}
           </Button>
         </div>
       </div>
 
       {isLoading && isEdit ? (
-        <div className="text-sm text-muted-foreground">Loading project...</div>
+        <div className="text-sm text-muted-foreground">{uiCopy("loading-project")}</div>
       ) : (
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
             <CardContent className="p-8 space-y-6">
               <div>
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">{uiCopy("title")}</Label>
                 <Input
                   id="title"
                   value={form.watch("title")}
@@ -190,7 +195,7 @@ export default function ProjectEditorPage() {
                       form.setValue("slug", slugify(value), { shouldValidate: true });
                     }
                   }}
-                  placeholder="Quik.day"
+                  placeholder={uiCopy("quik-day")}
                 />
                 {form.formState.errors.title && (
                   <p className="text-sm text-destructive mt-1">
@@ -199,7 +204,7 @@ export default function ProjectEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="slug">Slug</Label>
+                <Label htmlFor="slug">{uiCopy("slug")}</Label>
                 <Input
                   id="slug"
                   value={form.watch("slug")}
@@ -216,7 +221,7 @@ export default function ProjectEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="summary">Summary</Label>
+                <Label htmlFor="summary">{uiCopy("summary")}</Label>
                 <Textarea id="summary" rows={3} {...form.register("summary")} />
                 {form.formState.errors.summary && (
                   <p className="text-sm text-destructive mt-1">
@@ -225,7 +230,7 @@ export default function ProjectEditorPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="content">Content</Label>
+                <Label htmlFor="content">{uiCopy("content")}</Label>
                 <Textarea id="content" rows={6} {...form.register("content")} />
                 {form.formState.errors.content && (
                   <p className="text-sm text-destructive mt-1">
@@ -235,7 +240,7 @@ export default function ProjectEditorPage() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="type">Type</Label>
+                  <Label htmlFor="type">{uiCopy("type")}</Label>
                   <select
                     id="type"
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -254,7 +259,7 @@ export default function ProjectEditorPage() {
                   </select>
                 </div>
                 <div>
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="status">{uiCopy("status")}</Label>
                   <select
                     id="status"
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -275,11 +280,11 @@ export default function ProjectEditorPage() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="sortOrder">Sort order</Label>
+                  <Label htmlFor="sortOrder">{uiCopy("sort-order")}</Label>
                   <Input id="sortOrder" type="number" {...form.register("sortOrder")} />
                 </div>
                 <div>
-                  <Label htmlFor="coverImageUrl">Cover image URL</Label>
+                  <Label htmlFor="coverImageUrl">{uiCopy("cover-image-url")}</Label>
                   <Input
                     id="coverImageUrl"
                     {...form.register("coverImageUrl")}
@@ -288,33 +293,33 @@ export default function ProjectEditorPage() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="techStack">Tech stack (comma separated)</Label>
+                <Label htmlFor="techStack">{uiCopy("tech-stack-comma-separated")}</Label>
                 <Input
                   id="techStack"
                   {...form.register("techStack")}
-                  placeholder="React, Node, Prisma"
+                  placeholder={uiCopy("react-node-prisma")}
                 />
               </div>
               <div>
-                <Label htmlFor="links">Links (JSON)</Label>
+                <Label htmlFor="links">{uiCopy("links-json")}</Label>
                 <Textarea
                   id="links"
                   rows={3}
                   {...form.register("links")}
-                  placeholder='{"demo":"https://..."}'
+                  placeholder={uiCopy("demo-https")}
                 />
               </div>
               <div>
-                <Label htmlFor="metrics">Metrics (JSON)</Label>
+                <Label htmlFor="metrics">{uiCopy("metrics-json")}</Label>
                 <Textarea
                   id="metrics"
                   rows={3}
                   {...form.register("metrics")}
-                  placeholder='{"teamSize":4}'
+                  placeholder={uiCopy("teamsize-4")}
                 />
               </div>
               <div>
-                <Label htmlFor="clientIds">Clients</Label>
+                <Label htmlFor="clientIds">{uiCopy("clients")}</Label>
                 <Controller
                   control={form.control}
                   name="clientIds"
@@ -341,7 +346,7 @@ export default function ProjectEditorPage() {
                 />
                 {clientOptions.length === 0 ? (
                   <p className="text-xs text-muted-foreground mt-1">
-                    No clients available. Create clients first.
+                    {uiCopy("no-clients-available-create")}
                   </p>
                 ) : null}
               </div>
@@ -356,7 +361,7 @@ export default function ProjectEditorPage() {
                     />
                   )}
                 />
-                <Label htmlFor="featured">Featured project</Label>
+                <Label htmlFor="featured">{uiCopy("featured-project")}</Label>
               </div>
             </CardContent>
           </Card>

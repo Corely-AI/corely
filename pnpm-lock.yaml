@@ -1342,6 +1342,9 @@ importers:
 
   packages/email-templates:
     dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@react-email/components':
         specifier: ^0.0.25
         version: 0.0.25(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

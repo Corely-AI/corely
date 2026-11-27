@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
@@ -14,6 +15,7 @@ interface ContactDetailsDialogProps {
 }
 
 export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialogProps) {
+  const uiCopy = useUiCopy("ui.settings-workspace-profile-contactdetailsdialog");
   const { activeWorkspace, refresh } = useWorkspace();
   const queryClient = useQueryClient();
 
@@ -101,7 +103,7 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
     onSuccess: async () => {
       await refresh();
       void queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-      toast.success("Contact details updated successfully");
+      toast.success(uiCopy("contact-details-updated-successfully"));
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -139,34 +141,38 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold">Your contact details</DialogTitle>
+          <DialogTitle className="text-2xl font-semibold">
+            {uiCopy("your-contact-details")}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Phone */}
           <div className="space-y-2">
             <Label htmlFor="phone" className="text-sm font-medium">
-              Phone <span className="text-muted-foreground font-normal">(Optional)</span>
+              {uiCopy("phone") + " "}
+              <span className="text-muted-foreground font-normal">{uiCopy("optional")}</span>
             </Label>
             <Input
               id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="e.g. 015775146912"
+              placeholder={uiCopy("e-g-015775146912")}
             />
           </div>
 
           {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
-              Email <span className="text-muted-foreground font-normal">(Optional)</span>
+              {uiCopy("email") + " "}
+              <span className="text-muted-foreground font-normal">{uiCopy("optional")}</span>
             </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
-              placeholder="e.g. foo@company.com"
+              placeholder={uiCopy("e-g-foo-company")}
               className={emailError ? "border-destructive" : ""}
             />
             {emailError && <p className="text-sm text-destructive">{emailError}</p>}
@@ -175,14 +181,15 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
           {/* Website */}
           <div className="space-y-2">
             <Label htmlFor="website" className="text-sm font-medium">
-              Website <span className="text-muted-foreground font-normal">(Optional)</span>
+              {uiCopy("website") + " "}
+              <span className="text-muted-foreground font-normal">{uiCopy("optional")}</span>
             </Label>
             <Input
               id="website"
               type="url"
               value={website}
               onChange={(e) => handleWebsiteChange(e.target.value)}
-              placeholder="e.g. www.company.com"
+              placeholder={uiCopy("e-g-www-company")}
               className={websiteError ? "border-destructive" : ""}
             />
             {websiteError && <p className="text-sm text-destructive">{websiteError}</p>}
@@ -196,7 +203,7 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
             onClick={() => onOpenChange(false)}
             disabled={updateMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             type="button"
@@ -204,7 +211,7 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
             disabled={!isFormValid || updateMutation.isPending}
             className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
-            {updateMutation.isPending ? "Saving..." : "Save"}
+            {updateMutation.isPending ? uiCopy("saving") : uiCopy("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

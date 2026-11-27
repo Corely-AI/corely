@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +18,7 @@ import {
 import { toast } from "sonner"; // Use sonner consistently
 
 export default function NewLeadPage() {
+  const uiCopy = useUiCopy("ui.crm-newleadpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
@@ -32,12 +34,12 @@ export default function NewLeadPage() {
   const createMutation = useMutation({
     mutationFn: (data: any) => crmApi.createLead(data),
     onSuccess: () => {
-      toast.success("Lead created successfully");
+      toast.success(uiCopy("lead-created-successfully"));
       void queryClient.invalidateQueries({ queryKey: ["leads"] });
       navigate("/crm/leads");
     },
     onError: (error) => {
-      toast.error("Failed to create lead");
+      toast.error(uiCopy("failed-to-create-lead"));
       console.error(error);
     },
   });
@@ -58,20 +60,20 @@ export default function NewLeadPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-h2" data-testid="crm-lead-form-header">
-          New Lead
+          {uiCopy("new-lead")}
         </h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Lead Details</CardTitle>
-          <CardDescription>Enter the information for the new potential customer.</CardDescription>
+          <CardTitle>{uiCopy("lead-details")}</CardTitle>
+          <CardDescription>{uiCopy("enter-the-information-for")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4" data-testid="crm-lead-form">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">{uiCopy("first-name")}</Label>
                 <Input
                   id="firstName"
                   name="firstName"
@@ -82,7 +84,7 @@ export default function NewLeadPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">{uiCopy("last-name")}</Label>
                 <Input
                   id="lastName"
                   name="lastName"
@@ -95,7 +97,7 @@ export default function NewLeadPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name (Optional)</Label>
+              <Label htmlFor="companyName">{uiCopy("company-name-optional")}</Label>
               <Input
                 id="companyName"
                 name="companyName"
@@ -107,7 +109,7 @@ export default function NewLeadPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{uiCopy("email")}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -118,7 +120,7 @@ export default function NewLeadPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">{uiCopy("phone")}</Label>
                 <Input
                   id="phone"
                   name="phone"
@@ -130,7 +132,7 @@ export default function NewLeadPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{uiCopy("notes")}</Label>
               <Textarea
                 id="notes"
                 name="notes"
@@ -143,7 +145,7 @@ export default function NewLeadPage() {
 
             <div className="flex justify-end pt-4">
               <Button type="submit" disabled={createMutation.isPending} data-testid="crm-lead-save">
-                {createMutation.isPending ? "Creating..." : "Create Lead"}
+                {createMutation.isPending ? uiCopy("creating") : uiCopy("create-lead")}
               </Button>
             </div>
           </form>

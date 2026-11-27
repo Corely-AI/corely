@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -26,6 +27,7 @@ import {
 } from "../hooks/useMenu";
 
 export function MenuCustomizerPage() {
+  const uiCopy = useUiCopy("ui.platform-menucustomizerpage");
   const scope = "web"; // Can be made dynamic with tabs for web/pos
   const { data: menu, isLoading, error } = useMenu(scope);
   const updateOverrides = useUpdateMenuOverrides();
@@ -153,7 +155,7 @@ export function MenuCustomizerPage() {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>Failed to load menu. Please try again.</AlertDescription>
+        <AlertDescription>{uiCopy("failed-to-load-menu")}</AlertDescription>
       </Alert>
     );
   }
@@ -166,22 +168,20 @@ export function MenuCustomizerPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-h1 text-foreground">Menu Customization</h1>
-          <p className="text-muted-foreground mt-2">
-            Customize your navigation menu by hiding, reordering, renaming, or pinning items.
-          </p>
+          <h1 className="text-h1 text-foreground">{uiCopy("menu-customization")}</h1>
+          <p className="text-muted-foreground mt-2">{uiCopy("customize-your-navigation-menu")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleReset} disabled={resetOverrides.isPending}>
             {resetOverrides.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Resetting...
+                {uiCopy("resetting")}
               </>
             ) : (
               <>
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Reset to Defaults
+                {uiCopy("reset-to-defaults")}
               </>
             )}
           </Button>
@@ -189,12 +189,12 @@ export function MenuCustomizerPage() {
             {updateOverrides.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
+                {uiCopy("saving")}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                Save Changes
+                {uiCopy("save-changes")}
               </>
             )}
           </Button>
@@ -203,16 +203,14 @@ export function MenuCustomizerPage() {
 
       {updateOverrides.isSuccess && (
         <Alert>
-          <AlertDescription>Menu customizations saved successfully!</AlertDescription>
+          <AlertDescription>{uiCopy("menu-customizations-saved-successfully")}</AlertDescription>
         </Alert>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Menu Items</CardTitle>
-          <CardDescription>
-            Manage visibility, order, labels, and pinned status of menu items.
-          </CardDescription>
+          <CardTitle>{uiCopy("menu-items")}</CardTitle>
+          <CardDescription>{uiCopy("manage-visibility-order-labels")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -284,10 +282,10 @@ export function MenuCustomizerPage() {
                           autoFocus
                         />
                         <Button size="sm" onClick={() => handleSaveEdit(item.id)}>
-                          Save
+                          {uiCopy("save")}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={handleCancelEdit}>
-                          Cancel
+                          {uiCopy("cancel")}
                         </Button>
                       </div>
                     ) : (
@@ -298,7 +296,7 @@ export function MenuCustomizerPage() {
                         </Badge>
                         {isPinned && (
                           <Badge variant="secondary" className="text-xs">
-                            Pinned
+                            {uiCopy("pinned")}
                           </Badge>
                         )}
                       </div>
@@ -311,7 +309,7 @@ export function MenuCustomizerPage() {
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => handleStartEdit(item)}
-                      title="Rename item"
+                      title={uiCopy("rename-item")}
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>

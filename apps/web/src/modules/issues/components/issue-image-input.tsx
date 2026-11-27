@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import type { ChangeEvent, RefCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Camera, RefreshCw } from "lucide-react";
@@ -33,6 +34,7 @@ export function IssueImageInput({
   toggleCamera: () => void;
   capturePhoto: () => void;
 }) {
+  const uiCopy = useUiCopy("ui.issues-issue-image-input");
   const { t } = useTranslation();
   return (
     <div className="space-y-3">
@@ -108,7 +110,7 @@ export function IssueImageInput({
             >
               <img
                 src={image.previewUrl}
-                alt="Preview"
+                alt={uiCopy("preview")}
                 className={`w-full h-full object-cover transition-opacity ${image.isUploading ? "opacity-50" : "opacity-100"}`}
                 onError={(e) => {
                   if (image.isUploading) {

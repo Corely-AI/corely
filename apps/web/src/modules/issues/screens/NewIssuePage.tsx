@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -34,6 +35,7 @@ type UploadedAttachment = AttachmentMetadata & {
 };
 
 export default function NewIssuePage() {
+  const uiCopy = useUiCopy("ui.issues-newissuepage");
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -130,7 +132,7 @@ export default function NewIssuePage() {
     },
     onSuccess: async (issue) => {
       await queryClient.invalidateQueries({ queryKey: issueKeys.list() });
-      toast.success("Issue created");
+      toast.success(uiCopy("issue-created"));
       navigate(`/issues/${issue.id}`);
     },
     onError: (error) => {

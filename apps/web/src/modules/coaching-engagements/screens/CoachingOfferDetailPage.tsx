@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ const getLocalizedValue = (
 };
 
 export default function CoachingOfferDetailPage() {
+  const uiCopy = useUiCopy("ui.coaching-engagements-coachingofferdetailpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { offerId } = useParams<{ offerId: string }>();
@@ -43,7 +45,7 @@ export default function CoachingOfferDetailPage() {
       await coachingApi.archiveOffer(offerId);
     },
     onSuccess: async () => {
-      toast.success("Offer archived");
+      toast.success(uiCopy("offer-archived"));
       await queryClient.invalidateQueries({ queryKey: coachingOfferKeys.all() });
       navigate("/coaching/offers");
     },
@@ -57,7 +59,9 @@ export default function CoachingOfferDetailPage() {
     return (
       <div className="p-6 lg:p-8">
         <Card>
-          <CardContent className="p-6 text-sm text-destructive">Missing offer id.</CardContent>
+          <CardContent className="p-6 text-sm text-destructive">
+            {uiCopy("missing-offer-id")}
+          </CardContent>
         </Card>
       </div>
     );
@@ -71,9 +75,9 @@ export default function CoachingOfferDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Coaching offer</h1>
+            <h1 className="text-h1 text-foreground">{uiCopy("coaching-offer")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Review pricing, booking rules, and saved templates.
+              {uiCopy("review-pricing-booking-rules")}
             </p>
           </div>
         </div>
@@ -82,18 +86,18 @@ export default function CoachingOfferDetailPage() {
           <Button asChild variant="outline">
             <Link to={`/coaching/offers/${offerId}/edit`}>
               <Pencil className="h-4 w-4" />
-              Edit
+              {uiCopy("edit")}
             </Link>
           </Button>
           <ConfirmDeleteDialog
             trigger={
               <Button variant="destructive" disabled={archiveMutation.isPending}>
                 <Trash2 className="h-4 w-4" />
-                Archive
+                {uiCopy("archive")}
               </Button>
             }
-            title="Archive offer"
-            description="This offer will be hidden from the active offers list."
+            title={uiCopy("archive-offer")}
+            description={uiCopy("this-offer-will-be")}
             isLoading={archiveMutation.isPending}
             onConfirm={async () => {
               await archiveMutation.mutateAsync();
@@ -104,16 +108,18 @@ export default function CoachingOfferDetailPage() {
 
       {offerQuery.isLoading ? (
         <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">Loading offer...</CardContent>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            {uiCopy("loading-offer")}
+          </CardContent>
         </Card>
       ) : null}
 
       {offerQuery.isError ? (
         <Card>
           <CardContent className="p-6 flex items-center justify-between gap-3">
-            <div className="text-sm text-destructive">Failed to load offer.</div>
+            <div className="text-sm text-destructive">{uiCopy("failed-to-load-offer")}</div>
             <Button variant="outline" size="sm" onClick={() => void offerQuery.refetch()}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </CardContent>
         </Card>
@@ -124,18 +130,18 @@ export default function CoachingOfferDetailPage() {
           <CardContent className="p-6 space-y-5">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <Label>Title</Label>
+                <Label>{uiCopy("title")}</Label>
                 <p className="text-base mt-1">
                   {getLocalizedValue(offerQuery.data.title, offerQuery.data.localeDefault)}
                 </p>
               </div>
               <Badge variant={offerQuery.data.archivedAt ? "secondary" : "outline"}>
-                {offerQuery.data.archivedAt ? "Archived" : "Active"}
+                {offerQuery.data.archivedAt ? uiCopy("archived") : uiCopy("active")}
               </Badge>
             </div>
 
             <div>
-              <Label>Description</Label>
+              <Label>{uiCopy("description")}</Label>
               <p className="text-sm text-muted-foreground mt-1">
                 {getLocalizedValue(offerQuery.data.description, offerQuery.data.localeDefault)}
               </p>
@@ -143,46 +149,61 @@ export default function CoachingOfferDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <Label>Price</Label>
+                <Label>{uiCopy("price")}</Label>
                 <p className="mt-1">
                   {offerQuery.data.priceCents} {offerQuery.data.currency}
                 </p>
               </div>
               <div>
-                <Label>Duration</Label>
-                <p className="mt-1">{offerQuery.data.sessionDurationMinutes} minutes</p>
+                <Label>{uiCopy("duration")}</Label>
+                <p className="mt-1">
+                  {offerQuery.data.sessionDurationMinutes}
+                  {" " + uiCopy("minutes")}
+                </p>
               </div>
               <div>
-                <Label>Meeting type</Label>
+                <Label>{uiCopy("meeting-type")}</Label>
                 <p className="mt-1">{offerQuery.data.meetingType}</p>
               </div>
               <div>
-                <Label>Timezone</Label>
+                <Label>{uiCopy("timezone")}</Label>
                 <p className="mt-1">{offerQuery.data.availabilityRule.timezone}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <Label>Min notice</Label>
-                <p className="mt-1">{offerQuery.data.bookingRules.minNoticeHours} hours</p>
+                <Label>{uiCopy("min-notice")}</Label>
+                <p className="mt-1">
+                  {offerQuery.data.bookingRules.minNoticeHours}
+                  {" " + uiCopy("hours")}
+                </p>
               </div>
               <div>
-                <Label>Max advance</Label>
-                <p className="mt-1">{offerQuery.data.bookingRules.maxAdvanceDays} days</p>
+                <Label>{uiCopy("max-advance")}</Label>
+                <p className="mt-1">
+                  {offerQuery.data.bookingRules.maxAdvanceDays}
+                  {" " + uiCopy("days")}
+                </p>
               </div>
               <div>
-                <Label>Buffer before</Label>
-                <p className="mt-1">{offerQuery.data.bookingRules.bufferBeforeMinutes} minutes</p>
+                <Label>{uiCopy("buffer-before")}</Label>
+                <p className="mt-1">
+                  {offerQuery.data.bookingRules.bufferBeforeMinutes}
+                  {" " + uiCopy("minutes")}
+                </p>
               </div>
               <div>
-                <Label>Buffer after</Label>
-                <p className="mt-1">{offerQuery.data.bookingRules.bufferAfterMinutes} minutes</p>
+                <Label>{uiCopy("buffer-after")}</Label>
+                <p className="mt-1">
+                  {offerQuery.data.bookingRules.bufferAfterMinutes}
+                  {" " + uiCopy("minutes")}
+                </p>
               </div>
             </div>
 
             <div>
-              <Label>Weekly availability</Label>
+              <Label>{uiCopy("weekly-availability")}</Label>
               <div className="mt-2 space-y-2">
                 {offerQuery.data.availabilityRule.weeklySlots.length ? (
                   offerQuery.data.availabilityRule.weeklySlots.map((slot) => (
@@ -190,26 +211,27 @@ export default function CoachingOfferDetailPage() {
                       key={`${slot.dayOfWeek}-${slot.startTime}`}
                       className="text-sm text-muted-foreground"
                     >
-                      Day {slot.dayOfWeek}: {slot.startTime} - {slot.endTime}
+                      {uiCopy("day") + " "}
+                      {slot.dayOfWeek}: {slot.startTime} - {slot.endTime}
                     </div>
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    No weekly availability configured.
+                    {uiCopy("no-weekly-availability-configured")}
                   </p>
                 )}
               </div>
             </div>
 
             <div>
-              <Label>Contract template</Label>
+              <Label>{uiCopy("contract-template")}</Label>
               <p className="whitespace-pre-wrap text-sm text-muted-foreground mt-1">
                 {getLocalizedValue(offerQuery.data.contractTemplate, offerQuery.data.localeDefault)}
               </p>
             </div>
 
             <div>
-              <Label>Prep form</Label>
+              <Label>{uiCopy("prep-form")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {(offerQuery.data.prepFormTemplate?.questions ?? []).length ? (
                   offerQuery.data.prepFormTemplate?.questions.map((question) => (
@@ -218,13 +240,15 @@ export default function CoachingOfferDetailPage() {
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-sm text-muted-foreground">No prep form questions.</span>
+                  <span className="text-sm text-muted-foreground">
+                    {uiCopy("no-prep-form-questions")}
+                  </span>
                 )}
               </div>
             </div>
 
             <div>
-              <Label>Debrief form</Label>
+              <Label>{uiCopy("debrief-form")}</Label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {(offerQuery.data.debriefTemplate?.questions ?? []).length ? (
                   offerQuery.data.debriefTemplate?.questions.map((question) => (
@@ -233,7 +257,9 @@ export default function CoachingOfferDetailPage() {
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-sm text-muted-foreground">No debrief form questions.</span>
+                  <span className="text-sm text-muted-foreground">
+                    {uiCopy("no-debrief-form-questions")}
+                  </span>
                 )}
               </div>
             </div>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
@@ -9,6 +10,7 @@ import { formatDate } from "@/shared/lib/formatters";
 import { useDeleteProgramMutation, useProgramsListQuery } from "../../hooks/use-classes-academy";
 
 export default function ProgramsListScreen() {
+  const uiCopy = useUiCopy("ui.classes-programs-programs-list-screen");
   const navigate = useNavigate();
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
   const { data, isLoading, isError, refetch } = useProgramsListQuery({
@@ -22,7 +24,7 @@ export default function ProgramsListScreen() {
 
   return (
     <CrudListPageLayout
-      title="Programs"
+      title={uiCopy("programs")}
       subtitle="Program templates for cohort creation"
       primaryAction={
         <Button
@@ -31,29 +33,29 @@ export default function ProgramsListScreen() {
           onClick={() => navigate("/classes/programs/new")}
         >
           <Plus className="h-4 w-4" />
-          New combo
+          {uiCopy("new-combo")}
         </Button>
       }
     >
       <div data-testid="classes-programs-list">
         {isLoading ? (
           <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
-            Loading combos...
+            {uiCopy("loading-combos")}
           </div>
         ) : isError ? (
           <div className="rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm">
-            <div className="mb-3 text-destructive">Failed to load combos.</div>
+            <div className="mb-3 text-destructive">{uiCopy("failed-to-load-combos")}</div>
             <Button variant="outline" onClick={() => void refetch()}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </div>
         ) : items.length === 0 ? (
           <EmptyState
-            title="No combos yet"
-            description="Create your first combo to reuse templates for cohorts."
+            title={uiCopy("no-combos-yet")}
+            description={uiCopy("create-your-first-combo")}
             action={
               <Button asChild variant="accent">
-                <Link to="/classes/programs/new">New combo</Link>
+                <Link to="/classes/programs/new">{uiCopy("new-combo")}</Link>
               </Button>
             }
           />
@@ -63,16 +65,16 @@ export default function ProgramsListScreen() {
               <thead>
                 <tr className="border-b border-border bg-muted/40">
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Title
+                    {uiCopy("title")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Level tag
+                    {uiCopy("level-tag")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Expected sessions
+                    {uiCopy("expected-sessions")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Updated at
+                    {uiCopy("updated-at")}
                   </th>
                   <th />
                 </tr>
@@ -123,8 +125,8 @@ export default function ProgramsListScreen() {
           }
         }}
         trigger={null}
-        title="Delete combo"
-        description="This will permanently delete the combo and its templates."
+        title={uiCopy("delete-combo")}
+        description={uiCopy("this-will-permanently-delete")}
         isLoading={deleteProgram.isPending}
         onConfirm={() => {
           if (!deleteTarget) {
@@ -132,7 +134,7 @@ export default function ProgramsListScreen() {
           }
           deleteProgram.mutate(deleteTarget, {
             onSuccess: () => {
-              toast.success("Combo deleted");
+              toast.success(uiCopy("combo-deleted"));
             },
             onError: (error) => {
               toast.error(error instanceof Error ? error.message : "Failed to delete combo");

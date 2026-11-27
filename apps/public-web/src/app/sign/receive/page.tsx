@@ -8,6 +8,6 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 export default async function Receive() {
-  const language = getSignRecipientLanguage((await headers()).get("accept-language"));
+  const language = await getSignRecipientLanguage((await headers()).get("accept-language"));
   return <RecipientForm {...language} />;
 }

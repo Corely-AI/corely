@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 export default function CustomersPage() {
+  const uiCopy = useUiCopy("ui.customers-customerspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -29,10 +31,10 @@ export default function CustomersPage() {
   const archiveCustomer = useMutation({
     mutationFn: (id: string) => customersApi.archiveCustomer(id),
     onSuccess: async () => {
-      toast.success("Customer archived");
+      toast.success(uiCopy("customer-archived"));
       await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.customers.all() });
     },
-    onError: () => toast.error("Failed to archive customer"),
+    onError: () => toast.error(uiCopy("failed-to-archive-customer")),
   });
 
   const primaryAction = (
@@ -42,27 +44,31 @@ export default function CustomersPage() {
       data-testid="add-customer-button"
     >
       <Plus className="h-4 w-4" />
-      Add customer
+      {uiCopy("add-customer")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Customers"
+      title={uiCopy("customers")}
       subtitle="Manage contacts and billing details"
       primaryAction={primaryAction}
     >
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading customers...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {uiCopy("loading-customers")}
+            </div>
           ) : isError ? (
-            <div className="p-8 text-center text-destructive">Failed to load customers.</div>
+            <div className="p-8 text-center text-destructive">
+              {uiCopy("failed-to-load-customers")}
+            </div>
           ) : customers.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="No customers yet"
-              description="Create your first customer to start tracking relationships."
+              title={uiCopy("no-customers-yet")}
+              description={uiCopy("create-your-first-customer")}
               action={primaryAction}
             />
           ) : (
@@ -71,16 +77,16 @@ export default function CustomersPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Name
+                      {uiCopy("name")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Email
+                      {uiCopy("email")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Phone
+                      {uiCopy("phone")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      City
+                      {uiCopy("city")}
                     </th>
                     <th />
                   </tr>
@@ -172,8 +178,8 @@ export default function CustomersPage() {
           }
         }}
         trigger={null}
-        title="Archive customer"
-        description="This will archive the customer. You can unarchive them later."
+        title={uiCopy("archive-customer")}
+        description={uiCopy("this-will-archive-the")}
         isLoading={archiveCustomer.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

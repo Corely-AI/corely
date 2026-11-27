@@ -1,3 +1,4 @@
+import { type CorelyLocale } from "@corely/contracts";
 import {
   AppDirectoryDestinationSchema,
   isSafeSsoReturnPath,
@@ -13,7 +14,7 @@ export function catalogMetadata(app: AppCatalogItem) {
 export function catalogEntryUrl(
   app: AppCatalogItem,
   workspaceId: string,
-  locale?: "en" | "de" | "vi"
+  locale?: CorelyLocale
 ): string | undefined {
   if (!app.enabled) {
     return undefined;
@@ -31,7 +32,7 @@ export function catalogEntryUrl(
   );
 }
 
-function withLanguage(destination: string | undefined, locale?: "en" | "de" | "vi") {
+function withLanguage(destination: string | undefined, locale?: CorelyLocale) {
   if (!destination || !locale) {
     return destination;
   }

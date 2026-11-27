@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { toast } from "sonner";
 import { Button } from "@corely/ui";
@@ -20,6 +21,7 @@ export function MarkPaidForm({
   defaultAmountCents,
   allowReceiptUpload = true,
 }: MarkPaidFormProps) {
+  const uiCopy = useUiCopy("ui.tax-mark-paid-form");
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [paidAt, setPaidAt] = React.useState(() => new Date().toISOString().slice(0, 16));
   const [method, setMethod] = React.useState<MarkTaxFilingPaidRequest["method"]>("bank-transfer");
@@ -43,7 +45,7 @@ export function MarkPaidForm({
         proofDocumentId = await uploadTaxDocument(receiptFile);
       } catch (error) {
         console.error(error);
-        toast.error("Failed to upload receipt");
+        toast.error(uiCopy("failed-to-upload-receipt"));
         setIsUploading(false);
         return;
       }
@@ -62,7 +64,7 @@ export function MarkPaidForm({
   return (
     <div className="space-y-4">
       <div className="grid gap-2">
-        <Label>Paid at</Label>
+        <Label>{uiCopy("paid-at")}</Label>
         <Input
           type="datetime-local"
           value={paidAt}
@@ -70,7 +72,7 @@ export function MarkPaidForm({
         />
       </div>
       <div className="grid gap-2">
-        <Label>Method</Label>
+        <Label>{uiCopy("method")}</Label>
         <Select
           value={method}
           onValueChange={(value) => setMethod(value as MarkTaxFilingPaidRequest["method"])}
@@ -79,19 +81,19 @@ export function MarkPaidForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="bank-transfer">Bank transfer</SelectItem>
-            <SelectItem value="direct-debit">Direct debit</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            <SelectItem value="bank-transfer">{uiCopy("bank-transfer")}</SelectItem>
+            <SelectItem value="direct-debit">{uiCopy("direct-debit")}</SelectItem>
+            <SelectItem value="other">{uiCopy("other")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="grid gap-2">
-        <Label>Amount</Label>
+        <Label>{uiCopy("amount")}</Label>
         <Input value={amount} onChange={(event) => setAmount(event.target.value)} />
       </div>
       {allowReceiptUpload ? (
         <div className="grid gap-2">
-          <Label>Receipt</Label>
+          <Label>{uiCopy("receipt")}</Label>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -99,12 +101,12 @@ export function MarkPaidForm({
               onClick={() => fileInputRef.current?.click()}
               disabled={isSubmitting || isUploading}
             >
-              {receiptFile ? "Replace receipt" : "Upload receipt"}
+              {receiptFile ? uiCopy("replace-receipt") : uiCopy("upload-receipt")}
             </Button>
             {receiptFile ? (
               <span className="text-sm text-muted-foreground truncate">{receiptFile.name}</span>
             ) : (
-              <span className="text-sm text-muted-foreground">Optional</span>
+              <span className="text-sm text-muted-foreground">{uiCopy("optional")}</span>
             )}
           </div>
           <input
@@ -122,7 +124,7 @@ export function MarkPaidForm({
         </div>
       ) : null}
       <Button onClick={handleSubmit} disabled={isSubmitting || isUploading || !amount}>
-        {isUploading ? "Uploading..." : "Mark paid"}
+        {isUploading ? uiCopy("uploading") : uiCopy("mark-paid")}
       </Button>
     </div>
   );

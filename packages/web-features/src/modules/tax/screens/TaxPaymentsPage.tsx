@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
@@ -62,6 +63,7 @@ const toDateInputValue = (value?: string | null) => {
 };
 
 export const TaxPaymentsPage = () => {
+  const uiCopy = useUiCopy("ui.tax-taxpaymentspage");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -419,12 +421,12 @@ export const TaxPaymentsPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                    <TableHead>Filing</TableHead>
-                    <TableHead>Due date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Paid date</TableHead>
-                    <TableHead>Method</TableHead>
+                    <TableHead>{uiCopy("filing")}</TableHead>
+                    <TableHead>{uiCopy("due-date")}</TableHead>
+                    <TableHead className="text-right">{uiCopy("amount")}</TableHead>
+                    <TableHead>{uiCopy("status")}</TableHead>
+                    <TableHead>{uiCopy("paid-date")}</TableHead>
+                    <TableHead>{uiCopy("method")}</TableHead>
                     <TableHead className="w-[120px]" />
                   </TableRow>
                 </TableHeader>

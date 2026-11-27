@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueries, useQuery } from "@tanstack/react-query";
@@ -13,6 +15,7 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getPublicWebsiteUrl } from "@/shared/lib/public-urls";
 
 export default function WebsiteSitesPage() {
+  const uiCopy = useUiCopy("ui.website-websitesitespage");
   const navigate = useNavigate();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
   const { activeWorkspace } = useWorkspace();
@@ -84,7 +87,7 @@ export default function WebsiteSitesPage() {
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative">
         <Input
-          placeholder="Search sites"
+          placeholder={uiCopy("search-sites")}
           className="w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -92,7 +95,7 @@ export default function WebsiteSitesPage() {
       </div>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load sites"}
+          {(error as Error)?.message || uiCopy("failed-to-load-sites")}
         </div>
       ) : null}
     </div>
@@ -101,13 +104,13 @@ export default function WebsiteSitesPage() {
   const primaryAction = (
     <Button variant="accent" onClick={() => navigate("/website/sites/new")}>
       <Plus className="h-4 w-4" />
-      New site
+      {uiCopy("new-site")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Websites"
+      title={uiCopy("websites")}
       subtitle="Manage sites, domains, pages, and menus"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -115,12 +118,12 @@ export default function WebsiteSitesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading sites...</div>
+            <div className="p-8 text-center text-muted-foreground">{uiCopy("loading-sites")}</div>
           ) : sites.length === 0 ? (
             <EmptyState
               icon={Globe}
-              title="No sites yet"
-              description="Create your first site to get started."
+              title={uiCopy("no-sites-yet")}
+              description={uiCopy("create-your-first-site")}
               action={primaryAction}
             />
           ) : (
@@ -130,13 +133,13 @@ export default function WebsiteSitesPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Name
+                        {uiCopy("name")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Default locale
+                        {uiCopy("default-locale")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th />
                     </tr>
@@ -150,14 +153,16 @@ export default function WebsiteSitesPage() {
                         <td className="px-4 py-3 text-sm font-medium">
                           <div className="flex items-center gap-2">
                             <span>{site.name}</span>
-                            {site.isDefault ? <Badge variant="success">Default</Badge> : null}
+                            {site.isDefault ? (
+                              <Badge variant="success">{uiCopy("default")}</Badge>
+                            ) : null}
                             {(() => {
                               const slug = site.slug?.trim();
                               const slugLower = slug?.toLowerCase();
                               const hasValidSlug =
                                 Boolean(slug) && slugLower !== "undefined" && slugLower !== "null";
                               return hasValidSlug ? null : (
-                                <Badge variant="warning">Missing slug</Badge>
+                                <Badge variant="warning">{uiCopy("missing-slug")}</Badge>
                               );
                             })()}
                           </div>
@@ -226,7 +231,7 @@ export default function WebsiteSitesPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -235,7 +240,7 @@ export default function WebsiteSitesPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -243,7 +248,7 @@ export default function WebsiteSitesPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>

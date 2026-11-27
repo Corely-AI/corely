@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +12,7 @@ import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
 import { Badge, Button, Card, CardContent, Label } from "@corely/ui";
 
 export default function ServiceDetailPage() {
+  const uiCopy = useUiCopy("ui.booking-servicedetailpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
@@ -34,7 +36,7 @@ export default function ServiceDetailPage() {
       await bookingApi.deleteService(id);
     },
     onSuccess: async () => {
-      toast.success("Service deleted");
+      toast.success(uiCopy("service-deleted"));
       await invalidateResourceQueries(queryClient, "booking/services");
       navigate("/booking/services");
     },
@@ -48,7 +50,9 @@ export default function ServiceDetailPage() {
     return (
       <div className="p-6 lg:p-8">
         <Card>
-          <CardContent className="p-6 text-sm text-destructive">Missing service id.</CardContent>
+          <CardContent className="p-6 text-sm text-destructive">
+            {uiCopy("missing-service-id")}
+          </CardContent>
         </Card>
       </div>
     );
@@ -62,10 +66,8 @@ export default function ServiceDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Service details</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Review and manage this service offering.
-            </p>
+            <h1 className="text-h1 text-foreground">{uiCopy("service-details")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{uiCopy("review-and-manage-this")}</p>
           </div>
         </div>
 
@@ -73,18 +75,18 @@ export default function ServiceDetailPage() {
           <Button asChild variant="outline">
             <Link to={`/booking/services/${id}/edit`}>
               <Pencil className="h-4 w-4" />
-              Edit
+              {uiCopy("edit")}
             </Link>
           </Button>
           <ConfirmDeleteDialog
             trigger={
               <Button variant="destructive" disabled={deleteMutation.isPending}>
                 <Trash2 className="h-4 w-4" />
-                Delete
+                {uiCopy("delete")}
               </Button>
             }
-            title="Delete service"
-            description="This action cannot be undone."
+            title={uiCopy("delete-service")}
+            description={uiCopy("this-action-cannot-be")}
             isLoading={deleteMutation.isPending}
             onConfirm={async () => {
               await deleteMutation.mutateAsync();
@@ -96,7 +98,7 @@ export default function ServiceDetailPage() {
       {serviceQuery.isLoading ? (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground">
-            Loading service...
+            {uiCopy("loading-service")}
           </CardContent>
         </Card>
       ) : null}
@@ -104,9 +106,9 @@ export default function ServiceDetailPage() {
       {serviceQuery.isError ? (
         <Card>
           <CardContent className="p-6 flex items-center justify-between gap-3">
-            <div className="text-sm text-destructive">Failed to load service.</div>
+            <div className="text-sm text-destructive">{uiCopy("failed-to-load-service")}</div>
             <Button variant="outline" size="sm" onClick={() => void serviceQuery.refetch()}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </CardContent>
         </Card>
@@ -116,32 +118,41 @@ export default function ServiceDetailPage() {
         <Card>
           <CardContent className="p-6 space-y-5">
             <div>
-              <Label>Name</Label>
+              <Label>{uiCopy("name")}</Label>
               <p className="text-base mt-1">{serviceQuery.data.name}</p>
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{uiCopy("description")}</Label>
               <p className="text-sm text-muted-foreground mt-1">
                 {serviceQuery.data.description || "—"}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label>Duration</Label>
-                <p className="mt-1">{serviceQuery.data.durationMinutes} minutes</p>
+                <Label>{uiCopy("duration")}</Label>
+                <p className="mt-1">
+                  {serviceQuery.data.durationMinutes}
+                  {" " + uiCopy("minutes")}
+                </p>
               </div>
               <div>
-                <Label>Buffer before</Label>
-                <p className="mt-1">{serviceQuery.data.bufferBeforeMinutes ?? 0} minutes</p>
+                <Label>{uiCopy("buffer-before")}</Label>
+                <p className="mt-1">
+                  {serviceQuery.data.bufferBeforeMinutes ?? 0}
+                  {" " + uiCopy("minutes")}
+                </p>
               </div>
               <div>
-                <Label>Buffer after</Label>
-                <p className="mt-1">{serviceQuery.data.bufferAfterMinutes ?? 0} minutes</p>
+                <Label>{uiCopy("buffer-after")}</Label>
+                <p className="mt-1">
+                  {serviceQuery.data.bufferAfterMinutes ?? 0}
+                  {" " + uiCopy("minutes")}
+                </p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label>Price</Label>
+                <Label>{uiCopy("price")}</Label>
                 <p className="mt-1">
                   {serviceQuery.data.priceCents != null
                     ? `${serviceQuery.data.priceCents} ${serviceQuery.data.currency || "USD"} (cents)`
@@ -149,16 +160,18 @@ export default function ServiceDetailPage() {
                 </p>
               </div>
               <div>
-                <Label>Deposit</Label>
+                <Label>{uiCopy("deposit")}</Label>
                 <p className="mt-1">{serviceQuery.data.depositCents ?? "—"}</p>
               </div>
               <div>
-                <Label>Status</Label>
-                <p className="mt-1">{serviceQuery.data.isActive ? "Active" : "Inactive"}</p>
+                <Label>{uiCopy("status")}</Label>
+                <p className="mt-1">
+                  {serviceQuery.data.isActive ? uiCopy("active") : uiCopy("inactive")}
+                </p>
               </div>
             </div>
             <div>
-              <Label>Required resource types</Label>
+              <Label>{uiCopy("required-resource-types")}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {(serviceQuery.data.requiredResourceTypes ?? []).length ? (
                   serviceQuery.data.requiredResourceTypes?.map((resourceType) => (
@@ -167,12 +180,12 @@ export default function ServiceDetailPage() {
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-sm text-muted-foreground">None</span>
+                  <span className="text-sm text-muted-foreground">{uiCopy("none")}</span>
                 )}
               </div>
             </div>
             <div>
-              <Label>Required tags</Label>
+              <Label>{uiCopy("required-tags")}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {(serviceQuery.data.requiredTags ?? []).length ? (
                   serviceQuery.data.requiredTags?.map((tag) => (
@@ -181,7 +194,7 @@ export default function ServiceDetailPage() {
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-sm text-muted-foreground">None</span>
+                  <span className="text-sm text-muted-foreground">{uiCopy("none")}</span>
                 )}
               </div>
             </div>

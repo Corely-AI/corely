@@ -1,3 +1,5 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Ban, AlertTriangle } from "lucide-react";
@@ -36,6 +38,7 @@ const statusVariant = (status: string) => {
 };
 
 export default function CmsCommentsPage() {
+  const uiCopy = useUiCopy("ui.cms-cmscommentspage");
   const queryClient = useQueryClient();
   const [listState, setListState] = useCrudUrlState({
     pageSize: 20,
@@ -64,17 +67,17 @@ export default function CmsCommentsPage() {
     mutationFn: async (params: { commentId: string; status: "APPROVED" | "REJECTED" | "SPAM" }) =>
       cmsApi.moderateComment(params.commentId, params.status),
     onSuccess: async () => {
-      toast.success("Comment updated");
+      toast.success(uiCopy("comment-updated"));
       await queryClient.invalidateQueries({ queryKey: cmsCommentKeys.list() });
       setActiveCommentId(null);
     },
-    onError: () => toast.error("Failed to update comment"),
+    onError: () => toast.error(uiCopy("failed-to-update-comment")),
   });
 
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
       <Input
-        placeholder="Filter by post ID"
+        placeholder={uiCopy("filter-by-post-id")}
         className="w-64"
         value={postIdFilter}
         onChange={(event) =>
@@ -102,7 +105,7 @@ export default function CmsCommentsPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load comments"}
+          {(error as Error)?.message || uiCopy("failed-to-load-comments")}
         </div>
       ) : null}
     </div>
@@ -110,16 +113,20 @@ export default function CmsCommentsPage() {
 
   return (
     <CrudListPageLayout
-      title="CMS Comments"
+      title={uiCopy("cms-comments")}
       subtitle="Review reader feedback and moderate submissions"
       toolbar={toolbar}
     >
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading comments...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {uiCopy("loading-comments")}
+            </div>
           ) : comments.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">No comments found.</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {uiCopy("no-comments-found")}
+            </div>
           ) : (
             <>
               <div className="overflow-x-auto">
@@ -127,16 +134,16 @@ export default function CmsCommentsPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Comment
+                        {uiCopy("comment")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Reader
+                        {uiCopy("reader")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Created
+                        {uiCopy("created")}
                       </th>
                       <th />
                     </tr>
@@ -151,7 +158,7 @@ export default function CmsCommentsPage() {
                           <div className="max-w-xl truncate">{comment.bodyText}</div>
                         </td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {comment.readerDisplayName || "Reader"}
+                          {comment.readerDisplayName || uiCopy("reader")}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <Badge variant={statusVariant(comment.status)}>{comment.status}</Badge>
@@ -176,7 +183,7 @@ export default function CmsCommentsPage() {
                               }}
                             >
                               <CheckCircle2 className="h-4 w-4" />
-                              Approve
+                              {uiCopy("approve")}
                             </Button>
                             <Button
                               variant="outline"
@@ -193,7 +200,7 @@ export default function CmsCommentsPage() {
                               }}
                             >
                               <Ban className="h-4 w-4" />
-                              Reject
+                              {uiCopy("reject")}
                             </Button>
                             <Button
                               variant="outline"
@@ -207,7 +214,7 @@ export default function CmsCommentsPage() {
                               }}
                             >
                               <AlertTriangle className="h-4 w-4" />
-                              Spam
+                              {uiCopy("spam")}
                             </Button>
                           </div>
                         </td>
@@ -219,7 +226,7 @@ export default function CmsCommentsPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -228,7 +235,7 @@ export default function CmsCommentsPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -236,7 +243,7 @@ export default function CmsCommentsPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>

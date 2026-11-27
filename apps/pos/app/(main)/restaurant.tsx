@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -59,6 +60,7 @@ const tableStatusMeta = {
 };
 
 export default function RestaurantFloorScreen() {
+  const uiCopy = useUiCopy("ui.main-restaurant");
   const router = useRouter();
   const { isTablet } = useAdaptiveLayout();
   const { floorPlan, isLoading, loadFloorPlan, openOrResumeTable } = useRestaurantStore();
@@ -81,8 +83,8 @@ export default function RestaurantFloorScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          title="Select a register first"
-          description="Restaurant POS uses the same register and shift context as the core POS flow."
+          title={uiCopy("select-a-register-first")}
+          description={uiCopy("restaurant-pos-uses-the")}
         />
       </View>
     );
@@ -92,8 +94,8 @@ export default function RestaurantFloorScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          title="Open a shift first"
-          description="Restaurant tables can only be opened while a cashier shift is active."
+          title={uiCopy("open-a-shift-first")}
+          description={uiCopy("restaurant-tables-can-only")}
         />
       </View>
     );
@@ -106,10 +108,8 @@ export default function RestaurantFloorScreen() {
       contentContainerStyle={styles.content}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Restaurant floor</Text>
-        <Text style={styles.subtitle}>
-          Open and resume table sessions from the dining room map.
-        </Text>
+        <Text style={styles.title}>{uiCopy("restaurant-floor")}</Text>
+        <Text style={styles.subtitle}>{uiCopy("open-and-resume-table")}</Text>
       </View>
 
       <SegmentedControl
@@ -132,8 +132,8 @@ export default function RestaurantFloorScreen() {
       </View>
 
       <RestaurantCopilotPanel
-        title="Floor plan copilot"
-        helperText="Summarize occupied, dirty, or blocked tables without interrupting manual floor usage."
+        title={uiCopy("floor-plan-copilot")}
+        helperText={uiCopy("summarize-occupied-dirty-or")}
         quickActions={[
           {
             label: "Summarize attention tables",
@@ -150,7 +150,7 @@ export default function RestaurantFloorScreen() {
 
       {isLoading ? (
         <Card>
-          <Text style={styles.muted}>Loading floor plan…</Text>
+          <Text style={styles.muted}>{uiCopy("loading-floor-plan")}</Text>
         </Card>
       ) : null}
 
@@ -186,10 +186,12 @@ export default function RestaurantFloorScreen() {
                     <Ionicons name={statusMeta.icon} size={18} color={statusMeta.iconColor} />
                   </View>
                   <Text style={styles.tableMeta}>
-                    {statusMeta.label} · seats {table.capacity ?? "?"}
+                    {statusMeta.label}
+                    {" " + uiCopy("seats") + " "}
+                    {table.capacity ?? "?"}
                   </Text>
                   <Text style={styles.tableMeta}>
-                    {table.activeOrderId ? "Tap to resume check" : statusMeta.helperText}
+                    {table.activeOrderId ? uiCopy("tap-to-resume-check") : statusMeta.helperText}
                   </Text>
                 </Pressable>
               );

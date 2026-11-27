@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { Plus, Trash2, UploadCloud } from "lucide-react";
 import { Button, Input, Label, Switch, Textarea } from "@corely/ui";
 import type { WebsiteSiteCommonSettings } from "@corely/contracts";
@@ -33,6 +34,7 @@ export function WebsiteSiteEditorBrandingSection({
   isUploadingFavicon,
   onUploadAsset,
 }: WebsiteSiteEditorBrandingSectionProps) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-branding-section");
   const footerLinks = common.footer?.links ?? [];
 
   return (
@@ -40,20 +42,20 @@ export function WebsiteSiteEditorBrandingSection({
       <div>
         <h3 className="text-base font-semibold">Brand &amp; Settings</h3>
         <p className="text-sm text-muted-foreground">
-          Structured settings for branding, SEO, socials, and theme tokens.
+          {uiCopy("structured-settings-for-branding")}
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Site title</Label>
+          <Label>{uiCopy("site-title")}</Label>
           <Input
             value={common.siteTitle}
             onChange={(event) => syncCommon({ ...common, siteTitle: event.target.value })}
           />
         </div>
         <div className="space-y-2">
-          <Label>Site subtitle</Label>
+          <Label>{uiCopy("site-subtitle")}</Label>
           <Input
             value={common.siteSubtitle ?? ""}
             onChange={(event) =>
@@ -69,7 +71,7 @@ export function WebsiteSiteEditorBrandingSection({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 rounded-md border border-border/60 p-3">
           <div className="flex items-center justify-between">
-            <Label>Logo</Label>
+            <Label>{uiCopy("logo")}</Label>
             <Button
               type="button"
               variant="ghost"
@@ -78,7 +80,7 @@ export function WebsiteSiteEditorBrandingSection({
               onClick={() => logoInputRef.current?.click()}
             >
               <UploadCloud className="h-4 w-4" />
-              {isUploadingLogo ? "Uploading..." : "Upload"}
+              {isUploadingLogo ? uiCopy("uploading") : uiCopy("upload")}
             </Button>
             <input
               ref={logoInputRef}
@@ -92,7 +94,7 @@ export function WebsiteSiteEditorBrandingSection({
             />
           </div>
           <Input
-            placeholder="Logo fileId"
+            placeholder={uiCopy("logo-fileid")}
             value={common.logo?.fileId ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -105,7 +107,7 @@ export function WebsiteSiteEditorBrandingSection({
             }
           />
           <Input
-            placeholder="Logo URL"
+            placeholder={uiCopy("logo-url")}
             value={common.logo?.url ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -118,7 +120,7 @@ export function WebsiteSiteEditorBrandingSection({
             }
           />
           <Input
-            placeholder="Logo alt text"
+            placeholder={uiCopy("logo-alt-text")}
             value={common.logo?.alt ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -134,7 +136,7 @@ export function WebsiteSiteEditorBrandingSection({
 
         <div className="space-y-2 rounded-md border border-border/60 p-3">
           <div className="flex items-center justify-between">
-            <Label>Favicon</Label>
+            <Label>{uiCopy("favicon")}</Label>
             <Button
               type="button"
               variant="ghost"
@@ -143,7 +145,7 @@ export function WebsiteSiteEditorBrandingSection({
               onClick={() => faviconInputRef.current?.click()}
             >
               <UploadCloud className="h-4 w-4" />
-              {isUploadingFavicon ? "Uploading..." : "Upload"}
+              {isUploadingFavicon ? uiCopy("uploading") : uiCopy("upload")}
             </Button>
             <input
               ref={faviconInputRef}
@@ -157,7 +159,7 @@ export function WebsiteSiteEditorBrandingSection({
             />
           </div>
           <Input
-            placeholder="Favicon fileId"
+            placeholder={uiCopy("favicon-fileid")}
             value={common.favicon?.fileId ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -170,7 +172,7 @@ export function WebsiteSiteEditorBrandingSection({
             }
           />
           <Input
-            placeholder="Favicon URL"
+            placeholder={uiCopy("favicon-url")}
             value={common.favicon?.url ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -188,7 +190,7 @@ export function WebsiteSiteEditorBrandingSection({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label>Header show logo</Label>
+            <Label>{uiCopy("header-show-logo")}</Label>
             <Switch
               checked={common.header?.showLogo ?? true}
               onCheckedChange={(checked) =>
@@ -203,7 +205,7 @@ export function WebsiteSiteEditorBrandingSection({
             />
           </div>
           <Input
-            placeholder="CTA label"
+            placeholder={uiCopy("cta-label")}
             value={common.header?.cta?.label ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -219,7 +221,7 @@ export function WebsiteSiteEditorBrandingSection({
             }
           />
           <Input
-            placeholder="CTA href"
+            placeholder={uiCopy("cta-href")}
             value={common.header?.cta?.href ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -235,7 +237,7 @@ export function WebsiteSiteEditorBrandingSection({
             }
           />
           <Input
-            placeholder="CTA variant (primary/secondary/outline/ghost)"
+            placeholder={uiCopy("cta-variant-primary-secondary")}
             value={common.header?.cta?.variant ?? ""}
             onChange={(event) => {
               const variant = normalizeCtaVariant(event.target.value);
@@ -256,7 +258,7 @@ export function WebsiteSiteEditorBrandingSection({
         </div>
 
         <div className="space-y-2">
-          <Label>Footer copyright text</Label>
+          <Label>{uiCopy("footer-copyright-text")}</Label>
           <Input
             value={common.footer?.copyrightText ?? ""}
             onChange={(event) =>
@@ -273,7 +275,7 @@ export function WebsiteSiteEditorBrandingSection({
 
           <div className="space-y-2 rounded-md border border-border/60 p-3">
             <div className="flex items-center justify-between">
-              <Label>Footer links</Label>
+              <Label>{uiCopy("footer-links")}</Label>
               <Button
                 type="button"
                 variant="ghost"
@@ -289,7 +291,7 @@ export function WebsiteSiteEditorBrandingSection({
                 }
               >
                 <Plus className="h-4 w-4" />
-                Add link
+                {uiCopy("add-link")}
               </Button>
             </div>
             {footerLinks.map((link, index) => (
@@ -298,7 +300,7 @@ export function WebsiteSiteEditorBrandingSection({
                 className="grid gap-2 md:grid-cols-[1fr_1fr_auto]"
               >
                 <Input
-                  placeholder="Label"
+                  placeholder={uiCopy("label")}
                   value={link.label}
                   onChange={(event) => {
                     const nextLinks = [...footerLinks];
@@ -316,7 +318,7 @@ export function WebsiteSiteEditorBrandingSection({
                   }}
                 />
                 <Input
-                  placeholder="Href"
+                  placeholder={uiCopy("href")}
                   value={link.href}
                   onChange={(event) => {
                     const nextLinks = [...footerLinks];
@@ -358,7 +360,7 @@ export function WebsiteSiteEditorBrandingSection({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Social links</Label>
+          <Label>{uiCopy("social-links")}</Label>
           {socialFields.map((field) => (
             <Input
               key={field}
@@ -378,9 +380,9 @@ export function WebsiteSiteEditorBrandingSection({
         </div>
 
         <div className="space-y-2">
-          <Label>SEO defaults</Label>
+          <Label>{uiCopy("seo-defaults")}</Label>
           <Input
-            placeholder="Title template"
+            placeholder={uiCopy("title-template")}
             value={common.seoDefaults?.titleTemplate ?? ""}
             onChange={(event) =>
               syncCommon({
@@ -394,7 +396,7 @@ export function WebsiteSiteEditorBrandingSection({
           />
           <Textarea
             rows={3}
-            placeholder="Default description"
+            placeholder={uiCopy("default-description")}
             value={common.seoDefaults?.defaultDescription ?? ""}
             onChange={(event) =>
               syncCommon({
