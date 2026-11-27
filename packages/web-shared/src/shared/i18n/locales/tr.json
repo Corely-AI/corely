@@ -2419,6 +2419,13 @@
     "lookupFailed": "Müşteri arama kullanılamıyor veya erişim reddedildi. Tekrar deneyin veya yöneticinize sorun."
   },
   "settings": {
+    "emailForwarding": "E-posta yönlendirme",
+    "navigation": {
+      "myAccount": "Hesabım",
+      "myAccountDescription": "Profil, dil ve görünüm",
+      "workspace": "Çalışma alanı",
+      "workspaceDescription": "Ortak bilgiler ve e-posta yönlendirme"
+    },
     "title": "Ayarlar",
     "profile": "Profil",
     "business": "iş",

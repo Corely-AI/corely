@@ -2431,6 +2431,13 @@
     "lookupFailed": "Die Kundensuche ist nicht verfügbar oder der Zugriff wurde verweigert. Versuchen Sie es erneut oder wenden Sie sich an Ihre Administration."
   },
   "settings": {
+    "emailForwarding": "E-Mail-Weiterleitung",
+    "navigation": {
+      "myAccount": "Mein Konto",
+      "myAccountDescription": "Profil, Sprache und Darstellung",
+      "workspace": "Arbeitsbereich",
+      "workspaceDescription": "Gemeinsame Angaben und E-Mail-Weiterleitung"
+    },
     "title": "Einstellungen",
     "profile": "Profil",
     "business": "Geschäft",

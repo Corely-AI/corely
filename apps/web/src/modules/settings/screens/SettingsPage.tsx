@@ -1,27 +1,33 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { persistFocusedLocale } from "@corely/web-shared/session/focused-locale";
 import { corelyLocaleDetails, corelyLocales, type CorelyLocale } from "@corely/contracts";
-import React, { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { useThemeStore } from "@/shared/theme/themeStore";
-import { getDb } from "@/shared/mock/mockDb";
-import { Moon, Sun, Monitor, Globe } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
-import { Link } from "react-router-dom";
+import { Moon, Sun, Monitor } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { accountSettingsSectionId, settingsDestinations } from "../settings-navigation";
 
 export default function SettingsPage() {
   const uiCopy = useUiCopy("ui.settings-settingspage");
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useThemeStore();
-  const db = getDb();
   const { user } = useAuth();
   const { activeWorkspaceId } = useWorkspace();
+  const { hash } = useLocation();
+  const accountHeading = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (hash === `#${accountSettingsSectionId}`) {
+      accountHeading.current?.focus();
+    }
+  }, [hash]);
 
   const activeTenant = useMemo(() => {
     if (!user) {
@@ -58,23 +64,93 @@ export default function SettingsPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-4xl">
       <h1 className="text-h1 text-foreground">{t("settings.title")}</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.profile")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>{t("settings.name")}</Label>
-              <Input defaultValue={db.user.name} />
+      <nav aria-label={t("settings.title")} className="grid gap-3 sm:grid-cols-2">
+        {settingsDestinations(Boolean(activeWorkspaceId)).map(({ to, label, description }) => (
+          <Link
+            key={to}
+            to={to}
+            className="rounded-lg border border-border bg-card p-4 text-card-foreground hover:bg-accent hover:text-accent-foreground"
+          >
+            <span className="block font-medium">{t(label)}</span>
+            <span className="mt-1 block text-sm text-muted-foreground">{t(description)}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <section aria-labelledby={accountSettingsSectionId} className="space-y-4">
+        <h2
+          ref={accountHeading}
+          id={accountSettingsSectionId}
+          tabIndex={-1}
+          className="text-h2 scroll-mt-4"
+        >
+          {t("settings.navigation.myAccount")}
+        </h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("settings.profile")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="settings-profile-name">{t("settings.name")}</Label>
+                <Input id="settings-profile-name" value={user?.name ?? ""} readOnly />
+              </div>
+              <div>
+                <Label htmlFor="settings-profile-email">{t("settings.email")}</Label>
+                <Input id="settings-profile-email" value={user?.email ?? ""} readOnly />
+              </div>
             </div>
-            <div>
-              <Label>{t("settings.email")}</Label>
-              <Input defaultValue={db.user.email} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("settings.theme")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              {(
+                [
+                  { value: "light", icon: Sun },
+                  { value: "dark", icon: Moon },
+                  { value: "system", icon: Monitor },
+                ] as const
+              ).map(({ value, icon: Icon }) => (
+                <Button
+                  key={value}
+                  variant={theme === value ? "accent" : "outline"}
+                  onClick={() => setTheme(value)}
+                  className="flex-1"
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {t(`settings.themes.${value}`)}
+                </Button>
+              ))}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("settings.language")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {corelyLocales.map((code) => (
+                <Button
+                  key={code}
+                  variant={i18n.language === code ? "accent" : "outline"}
+                  onClick={() => changeLanguage(code)}
+                  lang={code}
+                >
+                  {corelyLocaleDetails[code].name}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       <Card>
         <CardHeader>
@@ -100,51 +176,6 @@ export default function SettingsPage() {
                 className="bg-muted/40"
               />
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.theme")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            {[
-              { value: "light", icon: Sun },
-              { value: "dark", icon: Moon },
-              { value: "system", icon: Monitor },
-            ].map(({ value, icon: Icon }) => (
-              <Button
-                key={value}
-                variant={theme === value ? "accent" : "outline"}
-                onClick={() => setTheme(value as any)}
-                className="flex-1"
-              >
-                <Icon className="h-4 w-4 mr-2" />
-                {t(`settings.themes.${value}`)}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.language")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {corelyLocales.map((code) => (
-              <Button
-                key={code}
-                variant={i18n.language === code ? "accent" : "outline"}
-                onClick={() => changeLanguage(code)}
-                lang={code}
-              >
-                {corelyLocaleDetails[code].name}
-              </Button>
-            ))}
           </div>
         </CardContent>
       </Card>

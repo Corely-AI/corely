@@ -31,7 +31,12 @@ export function AppShell() {
         hiddenItemIds: taxCapabilities?.paymentsEnabled ? undefined : hiddenTaxPaymentItems,
       }}
       topContent={<TenantAdminSessionBanner />}
-      renderSidebar={(props) => <AppSidebar {...props} />}
+      renderSidebar={(props) => (
+        <AppSidebar
+          {...props}
+          showSettingsNavigation={surfaceId === "platform" && navigation.scope !== "app"}
+        />
+      )}
     />
   );
 }

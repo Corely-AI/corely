@@ -157,21 +157,31 @@ export const WorkspaceSettingsPage: React.FC = () => {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-h1">{uiCopy("workspace-settings")}</h1>
+          {activeWorkspace && (
+            <p className="break-words font-medium text-foreground">{activeWorkspace.name}</p>
+          )}
           <p className="text-muted-foreground">{uiCopy("update-legal-details-currency")}</p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving}>
+        <Button className="shrink-0" onClick={handleSave} disabled={isSaving}>
           {uiCopy("save-changes")}
         </Button>
       </div>
 
-      <InvoiceEmailSettingsCard key={activeWorkspaceId} workspaceId={activeWorkspaceId} />
-      <ExpenseReceiptEmailSettingsCard
-        key={`expense-${activeWorkspaceId}`}
-        workspaceId={activeWorkspaceId}
-      />
+      <section aria-labelledby="email-forwarding" className="space-y-4 has-[>div:empty]:hidden">
+        <h2 id="email-forwarding" className="text-h2">
+          {t("settings.emailForwarding")}
+        </h2>
+        <div className="space-y-4">
+          <InvoiceEmailSettingsCard key={activeWorkspaceId} workspaceId={activeWorkspaceId} />
+          <ExpenseReceiptEmailSettingsCard
+            key={`expense-${activeWorkspaceId}`}
+            workspaceId={activeWorkspaceId}
+          />
+        </div>
+      </section>
 
       <Card>
         <CardHeader>

@@ -2419,6 +2419,13 @@
     "lookupFailed": "A pesquisa do cliente não está disponível ou o acesso foi negado. Tente novamente ou pergunte ao seu administrador."
   },
   "settings": {
+    "emailForwarding": "Reencaminhamento de e-mail",
+    "navigation": {
+      "myAccount": "A minha conta",
+      "myAccountDescription": "Perfil, idioma e aparência",
+      "workspace": "Espaço de trabalho",
+      "workspaceDescription": "Dados partilhados e reencaminhamento de e-mail"
+    },
     "title": "Configurações",
     "profile": "Perfil",
     "business": "Negócios",

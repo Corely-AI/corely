@@ -4,6 +4,10 @@ import type {
   WorkspaceNavigationItem,
 } from "@corely/contracts";
 import { matchPath } from "react-router-dom";
+import {
+  settingsOverviewPath,
+  workspaceSettingsPath,
+} from "../modules/settings/settings-navigation";
 import { isLegacyInvoiceEntry } from "./router/legacy-invoice-observation";
 
 // Group IDs are the app IDs emitted by the workspace menu API.
@@ -44,8 +48,8 @@ const appRoutes = {
 const generalRoutes = [
   "/dashboard",
   "/apps",
-  "/settings",
-  "/settings/workspace/*",
+  settingsOverviewPath,
+  `${workspaceSettingsPath}/*`,
   "/settings/payment-methods/*",
   "/settings/members/*",
   "/settings/roles/*",
@@ -59,16 +63,20 @@ const generalRoutes = [
 
 const generalGroupIds = new Set(["core", "workspaces", "platform", "billing"]);
 
-const accountSettings: WorkspaceNavigationItem = {
+const settingsOverview: WorkspaceNavigationItem = {
   id: "profile-settings",
   section: "profile",
   label: "Settings",
   labelKey: "nav.settings",
-  route: "/settings",
+  route: settingsOverviewPath,
   icon: "Settings",
   order: 95,
   exact: true,
 };
+
+function isSettingsEntry(item: WorkspaceNavigationItem) {
+  return item.route === settingsOverviewPath || item.route === workspaceSettingsPath;
+}
 
 function resolveAppId(pathname: string) {
   if (isLegacyInvoiceEntry(pathname)) {
@@ -95,15 +103,19 @@ export function resolveBackofficeNavigation(
 
   // Subscription billing uses the general sidebar even though its URL is under Cash.
   if (generalRoutes.some((route) => matchPath(route, pathname))) {
-    const items = groups.flatMap((group) =>
+    const generalItems = groups.flatMap((group) =>
       generalGroupIds.has(group.id)
         ? group.items
         : group.items.filter((item) => group.id === "cash-management" && item.id === "cash-billing")
     );
-
-    // Account settings is available to any authenticated user of this shell.
-    if (!items.some((item) => item.route === "/settings")) {
-      items.push(accountSettings);
+    const existingSettings = generalItems.find((item) => item.route === settingsOverviewPath);
+    // Workspace is shown as a child of the Settings overview in the Backoffice sidebar.
+    const items =
+      surfaceId === "platform"
+        ? generalItems.filter((item) => !isSettingsEntry(item))
+        : generalItems;
+    if (surfaceId === "platform" || !existingSettings) {
+      items.push({ ...existingSettings, ...settingsOverview });
     }
 
     return {
@@ -115,6 +127,23 @@ export function resolveBackofficeNavigation(
   const appId = resolveAppId(pathname);
   if (appId) {
     return { groups: groups.filter((group) => group.id === appId), scope: "app" as const };
+  }
+
+  const settingsGroup =
+    groups.find((group) => group.items.some((item) => item.route === settingsOverviewPath)) ??
+    groups.find((group) => group.items.some(isSettingsEntry));
+  if (surfaceId === "platform" && settingsGroup) {
+    return {
+      groups: groups.map((group) => {
+        const items = group.items.filter((item) => !isSettingsEntry(item));
+        if (group === settingsGroup) {
+          const existingSettings = group.items.find((item) => item.route === settingsOverviewPath);
+          items.push({ ...existingSettings, ...settingsOverview });
+        }
+        return { ...group, items };
+      }),
+      scope: "workspace" as const,
+    };
   }
 
   return { groups, scope: "workspace" as const };

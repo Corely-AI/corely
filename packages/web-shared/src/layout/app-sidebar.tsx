@@ -1,5 +1,5 @@
 import React from "react";
-import type { WorkspaceNavigationGroup } from "@corely/contracts";
+import type { WorkspaceNavigationGroup, WorkspaceNavigationItem } from "@corely/contracts";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -54,6 +54,7 @@ export interface AppSidebarProps {
   allowWorkspaceCreation?: boolean;
   notificationBell?: React.ReactNode;
   directoryLink?: React.ReactNode;
+  renderNavigationChildren?: (item: WorkspaceNavigationItem) => React.ReactNode;
   logo?: React.ReactNode;
   onNavigate?: () => void;
 }
@@ -83,6 +84,7 @@ export function AppSidebar({
   allowWorkspaceCreation,
   notificationBell,
   directoryLink,
+  renderNavigationChildren,
   logo,
   onNavigate,
 }: AppSidebarProps) {
@@ -197,29 +199,33 @@ export function AppSidebar({
                       ? t(itemLabelKey, { defaultValue: item.label })
                       : item.label;
                     return (
-                      <NavLink
-                        key={item.id}
-                        to={item.route || "#"}
-                        end={item.exact || item.route === "/tax"}
-                        target={openInNewTab ? "_blank" : undefined}
-                        rel={openInNewTab ? "noreferrer" : undefined}
-                        data-testid={`nav-${item.id}`}
-                        onClick={onNavigate}
-                        className={({ isActive }) =>
-                          cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                            isActive
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                          )
-                        }
-                      >
-                        <Icon className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span>{itemLabel}</span>}
-                        {!collapsed && item.pinned && (
-                          <span className="ml-auto text-xs text-muted-foreground">📌</span>
-                        )}
-                      </NavLink>
+                      <React.Fragment key={item.id}>
+                        <NavLink
+                          to={item.route || "#"}
+                          end={item.exact || item.route === "/tax"}
+                          target={openInNewTab ? "_blank" : undefined}
+                          rel={openInNewTab ? "noreferrer" : undefined}
+                          data-testid={`nav-${item.id}`}
+                          aria-label={collapsed ? itemLabel : undefined}
+                          title={collapsed ? itemLabel : undefined}
+                          onClick={onNavigate}
+                          className={({ isActive }) =>
+                            cn(
+                              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                              isActive
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                            )
+                          }
+                        >
+                          <Icon className="h-5 w-5 shrink-0" />
+                          {!collapsed && <span>{itemLabel}</span>}
+                          {!collapsed && item.pinned && (
+                            <span className="ml-auto text-xs text-muted-foreground">📌</span>
+                          )}
+                        </NavLink>
+                        {!collapsed && renderNavigationChildren?.(item)}
+                      </React.Fragment>
                     );
                   })}
                 </div>

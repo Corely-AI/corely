@@ -2419,6 +2419,13 @@
     "lookupFailed": "La recherche de client n'est pas disponible ou l'accès a été refusé. Réessayez ou demandez à votre administrateur."
   },
   "settings": {
+    "emailForwarding": "Transfert d’e-mails",
+    "navigation": {
+      "myAccount": "Mon compte",
+      "myAccountDescription": "Profil, langue et apparence",
+      "workspace": "Espace de travail",
+      "workspaceDescription": "Informations partagées et transfert d’e-mails"
+    },
     "title": "Paramètres",
     "profile": "Profil",
     "business": "Affaires",

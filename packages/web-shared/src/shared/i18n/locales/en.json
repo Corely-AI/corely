@@ -2452,6 +2452,13 @@
     "lookupFailed": "Customer lookup is unavailable or access was denied. Try again or ask your administrator."
   },
   "settings": {
+    "emailForwarding": "Email forwarding",
+    "navigation": {
+      "myAccount": "My account",
+      "myAccountDescription": "Profile, language, and appearance",
+      "workspace": "Workspace",
+      "workspaceDescription": "Shared details and email forwarding"
+    },
     "title": "Settings",
     "profile": "Profile",
     "business": "Business",
