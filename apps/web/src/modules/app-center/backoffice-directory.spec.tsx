@@ -62,6 +62,25 @@ afterEach(() => {
   request.mockReset();
 });
 
+it("announces only catalog loading until the app cards arrive", async () => {
+  let deliverCatalog!: (apps: AppCatalogItem[]) => void;
+  const catalog = new Promise<AppCatalogItem[]>((resolve) => {
+    deliverCatalog = resolve;
+  });
+  request.mockReturnValue(catalog);
+  setup();
+
+  expect(screen.getByRole("status")).toHaveTextContent("Loading apps…");
+  expect(screen.getByRole("searchbox")).toBeEnabled();
+  expect(screen.getByRole("combobox")).toBeEnabled();
+  expect(screen.queryByRole("button", { name: "Open: Invoices" })).not.toBeInTheDocument();
+
+  deliverCatalog([invoice]);
+
+  expect(await screen.findByRole("button", { name: "Open: Invoices" })).toBeEnabled();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+});
+
 it("opens the authorized relative route with the current workspace after refreshing the catalog", async () => {
   request.mockResolvedValue([invoice]);
   setup();
@@ -78,6 +97,9 @@ it("ignores cached launch data when workspace switching cancels the refresh", as
 
   fireEvent.click(await screen.findByRole("button", { name: "Open: Invoices" }));
   await waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+  expect(screen.getByRole("button", { name: "Open: Invoices" })).toBeDisabled();
+  expect(screen.getByRole("status")).toHaveTextContent("Checking access…");
+
   await act(async () => {
     await client.cancelQueries();
   });
