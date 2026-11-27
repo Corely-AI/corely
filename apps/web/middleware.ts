@@ -1,4 +1,5 @@
-import { CORELY_APP_ORIGIN } from "./src/app/corely-app-origin";
+// eslint-disable-next-line no-restricted-imports -- Vercel compiles this entry with NodeNext resolution.
+import { CORELY_APP_ORIGIN } from "./src/app/corely-app-origin.js";
 
 export const config = {
   runtime: "nodejs",
