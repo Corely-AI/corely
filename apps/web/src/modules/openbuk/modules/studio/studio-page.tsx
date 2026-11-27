@@ -9,9 +9,10 @@ import {
   createChecklistsClient,
 } from "@corely/web-features/modules/tasks";
 import { getTaskCreationGuidance } from "../../../tasks/task-creation-guidance";
-import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import type {
+  OperationalExperienceId,
   ListWorkspacesOutput,
   WorkspaceDto,
   OpenBukStudio,
@@ -26,17 +27,47 @@ import { LanguageSwitch, useLanguage } from "../../shared/i18n";
 import { Logo, Field, Loading, ErrorMessage, localDay, time } from "../../shared/ui";
 import { StaffInvitations } from "./staff-invitations";
 import { SetupForm } from "./setup-form";
+import { StudioScheduleLoading } from "./studio-schedule-loading";
+import { getOperationalLinks, getStudioSection } from "./operational-navigation";
+import { useOperationalPackage } from "./use-operational-package";
+
+const navigationLabels = {
+  schedule: "schedule",
+  team: "team",
+  "daily-work": "dailyWork",
+  decisions: "decisions",
+  knowledge: "knowledge",
+} as const satisfies Record<OperationalExperienceId, string>;
+
+function observeConnection(change: () => void) {
+  window.addEventListener("online", change);
+  window.addEventListener("offline", change);
+  return () => {
+    window.removeEventListener("online", change);
+    window.removeEventListener("offline", change);
+  };
+}
 export default function StudioPage({ embedded = false }: { embedded?: boolean }) {
   const { t, locale } = useLanguage();
   const prefix = embedded ? "/openbuk" : "";
   const navigate = useNavigate();
   const location = useLocation();
-  const selfRoute = location.pathname.endsWith("/me");
-  const templatesRoute = location.pathname.endsWith("/tasks/templates");
-  const tasksRoute = location.pathname.endsWith("/tasks") || templatesRoute;
-  const operationalRoute = tasksRoute || selfRoute;
+  const section = getStudioSection(location.pathname, prefix);
+  const templatesRoute = location.pathname.replace(/\/+$/, "").endsWith("/tasks/templates");
+  const bookingRoute = section === "schedule" || section === "settings";
+  const online = useSyncExternalStore(observeConnection, () => navigator.onLine);
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [workspace, setWorkspace] = useState<WorkspaceDto | null>(null);
+  const { state: packageState, retry: retryPackage } = useOperationalPackage(workspace?.id);
+  const canOpenSettings = packageState?.status === "ready" && packageState.isWorkspaceAdmin;
+  const links = getOperationalLinks(
+    packageState?.status === "ready" ? packageState.configuration : null,
+    prefix
+  );
+  const sectionLink = links.find((link) => link.id === section);
+  const canOpenSection = Boolean(sectionLink);
+  const [workspaceAttempt, setWorkspaceAttempt] = useState(0);
+  const [scheduleAttempt, setScheduleAttempt] = useState(0);
   const staffClient = useMemo(
     () => createStaffJourneyClient(api, workspace?.id ?? ""),
     [workspace?.id]
@@ -50,26 +81,32 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
   const [draft, setDraft] = useState<OpenBukSetupDraft | null>(null);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [scheduleFailed, setScheduleFailed] = useState(false);
   const [day, setDay] = useState("");
   const [appointments, setAppointments] = useState<OpenBukAppointment[]>([]);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     async function load() {
       setLoading(true);
       setFailed(false);
-      await auth.loadStoredTokens();
-      if (!auth.getAccessToken()) {
-        navigate(`${prefix}/login`, { replace: true });
-        return;
-      }
       try {
+        await auth.loadStoredTokens();
+        if (!active) {
+          return;
+        }
+        if (!auth.getAccessToken()) {
+          setNeedsLogin(true);
+          return;
+        }
         const result = await api.request<ListWorkspacesOutput>(
           "/workspaces",
           {},
-          { workspaceScope: "none" }
+          { workspaceScope: "none", signal: controller.signal }
         );
         const selected = await storage.getActiveWorkspaceId();
         const chosen =
@@ -80,21 +117,28 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
         }
         setWorkspaces(result.workspaces);
         setWorkspace(chosen);
+        if (!chosen || !bookingRoute) {
+          setStudio(null);
+          setDraft(null);
+          setCanManage(false);
+        }
         if (chosen) {
           await storage.setActiveWorkspaceId(chosen.id);
           if (!active) {
             return;
           }
-          if (operationalRoute) {
-            // Daily Work depends on workspace authority and Tasks/People, not Booking setup.
-            setStudio(null);
-            setDraft(null);
-            setCanManage(false);
+          if (!bookingRoute) {
             return;
           }
-          const data = await api.request<OpenBukStudioResponse>("/openbuk/studio");
+          const request = { headers: { "X-Workspace-Id": chosen.id } };
+          const options = { workspaceScope: "none", signal: controller.signal } as const;
+          const data = await api.request<OpenBukStudioResponse>(
+            "/openbuk/studio",
+            request,
+            options
+          );
           const setup = data.canManage
-            ? await api.request<OpenBukSetupDraftResponse>("/openbuk/setup")
+            ? await api.request<OpenBukSetupDraftResponse>("/openbuk/setup", request, options)
             : null;
           if (active) {
             setDraft(setup?.draft ?? null);
@@ -116,21 +160,29 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
     void load();
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [navigate, operationalRoute, prefix]);
+  }, [bookingRoute, workspaceAttempt]);
   useEffect(() => {
-    if (!studio || !day || !canManage || operationalRoute) {
+    if (
+      !workspace?.id ||
+      !studio ||
+      !day ||
+      !canManage ||
+      !canOpenSection ||
+      section !== "schedule"
+    ) {
       return;
     }
     const controller = new AbortController();
     setBusy(true);
-    setFailed(false);
+    setScheduleFailed(false);
     setAppointments([]);
     api
       .request<{ appointments: OpenBukAppointment[] }>(
         `/openbuk/bookings?day=${day}`,
-        {},
-        { signal: controller.signal }
+        { headers: { "X-Workspace-Id": workspace.id } },
+        { workspaceScope: "none", signal: controller.signal }
       )
       .then((r) => {
         if (!controller.signal.aborted) {
@@ -139,7 +191,7 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setFailed(true);
+          setScheduleFailed(true);
         }
       })
       .finally(() => {
@@ -148,40 +200,42 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
         }
       });
     return () => controller.abort();
-  }, [studio, day, canManage, operationalRoute]);
+  }, [studio, day, canManage, canOpenSection, section, workspace?.id, scheduleAttempt]);
   const setup =
     !studio ||
     !workspace?.publicEnabled ||
     !workspace?.publicModules?.booking ||
-    location.pathname.endsWith("/settings");
+    section === "settings";
+  const setupEntry = bookingRoute && canManage && canOpenSettings && setup;
+  const knownSectionUnavailable =
+    section === "unknown" || (workspace && !canOpenSection && !setupEntry);
+
+  if (needsLogin) {
+    return <Navigate to={prefix + "/login"} replace />;
+  }
+
   return (
     <div className="studio-layout">
       <aside className="sidebar">
         <Logo home={embedded ? "/openbuk" : "/"} />
         <p className="eyebrow">{studio?.studioName ?? t("studio")}</p>
-        <nav>
-          {(
-            [
-              ["/app", "today", "◷"],
-              ["/app/calendar", "calendar", "▦"],
-              ["/app/tasks", "dailyWork", "✓"],
-              ["/app/me", "myProfile", "○"],
-              ["/app/settings", "settings", "⚙"],
-            ] as const
-          ).map(([href, key, icon]) => (
-            <Link
-              className={
-                location.pathname === prefix + href || (href === "/app/tasks" && tasksRoute)
-                  ? "active"
-                  : ""
-              }
-              key={href}
-              to={prefix + href}
-            >
-              <span aria-hidden="true">{icon}</span>
-              {t(key)}
+        <a href="#studio-main" className="studio-skip-link">
+          {t("skipToStudioContent")}
+        </a>
+        <nav aria-label={t("studioNavigation")}>
+          {links.map(({ id, href }) => (
+            <Link key={id} to={href} aria-current={section === id ? "page" : undefined}>
+              {t(navigationLabels[id])}
             </Link>
           ))}
+          {canOpenSettings && (
+            <Link
+              to={prefix + "/app/settings"}
+              aria-current={section === "settings" ? "page" : undefined}
+            >
+              {t("settings")}
+            </Link>
+          )}
         </nav>
         <div className="sidebar-bottom">
           <LanguageSwitch />
@@ -195,13 +249,31 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
           </button>
         </div>
       </aside>
-      <main className="studio-main">
-        {loading ? (
-          <Loading />
-        ) : failed && !studio ? (
+      <main id="studio-main" className="studio-main" tabIndex={-1}>
+        {!online && (
+          <p className="error" role="status">
+            {t("studioOffline")}
+          </p>
+        )}
+        {loading || (workspace && (!packageState || packageState.status === "loading")) ? (
+          bookingRoute ? (
+            <StudioScheduleLoading fullView />
+          ) : (
+            <Loading />
+          )
+        ) : failed || packageState?.status === "error" ? (
           <>
             <ErrorMessage />
-            <button className="button" onClick={() => window.location.reload()}>
+            <button
+              className="button"
+              onClick={() => {
+                if (failed) {
+                  setWorkspaceAttempt((count) => count + 1);
+                } else {
+                  retryPackage();
+                }
+              }}
+            >
               {t("retry")}
             </button>
           </>
@@ -220,14 +292,35 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
               </button>
             ))}
           </section>
-        ) : workspace && selfRoute ? (
+        ) : workspace && bookingRoute && !canManage && packageState?.status === "ready" ? (
+          <section>
+            <h1>{t("staffJoined")}</h1>
+            <p>{t("staffAccess")}</p>
+          </section>
+        ) : packageState?.status === "denied" ||
+          knownSectionUnavailable ||
+          (!workspace && !bookingRoute) ? (
+          <section>
+            <h1>{t("studioSectionUnavailable")}</h1>
+            <p>{t(workspace ? "studioAccessUnavailable" : "studioChooseFirst")}</p>
+            {!workspace && <Link to={prefix + "/app"}>{t("schedule")}</Link>}
+          </section>
+        ) : workspace && sectionLink?.ownerRoute ? (
+          <Navigate
+            to={{
+              pathname: sectionLink.ownerRoute,
+              search: new URLSearchParams({ workspaceId: workspace.id, lang: locale }).toString(),
+            }}
+            replace
+          />
+        ) : workspace && section === "team" ? (
           <StaffSelfService
             key={workspace.id}
             client={staffClient}
             locale={locale}
             tasksHref={prefix + "/app/tasks"}
           />
-        ) : workspace && tasksRoute ? (
+        ) : workspace && section === "daily-work" ? (
           templatesRoute ? (
             <RecurringChecklists
               key={workspace.id}
@@ -245,11 +338,6 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
               templatesHref={prefix + "/app/tasks/templates"}
             />
           )
-        ) : workspace && !canManage ? (
-          <section>
-            <h1>{t("staffJoined")}</h1>
-            <p>{t("staffAccess")}</p>
-          </section>
         ) : setup ? (
           <>
             <SetupForm
@@ -265,6 +353,7 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
                 setDraft(null);
                 setStudio(s);
                 setDay(localDay(s.timezone));
+                retryPackage();
                 navigate(`${prefix}/app`);
               }}
             />
@@ -320,13 +409,21 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
             <section className="schedule">
               <div className="schedule-header">
                 <h2>{t("booked")}</h2>
-                <span className="count">{appointments.length}</span>
+                {!busy && !scheduleFailed && <span className="count">{appointments.length}</span>}
                 <span className="muted">{studio.timezone}</span>
               </div>
               {busy ? (
-                <Loading />
-              ) : failed ? (
-                <ErrorMessage />
+                <StudioScheduleLoading />
+              ) : scheduleFailed ? (
+                <>
+                  <ErrorMessage />
+                  <button
+                    className="button secondary"
+                    onClick={() => setScheduleAttempt((count) => count + 1)}
+                  >
+                    {t("retry")}
+                  </button>
+                </>
               ) : appointments.length === 0 ? (
                 <div className="empty">
                   <span aria-hidden="true">✳</span>

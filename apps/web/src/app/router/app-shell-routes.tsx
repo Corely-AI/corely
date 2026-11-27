@@ -145,8 +145,17 @@ export const appShellRoutes = (
         }
       />
     ))}
+    <Route
+      path="/openbuk/app/*"
+      element={
+        <RequireSurface surfaces={["platform"]}>
+          <React.Suspense fallback={<PageLoadingSkeleton variant="list" />}>
+            <OpenBukStudio />
+          </React.Suspense>
+        </RequireSurface>
+      }
+    />
     <Route element={<AppShell />}>
-      <Route path="/openbuk/app/*" element={<OpenBukStudio />} />
       <Route path="/apps" element={<BackofficeDirectory />} />
       <Route path="/freelancer/settings" element={<FreelancerSettings />} />
       {["/crm/assistant", "/crm/assistant/t/:threadId"].map((path) => (

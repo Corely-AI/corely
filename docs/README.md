@@ -187,7 +187,7 @@ General developer guides and references.
 - [Host-specific sessions and shared API transport](backend/host-sessions.md) — Identity-owned cookie transport and verification limits.
 - [Platform Menu API](./platform/menu.md)
 - [Resumable pilot setup](./platform/pilot-setup.md) — private OpenBuk checkpoints, explicit publication and manually shared staff invitations
-- [Operational package configuration](./platform/operational-package.md) — existing OpenBuk client, manifest composition and independent access gates
+- [Operational package and staff shell](./platform/operational-package.md) — OpenBuk navigation, deep links and independent access gates
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)
