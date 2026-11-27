@@ -1,5 +1,7 @@
 import { expenseSubmissionPolicies } from "./expense-extensions";
 import { Module } from "@nestjs/common";
+import { WorkspacesModule } from "../workspaces";
+import { IdentityModule } from "../identity";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
 import type { OutboxPort } from "@corely/kernel";
 import {
@@ -8,6 +10,7 @@ import {
   CustomFieldIndexRepository,
   PrismaService,
 } from "@corely/data";
+import { ExpenseReceiptAccessGuard } from "./http/expense-receipt-access.guard";
 import { ExpensesController } from "./http/expenses.controller";
 import {
   IdempotencyStoragePort,
@@ -40,9 +43,16 @@ import { GIFT_THRESHOLD_QUERY_PORT } from "./application/ports/gift-threshold-qu
 import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-query.port";
 
 @Module({
-  imports: [DataModule, KernelModule, PlatformCustomAttributesModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    PlatformCustomAttributesModule,
+    IdentityModule,
+    WorkspacesModule,
+  ],
   controllers: [ExpensesController],
   providers: [
+    ExpenseReceiptAccessGuard,
     // Repository
     PrismaExpenseRepository,
     { provide: EXPENSE_REPOSITORY, useExisting: PrismaExpenseRepository },
@@ -184,6 +194,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
       ],
     },
   ],
-  exports: [CreateExpenseUseCase],
+  exports: [CreateExpenseUseCase, TransitionExpenseUseCase],
 })
 export class ExpensesModule {}

@@ -1,5 +1,7 @@
 import { PersonnelDocumentsAdapter } from "./infrastructure/prisma/personnel-documents.adapter";
-import { PERSONNEL_DOCUMENTS, VENDOR_BILL_DOCUMENTS } from "./public";
+import { EXPENSE_RECEIPT_DOCUMENTS, PERSONNEL_DOCUMENTS, VENDOR_BILL_DOCUMENTS } from "./public";
+import { ExpenseReceiptDocumentsAdapter } from "./infrastructure/prisma/expense-receipt-documents.adapter";
+import { PrivateEmailOriginalsAdapter } from "./infrastructure/prisma/private-email-originals.adapter";
 import { VendorBillDocumentsAdapter } from "./infrastructure/prisma/vendor-bill-documents.adapter";
 import { DataModule } from "@corely/data";
 import { PrismaTemplateDocuments } from "./infrastructure/prisma/prisma-template-documents";
@@ -52,6 +54,8 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
   providers: [
     PersonnelDocumentsAdapter,
     VendorBillDocumentsAdapter,
+    PrivateEmailOriginalsAdapter,
+    { provide: EXPENSE_RECEIPT_DOCUMENTS, useClass: ExpenseReceiptDocumentsAdapter },
     { provide: VENDOR_BILL_DOCUMENTS, useExisting: VendorBillDocumentsAdapter },
     { provide: PERSONNEL_DOCUMENTS, useExisting: PersonnelDocumentsAdapter },
     { provide: TemplateDocuments, useClass: PrismaTemplateDocuments },
@@ -357,6 +361,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     },
   ],
   exports: [
+    EXPENSE_RECEIPT_DOCUMENTS,
     VENDOR_BILL_DOCUMENTS,
     PERSONNEL_DOCUMENTS,
     TemplateDocuments,

@@ -9,6 +9,7 @@ export interface ExpenseListFilters {
   fromDate?: Date;
   toDate?: Date;
   includeArchived?: boolean;
+  includeEmailedReceipts?: boolean;
   sort?: string;
   structuredFilters?: any;
   entityIds?: string[];

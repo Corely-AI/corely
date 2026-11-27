@@ -1,3 +1,4 @@
+import { ExpenseReceiptEmailSettingsCard } from "./ExpenseReceiptEmailSettingsCard";
 import { InvoiceEmailSettingsCard } from "./InvoiceEmailSettingsCard";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
@@ -167,6 +168,10 @@ export const WorkspaceSettingsPage: React.FC = () => {
       </div>
 
       <InvoiceEmailSettingsCard key={activeWorkspaceId} workspaceId={activeWorkspaceId} />
+      <ExpenseReceiptEmailSettingsCard
+        key={`expense-${activeWorkspaceId}`}
+        workspaceId={activeWorkspaceId}
+      />
 
       <Card>
         <CardHeader>

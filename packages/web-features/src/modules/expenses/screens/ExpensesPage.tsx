@@ -1,5 +1,6 @@
+import { EMAILED_EXPENSE_PREFIX } from "@corely/contracts";
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   useMutation,
   useQuery,
@@ -198,7 +199,11 @@ export default function ExpensesPage() {
     });
   };
 
-  const allSelected = expenses.length > 0 && expenses.every((e) => selectedIds.has(e.id));
+  const deletableExpenses = expenses.filter(
+    (expense) => !expense.id.startsWith(EMAILED_EXPENSE_PREFIX)
+  );
+  const allSelected =
+    deletableExpenses.length > 0 && deletableExpenses.every((e) => selectedIds.has(e.id));
 
   const bulkDelete = () => {
     if (selectedIds.size === 0) {
@@ -214,14 +219,19 @@ export default function ExpensesPage() {
         title={t("expenses.title")}
         subtitle={t("expenses.list.subtitle")}
         primaryAction={
-          <Button
-            variant="accent"
-            data-testid="create-expense-button"
-            onClick={() => navigate("/expenses/new")}
-          >
-            <Plus className="h-4 w-4" />
-            {t("expenses.addExpense")}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/expenses/receipt-inbox">{t("expenses.receiptEmail.inbox")}</Link>
+            </Button>
+            <Button
+              variant="accent"
+              data-testid="create-expense-button"
+              onClick={() => navigate("/expenses/new")}
+            >
+              <Plus className="h-4 w-4" />
+              {t("expenses.addExpense")}
+            </Button>
+          </div>
         }
         toolbar={
           <ListToolbar
@@ -307,7 +317,7 @@ export default function ExpensesPage() {
                             checked={allSelected}
                             onCheckedChange={(checked) => {
                               if (checked) {
-                                setSelectedIds(new Set(expenses.map((e) => e.id)));
+                                setSelectedIds(new Set(deletableExpenses.map((e) => e.id)));
                               } else {
                                 setSelectedIds(new Set());
                               }
@@ -351,6 +361,7 @@ export default function ExpensesPage() {
                             <td className="px-4 py-3">
                               <Checkbox
                                 checked={selectedIds.has(expense.id)}
+                                disabled={expense.id.startsWith(EMAILED_EXPENSE_PREFIX)}
                                 onCheckedChange={() => toggleSelection(expense.id)}
                                 aria-label={t("expenses.list.selectExpense", { id: expense.id })}
                               />
@@ -379,7 +390,10 @@ export default function ExpensesPage() {
                             <td className="px-4 py-3 text-sm text-right font-medium">
                               {formatMoney(
                                 expense.totalAmountCents ?? (expense as any).totalCents ?? 0,
-                                i18n.language
+                                i18n.language,
+                                expense.id.startsWith(EMAILED_EXPENSE_PREFIX)
+                                  ? expense.currency
+                                  : undefined
                               )}
                             </td>
                             <td className="px-4 py-3 text-right">
@@ -388,20 +402,24 @@ export default function ExpensesPage() {
                                   label: t("common.view"),
                                   href: `/expenses/${expense.id}`,
                                 }}
-                                secondaryActions={[
-                                  {
-                                    label: t("common.edit"),
-                                    href: `/expenses/${expense.id}/edit`,
-                                    icon: <Edit className="h-4 w-4" />,
-                                  },
-                                  {
-                                    label: t("common.delete"),
-                                    onClick: () => setDeleteTarget(expense.id),
-                                    destructive: true,
-                                    icon: <Trash2 className="h-4 w-4" />,
-                                    "data-testid": `expense-delete-${expense.id}`,
-                                  },
-                                ]}
+                                secondaryActions={
+                                  expense.id.startsWith(EMAILED_EXPENSE_PREFIX)
+                                    ? []
+                                    : [
+                                        {
+                                          label: t("common.edit"),
+                                          href: `/expenses/${expense.id}/edit`,
+                                          icon: <Edit className="h-4 w-4" />,
+                                        },
+                                        {
+                                          label: t("common.delete"),
+                                          onClick: () => setDeleteTarget(expense.id),
+                                          destructive: true,
+                                          icon: <Trash2 className="h-4 w-4" />,
+                                          "data-testid": `expense-delete-${expense.id}`,
+                                        },
+                                      ]
+                                }
                               />
                             </td>
                           </tr>

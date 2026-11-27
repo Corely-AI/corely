@@ -11,7 +11,12 @@ import { SignWorkspace } from "./sign-workspace";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
-import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/expenses";
+import {
+  ExpensesPage,
+  NewExpensePage,
+  ExpenseDetailPage,
+  ReceiptInboxPage,
+} from "../../modules/expenses";
 import {
   InvoicesPage,
   NewInvoicePage,
@@ -220,6 +225,7 @@ export const appShellRoutes = (
       <Route path="/issues/new" element={<NewIssuePage />} />
       <Route path="/issues/:id" element={<IssueDetailPage />} />
       <Route path="/expenses" element={<ExpensesPage />} />
+      <Route path="/expenses/receipt-inbox" element={<ReceiptInboxPage />} />
       <Route path="/expenses/new" element={<NewExpensePage />} />
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />

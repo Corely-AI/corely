@@ -10,3 +10,5 @@ export * from "./submit-expense.schema";
 export * from "./list-expenses.schema";
 export * from "./get-expense.schema";
 export * from "./create-expense-web.schema";
+
+export * from "./expense-receipt-email.schema";

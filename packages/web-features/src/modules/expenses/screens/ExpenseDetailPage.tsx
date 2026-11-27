@@ -1,7 +1,7 @@
 import React from "react";
 import { ApiError } from "@corely/api-client";
 import { ExpenseSubmissionGuidanceSlot, type ExpenseSubmissionGuidance } from "@corely/expenses-ui";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck, ShieldOff, ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,7 @@ import { invalidateResourceQueries } from "@corely/web-shared/shared/crud";
 import { toast } from "sonner";
 import { DetailScreenHeader } from "@corely/web-shared/shared/components/DetailScreenHeader";
 import { CustomAttributesSection } from "@corely/web-shared/shared/custom-attributes";
-import type { ExpenseDeductibilityResult } from "@corely/contracts";
+import { EMAILED_EXPENSE_PREFIX, type ExpenseDeductibilityResult } from "@corely/contracts";
 
 // ---------------------------------------------------------------------------
 // Deductibility summary sub-component
@@ -254,7 +254,11 @@ export const ExpenseDetailPage = ({
               <div>
                 <p className="text-sm text-muted-foreground">{t("expenses.amount")}</p>
                 <p className="font-medium">
-                  {formatMoney(expense.totalAmountCents ?? 0, i18n.language)}
+                  {formatMoney(
+                    expense.totalAmountCents ?? 0,
+                    i18n.language,
+                    expense.id.startsWith(EMAILED_EXPENSE_PREFIX) ? expense.currency : undefined
+                  )}
                 </p>
               </div>
               <div>
@@ -293,7 +297,17 @@ export const ExpenseDetailPage = ({
               <CardTitle>{t("expenses.receipt")}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              {t("expenses.detail.attachReceipts")}
+              {expense.id.startsWith(EMAILED_EXPENSE_PREFIX) &&
+              Boolean(expense.receipts?.length) ? (
+                <Link
+                  className="text-primary underline"
+                  to={`/expenses/receipt-inbox?receipt=${expense.id}`}
+                >
+                  {t("expenses.receiptEmail.original")}
+                </Link>
+              ) : (
+                t("expenses.detail.attachReceipts")
+              )}
             </CardContent>
           </Card>
           <Card>

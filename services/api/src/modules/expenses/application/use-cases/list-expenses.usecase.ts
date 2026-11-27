@@ -16,6 +16,7 @@ export interface ListExpensesQuery
   pageSize: number;
   q?: string;
   sort?: string;
+  includeEmailedReceipts?: boolean;
 }
 
 export class ListExpensesUseCase {
@@ -83,6 +84,9 @@ export class ListExpensesUseCase {
       category: input.category ?? null,
       status: input.status ?? undefined,
       includeArchived: input.includeArchived,
+      ...(input.includeEmailedReceipts === undefined
+        ? {}
+        : { includeEmailedReceipts: input.includeEmailedReceipts }),
       fromDate: input.fromDate ? new Date(input.fromDate) : undefined,
       toDate: input.toDate ? new Date(input.toDate) : undefined,
       sort: input.sort,
