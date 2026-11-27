@@ -22,7 +22,7 @@ import { InvoiceEmailWebhookController } from "./adapters/http/invoice-email-web
 import { InvoiceEmailIntake } from "./application/invoice-email-intake";
 import { InvoiceEmailSettingsAdapter } from "./infrastructure/adapters/invoice-email-settings.adapter";
 import { PrismaVendorBillRepository } from "./infrastructure/adapters/prisma-vendor-bill-repository.adapter";
-import { ResendInvoiceAttachmentAdapter } from "./infrastructure/adapters/resend-invoice-attachment.adapter";
+import { ResendAttachmentAdapter } from "../../shared/inbound-email/resend-attachment.adapter";
 
 @Module({
   imports: [
@@ -37,7 +37,7 @@ import { ResendInvoiceAttachmentAdapter } from "./infrastructure/adapters/resend
   providers: [
     PrismaVendorBillRepository,
     InvoiceEmailSettingsAdapter,
-    ResendInvoiceAttachmentAdapter,
+    ResendAttachmentAdapter,
     {
       provide: InvoiceEmailIntake,
       useFactory: (
@@ -45,7 +45,7 @@ import { ResendInvoiceAttachmentAdapter } from "./infrastructure/adapters/resend
         documents: VendorBillDocumentsPort,
         settings: InvoiceEmailSettingsAdapter,
         workspaces: Pick<WorkspaceRepositoryPort, "findActiveTenantForWorkspace">,
-        provider: ResendInvoiceAttachmentAdapter,
+        provider: ResendAttachmentAdapter,
         unitOfWork: UnitOfWorkPort,
         audit: AuditPort,
         clock: ClockPort,
@@ -71,7 +71,7 @@ import { ResendInvoiceAttachmentAdapter } from "./infrastructure/adapters/resend
         VENDOR_BILL_DOCUMENTS,
         InvoiceEmailSettingsAdapter,
         WORKSPACE_REPOSITORY_PORT,
-        ResendInvoiceAttachmentAdapter,
+        ResendAttachmentAdapter,
         UNIT_OF_WORK,
         AUDIT_PORT,
         CLOCK_PORT_TOKEN,

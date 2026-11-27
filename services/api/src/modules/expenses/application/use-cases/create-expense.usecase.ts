@@ -1,5 +1,5 @@
 import { ValidationFailedError } from "@corely/domain";
-import type { OutboxPort, UseCaseContext } from "@corely/kernel";
+import type { OutboxPort, UseCaseContext, TransactionContext } from "@corely/kernel";
 import type { AuditPort } from "../../../../shared/ports/audit.port";
 import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
@@ -142,28 +142,7 @@ export class CreateExpenseUseCase {
     });
     expense.applyDeductibility(deductResult);
 
-    await this.expenseRepo.create(expense);
-    await this.audit.log({
-      tenantId: input.tenantId,
-      userId: input.createdByUserId ?? ctx.userId ?? "system",
-      action: "expense.created",
-      entityType: "Expense",
-      entityId: expense.id,
-      metadata: {},
-    });
-
-    await this.outbox.enqueue({
-      tenantId: input.tenantId,
-      eventType: "expense.created",
-      payload: {
-        expenseId: expense.id,
-        tenantId: expense.tenantId,
-        totalCents: expense.totalCents,
-        taxAmountCents: expense.taxAmountCents,
-        currency: expense.currency,
-        issuedAt: expense.issuedAt.toISOString(),
-      },
-    });
+    await this.persistCreated(expense, input.tenantId);
 
     const indexRows = buildCustomFieldIndexes({
       tenantId: input.tenantId,
@@ -236,6 +215,87 @@ export class CreateExpenseUseCase {
     });
 
     return expense;
+  }
+
+  async createFromReceipt(
+    input: {
+      id: string;
+      merchant: string;
+      issuedAt: Date;
+      amountCents: number;
+      currency: string;
+      category: string;
+    },
+    ctx: { tenantId: string; workspaceId: string; userId: string },
+    tx: TransactionContext
+  ) {
+    const definitions = await this.customFieldDefinitions.listActiveByEntityType(
+      ctx.workspaceId,
+      "expense"
+    );
+    const custom = validateAndNormalizeCustomValues(definitions, {});
+    const expense = new Expense(
+      input.id,
+      ctx.workspaceId,
+      "DRAFT",
+      input.merchant,
+      input.amountCents,
+      null,
+      input.currency,
+      input.category,
+      input.issuedAt,
+      ctx.userId,
+      this.clock.now(),
+      null,
+      null,
+      Object.keys(custom).length ? custom : null
+    );
+    expense.applyDeductibility(
+      computeDeDeductibility({
+        category: expense.category,
+        totalAmountCents: expense.totalCents,
+        meta: null,
+      })
+    );
+    await this.persistCreated(expense, ctx.tenantId, tx, ctx.workspaceId);
+    return expense;
+  }
+
+  private async persistCreated(
+    expense: Expense,
+    tenantId: string,
+    tx?: TransactionContext,
+    workspaceId?: string
+  ) {
+    const txArgs: [] | [TransactionContext] = tx ? [tx] : [];
+    await this.expenseRepo.create(expense, ...txArgs);
+    await this.audit.log(
+      {
+        tenantId,
+        userId: expense.createdByUserId,
+        action: "expense.created",
+        entityType: "Expense",
+        entityId: expense.id,
+        metadata: workspaceId ? { workspaceId, source: "email-receipt" } : {},
+      },
+      ...txArgs
+    );
+    await this.outbox.enqueue(
+      {
+        tenantId: expense.tenantId,
+        eventType: "expense.created",
+        payload: {
+          expenseId: expense.id,
+          tenantId: expense.tenantId,
+          totalCents: expense.totalCents,
+          taxAmountCents: expense.taxAmountCents,
+          currency: expense.currency,
+          issuedAt: expense.issuedAt.toISOString(),
+          ...(workspaceId ? { workspaceId } : {}),
+        },
+      },
+      ...txArgs
+    );
   }
 
   private toJSON(expense: Expense) {

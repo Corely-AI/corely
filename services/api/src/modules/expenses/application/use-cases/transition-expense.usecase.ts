@@ -6,11 +6,12 @@ import {
 } from "@corely/expenses/extensions";
 import { ValidationError } from "@corely/kernel";
 import { ConflictError, ForbiddenError, NotFoundError } from "@corely/domain";
-import type { OutboxPort, UseCaseContext } from "@corely/kernel";
+import type { OutboxPort, UseCaseContext, TransactionContext } from "@corely/kernel";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
 import type { AuditPort } from "../../../../shared/ports/audit.port";
 import { assertCan } from "../../../../shared/policies/assert-can";
-import type { ExpenseStatus } from "../../domain/expense.entity";
+import { isEmailedExpense } from "../../domain/emailed-expense";
+import type { Expense, ExpenseStatus } from "../../domain/expense.entity";
 
 export interface TransitionExpenseInput {
   expenseId: string;
@@ -45,6 +46,32 @@ export class TransitionExpenseUseCase {
       throw new NotFoundError("Expense not found");
     }
 
+    await this.transition(expense, input, { ...ctx, tenantId });
+  }
+
+  async submitFromReceipt(
+    expense: Expense,
+    ctx: { tenantId: string; workspaceId: string; userId: string },
+    tx: TransactionContext
+  ) {
+    if (
+      expense.tenantId !== ctx.workspaceId ||
+      expense.createdByUserId !== ctx.userId ||
+      expense.status !== "DRAFT"
+    ) {
+      throw new ForbiddenError("Only the workspace claimant can submit this receipt draft");
+    }
+    await this.transition(expense, { expenseId: expense.id, to: "SUBMITTED" }, ctx, tx);
+  }
+
+  private async transition(
+    expense: Expense,
+    input: TransitionExpenseInput,
+    ctx: UseCaseContext & { tenantId: string },
+    tx?: TransactionContext
+  ) {
+    const { tenantId, workspaceId } = ctx;
+    const txArgs: [] | [TransactionContext] = tx ? [tx] : [];
     if (expense.archivedAt) {
       throw new ConflictError("Cannot transition an archived expense");
     }
@@ -67,35 +94,55 @@ export class TransitionExpenseUseCase {
       }
     }
 
+    if (isEmailedExpense(expense.id)) {
+      const next: Record<ExpenseStatus, readonly ExpenseStatus[]> = {
+        DRAFT: ["SUBMITTED"],
+        SUBMITTED: ["APPROVED", "REJECTED"],
+        APPROVED: ["PAID"],
+        REJECTED: [],
+        PAID: [],
+      };
+      if (!next[oldStatus].includes(input.to)) {
+        throw new ValidationError("Invalid expense status transition");
+      }
+    }
+
     // Typical flow: DRAFT -> SUBMITTED -> APPROVED -> PAID
     // REJECTED can happen from SUBMITTED
     expense.updateStatus(input.to);
 
-    await this.repo.update(expense);
+    await this.repo.update(expense, ...txArgs);
 
-    await this.audit.log({
-      tenantId,
-      userId: ctx.userId ?? "system",
-      action: "expense.transitioned",
-      entityType: "Expense",
-      entityId: expense.id,
-      metadata: {
-        from: oldStatus,
-        to: input.to,
-        reason: input.reason,
-      },
-    });
-
-    await this.outbox.enqueue({
-      tenantId,
-      eventType: "expense.status_changed",
-      payload: {
+    await this.audit.log(
+      {
         tenantId,
-        entityType: "expense",
+        userId: ctx.userId ?? "system",
+        action: "expense.transitioned",
+        entityType: "Expense",
         entityId: expense.id,
-        newStatus: input.to,
-        oldStatus,
+        metadata: {
+          from: oldStatus,
+          to: input.to,
+          reason: input.reason,
+        },
       },
-    });
+      ...txArgs
+    );
+
+    await this.outbox.enqueue(
+      {
+        tenantId,
+        eventType: "expense.status_changed",
+        payload: {
+          tenantId,
+          entityType: "expense",
+          entityId: expense.id,
+          newStatus: input.to,
+          oldStatus,
+          ...(tx && workspaceId ? { workspaceId } : {}),
+        },
+      },
+      ...txArgs
+    );
   }
 }

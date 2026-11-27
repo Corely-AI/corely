@@ -1,3 +1,8 @@
+import {
+  describeReceiptAttachment,
+  matchesReceiptAttachment,
+  type InboundAttachment,
+} from "../../../shared/inbound-email/receipt-attachment";
 import { createHash } from "node:crypto";
 import type { InvoiceEmailSettings } from "@corely/contracts";
 import {
@@ -15,18 +20,10 @@ import { VendorBillAggregate } from "../domain/vendor-bill.aggregate";
 
 export type WorkspaceScope = { tenantId: string; workspaceId: string };
 
-export type IncomingInvoiceAttachment = {
-  id: string;
-  filename?: string | null;
-  content_type: string;
-  content_disposition?: string | null;
-  content_id?: string | null;
-};
-
 type IncomingInvoiceEmail = {
   id: string;
   to: string[];
-  attachments: IncomingInvoiceAttachment[];
+  attachments: InboundAttachment[];
 };
 
 export interface InvoiceEmailSettingsPort {
@@ -34,13 +31,7 @@ export interface InvoiceEmailSettingsPort {
   setEnabled(scope: WorkspaceScope, enabled: boolean, tx: TransactionContext): Promise<void>;
 }
 
-export const MAX_INVOICE_FILE_BYTES = 10 * 1024 * 1024;
 const addressId = /^[a-z0-9-]{1,56}$/;
-const supportedFiles = {
-  "application/pdf": Buffer.from("%PDF-"),
-  "image/jpeg": Buffer.from([0xff, 0xd8, 0xff]),
-  "image/png": Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-};
 
 type Deps = {
   bills: VendorBillRepositoryPort;
@@ -151,15 +142,10 @@ export class InvoiceEmailIntake {
   private async importAttachment(
     scope: WorkspaceScope,
     emailId: string,
-    attachment: IncomingInvoiceAttachment
+    attachment: InboundAttachment
   ) {
-    const contentType = attachment.content_type.trim().toLowerCase().split(";")[0];
-    const signature = supportedFiles[contentType as keyof typeof supportedFiles];
-    if (
-      !Buffer.isBuffer(signature) ||
-      attachment.content_disposition === "inline" ||
-      (attachment.content_disposition !== "attachment" && attachment.content_id)
-    ) {
+    const file = describeReceiptAttachment(attachment, "invoice");
+    if (!file) {
       this.deps.logger.info("Invoice email attachment rejected", {
         emailId,
         attachmentId: attachment.id,
@@ -174,11 +160,7 @@ export class InvoiceEmailIntake {
       return;
     }
     const bytes = await this.deps.download(emailId, attachment.id);
-    if (
-      !bytes ||
-      bytes.length > MAX_INVOICE_FILE_BYTES ||
-      !bytes.subarray(0, signature.length).equals(signature)
-    ) {
+    if (!bytes || !matchesReceiptAttachment(file.contentType, bytes)) {
       this.deps.logger.info("Invoice email attachment rejected", {
         emailId,
         attachmentId: attachment.id,
@@ -186,22 +168,12 @@ export class InvoiceEmailIntake {
       });
       return;
     }
-    const filename =
-      attachment.filename
-        ?.replace(/\p{Cc}/gu, "")
-        .trim()
-        .slice(0, 255) ||
-      (contentType === "application/pdf"
-        ? "invoice.pdf"
-        : contentType === "image/jpeg"
-          ? "invoice.jpg"
-          : "invoice.png");
     const owner = { ...scope, billId };
-    const document = await this.deps.documents.stage(owner, { filename, contentType, bytes });
+    const document = await this.deps.documents.stage(owner, { ...file, bytes });
     const draft = VendorBillAggregate.createDraft({
       ...scope,
       id: billId,
-      sourceFilename: filename,
+      sourceFilename: file.filename,
       supplierPartyId: null,
       billDate: null,
       dueDate: null,

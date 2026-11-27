@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { Resend } from "resend";
-import { MAX_INVOICE_FILE_BYTES } from "../../application/invoice-email-intake";
+import { MAX_INBOUND_ATTACHMENT_BYTES } from "./receipt-attachment";
 
 @Injectable()
-export class ResendInvoiceAttachmentAdapter {
+export class ResendAttachmentAdapter {
   private readonly client: Resend | undefined;
 
   constructor(env: EnvService) {
@@ -15,21 +15,24 @@ export class ResendInvoiceAttachmentAdapter {
     const response = await this.client?.emails.receiving.attachments.get({ emailId, id });
     const attachment = response?.data;
     if (!attachment) {
-      throw new Error("Invoice attachment unavailable from provider");
+      throw new Error("Inbound attachment unavailable from provider");
     }
-    if (attachment.size > MAX_INVOICE_FILE_BYTES || attachment.content_disposition === "inline") {
+    if (
+      attachment.size > MAX_INBOUND_ATTACHMENT_BYTES ||
+      attachment.content_disposition === "inline"
+    ) {
       return null;
     }
     const url = new URL(attachment.download_url);
     if (url.protocol !== "https:" || url.username || url.password) {
-      throw new Error("Invalid invoice attachment URL from provider");
+      throw new Error("Invalid inbound attachment URL from provider");
     }
     const download = await fetch(url, {
       redirect: "error",
       signal: AbortSignal.timeout(15_000),
     });
     if (!download.ok || !download.body) {
-      throw new Error("Invoice attachment download failed");
+      throw new Error("Inbound attachment download failed");
     }
     const reader = download.body.getReader();
     const chunks: Uint8Array[] = [];
@@ -41,7 +44,7 @@ export class ResendInvoiceAttachmentAdapter {
           return Buffer.concat(chunks, bytes);
         }
         bytes += chunk.value.length;
-        if (bytes > MAX_INVOICE_FILE_BYTES) {
+        if (bytes > MAX_INBOUND_ATTACHMENT_BYTES) {
           await reader.cancel();
           return null;
         }

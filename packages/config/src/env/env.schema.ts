@@ -187,6 +187,14 @@ export const envSchema = z.object({
   RESEND_REPLY_TO: z.string().optional(),
   RESEND_WEBHOOK_SECRET: z.string().optional(),
   INVOICE_EMAIL_RESEND_WEBHOOK_SECRET: z.string().optional(),
+  EXPENSE_EMAIL_RESEND_WEBHOOK_SECRET: z.string().optional(),
+  EXPENSE_EMAIL_DOMAIN: z.preprocess(
+    (value) => (typeof value === "string" ? value.trim().toLowerCase() || undefined : value),
+    z
+      .string()
+      .regex(/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/)
+      .optional()
+  ),
   INVOICE_EMAIL_DOMAIN: z.preprocess(
     (value) => (typeof value === "string" ? value.trim().toLowerCase() || undefined : value),
     z
@@ -297,6 +305,7 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "RESEND_API_KEY",
   "RESEND_WEBHOOK_SECRET",
   "INVOICE_EMAIL_RESEND_WEBHOOK_SECRET",
+  "EXPENSE_EMAIL_RESEND_WEBHOOK_SECRET",
   "SUMUP_WEBHOOK_SECRET",
   "INTEGRATIONS_SECRET_KEY",
   "STRIPE_SECRET_KEY",

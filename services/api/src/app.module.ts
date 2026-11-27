@@ -5,6 +5,7 @@ import { DataModule } from "@corely/data";
 import { AppController } from "./app.controller";
 import { IdentityModule } from "./modules/identity";
 import { ExpensesModule } from "./modules/expenses";
+import { ExpenseReceiptEmailModule } from "./modules/expenses/expense-receipt-email.module";
 import { InvoicesModule } from "./modules/invoices";
 import { WorkflowModule } from "./modules/workflow";
 import { AutomationModule } from "./modules/automation";
@@ -86,6 +87,7 @@ import { SignModule } from "./modules/sign/sign.module";
     CrmModule,
     WorkspacesModule,
     ExpensesModule,
+    ExpenseReceiptEmailModule,
     InvoicesModule,
     DocumentsModule,
     TaxModule,

@@ -9,3 +9,8 @@ export {
   VENDOR_BILL_DOCUMENTS,
   type VendorBillDocumentsPort,
 } from "../application/ports/vendor-bill-documents.port";
+
+export {
+  EXPENSE_RECEIPT_DOCUMENTS,
+  type ExpenseReceiptDocumentsPort,
+} from "../application/ports/expense-receipt-documents.port";
