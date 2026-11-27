@@ -5,14 +5,21 @@ import type * as PDFJS from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { PDFDocumentProxy } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { signFieldPosition, type SignField } from "@corely/contracts";
 
+export interface SigningPdfAssets {
+  moduleUrl: string;
+  workerUrl: string;
+}
+
 export function DocumentPreview({
   source,
   fields,
   messages,
+  assets: { moduleUrl, workerUrl },
 }: {
   source: string;
   fields: SignField[];
   messages: SignRecipientMessages;
+  assets: SigningPdfAssets;
 }) {
   const [doc, setDoc] = useState<PDFDocumentProxy>(),
     [page, setPage] = useState(1),
@@ -22,14 +29,13 @@ export function DocumentPreview({
     let closed = false,
       dispose = () => {};
     async function load() {
-      const moduleUrl = "/api/signing/pdf-module?v=6.5.438";
       const { getDocument, GlobalWorkerOptions } = (await import(
-        /* webpackIgnore: true */ moduleUrl
+        /* @vite-ignore */ /* webpackIgnore: true */ moduleUrl
       )) as typeof PDFJS;
       if (closed) {
         return;
       }
-      GlobalWorkerOptions.workerSrc = "/api/signing/pdf-worker?v=6.5.438";
+      GlobalWorkerOptions.workerSrc = workerUrl;
       const task = getDocument({
         data: Uint8Array.from(atob(source), (c) => c.charCodeAt(0)),
         useSystemFonts: false,
@@ -52,7 +58,7 @@ export function DocumentPreview({
       closed = true;
       dispose();
     };
-  }, [source]);
+  }, [source, moduleUrl, workerUrl]);
   useEffect(() => {
     if (!doc) {
       return;

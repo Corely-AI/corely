@@ -1,16 +1,18 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { SignRecipientMessages } from "@corely/web-shared/shared/i18n/sign-recipient";
-import { DocumentPreview } from "./document-preview";
+import { DocumentPreview, type SigningPdfAssets } from "./document-preview";
 import { SignatureInput } from "./signature-input";
 import { SignRecipientReviewSchema, type DrawnSignature } from "@corely/contracts";
 type Review = ReturnType<typeof SignRecipientReviewSchema.parse>;
 export function RecipientForm({
   lang,
   messages,
+  pdfAssets,
 }: {
   lang: string;
   messages: SignRecipientMessages;
+  pdfAssets: SigningPdfAssets;
 }) {
   async function post(action: string, body: unknown) {
     const r = await fetch("/api/signing/" + action, {
@@ -124,6 +126,7 @@ export function RecipientForm({
                 {confirm ? messages.openReviewedPdf : messages.openOriginalPdf}
               </a>
               <DocumentPreview
+                assets={pdfAssets}
                 messages={messages}
                 key={confirm ? "reviewed" : "original"}
                 source={confirm && prepared ? prepared.pdf : review.pdf}

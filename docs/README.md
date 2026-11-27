@@ -113,6 +113,7 @@ Deployment, configuration, and infrastructure.
 - [Deploy with Vercel and Supabase](./devops/vercel-supabase.md)
 - [Prisma Migration Baseline](./devops/prisma-baseline.md)
 - [Configuration](./devops/configuration.md)
+- [Corely Sign production configuration](./devops/corely-sign.md)
 - [Background Runtime](./devops/background-runtime.md)
 - [Vercel Queues for workflows](./tasks/447-vercel-workflow-queues.md)
 - [Customization](./devops/customization.md)

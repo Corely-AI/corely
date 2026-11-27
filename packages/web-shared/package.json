@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*",
-    "./shared/i18n/sign-recipient": "./src/shared/i18n/sign-recipient.ts"
+    "./shared/i18n/sign-recipient": "./src/shared/i18n/sign-recipient.ts",
+    "./server/signing-proxy": "./src/server/signing-proxy.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"

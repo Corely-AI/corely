@@ -17,6 +17,7 @@
     "react-dom": "catalog:",
     "turndown": "catalog:",
     "turndown-plugin-gfm": "catalog:",
+    "@corely/web-features": "workspace:*",
     "@corely/web-shared": "workspace:*",
     "pdfjs-dist": "6.5.438"
   },
