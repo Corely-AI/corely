@@ -1,8 +1,9 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import middleware from "../../middleware";
+import { CORELY_APP_ORIGIN } from "./corely-app-origin";
 
-const origin = "https://app.corely.one";
+const origin = CORELY_APP_ORIGIN;
 const proxyKey = "test-ingress-key-for-cli-routing-only";
 
 afterEach(() => {

@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-restricted-imports -- Vercel compiles this entry with NodeNext resolution.
-import { CORELY_APP_ORIGIN } from "./src/app/corely-app-origin.js";
+const CORELY_APP_ORIGIN = "https://app.corely.one";
 
 export const config = {
   runtime: "nodejs",
@@ -24,7 +23,11 @@ const responseHeaders = [
   "x-frame-options",
 ];
 
-export default async function middleware(request: Request): Promise<Response | undefined> {
+/**
+ * @param {Request} request
+ * @returns {Promise<Response | undefined>}
+ */
+export default async function middleware(request) {
   const url = new URL(request.url);
   if (
     url.origin !== CORELY_APP_ORIGIN ||
@@ -53,12 +56,13 @@ export default async function middleware(request: Request): Promise<Response | u
   const target = new URL("https://api.corely.one");
   target.pathname = url.pathname;
   target.search = url.search;
+  /** @type {RequestInit & { duplex: "half" }} */
   const options = {
     method: request.method,
     headers: forwarded,
     body: request.body,
-    duplex: "half" as const,
-    redirect: "manual" as const,
+    duplex: "half",
+    redirect: "manual",
     signal: AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]),
   };
   try {
