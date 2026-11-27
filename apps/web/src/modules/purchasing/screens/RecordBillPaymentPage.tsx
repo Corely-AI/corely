@@ -7,6 +7,7 @@ import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { purchasingApi } from "@/lib/purchasing-api";
 
 export default function RecordBillPaymentPage() {
@@ -14,11 +15,12 @@ export default function RecordBillPaymentPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { activeWorkspaceId } = useWorkspace();
 
   const { data } = useQuery({
-    queryKey: ["vendorBills", id],
+    queryKey: ["vendorBills", activeWorkspaceId, id],
     queryFn: () => purchasingApi.getVendorBill(id || ""),
-    enabled: Boolean(id),
+    enabled: Boolean(id && activeWorkspaceId),
   });
 
   const [amountCents, setAmountCents] = useState(0);
@@ -43,7 +45,7 @@ export default function RecordBillPaymentPage() {
         reference: reference || undefined,
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["vendorBills", id] });
+      void queryClient.invalidateQueries({ queryKey: ["vendorBills", activeWorkspaceId, id] });
       void queryClient.invalidateQueries({ queryKey: ["vendorBills"] });
       navigate(`/purchasing/vendor-bills/${id}`);
     },

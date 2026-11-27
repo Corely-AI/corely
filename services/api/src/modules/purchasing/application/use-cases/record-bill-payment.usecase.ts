@@ -40,19 +40,33 @@ export class RecordBillPaymentUseCase extends BaseUseCase<
       return err(new ValidationError("userId is required"));
     }
 
+    const vendorBill = await this.services.billRepo.findById(
+      tenantId,
+      input.vendorBillId,
+      ctx.workspaceId
+    );
+    if (!vendorBill) {
+      return err(new NotFoundError("Vendor bill not found"));
+    }
+
+    const actionKey = vendorBill.workspaceId
+      ? `purchasing.record-payment:${vendorBill.id}`
+      : "purchasing.record-payment";
     const cached = await getIdempotentResult<RecordBillPaymentOutput>({
       idempotency: this.services.idempotency,
-      actionKey: "purchasing.record-payment",
+      actionKey,
       tenantId,
       idempotencyKey: input.idempotencyKey,
     });
     if (cached) {
+      if (cached.vendorBill.id !== vendorBill.id) {
+        return err(new ValidationError("This idempotency key belongs to another bill"));
+      }
       return ok(cached);
     }
 
-    const vendorBill = await this.services.billRepo.findById(tenantId, input.vendorBillId);
-    if (!vendorBill) {
-      return err(new NotFoundError("Vendor bill not found"));
+    if (vendorBill.status !== "POSTED" && vendorBill.status !== "PARTIALLY_PAID") {
+      return err(new ValidationError("Payments can only be recorded on posted vendor bills"));
     }
 
     if (vendorBill.totals.dueCents < input.amountCents) {
@@ -150,7 +164,7 @@ export class RecordBillPaymentUseCase extends BaseUseCase<
     const result = { vendorBill: toVendorBillDto(vendorBill) };
     await storeIdempotentResult({
       idempotency: this.services.idempotency,
-      actionKey: "purchasing.record-payment",
+      actionKey,
       tenantId,
       idempotencyKey: input.idempotencyKey,
       body: result,

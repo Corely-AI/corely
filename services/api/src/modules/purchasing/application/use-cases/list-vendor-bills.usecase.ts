@@ -26,6 +26,7 @@ export class ListVendorBillsUseCase extends BaseUseCase<
     const tenantId = ctx.tenantId!;
 
     const result = await this.services.repo.list(tenantId, {
+      workspaceId: ctx.workspaceId,
       status: input.status,
       supplierPartyId: input.supplierPartyId,
       fromDate: input.fromDate,

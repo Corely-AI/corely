@@ -10,14 +10,16 @@ import type {
 export class VendorBillAggregate {
   id: string;
   tenantId: string;
+  readonly workspaceId: string | null;
+  readonly sourceFilename: string | null;
   billNumber: string | null;
   internalBillRef: string | null;
   status: VendorBillStatus;
-  supplierPartyId: string;
+  supplierPartyId: string | null;
   supplierContactPartyId: string | null;
-  billDate: LocalDate;
-  dueDate: LocalDate;
-  currency: string;
+  billDate: LocalDate | null;
+  dueDate: LocalDate | null;
+  currency: string | null;
   paymentTerms: string | null;
   notes: string | null;
   lineItems: VendorBillLineItem[];
@@ -25,6 +27,7 @@ export class VendorBillAggregate {
   totals: VendorBillProps["totals"];
   createdAt: Date;
   updatedAt: Date;
+  readonly loadedUpdatedAt: Date;
   approvedAt: Date | null;
   postedAt: Date | null;
   voidedAt: Date | null;
@@ -36,6 +39,8 @@ export class VendorBillAggregate {
   constructor(props: VendorBillProps & { payments?: BillPayment[] }) {
     this.id = props.id;
     this.tenantId = props.tenantId;
+    this.workspaceId = props.workspaceId ?? null;
+    this.sourceFilename = props.sourceFilename ?? null;
     this.billNumber = props.billNumber;
     this.internalBillRef = props.internalBillRef ?? null;
     this.status = props.status;
@@ -51,6 +56,7 @@ export class VendorBillAggregate {
     this.totals = props.totals;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.loadedUpdatedAt = props.updatedAt;
     this.approvedAt = props.approvedAt ?? null;
     this.postedAt = props.postedAt ?? null;
     this.voidedAt = props.voidedAt ?? null;
@@ -63,13 +69,15 @@ export class VendorBillAggregate {
   static createDraft(params: {
     id: string;
     tenantId: string;
-    supplierPartyId: string;
+    workspaceId?: string;
+    sourceFilename?: string;
+    supplierPartyId: string | null;
     supplierContactPartyId?: string | null;
     billNumber?: string | null;
     internalBillRef?: string | null;
-    billDate: LocalDate;
-    dueDate: LocalDate;
-    currency: string;
+    billDate: LocalDate | null;
+    dueDate: LocalDate | null;
+    currency: string | null;
     paymentTerms?: string | null;
     notes?: string | null;
     lineItems: VendorBillLineItem[];
@@ -80,6 +88,8 @@ export class VendorBillAggregate {
     return new VendorBillAggregate({
       id: params.id,
       tenantId: params.tenantId,
+      workspaceId: params.workspaceId,
+      sourceFilename: params.sourceFilename,
       billNumber: params.billNumber ?? null,
       internalBillRef: params.internalBillRef ?? null,
       status: "DRAFT",
@@ -165,6 +175,12 @@ export class VendorBillAggregate {
 
   approve(approvedAt: Date, now: Date) {
     this.ensureDraft();
+    if (!this.supplierPartyId || !this.billDate || !this.dueDate || !this.currency) {
+      throw new Error("Supplier, bill date, due date and currency are required");
+    }
+    if (this.sourceFilename && this.lineItems.some((line) => !line.description.trim())) {
+      throw new Error("A description is required for each line item");
+    }
     if (!this.lineItems.length || this.totals.totalCents <= 0) {
       throw new Error("Vendor bill must have at least one line item with total > 0");
     }
@@ -230,6 +246,6 @@ export class VendorBillAggregate {
   }
 
   private touch(now: Date) {
-    this.updatedAt = now;
+    this.updatedAt = now > this.updatedAt ? now : new Date(this.updatedAt.getTime() + 1);
   }
 }

@@ -26,3 +26,5 @@ export * from "./get-settings.schema";
 export * from "./update-settings.schema";
 export * from "./account-mappings.schema";
 export * from "./list-suppliers.schema";
+
+export * from "./invoice-email.schema";

@@ -28,6 +28,17 @@ export const purchasingAppManifest: AppManifest = {
       order: 21,
     },
     {
+      id: "vendor-bills",
+      scope: "web",
+      section: "purchase-orders",
+      labelKey: "nav.vendorBills",
+      defaultLabel: "Vendor Bills",
+      route: "/purchasing/vendor-bills",
+      icon: "FileText",
+      order: 22,
+      requiresPermissions: ["purchasing.read"],
+    },
+    {
       id: "purchasing-settings",
       scope: "web",
       section: "purchasing",

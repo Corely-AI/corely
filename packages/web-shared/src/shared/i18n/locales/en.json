@@ -3457,6 +3457,73 @@
     }
   },
   "purchasing": {
+    "vendorBills": {
+      "amounts": {
+        "totals": "Totals",
+        "subtotal": "Subtotal",
+        "tax": "Tax",
+        "paid": "Paid",
+        "due": "Amount due"
+      },
+      "loadFailed": "Could not load vendor bills.",
+      "title": "Vendor bills",
+      "detailTitle": "Vendor bill",
+      "new": "New bill",
+      "aiCreate": "Create with AI",
+      "emptyTitle": "No vendor bills",
+      "emptyDescription": "Create a bill or forward an invoice to get started.",
+      "columns": {
+        "number": "Bill number"
+      }
+    },
+    "fields": {
+      "supplier": "Supplier",
+      "billNumber": "Bill number",
+      "billDate": "Bill date",
+      "dueDate": "Due date",
+      "currency": "Currency",
+      "lineItems": "Line items"
+    },
+    "actions": {
+      "saveDraft": "Save draft",
+      "approve": "Approve",
+      "post": "Post",
+      "recordPayment": "Record payment",
+      "void": "Void"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "approved": "Approved",
+      "posted": "Posted",
+      "partially_paid": "Partially paid",
+      "paid": "Paid",
+      "void": "Void"
+    },
+    "invoiceEmail": {
+      "title": "Incoming invoice email",
+      "enable": "Enable invoice email",
+      "description": "Forward PDF, JPEG or PNG invoice attachments here. Each file creates a draft bill.",
+      "unavailable": "Invoice email receiving is unavailable.",
+      "address": "Forwarding address",
+      "copy": "Copy",
+      "copied": "Address copied",
+      "copyFailed": "Could not copy the address.",
+      "loadFailed": "Could not load invoice email settings.",
+      "retry": "Try again",
+      "updateFailed": "Could not save invoice email settings.",
+      "loading": "Loading…",
+      "billFailed": "Could not open this bill.",
+      "reviewHint": "Complete the bill details and save the draft before approving it.",
+      "searchSuppliers": "Search suppliers",
+      "chooseSupplier": "Choose a supplier",
+      "addLine": "Add line",
+      "lineDescription": "Description",
+      "lineQuantity": "Quantity",
+      "lineUnitCents": "Unit cost (minor units)",
+      "removeLine": "Remove line {{number}}",
+      "original": "Original invoice",
+      "openOriginal": "Open original"
+    },
     "settings": {
       "title": "Purchasing Settings",
       "save": "Save Settings",

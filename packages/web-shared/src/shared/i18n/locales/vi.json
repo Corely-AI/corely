@@ -3415,6 +3415,73 @@
     }
   },
   "purchasing": {
+    "vendorBills": {
+      "amounts": {
+        "totals": "Tổng tiền",
+        "subtotal": "Tạm tính",
+        "tax": "Thuế",
+        "paid": "Đã thanh toán",
+        "due": "Số tiền còn phải trả"
+      },
+      "loadFailed": "Không thể tải danh sách hóa đơn nhà cung cấp.",
+      "title": "Hóa đơn nhà cung cấp",
+      "detailTitle": "Hóa đơn nhà cung cấp",
+      "new": "Hóa đơn mới",
+      "aiCreate": "Tạo bằng AI",
+      "emptyTitle": "Chưa có hóa đơn nhà cung cấp",
+      "emptyDescription": "Tạo hóa đơn hoặc chuyển tiếp hóa đơn qua email để bắt đầu.",
+      "columns": {
+        "number": "Số hóa đơn"
+      }
+    },
+    "fields": {
+      "supplier": "Nhà cung cấp",
+      "billNumber": "Số hóa đơn",
+      "billDate": "Ngày hóa đơn",
+      "dueDate": "Ngày đến hạn",
+      "currency": "Tiền tệ",
+      "lineItems": "Các dòng hóa đơn"
+    },
+    "actions": {
+      "saveDraft": "Lưu bản nháp",
+      "approve": "Phê duyệt",
+      "post": "Ghi sổ",
+      "recordPayment": "Ghi nhận thanh toán",
+      "void": "Hủy"
+    },
+    "statuses": {
+      "draft": "Nháp",
+      "approved": "Đã phê duyệt",
+      "posted": "Đã ghi sổ",
+      "partially_paid": "Đã thanh toán một phần",
+      "paid": "Đã thanh toán",
+      "void": "Đã hủy"
+    },
+    "invoiceEmail": {
+      "title": "Nhận hóa đơn qua email",
+      "enable": "Bật nhận hóa đơn qua email",
+      "description": "Chuyển tiếp hóa đơn PDF, JPEG hoặc PNG đến địa chỉ này. Mỗi tệp tạo một hóa đơn nháp.",
+      "unavailable": "Tính năng nhận hóa đơn qua email hiện không khả dụng.",
+      "address": "Địa chỉ chuyển tiếp",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép địa chỉ",
+      "copyFailed": "Không thể sao chép địa chỉ.",
+      "loadFailed": "Không thể tải cài đặt nhận hóa đơn qua email.",
+      "retry": "Thử lại",
+      "updateFailed": "Không thể lưu cài đặt nhận hóa đơn qua email.",
+      "loading": "Đang tải…",
+      "billFailed": "Không thể mở hóa đơn này.",
+      "reviewHint": "Điền thông tin và lưu bản nháp trước khi phê duyệt.",
+      "searchSuppliers": "Tìm nhà cung cấp",
+      "chooseSupplier": "Chọn nhà cung cấp",
+      "addLine": "Thêm dòng",
+      "lineDescription": "Mô tả",
+      "lineQuantity": "Số lượng",
+      "lineUnitCents": "Đơn giá (đơn vị tiền tệ nhỏ nhất)",
+      "removeLine": "Xóa dòng {{number}}",
+      "original": "Hóa đơn gốc",
+      "openOriginal": "Mở tệp gốc"
+    },
     "settings": {
       "title": "Cài đặt mua hàng",
       "save": "Lưu cài đặt",

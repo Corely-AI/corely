@@ -27,17 +27,19 @@ import {
 } from "@corely/contracts";
 import { PurchasingApplication } from "../../application/purchasing.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../../platform";
 
 @Controller("purchasing")
-@UseGuards(AuthGuard, WorkspaceCapabilityGuard)
+@UseGuards(AuthGuard, WorkspaceCapabilityGuard, RbacGuard)
 @RequireWorkspaceCapability("purchasing.purchaseOrders")
 export class PurchasingController {
   constructor(private readonly app: PurchasingApplication) {}
 
   // ===== Suppliers =====
   @Get("suppliers")
+  @RequirePermission("purchasing.read")
   async listSuppliers(@Query() query: any, @Req() req: Request) {
     const input = ListSuppliersInputSchema.parse({
       search: query.search,
@@ -135,6 +137,7 @@ export class PurchasingController {
 
   // ===== Vendor Bills =====
   @Post("vendor-bills")
+  @RequirePermission("purchasing.write")
   async createVendorBill(@Body() body: unknown, @Req() req: Request) {
     const input = CreateVendorBillInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -143,6 +146,7 @@ export class PurchasingController {
   }
 
   @Patch("vendor-bills/:id")
+  @RequirePermission("purchasing.write")
   async updateVendorBill(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = UpdateVendorBillInputSchema.parse({ ...(body as object), vendorBillId: id });
     const ctx = buildUseCaseContext(req);
@@ -151,6 +155,7 @@ export class PurchasingController {
   }
 
   @Post("vendor-bills/:id/approve")
+  @RequirePermission("purchasing.write")
   async approveVendorBill(@Param("id") id: string, @Req() req: Request) {
     const input = ApproveVendorBillInputSchema.parse({ vendorBillId: id });
     const ctx = buildUseCaseContext(req);
@@ -159,6 +164,7 @@ export class PurchasingController {
   }
 
   @Post("vendor-bills/:id/post")
+  @RequirePermission("purchasing.write")
   async postVendorBill(@Param("id") id: string, @Req() req: Request) {
     const input = PostVendorBillInputSchema.parse({ vendorBillId: id });
     const ctx = buildUseCaseContext(req);
@@ -167,6 +173,7 @@ export class PurchasingController {
   }
 
   @Post("vendor-bills/:id/void")
+  @RequirePermission("purchasing.write")
   async voidVendorBill(@Param("id") id: string, @Req() req: Request) {
     const input = VoidVendorBillInputSchema.parse({ vendorBillId: id });
     const ctx = buildUseCaseContext(req);
@@ -175,6 +182,7 @@ export class PurchasingController {
   }
 
   @Get("vendor-bills/:id")
+  @RequirePermission("purchasing.read")
   async getVendorBill(@Param("id") id: string, @Req() req: Request) {
     const input = GetVendorBillInputSchema.parse({ vendorBillId: id });
     const ctx = buildUseCaseContext(req);
@@ -183,6 +191,7 @@ export class PurchasingController {
   }
 
   @Get("vendor-bills")
+  @RequirePermission("purchasing.read")
   async listVendorBills(@Query() query: any, @Req() req: Request) {
     const input = ListVendorBillsInputSchema.parse({
       status: query.status,
@@ -202,6 +211,7 @@ export class PurchasingController {
 
   // ===== Payments =====
   @Post("vendor-bills/:id/payments")
+  @RequirePermission("purchasing.write")
   async recordBillPayment(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = RecordBillPaymentInputSchema.parse({ ...(body as object), vendorBillId: id });
     const ctx = buildUseCaseContext(req);
@@ -210,6 +220,7 @@ export class PurchasingController {
   }
 
   @Get("vendor-bills/:id/payments")
+  @RequirePermission("purchasing.read")
   async listBillPayments(@Param("id") id: string, @Req() req: Request) {
     const input = ListBillPaymentsInputSchema.parse({ vendorBillId: id });
     const ctx = buildUseCaseContext(req);

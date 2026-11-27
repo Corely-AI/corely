@@ -82,14 +82,16 @@ model PurchaseOrderLine {
 model VendorBill {
   id                        String           @id @default(cuid())
   tenantId                  String
+  workspaceId               String?
+  sourceFilename            String?
   billNumber                String?
   internalBillRef           String?
   status                    VendorBillStatus @default(DRAFT)
-  supplierPartyId           String
+  supplierPartyId           String?
   supplierContactPartyId    String?
-  billDate                  DateTime         @db.Date
-  dueDate                   DateTime         @db.Date
-  currency                  String           @db.VarChar(3)
+  billDate                  DateTime?        @db.Date
+  dueDate                   DateTime?        @db.Date
+  currency                  String?          @db.VarChar(3)
   paymentTerms              String?
   notes                     String?
   subtotalCents             Int
@@ -113,6 +115,7 @@ model VendorBill {
   payments BillPayment[]
 
   @@unique([tenantId, supplierPartyId, billNumber])
+  @@index([tenantId, workspaceId, createdAt])
   @@index([tenantId, status])
   @@index([tenantId, supplierPartyId])
   @@index([tenantId, createdAt])

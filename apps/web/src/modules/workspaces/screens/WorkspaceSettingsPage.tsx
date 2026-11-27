@@ -1,3 +1,4 @@
+import { InvoiceEmailSettingsCard } from "./InvoiceEmailSettingsCard";
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -164,6 +165,8 @@ export const WorkspaceSettingsPage: React.FC = () => {
           {uiCopy("save-changes")}
         </Button>
       </div>
+
+      <InvoiceEmailSettingsCard key={activeWorkspaceId} workspaceId={activeWorkspaceId} />
 
       <Card>
         <CardHeader>

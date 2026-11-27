@@ -36,20 +36,40 @@ export class PostVendorBillUseCase extends BaseUseCase<PostVendorBillInput, Post
       return err(new ValidationError("userId is required"));
     }
 
+    const vendorBill = await this.services.repo.findById(
+      tenantId,
+      input.vendorBillId,
+      ctx.workspaceId
+    );
+    if (!vendorBill) {
+      return err(new NotFoundError("Vendor bill not found"));
+    }
+
+    const actionKey = vendorBill.workspaceId
+      ? `purchasing.post-bill:${vendorBill.id}`
+      : "purchasing.post-bill";
     const cached = await getIdempotentResult<PostVendorBillOutput>({
       idempotency: this.services.idempotency,
-      actionKey: "purchasing.post-bill",
+      actionKey,
       tenantId,
       idempotencyKey: input.idempotencyKey,
     });
     if (cached) {
+      if (cached.vendorBill.id !== vendorBill.id) {
+        return err(new ValidationError("This idempotency key belongs to another bill"));
+      }
       return ok(cached);
     }
 
-    const vendorBill = await this.services.repo.findById(tenantId, input.vendorBillId);
-    if (!vendorBill) {
-      return err(new NotFoundError("Vendor bill not found"));
+    if (
+      vendorBill.status !== "APPROVED" ||
+      !vendorBill.supplierPartyId ||
+      !vendorBill.billDate ||
+      !vendorBill.currency
+    ) {
+      return err(new ValidationError("Only complete, approved vendor bills can be posted"));
     }
+    const { supplierPartyId, billDate, currency } = vendorBill;
 
     let settings = await this.services.settingsRepo.findByTenant(tenantId);
     if (!settings) {
@@ -70,7 +90,7 @@ export class PostVendorBillUseCase extends BaseUseCase<PostVendorBillInput, Post
       const resolved = await resolveAccountForLine({
         line,
         tenantId,
-        supplierPartyId: vendorBill.supplierPartyId,
+        supplierPartyId,
         mappingRepo: this.services.mappingRepo,
         defaultExpenseAccountId: settings.defaultExpenseAccountId,
       });
@@ -94,20 +114,20 @@ export class PostVendorBillUseCase extends BaseUseCase<PostVendorBillInput, Post
     });
 
     const createInput: CreateJournalEntryInput = {
-      postingDate: vendorBill.billDate,
+      postingDate: billDate,
       memo: `Vendor Bill ${vendorBill.billNumber ?? vendorBill.id} posted`,
       lines: [
         ...Array.from(debitBuckets.entries()).map(([ledgerAccountId, amountCents]) => ({
           ledgerAccountId,
           direction: "Debit" as const,
           amountCents,
-          currency: vendorBill.currency,
+          currency,
         })),
         {
           ledgerAccountId: settings.defaultAccountsPayableAccountId,
           direction: "Credit" as const,
           amountCents: vendorBill.totals.totalCents,
-          currency: vendorBill.currency,
+          currency,
         },
       ],
       sourceType: "VendorBill",
@@ -150,7 +170,7 @@ export class PostVendorBillUseCase extends BaseUseCase<PostVendorBillInput, Post
     const result = { vendorBill: toVendorBillDto(vendorBill) };
     await storeIdempotentResult({
       idempotency: this.services.idempotency,
-      actionKey: "purchasing.post-bill",
+      actionKey,
       tenantId,
       idempotencyKey: input.idempotencyKey,
       body: result,

@@ -4,13 +4,13 @@ import { VendorBillLineInputSchema } from "./create-vendor-bill.schema";
 import { localDateSchema } from "../shared/local-date.schema";
 
 export const VendorBillHeaderPatchSchema = z.object({
-  supplierPartyId: z.string().optional(),
+  supplierPartyId: z.string().nullish(),
   supplierContactPartyId: z.string().optional(),
-  billNumber: z.string().optional(),
+  billNumber: z.string().nullish(),
   internalBillRef: z.string().optional(),
-  billDate: localDateSchema.optional(),
-  dueDate: localDateSchema.optional(),
-  currency: z.string().optional(),
+  billDate: localDateSchema.nullish(),
+  dueDate: localDateSchema.nullish(),
+  currency: z.string().nullish(),
   paymentTerms: z.string().optional(),
   notes: z.string().optional(),
   purchaseOrderId: z.string().optional(),
