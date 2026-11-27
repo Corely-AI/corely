@@ -13,6 +13,7 @@
           "value": "app.corely.one"
         }
       ],
+      "missing": [{ "type": "query", "key": "request" }],
       "destination": "/auth/login",
       "permanent": false
     },

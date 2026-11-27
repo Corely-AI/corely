@@ -14,6 +14,28 @@ Enable `CORELY_CLI_AUTH_ENABLED=true` on the API alongside an existing
 The flag defaults to false. Disabling it blocks CLI requests. The flow uses the
 existing Identity SSO tables.
 
+### Production on app.corely.one
+
+For a CLI-only rollout, configure the production API with
+`CORELY_SSO_ENABLED=true`, `CORELY_CLI_AUTH_ENABLED=true`, and
+`CORELY_SSO_REGISTRATIONS={"loginOrigin":"https://app.corely.one","apps":[]}`.
+This keeps focused browser app registrations empty. Verify the Identity SSO
+migrations, current sender configuration, and private `CORELY_SSO_SECRET`
+before enabling these flags. Set the same private `CORELY_SSO_PROXY_KEY` on
+the API and the Vercel project's production runtime. Keep the key out of
+browser build variables and deployment metadata.
+
+The production web middleware forwards `/sso/cli/*` and the central browser
+routes used by the handoff. `/login?request=…` renders the existing SSO screen.
+Ordinary `/login` redirects to `/auth/login`.
+
+After rolling out both surfaces, use `CORELY_URL=https://app.corely.one`
+for the commands below. Verify browser sign-in, return to the terminal, and an
+authenticated workspace list. In a CLI-only rollout, disable both SSO and CLI
+sign-in flags together when rolling back.
+
+## Package installation and sign-in
+
 From the repository root, package and install the pilot build with Node
 22.19 or newer.
 

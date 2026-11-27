@@ -1,9 +1,10 @@
 import { CORELY_APP_ORIGIN } from "./app/corely-app-origin";
 
 // All hostnames serve the same build. Existing SSO origins retain their cookie boundary.
-const { origin, pathname } = window.location;
+const { origin, pathname, search } = window.location;
 const isOrigin = (url: string | undefined) => !!url && origin === new URL(url).origin;
 const isCorelyAppHost = origin === CORELY_APP_ORIGIN;
+const isSsoHandoff = pathname === "/login" && new URLSearchParams(search).has("request");
 const isOpenBukHost =
   !isCorelyAppHost &&
   [
@@ -13,7 +14,9 @@ const isOpenBukHost =
   ].some((url) => isOrigin(url) && new URL(url).pathname === "/");
 
 const studio = /^\/openbuk\/app(?:\/|$)/.test(pathname);
-if ((/^\/openbuk(?:\/|$)/.test(pathname) && !studio) || isOpenBukHost) {
+if (isCorelyAppHost && isSsoHandoff) {
+  void import("./modules/sso-login/main");
+} else if ((/^\/openbuk(?:\/|$)/.test(pathname) && !studio) || isOpenBukHost) {
   void import("./modules/openbuk/main");
 } else if (isCorelyAppHost) {
   void import("./backoffice");

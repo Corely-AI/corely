@@ -77,6 +77,20 @@ describe("native SSO security primitives", () => {
     expect(disabled.enabled).toBe(false);
     expect(() => disabled.assertEnabled()).toThrow();
   });
+  it("allows CLI-only activation without registering the login host as a browser app", () => {
+    const origin = "https://app.corely.one";
+    const registrations = {
+      CORELY_SSO_REGISTRATIONS: JSON.stringify({ loginOrigin: origin, apps: [] }),
+    };
+    expect(() => config(registrations)).toThrow();
+    const cli = config({ ...registrations, CORELY_CLI_AUTH_ENABLED: "true" });
+    const security = new SsoHttpSecurity(cli, new SsoCrypto("ab".repeat(32)));
+    const browser = request({ host: "app.corely.one" });
+    expect(security.origin(browser, true)).toBe(origin);
+    expect(() => security.origin(browser)).toThrow();
+    expect(cli.apps).toEqual([]);
+    expect(cli.agentGrantsEnabled).toBe(false);
+  });
   it("ignores spoofed forwarded hosts and requires authenticated proxy metadata", () => {
     const security = new SsoHttpSecurity(config(), new SsoCrypto("ab".repeat(32)));
     expect(() =>
