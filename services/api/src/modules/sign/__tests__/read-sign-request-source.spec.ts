@@ -50,6 +50,8 @@ describe("read signing request source", () => {
         base64: pdf.toString("base64"),
         sha256: draft.canonicalSha256,
         fields,
+        layout: { fields },
+        draftRevision: 0,
       });
       expect(requireOwner).toHaveBeenCalledWith(ctx, requestId, "sign.requests.read", tx);
       expect(version).toHaveBeenCalledWith(scope, draft.templateId, draft.templateRevision, tx);

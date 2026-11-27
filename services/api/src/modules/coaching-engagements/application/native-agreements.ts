@@ -72,6 +72,9 @@ export class NativeCoachingAgreements {
         );
       }
       const draft = await this.createSignRequestDraft.execute(ctx, input, key, tx);
+      if (draft.configuration) {
+        throw new ConflictException("Prepare the agreement from its published template");
+      }
       const prior = await this.repo.nativeAgreementEvent(
         tenantId,
         workspaceId,

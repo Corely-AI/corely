@@ -1,7 +1,7 @@
 import "../../../../packages/web-shared/src/shared/i18n";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useParams } from "react-router-dom";
 import { WorkspaceTemplates } from "../../../../packages/web-features/src/modules/sign/template-page";
 import { RequestActions } from "../../../../packages/web-features/src/modules/sign/request-actions";
 import { RequestDetail } from "../../../../packages/web-features/src/modules/sign/request-page";
@@ -23,10 +23,16 @@ const confirmationDraft: SignRequestDraft = {
   ],
   status: "DRAFT",
 };
+function RequestFixture() {
+  const { id } = useParams();
+  return id ? <RequestDetail key={id} id={id} workspace="fixture-workspace" /> : null;
+}
 createRoot(document.querySelector("#root")!).render(
   <BrowserRouter>
     {request ? (
-      <RequestDetail id={request[1]} workspace="fixture-workspace" />
+      <Routes>
+        <Route path="/sign/requests/:id" element={<RequestFixture />} />
+      </Routes>
     ) : path === "/sign/requests/confirmation-fixture" ? (
       <main className="space-y-4 p-4 sm:p-6">
         <RequestActions workspace="fixture-workspace" draft={confirmationDraft} />

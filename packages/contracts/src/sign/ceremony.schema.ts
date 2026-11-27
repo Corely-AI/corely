@@ -8,6 +8,8 @@ export const SendSignRequestSchema = z
     consent: z.string().trim().min(1).max(2000),
     invitation: z.string().trim().max(2000),
     canonicalSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    draftRevision: z.number().int().nonnegative().optional(),
+    confirmReplacement: z.literal(true).optional(),
   })
   .strict();
 

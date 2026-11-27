@@ -3,7 +3,9 @@ import type {
   SignRequestFilter,
   CreateSignRequestDraft,
   SignRequestDraft,
+  SignRequestDraftConfiguration,
   SignRequestSummary,
+  UpdateSignRequestDraft,
 } from "@corely/contracts";
 import type { SignScope } from "./sign-draft.repository";
 export type RequestOwner = SignScope & { actorId: string };
@@ -30,7 +32,19 @@ export abstract class RequestDraftRepository {
     commandId: string,
     fingerprint: string,
     input: CreateSignRequestDraft,
+    tx: TransactionContext,
+    replacement?: { requestId: string; configuration: SignRequestDraftConfiguration }
+  ): Promise<SignRequestDraft>;
+  abstract update(
+    owner: RequestOwner,
+    id: string,
+    input: UpdateSignRequestDraft,
     tx: TransactionContext
   ): Promise<SignRequestDraft>;
+  abstract replacement(
+    owner: RequestOwner,
+    originalId: string,
+    tx: TransactionContext
+  ): Promise<SignRequestDraft | null>;
   abstract lock(owner: RequestOwner, commandId: string, tx: TransactionContext): Promise<void>;
 }

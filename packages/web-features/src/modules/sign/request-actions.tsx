@@ -14,29 +14,42 @@ import {
 } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 import React, { useEffect, useRef, useState } from "react";
-import { SignCeremonyViewSchema, type SignRequestDraft } from "@corely/contracts";
+import {
+  SignCeremonyViewSchema,
+  SignRequestDraftSchema,
+  type SignRequestDraft,
+} from "@corely/contracts";
 import { apiClient } from "@corely/web-shared/lib/api-client";
+import { Link, useNavigate } from "react-router-dom";
 import { RequestProgressSkeleton } from "./request-loading";
 import { RequestReview } from "./request-review";
+import { SignerMark } from "./signer-colors";
+import type { RequestEditStep } from "./request-draft-editor";
 
 export function RequestActions({
   workspace,
   draft,
+  onEdit,
 }: {
   workspace: string;
   draft: SignRequestDraft;
+  onEdit?: (step: RequestEditStep) => void;
 }) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const savedSettings = draft.configuration?.settings;
   const [state, setState] = useState<ReturnType<typeof SignCeremonyViewSchema.parse>>(),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [reload, setReload] = useState(0);
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
   const [expiry, setExpiry] = useState(() =>
-      new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+      savedSettings
+        ? (savedSettings.expiresAt?.slice(0, 10) ?? "")
+        : new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
     ),
-    [consent, setConsent] = useState(""),
-    [invitation, setInvitation] = useState("");
+    [consent, setConsent] = useState(savedSettings?.consent ?? ""),
+    [invitation, setInvitation] = useState(savedSettings?.invitation ?? "");
   const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
   const [reminderRecipient, setReminderRecipient] =
     useState<SignRequestDraft["recipients"][number]>();
@@ -44,6 +57,22 @@ export function RequestActions({
   const reminderButton = useRef<HTMLButtonElement>(null);
   const progressHeading = useRef<HTMLHeadingElement>(null);
   const prefix = "/sign/requests/" + draft.requestId;
+  const layout = draft.configuration?.layout;
+  const missingSignatures = layout?.roles.some(
+    (role) =>
+      !layout.fields.some(
+        (field) => field.roleId === role.id && field.type === "signature" && field.required
+      )
+  );
+  const missingSettings =
+    savedSettings &&
+    (!savedSettings.consent ||
+      !savedSettings.expiresAt ||
+      Date.parse(savedSettings.expiresAt) <= Date.now());
+  const canReplace =
+    !draft.workflowManaged &&
+    state &&
+    ["SENT", "EXPIRED", "VOID", "DECLINED"].includes(state.status);
   useEffect(() => {
     const controller = new AbortController();
     setIsLoadingProgress(true);
@@ -91,6 +120,23 @@ export function RequestActions({
       setBusy(false);
     }
   }
+  async function prepareReplacement() {
+    setBusy(true);
+    setError("");
+    try {
+      const value = await apiClient.request(
+        prefix + "/replacement",
+        { method: "POST", headers: { "X-Workspace-Id": workspace } },
+        { workspaceScope: "none" }
+      );
+      const replacement = SignRequestDraftSchema.parse(value);
+      navigate("/sign/requests/" + replacement.requestId);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : t("sign.saveFailed"));
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <>
       <header className="space-y-2">
@@ -112,6 +158,33 @@ export function RequestActions({
                 {new Date(state.expiresAt).toLocaleString(i18n.language, { timeZone: "UTC" })}
               </time>
             </p>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {onEdit && !draft.workflowManaged && state?.status === "DRAFT" && (
+            <Button
+              variant="outline"
+              disabled={busy || isLoadingProgress}
+              onClick={() => onEdit("recipientsTitle")}
+            >
+              {t("sign.editRequest")}
+            </Button>
+          )}
+          {canReplace && (
+            <Button
+              variant="outline"
+              disabled={busy || isLoadingProgress}
+              onClick={() => void prepareReplacement()}
+            >
+              {t("sign.createReplacement")}
+            </Button>
+          )}
+          {draft.replacesRequestId && (
+            <Button variant="link" asChild>
+              <Link to={"/sign/requests/" + draft.replacesRequestId}>
+                {t("sign.originalRequest")}
+              </Link>
+            </Button>
           )}
         </div>
       </header>
@@ -136,9 +209,14 @@ export function RequestActions({
                 className="flex flex-wrap items-center justify-between gap-3 py-3"
               >
                 <div className="min-w-0 max-w-full">
-                  <p className="break-words font-medium">
-                    {draft.routing === "sequential" && index + 1 + ". "}
-                    {person.name}
+                  <p className="flex items-center gap-2 font-medium">
+                    <SignerMark
+                      index={layout?.roles.findIndex((role) => role.id === person.roleId) ?? index}
+                    />
+                    <span className="min-w-0 break-words">
+                      {draft.routing === "sequential" && index + 1 + ". "}
+                      {person.name}
+                    </span>
                   </p>
                   <p className="break-all text-sm text-muted-foreground">{person.email}</p>
                   {signer?.deliveredAt && (
@@ -269,7 +347,9 @@ export function RequestActions({
                 className="grid gap-4"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  setSendConfirmationOpen(true);
+                  if (!missingSignatures && !missingSettings && !busy && !isLoadingProgress) {
+                    setSendConfirmationOpen(true);
+                  }
                 }}
               >
                 <label className="grid gap-1 text-sm font-medium">
@@ -277,6 +357,7 @@ export function RequestActions({
                   <Input
                     className="w-fit"
                     required
+                    readOnly={Boolean(savedSettings)}
                     type="date"
                     value={expiry}
                     onChange={(e) => setExpiry(e.target.value)}
@@ -286,6 +367,7 @@ export function RequestActions({
                   {t("sign.consentLabel")}
                   <Textarea
                     required
+                    readOnly={Boolean(savedSettings)}
                     maxLength={2000}
                     value={consent}
                     onChange={(e) => setConsent(e.target.value)}
@@ -295,16 +377,32 @@ export function RequestActions({
                   {t("sign.invitation")}
                   <Textarea
                     maxLength={2000}
+                    readOnly={Boolean(savedSettings)}
                     value={invitation}
                     onChange={(e) => setInvitation(e.target.value)}
                   />
                 </label>
+                {onEdit && savedSettings && (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button variant="outline" onClick={() => onEdit("requestSettings")}>
+                      {t("sign.editRequestSettings")}
+                    </Button>
+                    {missingSettings && (
+                      <p className="text-sm">{t("sign.completeRequestSettings")}</p>
+                    )}
+                    {missingSignatures && (
+                      <Button variant="outline" onClick={() => onEdit("placeFields")}>
+                        {t("sign.finishPlacingSignatures")}
+                      </Button>
+                    )}
+                  </div>
+                )}
                 <Button
                   ref={reviewSendButton}
                   className="justify-self-start"
                   variant="accent"
                   type="submit"
-                  disabled={busy || isLoadingProgress}
+                  disabled={busy || isLoadingProgress || missingSignatures || missingSettings}
                 >
                   {t("sign.reviewSend")}
                 </Button>
@@ -312,7 +410,9 @@ export function RequestActions({
                   <RequestReview
                     draft={draft}
                     workspace={workspace}
-                    expiresAt={new Date(expiry + "T23:59:59Z").toISOString()}
+                    expiresAt={
+                      savedSettings?.expiresAt ?? new Date(expiry + "T23:59:59Z").toISOString()
+                    }
                     consent={consent}
                     invitation={invitation}
                     busy={busy}
@@ -325,10 +425,15 @@ export function RequestActions({
                     onSend={() =>
                       void act("send", {
                         confirm: true,
-                        expiresAt: new Date(expiry + "T23:59:59Z").toISOString(),
+                        expiresAt:
+                          savedSettings?.expiresAt ?? new Date(expiry + "T23:59:59Z").toISOString(),
                         consent,
                         invitation,
                         canonicalSha256: draft.canonicalSha256,
+                        ...(draft.configuration
+                          ? { draftRevision: draft.configuration.revision }
+                          : {}),
+                        ...(draft.replacesRequestId ? { confirmReplacement: true } : {}),
                       })
                     }
                   />

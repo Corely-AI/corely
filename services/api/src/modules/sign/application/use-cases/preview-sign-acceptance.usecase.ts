@@ -1,3 +1,4 @@
+import { requestLayout } from "../services/request-layout";
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { ReviewSignValuesSchema } from "@corely/contracts";
 import { UNIT_OF_WORK, type UnitOfWorkPort } from "@corely/kernel";
@@ -25,22 +26,17 @@ export class PreviewSignAcceptanceUseCase {
     const snapshot = await this.uow.withinTransaction(async (tx) => {
       const { ref, s, c, draft } = await this.sessions.requireSigner(session, "sessionDigest", tx);
       const scope = { tenantId: ref.tenantId, workspaceId: ref.workspaceId },
-        template = await this.templates.version(
-          scope,
-          draft.templateId,
-          draft.templateRevision,
-          tx
-        );
+        layout = await requestLayout(this.templates, scope, draft, tx);
       if (
-        !template ||
+        !layout ||
         input.review !== signingReviewDigest(c, s, draft.canonicalSha256) ||
-        !validateRecipientValues(template.layout, s.roleId, input.values)
+        !validateRecipientValues(layout, s.roleId, input.values)
       ) {
         throw new BadRequestException("Complete your assigned fields before reviewing");
       }
       return {
         owner: { ...scope, templateId: draft.templateId, sha256: draft.canonicalSha256 },
-        layout: template.layout,
+        layout,
         role: s.roleId,
       };
     });

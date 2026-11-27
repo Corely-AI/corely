@@ -1,7 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { getPrismaClient, PrismaService } from "@corely/data";
 import type { TransactionContext } from "@corely/kernel";
-import { SignRequestDraftSchema } from "@corely/contracts";
+import {
+  projectSignRequestDraft,
+  signRequestDraftInclude,
+} from "./prisma-request-draft.repository";
 import {
   CeremonyRepository,
   type CeremonyPatch,
@@ -62,22 +65,13 @@ export class PrismaCeremonyRepository extends CeremonyRepository {
   async draft(ref: RequestRef, tx: TransactionContext) {
     const row = await getPrismaClient(this.db, tx).signRequestDraft.findUnique({
       where: { tenantId_workspaceId_requestId: ref },
-      include: { publication: { include: { snapshot: { select: { title: true } } } } },
+      include: signRequestDraftInclude,
     });
     if (!row) {
       return null;
     }
     return {
-      ...SignRequestDraftSchema.parse({
-        templateId: row.templateId,
-        templateRevision: row.templateRevision,
-        recipients: row.recipients,
-        routing: row.routing,
-        requestId: row.requestId,
-        title: row.publication.snapshot.title,
-        canonicalSha256: row.publication.canonicalSha256,
-        status: "DRAFT",
-      }),
+      ...projectSignRequestDraft(row),
       actorId: row.actorId,
     };
   }

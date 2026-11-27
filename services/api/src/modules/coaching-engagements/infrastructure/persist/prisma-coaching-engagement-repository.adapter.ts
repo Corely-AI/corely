@@ -218,7 +218,7 @@ export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngage
     workspaceId: string,
     stage: "prepared" | "verified",
     requestId: string,
-    tx: TransactionContext
+    tx?: TransactionContext
   ) {
     return getPrismaClient(this.prisma, tx).coachingEngagementEvent.findFirst({
       where: { tenantId, workspaceId, id: "sign-" + stage + "-" + requestId },

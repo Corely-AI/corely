@@ -11,8 +11,17 @@ export class SignRequestAccessService {
     private readonly repo: CeremonyRepository
   ) {}
 
-  async requireOwner(ctx: UseCaseContext, id: string, perm: string, tx: TransactionContext) {
-    const { scope, userId } = await this.access.authorize(ctx, tx, [perm]);
+  async requireOwner(
+    ctx: UseCaseContext,
+    id: string,
+    perm: string | string[],
+    tx: TransactionContext
+  ) {
+    const { scope, userId } = await this.access.authorize(
+      ctx,
+      tx,
+      Array.isArray(perm) ? perm : [perm]
+    );
     const ref = { ...scope, requestId: SignTemplateIdSchema.parse(id) };
     await this.repo.lock(ref, tx);
     const draft = await this.repo.draft(ref, tx);

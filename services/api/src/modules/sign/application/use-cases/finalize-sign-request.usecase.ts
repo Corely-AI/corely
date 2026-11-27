@@ -1,3 +1,4 @@
+import { requestLayout } from "../services/request-layout";
 import { randomUUID } from "node:crypto";
 import { ConflictException, Inject, Injectable } from "@nestjs/common";
 import { SignValuesSchema } from "@corely/contracts";
@@ -53,13 +54,8 @@ export class FinalizeSignRequestUseCase {
         throw Error("Missing signing request");
       }
       const scope = { tenantId: ref.tenantId, workspaceId: ref.workspaceId };
-      const version = await this.templates.version(
-        scope,
-        draft.templateId,
-        draft.templateRevision,
-        tx
-      );
-      if (!version) {
+      const layout = await requestLayout(this.templates, scope, draft, tx);
+      if (!layout) {
         throw Error("Missing template");
       }
       const acceptances = (await this.repo.signers(ref, tx)).map((row) => {
@@ -87,6 +83,13 @@ export class FinalizeSignRequestUseCase {
         ...ref,
         templateId: draft.templateId,
         templateRevision: draft.templateRevision,
+        ...(draft.configuration
+          ? {
+              requestRevision: draft.configuration.revision,
+              layoutSha256: hash(JSON.stringify(layout)),
+            }
+          : {}),
+        ...(draft.replacesRequestId ? { replacesRequestId: draft.replacesRequestId } : {}),
         sourceSha256: draft.canonicalSha256,
         sentAt: c.sentAt.toISOString(),
         senderWorkspace: c.senderWorkspace ?? null,
@@ -99,7 +102,7 @@ export class FinalizeSignRequestUseCase {
       return {
         candidate: c.candidateSha256,
         evidence,
-        layout: version.layout,
+        layout,
         owner: { ...scope, templateId: draft.templateId, sha256: draft.canonicalSha256 },
         actor: draft.actorId,
       };
