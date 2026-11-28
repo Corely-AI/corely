@@ -322,6 +322,11 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [AVAILABILITY_RULE_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [OpenBukAppointmentChangeUseCase, OpenBukTimezone, BookingSourceAccess],
+  exports: [
+    OpenBukAppointmentChangeUseCase,
+    OpenBukTimezone,
+    BookingSourceAccess,
+    OpenBukStudioUseCase,
+  ],
 })
 export class BookingModule {}

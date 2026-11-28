@@ -479,6 +479,20 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     return id;
   }
 
+  async operationalAppointments(scope: StudioScope, from: Date, to: Date) {
+    return this.prisma.booking.findMany({
+      where: { ...scope, startAt: { gte: from, lt: to } },
+      select: {
+        id: true,
+        status: true,
+        startAt: true,
+        endAt: true,
+        allocations: { select: { resourceId: true, startAt: true, endAt: true } },
+      },
+      orderBy: [{ startAt: "asc" }, { id: "asc" }],
+    });
+  }
+
   async appointments(scope: StudioScope, day: string) {
     const studio = await this.studioSettings(scope);
     if (!studio) {

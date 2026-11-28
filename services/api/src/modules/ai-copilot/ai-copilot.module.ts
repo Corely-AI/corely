@@ -68,6 +68,10 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
 import { KnowledgeModule } from "../knowledge/knowledge.module";
 import { KnowledgeQuestionController } from "./adapters/http/knowledge-question.controller";
 import { AnswerKnowledgeQuestionUseCase } from "./application/use-cases/answer-knowledge-question.usecase";
+import { KernelModule } from "../../shared/kernel/kernel.module";
+import { OperationsTodayModule } from "../operations-today/operations-today.module";
+import { OperationsBriefingController } from "./adapters/http/operations-briefing.controller";
+import { OperationsBriefingUseCase } from "./application/use-cases/operations-briefing.usecase";
 
 @Module({
   imports: [
@@ -93,8 +97,10 @@ import { AnswerKnowledgeQuestionUseCase } from "./application/use-cases/answer-k
     PlatformModule,
     PromptModule,
     KnowledgeModule,
+    KernelModule,
+    OperationsTodayModule,
   ],
-  controllers: [CopilotController, KnowledgeQuestionController],
+  controllers: [CopilotController, KnowledgeQuestionController, OperationsBriefingController],
   providers: [
     PrismaAgentRunRepository,
     PrismaMessageRepository,
@@ -109,6 +115,7 @@ import { AnswerKnowledgeQuestionUseCase } from "./application/use-cases/answer-k
     AuthorizeToolService,
     AiSdkTextAdapter,
     AnswerKnowledgeQuestionUseCase,
+    OperationsBriefingUseCase,
     { provide: AI_TEXT_PORT, useExisting: AiSdkTextAdapter },
     { provide: "COPILOT_LOGGER", useClass: NestLoggerAdapter },
     {

@@ -129,6 +129,12 @@ describe.skipIf(!enabled)("Employee tasks persisted lifecycle and trust boundari
     expect(list.body.capabilities).toEqual({ manage: false, completeOwn: true });
     expect(list.body.items.some((t: EmployeeTask) => t.id === mine.id)).toBe(true);
     expect(list.body.items.every((t: EmployeeTask) => t.ownerStaffId === owner.id)).toBe(true);
+    const focused = await http("get", `?taskId=${mine.id}`, "staff");
+    expect(focused.status).toBe(200);
+    expect(focused.body.items.map((task: EmployeeTask) => task.id)).toEqual([mine.id]);
+    const inaccessible = await http("get", `?taskId=${theirs.id}`, "staff");
+    expect(inaccessible.status).toBe(200);
+    expect(inaccessible.body.items).toEqual([]);
     expect(JSON.stringify(list.body)).not.toMatch(/accountId|partyId|password|private|email/);
     expect((await http("get", `/${theirs.id}`, "staff")).status).toBe(404);
     expect(

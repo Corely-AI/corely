@@ -16,6 +16,16 @@ export const platformAppManifest: AppManifest = {
   },
   menu: [
     {
+      id: "operations-today",
+      scope: "web",
+      section: "workspace",
+      labelKey: "nav.operationsToday",
+      defaultLabel: "Today",
+      route: "/today",
+      icon: "CalendarDays",
+      order: 12,
+    },
+    {
       id: "platform-settings",
       scope: "web",
       section: "platform",

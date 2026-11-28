@@ -63,6 +63,7 @@ export type TaskDueFilter = z.infer<typeof TaskDueFilterSchema>;
 export type EmployeeTasksQuery = z.infer<typeof ListEmployeeTasksSchema>;
 export const ListEmployeeTasksSchema = z
   .object({
+    taskId: z.string().uuid().optional(),
     status: z.enum(["all", "OPEN", "COMPLETED"]).default("all"),
     view: z.enum(["auto", "mine", "team"]).optional(),
     q: z.string().trim().max(120).default(""),

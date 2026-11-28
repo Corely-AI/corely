@@ -439,6 +439,7 @@
     "noResults": "No items found."
   },
   "nav": {
+    "operationsToday": "Today",
     "people": "Staff directory",
     "peopleSelfService": "My profile",
     "knowledge": "Knowledge",

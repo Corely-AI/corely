@@ -100,6 +100,18 @@ execution and model-step limit. Daily Work remains available when the assistant 
 unavailable. This slice exposes only Tasks reads and completion. Other operational integrations
 use their own issues, owning use cases, and approval policies.
 
+### Morning operations briefing
+
+The Backoffice Today page can generate a morning briefing from the viewer's authorized Today
+sources. The model receives a bounded list of operation categories and times, using local ordinal
+IDs. It chooses an order. The server rechecks the chosen records and displays links to the
+owning Booking, Tasks and Requests screens. Source availability, freshness and the workspace
+date are visible alongside the briefing.
+
+The manual Today view remains usable throughout generation and provider failure. Briefing
+telemetry records generation outcome, latency, token counts, and optional usefulness and
+review timing. These measures describe the briefing and its review.
+
 ### Tool Authoring Guardrails
 
 - Use shared helpers from `services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts`:

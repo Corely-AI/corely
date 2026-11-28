@@ -121,7 +121,9 @@ export class EmployeeTasksUseCase {
         ? ((await this.workspaceTimezone?.forWorkspace(auth.scope)) ?? "UTC")
         : "UTC";
     const visible = (await this.repo.list(auth.scope)).filter(
-      (task) => teamView || task.ownerStaffId === auth.self?.id
+      (task) =>
+        (teamView || task.ownerStaffId === auth.self?.id) &&
+        (!input.taskId || task.id === input.taskId)
     );
     const records = filterTaskList(visible, input, timezone, new Date()).sort(
       (a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id)
@@ -139,6 +141,24 @@ export class EmployeeTasksUseCase {
       capabilities: { manage: auth.manage, completeOwn: auth.completeOwn && Boolean(auth.self) },
     };
   }
+  async dueToday(window: { from: Date; to: Date }, ctx: UseCaseContext) {
+    const auth = await this.authorize(ctx);
+    const from = window.from.toISOString();
+    const to = window.to.toISOString();
+    return (await this.repo.list(auth.scope))
+      .flatMap(({ id, ownerStaffId, dueAt, title, status }) => {
+        const due = dueAt ? new Date(dueAt).toISOString() : null;
+        if (!due || due < from || due >= to || (!auth.manage && ownerStaffId !== auth.self?.id)) {
+          return [];
+        }
+        return [{ id, title, dueAt: due, status }];
+      })
+      .sort(
+        (first, second) =>
+          first.dueAt.localeCompare(second.dueAt) || first.id.localeCompare(second.id)
+      );
+  }
+
   async assignees(ctx: UseCaseContext) {
     const auth = await this.authorize(ctx);
     if (!auth.manage) {

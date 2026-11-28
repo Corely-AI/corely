@@ -35,11 +35,13 @@ export function DailyWork({
   client,
   locale = "en",
   templatesHref = "/tasks/templates",
+  taskId,
   creationGuidance,
 }: {
   client: TasksClient;
   locale?: string;
   templatesHref?: string;
+  taskId?: string;
   creationGuidance?: TaskCreationGuidance;
 }) {
   const c = checklistsCopy[resolveCorelyLocale(locale)];
@@ -94,6 +96,7 @@ export function DailyWork({
           q: search.trim(),
           page: String(page),
           pageSize: "20",
+          ...(taskId ? { taskId } : {}),
         }).toString(),
         controller.signal
       )
@@ -115,7 +118,7 @@ export function DailyWork({
         }
       });
     return () => controller.abort();
-  }, [client, filter, view, dueFilter, search, page, revision, t]);
+  }, [client, filter, view, dueFilter, search, page, revision, t, taskId]);
   function begin(task: EmployeeTask | "new") {
     setPolicyError(undefined);
     setEditing(task);
@@ -322,6 +325,11 @@ export function DailyWork({
     <section className="daily-work" aria-busy={busy}>
       <header className="task-heading">
         <div>
+          {taskId && (
+            <Link className="checklist-back" to="/tasks">
+              {t.all}
+            </Link>
+          )}
           <p className="task-eyebrow">{teamView ? t.team : t.mine}</p>
           <h1>{t.title}</h1>
           <p>{t.intro}</p>
