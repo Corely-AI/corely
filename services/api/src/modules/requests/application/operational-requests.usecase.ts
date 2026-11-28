@@ -372,7 +372,7 @@ export class OperationalRequestsUseCase {
       if (!attempted) {
         throw error;
       }
-      const failure: Extract<OperationalRequestApplication, { status: "FAILED" }>["failure"] =
+      const failure =
         error instanceof HttpException && error.getStatus() < 500
           ? "REJECTED_BY_PEOPLE"
           : "TEMPORARILY_UNAVAILABLE";
