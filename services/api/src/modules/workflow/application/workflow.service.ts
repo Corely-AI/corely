@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, Inject } from "@nestjs/common";
 import {
+  OperationalRequestApprovalKeyPrefix,
   WORKFLOW_START_EVENT,
   type CompleteWorkflowTaskInput,
   type CreateWorkflowDefinitionInput,
@@ -47,6 +48,9 @@ export class WorkflowService {
   ) {}
 
   async createDefinition(tenantId: string, input: CreateWorkflowDefinitionInput) {
+    if (input.key.startsWith(OperationalRequestApprovalKeyPrefix)) {
+      throw new BadRequestException("Use workspace request routing to configure this policy");
+    }
     const specJson = JSON.stringify(input.spec);
 
     const definition = await this.definitions.create({
@@ -75,12 +79,13 @@ export class WorkflowService {
   }
 
   async listDefinitions(tenantId: string, query: ListWorkflowDefinitionsQuery) {
-    return this.definitions.list(tenantId, query);
+    const definitions = await this.definitions.list(tenantId, query);
+    return definitions.filter(({ key }) => !key.startsWith(OperationalRequestApprovalKeyPrefix));
   }
 
   async getDefinition(tenantId: string, id: string) {
     const definition = await this.definitions.findById(tenantId, id);
-    if (!definition) {
+    if (!definition || definition.key.startsWith(OperationalRequestApprovalKeyPrefix)) {
       throw new NotFoundException("Workflow definition not found");
     }
     return definition;
@@ -91,6 +96,7 @@ export class WorkflowService {
     id: string,
     status: "ACTIVE" | "INACTIVE" | "ARCHIVED"
   ) {
+    await this.getDefinition(tenantId, id);
     const result = await this.definitions.updateStatus(tenantId, id, status);
     if (result.count === 0) {
       throw new NotFoundException("Workflow definition not found");
@@ -107,7 +113,7 @@ export class WorkflowService {
           input.definitionVersion
         );
 
-    if (!definition) {
+    if (!definition || definition.key.startsWith(OperationalRequestApprovalKeyPrefix)) {
       throw new NotFoundException("Workflow definition not found");
     }
 

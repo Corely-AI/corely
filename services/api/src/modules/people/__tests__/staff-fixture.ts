@@ -1,4 +1,7 @@
 import type { INestApplication, Provider } from "@nestjs/common";
+import { StaffTasksAdapter } from "../../tasks/public";
+import { tasksAppManifest } from "../../tasks/tasks.manifest";
+import { StaffOperationsLookup } from "../application/staff-operations-lookup";
 import { StaffAbsenceController } from "../adapters/http/staff-absence.controller";
 import { StaffAbsenceUseCase } from "../application/staff-absence.usecase";
 import { ExtStaffAbsenceAdapter } from "../infrastructure/ext-staff-absence.adapter";
@@ -65,7 +68,8 @@ export async function staffFixture(
   prisma: PrismaService,
   clock: ClockPort = { now: () => new Date() },
   storage?: ObjectStoragePort,
-  transport?: { providers: Provider[]; configure: (app: INestApplication) => void }
+  transport?: { providers: Provider[]; configure: (app: INestApplication) => void },
+  includeTasks = false
 ) {
   const uid = () => randomUUID();
   const tenantA = uid(),
@@ -85,6 +89,7 @@ export async function staffFixture(
     "people.private.read",
     "people.private.manage",
     "people.documents.read",
+    ...(includeTasks ? ["tasks.read", "tasks.manage"] : []),
   ];
   for (const [tenantId, workspaces, users] of [
     [
@@ -172,11 +177,12 @@ export async function staffFixture(
   const resourceLookup = new StaffResourceLookupAdapter(prisma);
   const audit = new PrismaAuditAdapter(prisma),
     outbox = new PrismaOutboxAdapter(prisma);
+  const manifests = includeTasks ? [peopleAppManifest, tasksAppManifest] : [peopleAppManifest];
   const registry: AppRegistryPort = {
-    get: (id) => (id === "people" ? peopleAppManifest : undefined),
-    list: () => [peopleAppManifest],
-    findByCapability: () => [peopleAppManifest],
-    has: (id) => id === "people",
+    get: (id) => manifests.find((manifest) => manifest.appId === id),
+    list: () => manifests,
+    findByCapability: (key) => manifests.filter((manifest) => manifest.capabilities?.includes(key)),
+    has: (id) => manifests.some((manifest) => manifest.appId === id),
   };
   const catalog = new FeatureCatalogService(registry);
   catalog.compileCatalog();
@@ -192,6 +198,9 @@ export async function staffFixture(
     [tenantB, outsider],
   ]) {
     await enableApp.execute({ tenantId, actorUserId, appId: "people" });
+    if (includeTasks) {
+      await enableApp.execute({ tenantId, actorUserId, appId: "tasks" });
+    }
   }
   const booking = new StaffBookingAdapter(prisma);
   const schedules = new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma));
@@ -208,6 +217,19 @@ export async function staffFixture(
     platformEntitlements,
     booking
   );
+  const staffLookup = new StaffOperationsLookup(repo);
+  const taskReading = includeTasks
+    ? new StaffTasksAdapter(
+        prisma,
+        new PrismaExtKvAdapter(prisma),
+        permissions,
+        platformEntitlements,
+        staffLookup,
+        audit,
+        outbox,
+        clock
+      )
+    : undefined;
   const availability = new StaffAvailabilityUseCase(
     usecase,
     repo,
@@ -216,7 +238,8 @@ export async function staffFixture(
     audit,
     outbox,
     clock,
-    absences
+    absences,
+    taskReading
   );
   const objectStorage = storage ?? new FakeObjectStoragePort();
   const documents = new PersonnelDocumentsAdapter(
@@ -351,6 +374,7 @@ export async function staffFixture(
     repo,
     entitlements,
     platformEntitlements,
+    staffLookup,
     appInstalls,
     enableApp,
     disableApp,

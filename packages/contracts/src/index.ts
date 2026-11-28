@@ -399,6 +399,7 @@ export * from "./people/staff.schema";
 export * from "./people/staff-self-service.schema";
 export * from "./people/staff-availability.schema";
 export * from "./tasks";
+export * from "./requests/operational-request.schema";
 
 export * from "./people/staff-absence.schema";
 

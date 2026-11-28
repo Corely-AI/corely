@@ -9,9 +9,10 @@ import {
   type WorkspaceDto,
   type GetWorkspaceOutput,
 } from "@corely/contracts";
-import { api, json, storage } from "../../shared/api";
+import { api, json } from "../../shared/api";
 import { Field, ErrorMessage } from "../../shared/ui";
 import { useLanguage, languageNames } from "../../shared/i18n";
+import { TeamBookingSettings } from "./team-booking-settings";
 export function SetupForm({
   workspace,
   studio,
@@ -25,13 +26,13 @@ export function SetupForm({
   draft: OpenBukSetupDraft | null;
   onDraftSaved: (draft: OpenBukSetupDraft) => void;
   onSaved: (studio: OpenBukStudio) => void;
-  onWorkspace: (workspace: WorkspaceDto) => void;
+  onWorkspace: (workspace: WorkspaceDto) => Promise<void>;
 }) {
   const { t, locale } = useLanguage();
   const settings = draft ?? studio;
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<"setupError" | "invalidTimezone" | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(Boolean(draft));
   const [hours, setHours] = useState<OpenBukSetup["weeklyHours"]>(
     settings?.weeklyHours ??
       [1, 2, 3, 4, 5].map((dayOfWeek) => ({ dayOfWeek, startTime: "09:00", endTime: "18:00" }))
@@ -88,26 +89,35 @@ export function SetupForm({
           { workspaceScope: "none" }
         );
         active = result.workspace;
-        onWorkspace(active);
       }
-      await storage.setActiveWorkspaceId(active.id);
+      const options = { workspaceScope: "none" } as const;
+      const workspaceId = active.id;
       if (!publish) {
         const result = await api.request<OpenBukSetupDraftResponse>(
           "/openbuk/setup",
-          json("PUT", input)
+          {
+            ...json("PUT", input),
+            headers: { "Content-Type": "application/json", "X-Workspace-Id": workspaceId },
+          },
+          options
         );
         if (!result.draft) {
           throw new Error("Draft was not saved");
         }
         onDraftSaved(result.draft);
         setSaved(true);
+        await onWorkspace(active);
         return;
       }
       const result = await api.request<{ studio: OpenBukStudio }>(
         "/openbuk/studio/publish",
-        json("POST", input)
+        {
+          ...json("POST", input),
+          headers: { "Content-Type": "application/json", "X-Workspace-Id": workspaceId },
+        },
+        options
       );
-      onWorkspace({
+      await onWorkspace({
         ...active,
         publicEnabled: true,
         publicModules: { ...active.publicModules, booking: true },
@@ -367,6 +377,9 @@ export function SetupForm({
           </button>
         </div>
       </form>
+      {workspace?.publicEnabled && workspace.publicModules?.booking && studio ? (
+        <TeamBookingSettings key={workspace.id} />
+      ) : null}
     </section>
   );
 }

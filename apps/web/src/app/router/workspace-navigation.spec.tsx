@@ -65,6 +65,7 @@ function renderApp(path: string) {
           <Routes>
             <Route path="/public-booking" element={<PublicJourney />} />
             <Route element={<RequireAuth />}>
+              <Route path="/openbuk/app/*" element={<h1>OpenBuk studio setup</h1>} />
               <Route
                 element={
                   <AppShell
@@ -170,4 +171,11 @@ it("keeps non-workspace routes mounted when a saved workspace selection changes"
   });
   expect(window.location.pathname).toBe("/public-booking");
   expect(screen.getByLabelText("Public booking draft")).toHaveValue("Unsubmitted booking");
+});
+
+it("keeps a new OpenBuk account in its branded setup instead of generic workspace onboarding", async () => {
+  fixture.list.mockResolvedValue([]);
+  renderApp("/openbuk/app");
+  expect(await screen.findByRole("heading", { name: "OpenBuk studio setup" })).toBeVisible();
+  expect(window.location.pathname).toBe("/openbuk/app");
 });

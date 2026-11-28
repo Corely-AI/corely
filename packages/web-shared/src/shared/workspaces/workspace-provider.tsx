@@ -20,7 +20,7 @@ interface WorkspaceContextValue {
   isLoading: boolean;
   isInitialLoading: boolean;
   isHostScope: boolean;
-  setWorkspace: (workspaceId: string) => void;
+  setWorkspace: (workspaceId: string, savedWorkspace?: WorkspaceDto) => void;
   refresh: () => Promise<void>;
 }
 
@@ -106,7 +106,19 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     [activeId, workspaces]
   );
 
-  const setWorkspace = (workspaceId: string) => {
+  const setWorkspace = (workspaceId: string, savedWorkspace?: WorkspaceDto) => {
+    if (savedWorkspace?.id === workspaceId && user?.activeTenantId) {
+      const listKey = ["workspaces", user.activeTenantId];
+      void queryClient.cancelQueries({ queryKey: listKey, exact: true });
+      queryClient.setQueryData<WorkspaceDto[]>(listKey, (current = []) => {
+        if (current.some((workspace) => workspace.id === savedWorkspace.id)) {
+          return current.map((workspace) =>
+            workspace.id === savedWorkspace.id ? savedWorkspace : workspace
+          );
+        }
+        return [...current, savedWorkspace];
+      });
+    }
     const previousWorkspaceId = activeId;
     setActiveWorkspaceId(workspaceId);
     adoptWorkspace(workspaceId);

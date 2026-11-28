@@ -17,6 +17,7 @@ import {
 import {
   ApproveStaffOnboardingSchema,
   type StaffTaskFollowup,
+  type StaffAbsenceTaskImpact,
   type EmployeeTask,
 } from "@corely/contracts";
 import { StaffOperationsLookup } from "../../people/public";
@@ -135,6 +136,44 @@ export class StaffTasksAdapter {
         throw error;
       }
       return { available: false, openTaskCount: 0, openTasks: [], recurringTemplates: [] };
+    }
+  }
+  async affectedByAbsence(
+    ctx: UseCaseContext,
+    staffId: string,
+    blocks: ReadonlyArray<{ startAt: string; endAt: string }>,
+    evaluatedAt: Date,
+    tx: TransactionContext
+  ): Promise<StaffAbsenceTaskImpact> {
+    try {
+      const auth = await this.authorize(ctx, tx);
+      if (!auth.manage) {
+        throw new ForbiddenException("Task management required");
+      }
+      const items: StaffAbsenceTaskImpact["items"] = [];
+      if (!blocks.length) {
+        return { available: true, items };
+      }
+      const cutoff = evaluatedAt.toISOString();
+      for (const task of await this.repo.list(auth.scope, tx)) {
+        const dueAt = task.dueAt;
+        if (
+          task.ownerStaffId === staffId &&
+          task.status === "OPEN" &&
+          dueAt &&
+          dueAt >= cutoff &&
+          blocks.some(({ startAt, endAt }) => startAt <= dueAt && dueAt < endAt)
+        ) {
+          items.push({ id: task.id, title: task.title, dueAt });
+        }
+      }
+      items.sort((a, b) => a.dueAt.localeCompare(b.dueAt) || a.id.localeCompare(b.id));
+      return { available: true, items };
+    } catch (error) {
+      if (!(error instanceof ForbiddenException)) {
+        throw error;
+      }
+      return { available: false, items: [] };
     }
   }
   async approve(

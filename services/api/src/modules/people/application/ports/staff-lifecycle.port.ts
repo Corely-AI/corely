@@ -2,6 +2,7 @@ import type { TransactionContext, UseCaseContext } from "@corely/kernel";
 import type {
   EmployeeTask,
   StaffTaskFollowup,
+  StaffAbsenceTaskImpact,
   StaffWorkspaceAccess,
   StaffLifecycleRecord,
 } from "@corely/contracts";
@@ -19,6 +20,13 @@ export interface StaffTasksPort {
     staffId: string,
     tx: TransactionContext
   ): Promise<StaffTaskFollowup>;
+  affectedByAbsence(
+    ctx: UseCaseContext,
+    staffId: string,
+    blocks: ReadonlyArray<{ startAt: string; endAt: string }>,
+    evaluatedAt: Date,
+    tx: TransactionContext
+  ): Promise<StaffAbsenceTaskImpact>;
   approve(
     ctx: UseCaseContext,
     staffId: string,

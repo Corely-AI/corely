@@ -1,5 +1,6 @@
 import type { TransactionContext } from "@corely/kernel";
 import { BookingStaffConstraintAdapter } from "./booking-staff-constraint.adapter";
+import { assertBookingServiceAvailable } from "./booking-service-availability";
 import { Injectable, ConflictException } from "@nestjs/common";
 import { getPrismaClient, PrismaService } from "@corely/data";
 import type {
@@ -103,6 +104,12 @@ export class PrismaBookingRepoAdapter implements BookingRepositoryPort {
       for (const resourceId of [...new Set(allocations.map((a) => a.resourceId))].sort()) {
         await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${booking.tenantId}:${resourceId}`}, 0))::text`;
       }
+      await assertBookingServiceAvailable(
+        tx,
+        booking.tenantId,
+        booking.workspaceId,
+        booking.serviceOfferingId
+      );
       if (booking.holdId) {
         const hold = await tx.bookingHold.findFirst({
           where: {

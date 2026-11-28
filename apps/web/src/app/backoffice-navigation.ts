@@ -38,6 +38,7 @@ const appRoutes = {
   portfolio: ["/portfolio/*"],
   purchasing: ["/purchasing/*"],
   rentals: ["/rentals/*"],
+  requests: ["/requests/*"],
   sales: ["/sales/quotes/*", "/sales/orders/*", "/sales/settings", "/sales/copilot"],
   sign: ["/sign/*"],
   tasks: ["/tasks/*"],
