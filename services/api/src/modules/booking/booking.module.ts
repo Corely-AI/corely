@@ -3,6 +3,10 @@ import { PeopleModule } from "../people/people.module";
 import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking-staff-constraint.adapter";
 import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
 import { WorkspacesModule } from "../workspaces";
+import { OPENBUK_IMPORT_LEDGER } from "./application/ports/openbuk-import-ledger.port";
+import { OpenBukImportUseCase } from "./application/use-cases/openbuk-import.usecase";
+import { OpenBukImportController } from "./http/openbuk-import.controller";
+import { OpenBukImportLedgerAdapter } from "./infrastructure/adapters/openbuk-import-ledger.adapter";
 import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
 import { OpenBukAppointmentChangeUseCase } from "./application/use-cases/openbuk-appointment-change.usecase";
 import { OpenBukAgendaCommandsUseCase } from "./application/use-cases/openbuk-agenda-commands.usecase";
@@ -83,6 +87,7 @@ import { bookingPolicies } from "./booking-extensions";
   imports: [PeopleModule, WorkspacesModule, DataModule, KernelModule, IdentityModule, CrmModule],
   controllers: [
     OpenBukAdminController,
+    OpenBukImportController,
     OpenBukPublicController,
     OpenBukManagementController,
     BookingResourceController,
@@ -107,6 +112,8 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [EnvService],
     },
     OpenBukTimezone,
+    OpenBukImportUseCase,
+    { provide: OPENBUK_IMPORT_LEDGER, useClass: OpenBukImportLedgerAdapter },
     { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },

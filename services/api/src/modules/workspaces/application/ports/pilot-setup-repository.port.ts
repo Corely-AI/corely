@@ -4,6 +4,11 @@ import type { TransactionContext } from "@corely/kernel";
 export const PILOT_SETUP_REPOSITORY = Symbol("PILOT_SETUP_REPOSITORY");
 export interface PilotSetupRepositoryPort {
   lock(key: string, tx: TransactionContext): Promise<void>;
+  lockBookingPublication(
+    tenantId: string,
+    workspaceId: string,
+    tx: TransactionContext
+  ): Promise<"open" | "closed" | "missing">;
   publishBooking(tenantId: string, workspaceId: string, tx: TransactionContext): Promise<boolean>;
   firstWorkspaces(tenantId: string, userId: string, tx: TransactionContext): Promise<string[]>;
   createInitial(

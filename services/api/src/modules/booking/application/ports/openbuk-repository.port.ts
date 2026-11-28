@@ -87,7 +87,7 @@ export interface OpenBukRepositoryPort {
   create(
     scope: StudioScope,
     studio: OpenBukStudio,
-    input: OpenBukManagerBook,
+    input: Pick<OpenBukManagerBook, "customer" | "locale">,
     receipt: OpenBukReceipt,
     tx: TransactionContext,
     createdByUserId?: string,
