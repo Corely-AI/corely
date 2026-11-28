@@ -6,7 +6,12 @@ export interface StoredResponse {
 }
 
 export interface IdempotencyStoragePort {
-  get(actionKey: string, tenantId: string | null, key: string): Promise<StoredResponse | null>;
+  get(
+    actionKey: string,
+    tenantId: string | null,
+    key: string,
+    tx?: TransactionContext
+  ): Promise<StoredResponse | null>;
   store(
     actionKey: string,
     tenantId: string | null,
