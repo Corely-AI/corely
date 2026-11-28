@@ -433,7 +433,7 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
   async create(
     scope: StudioScope,
     studio: OpenBukStudio,
-    input: OpenBukManagerBook,
+    input: Pick<OpenBukManagerBook, "customer" | "locale">,
     receipt: OpenBukReceipt,
     tx: TransactionContext,
     createdByUserId?: string,
@@ -477,6 +477,20 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
       tx
     );
     return id;
+  }
+
+  async operationalAppointments(scope: StudioScope, from: Date, to: Date) {
+    return this.prisma.booking.findMany({
+      where: { ...scope, startAt: { gte: from, lt: to } },
+      select: {
+        id: true,
+        status: true,
+        startAt: true,
+        endAt: true,
+        allocations: { select: { resourceId: true, startAt: true, endAt: true } },
+      },
+      orderBy: [{ startAt: "asc" }, { id: "asc" }],
+    });
   }
 
   async appointments(scope: StudioScope, day: string) {

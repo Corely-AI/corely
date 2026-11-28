@@ -30,6 +30,13 @@ export type OpenBukTeamConfiguration = {
   staffIds: string[];
   services: Pick<OpenBukTeam["services"][number], "id" | "staffIds">[];
 };
+export type OperationalAppointment = {
+  id: string;
+  status: OpenBukAppointment["status"];
+  startAt: Date;
+  endAt: Date;
+  allocations: { resourceId: string; startAt: Date; endAt: Date }[];
+};
 export const OPENBUK_REPOSITORY = Symbol("OPENBUK_REPOSITORY");
 export interface OpenBukRepositoryPort {
   lock(scope: StudioScope, key: string, tx: TransactionContext): Promise<void>;
@@ -87,11 +94,16 @@ export interface OpenBukRepositoryPort {
   create(
     scope: StudioScope,
     studio: OpenBukStudio,
-    input: OpenBukManagerBook,
+    input: Pick<OpenBukManagerBook, "customer" | "locale">,
     receipt: OpenBukReceipt,
     tx: TransactionContext,
     createdByUserId?: string,
     confirmationEmailRequested?: boolean
   ): Promise<string>;
   appointments(scope: StudioScope, day: string): Promise<OpenBukAppointment[]>;
+  operationalAppointments(
+    scope: StudioScope,
+    from: Date,
+    to: Date
+  ): Promise<OperationalAppointment[]>;
 }

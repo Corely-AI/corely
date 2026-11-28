@@ -3,14 +3,12 @@ import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { ApprovalsPolicyController } from "./adapters/http/approvals-policy.controller";
 import { ApprovalsRequestsController } from "./adapters/http/approvals-requests.controller";
-import { ApprovalPolicyService } from "./application/approval-policy.service";
+import { ApprovalPoliciesModule } from "./approval-policies.module";
 import { ApprovalGateService } from "./application/approval-gate.service";
 import { ApprovalRequestService } from "./application/approval-request.service";
 import { WorkflowModule } from "../workflow";
 import { IdempotencyService } from "../../shared/infrastructure/idempotency/idempotency.service";
 
-import { APPROVAL_POLICY_REPOSITORY_TOKEN } from "./application/ports/approval-policy-repository.port";
-import { PrismaApprovalPolicyRepository } from "./infrastructure/repositories/prisma-approval-policy-repository";
 import { APPROVAL_REQUEST_REPOSITORY_TOKEN } from "./application/ports/approval-request-repository.port";
 import { PrismaApprovalRequestRepository } from "./infrastructure/repositories/prisma-approval-request-repository";
 import { APPROVAL_TASK_REPOSITORY_TOKEN } from "./application/ports/approval-task-repository.port";
@@ -19,17 +17,12 @@ import { APPROVAL_DOMAIN_EVENT_REPOSITORY_TOKEN } from "./application/ports/appr
 import { PrismaApprovalsDomainEventRepository } from "./infrastructure/repositories/prisma-approval-domain-event-repository";
 
 @Module({
-  imports: [DataModule, WorkflowModule, IdentityModule],
+  imports: [DataModule, WorkflowModule, IdentityModule, ApprovalPoliciesModule],
   controllers: [ApprovalsPolicyController, ApprovalsRequestsController],
   providers: [
-    ApprovalPolicyService,
     ApprovalGateService,
     ApprovalRequestService,
     IdempotencyService,
-    {
-      provide: APPROVAL_POLICY_REPOSITORY_TOKEN,
-      useClass: PrismaApprovalPolicyRepository,
-    },
     {
       provide: APPROVAL_REQUEST_REPOSITORY_TOKEN,
       useClass: PrismaApprovalRequestRepository,
@@ -43,6 +36,6 @@ import { PrismaApprovalsDomainEventRepository } from "./infrastructure/repositor
       useClass: PrismaApprovalsDomainEventRepository,
     },
   ],
-  exports: [ApprovalGateService, ApprovalPolicyService, ApprovalRequestService],
+  exports: [ApprovalGateService, ApprovalPoliciesModule, ApprovalRequestService],
 })
 export class ApprovalsModule {}

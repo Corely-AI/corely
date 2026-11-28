@@ -57,6 +57,8 @@ Design and implementation of the AI features.
 
 - [AI Copilot](./ai/ai-copilot.md)
 - [Authorized Tasks assistant verification](./tasks/326-authorized-operational-copilot-tools.md)
+- [Cited Knowledge answer verification](./tasks/325-cited-knowledge-answers.md)
+- [Morning operations briefing verification](./tasks/329-source-linked-operations-briefing.md)
 - [Streaming Architecture](./ai/COPILOT_STREAMING.md)
 - [Streaming Implementation](./ai/copilot-streaming.md)
 - [Prompt Management](./ai/prompt-management.md)
@@ -72,6 +74,8 @@ Backend specific documentation.
 - [Employee tasks](./backend/employee-tasks.md) — Daily Work lifecycle, ownership, permissions and replay/version guarantees
 - [Operational requests](./backend/operational-requests.md) — private drafts, reviewer routing and supporting documents
 - [Private Knowledge procedures](./backend/knowledge-procedures.md) — owner and review metadata, publication history and authorized file access
+- [Published procedure discovery verification](./tasks/324-published-procedure-search.md)
+- [Operations Today](platform/operations-today.md) — local-day summaries and source availability.
 - [People staff directory](./backend/people.md) — workspace profiles, identity links and private-field access
 - [Staff availability and Booking](./backend/people-availability.md) — effective working patterns, dated exceptions and Booking constraints
 - [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files

@@ -435,6 +435,7 @@
     "noResults": "Không tìm thấy mục nào."
   },
   "nav": {
+    "operationsToday": "Hôm nay",
     "people": "Danh bạ nhân viên",
     "peopleSelfService": "Hồ sơ của tôi",
     "knowledge": "Kiến thức",
@@ -5523,6 +5524,7 @@
       "issue-created": "Đã tạo sự cố"
     },
     "notifications-notification-item": {
+      "request-awaiting-review": "Có yêu cầu đang chờ xét duyệt",
       "view-details": "Xem chi tiết",
       "mark-as-read": "Đánh dấu là đã đọc"
     },

@@ -94,6 +94,18 @@ export class PilotSetupUseCase {
       await this.record("workspace.booking.published", ctx.workspaceId, actor, tx);
     }
   }
+  async requirePrivateBooking(ctx: UseCaseContext, tx: TransactionContext) {
+    const actor = this.actor(ctx);
+    if (!ctx.workspaceId) {
+      throw new BadRequestException("Select a workspace");
+    }
+    await this.repo.lock(`publication:${ctx.workspaceId}`, tx);
+    const publication = await this.repo.lockBookingPublication(actor.tenantId, ctx.workspaceId, tx);
+    await this.authorize.execute({ ...actor, workspaceId: ctx.workspaceId, manage: true }, tx);
+    if (publication !== "closed") {
+      throw new ConflictException("Close public booking before importing appointments");
+    }
+  }
   async requirePublicBooking(tenantId: string, workspaceId: string, tx: TransactionContext) {
     await this.repo.lock(`publication:${workspaceId}`, tx);
     if ((await this.repo.lockBookingPublication(tenantId, workspaceId, tx)) !== "open") {

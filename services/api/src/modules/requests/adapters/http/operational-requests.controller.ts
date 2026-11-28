@@ -30,6 +30,11 @@ export class OperationalRequestsController {
     return this.requests.list(query, toUseCaseContext(req));
   }
 
+  @Get("inbox")
+  inbox(@Query() query: unknown, @Req() req: ContextAwareRequest) {
+    return this.requests.inbox(query, toUseCaseContext(req));
+  }
+
   @Get("routing")
   routes(@Req() req: ContextAwareRequest) {
     return this.requests.routes(toUseCaseContext(req));
@@ -60,9 +65,29 @@ export class OperationalRequestsController {
     return this.command("update", id, body, req);
   }
 
+  @Patch(":id/procedure")
+  linkProcedure(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
+    return this.command("link-procedure", id, body, req);
+  }
+
   @Post(":id/submit")
   submit(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
     return this.command("submit", id, body, req);
+  }
+
+  @Post(":id/decision")
+  decide(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
+    return this.requests.decide(id, body, resolveIdempotencyKey(req), toUseCaseContext(req));
+  }
+
+  @Post(":id/apply")
+  apply(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
+    return this.requests.applyApprovedAbsence(
+      id,
+      body,
+      resolveIdempotencyKey(req),
+      toUseCaseContext(req)
+    );
   }
 
   @Post(":id/withdraw")

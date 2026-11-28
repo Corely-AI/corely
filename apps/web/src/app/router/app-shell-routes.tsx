@@ -1,9 +1,12 @@
+import { OperationsTodayPage } from "../../modules/operations-today/operations-today-page";
+import { OperationsBriefingPage } from "../../modules/operations-today/operations-briefing-page";
 import { OperationalRequestsPage } from "../../modules/operational-requests/operational-requests-page";
 import { StaffProfilePage } from "../../modules/people/staff-profile-extensions";
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
 import { getTaskCreationGuidance } from "../../modules/tasks/task-creation-guidance";
 import { DailyWorkPage } from "@corely/web-features/modules/tasks/daily-work-page";
 import { KnowledgePage } from "@corely/web-features/modules/knowledge/knowledge-page";
+import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { PeopleDirectoryPage, StaffJourneyPage } from "@corely/web-features/modules/people";
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
@@ -132,6 +135,11 @@ const PosPackPlaceholderPage = ({ title, description }: { title: string; descrip
   </div>
 );
 
+function KnowledgeReaderRoute({ mode }: { mode?: "search" | "ask" }) {
+  const { hasCapability } = useWorkspaceConfig();
+  return <KnowledgePage mode={mode} assistantEnabled={hasCapability("ai.copilot")} />;
+}
+
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
     {["/onboarding/cash-management", "/onboarding/cash-management/resume"].map((path) => (
@@ -190,6 +198,22 @@ export const appShellRoutes = (
       </Route>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route
+        path="/today"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationsTodayPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/today/briefing"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationsBriefingPage />
+          </RequireSurface>
+        }
+      />
+      <Route
         path="/tasks"
         element={<DailyWorkPage getCreationGuidance={getTaskCreationGuidance} />}
       />
@@ -220,6 +244,14 @@ export const appShellRoutes = (
         }
       />
       <Route
+        path="/requests/inbox"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="inbox" />
+          </RequireSurface>
+        }
+      />
+      <Route
         path="/requests/:id"
         element={
           <RequireSurface surfaces={["platform"]}>
@@ -227,7 +259,10 @@ export const appShellRoutes = (
           </RequireSurface>
         }
       />
-      <Route path="/knowledge" element={<KnowledgePage />} />
+      <Route path="/knowledge" element={<KnowledgeReaderRoute />} />
+      <Route path="/knowledge/ask" element={<KnowledgeReaderRoute mode="ask" />} />
+      <Route path="/knowledge/manage" element={<KnowledgePage mode="list" />} />
+      <Route path="/knowledge/published/:id" element={<KnowledgePage mode="published" />} />
       <Route path="/knowledge/new" element={<KnowledgePage mode="new" />} />
       <Route path="/knowledge/:id" element={<KnowledgePage mode="detail" />} />
       <Route path="/knowledge/:id/edit" element={<KnowledgePage mode="edit" />} />

@@ -1,9 +1,14 @@
+import { OpenBukTimezone } from "./application/use-cases/openbuk-timezone.usecase";
 import { BookingSourceAccess } from "./application/use-cases/booking-source-access.usecase";
 import { PlatformModule } from "../platform/platform.module";
 import { PeopleModule } from "../people/people.module";
 import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking-staff-constraint.adapter";
 import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
 import { WorkspacesModule } from "../workspaces";
+import { OPENBUK_IMPORT_LEDGER } from "./application/ports/openbuk-import-ledger.port";
+import { OpenBukImportUseCase } from "./application/use-cases/openbuk-import.usecase";
+import { OpenBukImportController } from "./http/openbuk-import.controller";
+import { OpenBukImportLedgerAdapter } from "./infrastructure/adapters/openbuk-import-ledger.adapter";
 import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
 import { OpenBukAppointmentChangeUseCase } from "./application/use-cases/openbuk-appointment-change.usecase";
 import { OpenBukAgendaCommandsUseCase } from "./application/use-cases/openbuk-agenda-commands.usecase";
@@ -94,6 +99,7 @@ import { bookingPolicies } from "./booking-extensions";
   ],
   controllers: [
     OpenBukAdminController,
+    OpenBukImportController,
     OpenBukPublicController,
     OpenBukManagementController,
     BookingResourceController,
@@ -120,6 +126,9 @@ import { bookingPolicies } from "./booking-extensions";
       useFactory: (env: EnvService) => env.JWT_SECRET ?? "",
       inject: [EnvService],
     },
+    OpenBukTimezone,
+    OpenBukImportUseCase,
+    { provide: OPENBUK_IMPORT_LEDGER, useClass: OpenBukImportLedgerAdapter },
     { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },
@@ -313,6 +322,11 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [AVAILABILITY_RULE_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [OpenBukAppointmentChangeUseCase, BookingSourceAccess],
+  exports: [
+    OpenBukAppointmentChangeUseCase,
+    OpenBukTimezone,
+    BookingSourceAccess,
+    OpenBukStudioUseCase,
+  ],
 })
 export class BookingModule {}

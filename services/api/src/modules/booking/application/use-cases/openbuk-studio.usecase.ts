@@ -219,7 +219,7 @@ export class OpenBukStudioUseCase {
       studio: OpenBukPublicStudioSchema.parse({ ...catalog.studio, services: catalog.services }),
     };
   }
-  private async slots(
+  async bookingSlots(
     scope: StudioScope,
     day: string,
     selection?: OpenBukSelection,
@@ -261,7 +261,7 @@ export class OpenBukStudioUseCase {
     tx?: TransactionContext,
     selection?: OpenBukSelection
   ) {
-    const { slots } = await this.slots(
+    const { slots } = await this.bookingSlots(
       scope,
       studioDate(startAt, timezone),
       selection,
@@ -280,10 +280,10 @@ export class OpenBukStudioUseCase {
     selection: OpenBukSelection,
     bookingId: string
   ) {
-    return this.slots(scope, day, selection, undefined, bookingId);
+    return this.bookingSlots(scope, day, selection, undefined, bookingId);
   }
   async availability(day: string, ctx: UseCaseContext, selection?: OpenBukSelection) {
-    const result = await this.slots(this.publicScope(ctx), day, selection);
+    const result = await this.bookingSlots(this.publicScope(ctx), day, selection);
     return { slots: result.slots, timezone: result.studio.timezone };
   }
   async book(input: OpenBukBook, key: string, ctx: UseCaseContext) {
@@ -334,7 +334,7 @@ export class OpenBukStudioUseCase {
         });
       }
       await this.repo.lock(scope, initial.staffId, tx);
-      const { studio, slots } = await this.slots(
+      const { studio, slots } = await this.bookingSlots(
         scope,
         studioDate(new Date(input.startAt), initial.timezone),
         input,
@@ -418,6 +418,16 @@ export class OpenBukStudioUseCase {
       return { receipt, management };
     });
   }
+  async operationalTimezone(ctx: UseCaseContext): Promise<string | null> {
+    const { scope } = await this.admin(ctx);
+    return (await this.repo.studio(scope))?.timezone ?? null;
+  }
+
+  async operationalAppointments(window: { from: Date; to: Date }, ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    return this.repo.operationalAppointments(scope, window.from, window.to);
+  }
+
   async appointments(day: string, ctx: UseCaseContext) {
     // Customer contact snapshots are operational data; initial roles are owner/admin.
     const { scope } = await this.admin(ctx, true);
@@ -482,7 +492,7 @@ export class OpenBukStudioUseCase {
       return { day, appointments, slots: [] };
     }
     try {
-      return { day, appointments, slots: (await this.slots(scope, day, selection)).slots };
+      return { day, appointments, slots: (await this.bookingSlots(scope, day, selection)).slots };
     } catch (error) {
       if (error instanceof NotFoundException) {
         return { day, appointments, slots: [] };

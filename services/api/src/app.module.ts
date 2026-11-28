@@ -38,6 +38,7 @@ import { AiRichTextModule } from "./modules/ai-richtext";
 import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
 import { BookingModule } from "./modules/booking";
+import { OperationsTodayModule } from "./modules/operations-today/operations-today.module";
 import { TasksModule } from "./modules/tasks/tasks.module";
 import { KnowledgeModule } from "./modules/knowledge/knowledge.module";
 import { PeopleModule } from "./modules/people/people.module";
@@ -117,6 +118,7 @@ import { SignModule } from "./modules/sign/sign.module";
     BookingModule,
     PeopleModule,
     TasksModule,
+    OperationsTodayModule,
     OperationalRequestsModule,
     KnowledgeModule,
     CoachingEngagementsModule,

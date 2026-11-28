@@ -4,7 +4,7 @@ import { cn } from "@/shared/lib/utils";
 import { formatRelativeTime } from "@/shared/lib/formatters";
 import { Button } from "@corely/ui";
 import { Check, Info, AlertTriangle, AlertCircle, ExternalLink } from "lucide-react";
-import type { NotificationListItem } from "@corely/contracts";
+import { OperationalRequestReviewReminderType, type NotificationListItem } from "@corely/contracts";
 import { Link } from "react-router-dom";
 
 export interface NotificationItemProps {
@@ -56,7 +56,9 @@ export function NotificationItem({ notification, onMarkRead, className }: Notifi
       <div className="flex-1 space-y-1 overflow-hidden">
         <div className="flex items-start justify-between gap-2">
           <p className={cn("text-sm font-medium leading-none", !isRead && "font-semibold")}>
-            {notification.title}
+            {notification.type === OperationalRequestReviewReminderType
+              ? uiCopy("request-awaiting-review")
+              : notification.title}
           </p>
           <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
             {formatRelativeTime(notification.createdAt)}

@@ -435,6 +435,7 @@
     "noResults": "Keine Einträge gefunden."
   },
   "nav": {
+    "operationsToday": "Heute",
     "people": "Personalverzeichnis",
     "peopleSelfService": "Mein Profil",
     "knowledge": "Wissen",
@@ -5511,6 +5512,7 @@
       "issue-created": "Problem erstellt"
     },
     "notifications-notification-item": {
+      "request-awaiting-review": "Ein Antrag wartet auf Prüfung",
       "view-details": "Details anzeigen",
       "mark-as-read": "Als gelesen markieren"
     },

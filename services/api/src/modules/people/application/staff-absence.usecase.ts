@@ -140,16 +140,32 @@ export class StaffAbsenceUseCase {
       };
     });
   }
+  async applyReviewedAbsence(
+    staffId: string,
+    requesterUserId: string,
+    body: unknown,
+    key: string,
+    ctx: UseCaseContext,
+    tx: TransactionContext
+  ): Promise<string> {
+    const absence = await this.command("record", staffId, null, body, key, ctx, {
+      requesterUserId,
+      tx,
+    });
+    return absence.id;
+  }
+
   async command(
     action: Action,
     staffId: string,
     id: string | null,
     body: unknown,
     key: string | undefined,
-    ctx: UseCaseContext
+    ctx: UseCaseContext,
+    reviewed?: { requesterUserId: string; tx: TransactionContext }
   ) {
     const required = ["people.profile.manage", "people.private.read", "people.private.manage"];
-    const scope = await this.authorize(ctx, required);
+    const scope = await this.authorize(ctx, required, reviewed?.tx);
     const input =
       action === "record"
         ? RecordStaffAbsenceSchema.parse(body)
@@ -157,9 +173,12 @@ export class StaffAbsenceUseCase {
           ? CorrectStaffAbsenceSchema.parse(body)
           : CancelStaffAbsenceSchema.parse(body);
     const { commandKey, fingerprint } = this.commandIdentity(action, staffId, id, input, key, ctx);
-    return this.staff.transaction(scope, async (tx) => {
+    const execute = async (tx: TransactionContext) => {
       await this.authorize(ctx, required, tx);
       const profile = await this.profile(scope, staffId, tx);
+      if (reviewed && profile.accountId !== reviewed.requesterUserId) {
+        throw new ConflictException("The staff profile link for the reviewed request has changed");
+      }
       if (profile.resourceId) {
         await this.booking.lock(scope, [profile.resourceId], tx);
       }
@@ -276,7 +295,12 @@ export class StaffAbsenceUseCase {
       );
       await this.absences.saveReplay(scope, commandKey, { fingerprint, absenceId: next.id }, tx);
       return next;
-    });
+    };
+    if (reviewed) {
+      await this.staff.lock(scope, reviewed.tx);
+      return execute(reviewed.tx);
+    }
+    return this.staff.transaction(scope, execute);
   }
   private async withAttachment<T>(
     staffId: string,

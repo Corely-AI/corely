@@ -3,7 +3,9 @@ import {
   OperationalRequestSchema,
   OperationalRequestsPageSchema,
   type OperationalRequestDraft,
+  type OperationalRequestDecision,
   type OperationalRequestKind,
+  type OperationalRequestQueueStatus,
 } from "@corely/contracts";
 import { apiClient } from "@corely/web-shared/lib/api-client";
 import { z } from "zod";
@@ -47,8 +49,19 @@ export function createRequestsClient(workspaceId: string) {
   }
 
   return {
-    async list(page: number, signal?: AbortSignal) {
-      return OperationalRequestsPageSchema.parse(await get(`${root}?page=${page}`, signal));
+    async list(
+      page: number,
+      signal?: AbortSignal,
+      filter?: OperationalRequestQueueStatus,
+      inbox = false
+    ) {
+      const query = new URLSearchParams({ page: String(page) });
+      if (filter) {
+        query.set("status", filter);
+      }
+      return OperationalRequestsPageSchema.parse(
+        await get(`${root}${inbox ? "/inbox" : ""}?${query}`, signal)
+      );
     },
     async get(id: string, signal?: AbortSignal) {
       return OperationalRequestSchema.parse(await get(path(id), signal));
@@ -61,9 +74,30 @@ export function createRequestsClient(workspaceId: string) {
         await write(path(id), "PATCH", { version, draft }, key)
       );
     },
+    async linkProcedure(id: string, version: number, procedureId: string | null, key: string) {
+      return OperationalRequestSchema.parse(
+        await write(`${path(id)}/procedure`, "PATCH", { version, procedureId }, key)
+      );
+    },
     async transition(id: string, command: "submit" | "withdraw", version: number, key: string) {
       return OperationalRequestSchema.parse(
         await write(`${path(id)}/${command}`, "POST", { version }, key)
+      );
+    },
+    async decide(
+      id: string,
+      version: number,
+      decision: OperationalRequestDecision,
+      note: string | null,
+      key: string
+    ) {
+      return OperationalRequestSchema.parse(
+        await write(`${path(id)}/decision`, "POST", { version, decision, note }, key)
+      );
+    },
+    async apply(id: string, version: number, timezone: string, key: string) {
+      return OperationalRequestSchema.parse(
+        await write(`${path(id)}/apply`, "POST", { version, timezone }, key)
       );
     },
     async attach(id: string, version: number, file: File, base64: string, key: string) {

@@ -1,9 +1,10 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
-import { ApprovalsModule } from "../approvals";
+import { ApprovalPoliciesModule } from "../approvals/approval-policies.module";
 import { DocumentsModule } from "../documents/documents.module";
 import { IdentityModule } from "../identity";
+import { KnowledgeModule } from "../knowledge/knowledge.module";
 import { PeopleModule } from "../people/people.module";
 import { PlatformModule } from "../platform/platform.module";
 import { OperationalRequestsController } from "./adapters/http/operational-requests.controller";
@@ -16,9 +17,10 @@ import { ExtOperationalRequestRepository } from "./infrastructure/ext-operationa
     KernelModule,
     DataModule,
     IdentityModule,
+    KnowledgeModule,
     PeopleModule,
     PlatformModule,
-    ApprovalsModule,
+    ApprovalPoliciesModule,
     DocumentsModule,
   ],
   controllers: [OperationalRequestsController],

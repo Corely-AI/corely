@@ -7,9 +7,15 @@ import { normalizeError } from "@corely/api-client";
 import { TaskCreationGuidanceSlot, type TaskCreationGuidance } from "@corely/tasks-ui";
 import { TaskCreationPolicyRejectedCode } from "@corely/contracts";
 import { LoadingSkeleton, Button, Input } from "@corely/ui";
-import type { EmployeeTask, EmployeeTaskList, TaskAssignee } from "@corely/contracts";
+import type {
+  EmployeeTask,
+  EmployeeTaskList,
+  TaskAssignee,
+  TaskDueFilter,
+} from "@corely/contracts";
 import type { TasksClient } from "./tasks-client";
 import { tasksCopy } from "./tasks-copy";
+import { DailyWorkBoard, DailyWorkControls } from "./daily-work-controls";
 import { TaskContextPanel } from "./task-context-panel";
 import "./tasks.css";
 
@@ -29,11 +35,13 @@ export function DailyWork({
   client,
   locale = "en",
   templatesHref = "/tasks/templates",
+  taskId,
   creationGuidance,
 }: {
   client: TasksClient;
   locale?: string;
   templatesHref?: string;
+  taskId?: string;
   creationGuidance?: TaskCreationGuidance;
 }) {
   const c = checklistsCopy[resolveCorelyLocale(locale)];
@@ -41,6 +49,10 @@ export function DailyWork({
   const [data, setData] = useState<EmployeeTaskList>();
   const [assignees, setAssignees] = useState<TaskAssignee[]>([]);
   const [filter, setFilter] = useState("all");
+  const [view, setView] = useState<"auto" | "mine" | "team">("auto");
+  const [layout, setLayout] = useState<"list" | "board">("list");
+  const [dueFilter, setDueFilter] = useState<TaskDueFilter>("all");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -77,7 +89,15 @@ export function DailyWork({
     setAssignees([]);
     void client
       .list(
-        new URLSearchParams({ status: filter, page: String(page), pageSize: "20" }).toString(),
+        new URLSearchParams({
+          status: filter,
+          view,
+          due: dueFilter,
+          q: search.trim(),
+          page: String(page),
+          pageSize: "20",
+          ...(taskId ? { taskId } : {}),
+        }).toString(),
         controller.signal
       )
       .then(async (result) => {
@@ -98,7 +118,7 @@ export function DailyWork({
         }
       });
     return () => controller.abort();
-  }, [client, filter, page, revision, t]);
+  }, [client, filter, view, dueFilter, search, page, revision, t, taskId]);
   function begin(task: EmployeeTask | "new") {
     setPolicyError(undefined);
     setEditing(task);
@@ -194,11 +214,123 @@ export function DailyWork({
     });
   }
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const teamView = view === "team" || (view === "auto" && Boolean(data?.capabilities.manage));
+  const workspaceTimezone = data?.timezone ?? "UTC";
+  const renderTask = (task: EmployeeTask) => (
+    <li key={task.id}>
+      <article aria-label={task.title}>
+        <div className="task-content">
+          <span className={`task-status ${task.status === "COMPLETED" ? "is-completed" : ""}`}>
+            {task.status === "COMPLETED" ? t.completed : t.open}
+          </span>
+          <h2>{task.title}</h2>
+          <p>
+            {task.ownerName}
+            {task.ownerArchived ? ` · ${t.archived}` : ""}
+          </p>
+          <p className="task-muted">
+            {task.dueAt ? (
+              <time dateTime={task.dueAt}>
+                {new Date(task.dueAt).toLocaleString(locale, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: workspaceTimezone,
+                })}
+              </time>
+            ) : (
+              t.noDue
+            )}
+          </p>
+          {task.checklist && (
+            <div className="task-checklist">
+              <p className="task-muted">
+                {task.checklist.filter((s) => s.completed).length}/{task.checklist.length}{" "}
+                {c.progress}
+                {task.recurrence
+                  ? ` · ${task.recurrence.localDate} · ${task.recurrence.timezone}`
+                  : ""}
+              </p>
+              {task.checklist.map((step) => (
+                <label className="checklist-check" key={step.id}>
+                  <input
+                    type="checkbox"
+                    checked={step.completed}
+                    disabled={
+                      task.status !== "OPEN" ||
+                      !!editing ||
+                      !(data?.capabilities.manage || data?.capabilities.completeOwn)
+                    }
+                    aria-disabled={busy}
+                    onChange={(event) => {
+                      if (!busy) {
+                        void command(
+                          `/${task.id}/checklist/${step.id}`,
+                          "POST",
+                          { version: task.version, completed: event.target.checked },
+                          true
+                        );
+                      }
+                    }}
+                  />
+                  {step.title}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="task-actions">
+          {data?.capabilities.manage && (
+            <Button
+              className="task-secondary"
+              disabled={busy || !!editing}
+              onClick={() => begin(task)}
+            >
+              {t.edit}
+            </Button>
+          )}
+          {(data?.capabilities.manage || data?.capabilities.completeOwn) && (
+            <Button
+              className="task-primary"
+              disabled={
+                busy ||
+                !!editing ||
+                (task.status === "OPEN" && task.checklist?.some((step) => !step.completed))
+              }
+              onClick={() =>
+                void command(
+                  `/${task.id}/${task.status === "OPEN" ? "complete" : "reopen"}`,
+                  "POST",
+                  { version: task.version }
+                )
+              }
+            >
+              {task.status === "OPEN" ? t.complete : t.reopen}
+            </Button>
+          )}
+        </div>
+      </article>
+      {client.context && (
+        <TaskContextPanel
+          client={client.context}
+          taskId={task.id}
+          workspaceId={task.workspaceId}
+          locale={locale}
+          canWrite={Boolean(data?.capabilities.manage || data?.capabilities.completeOwn)}
+        />
+      )}
+    </li>
+  );
+
   return (
     <section className="daily-work" aria-busy={busy}>
       <header className="task-heading">
         <div>
-          <p className="task-eyebrow">{data?.capabilities.manage ? t.team : t.mine}</p>
+          {taskId && (
+            <Link className="checklist-back" to="/tasks">
+              {t.all}
+            </Link>
+          )}
+          <p className="task-eyebrow">{teamView ? t.team : t.mine}</p>
           <h1>{t.title}</h1>
           <p>{t.intro}</p>
         </div>
@@ -312,27 +444,22 @@ export function DailyWork({
           </div>
         </form>
       )}
-      <div className="task-toolbar">
-        <label>
-          {t.filter}
-          <select
-            aria-label={t.filter}
-            value={filter}
-            disabled={busy}
-            onChange={(e) => {
-              setFilter(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="all">{t.all}</option>
-            <option value="OPEN">{t.open}</option>
-            <option value="COMPLETED">{t.completed}</option>
-          </select>
-        </label>
-        <span>
-          {t.zone} {zone}
-        </span>
-      </div>
+      <DailyWorkControls
+        copy={t}
+        value={{ view, layout, dueFilter, search, filter }}
+        teamView={teamView}
+        canManage={Boolean(data?.capabilities.manage)}
+        timezone={data ? workspaceTimezone : undefined}
+        busy={busy}
+        onLayoutChange={setLayout}
+        onChange={({ view, dueFilter, search, filter }) => {
+          setView(view);
+          setDueFilter(dueFilter);
+          setSearch(search);
+          setFilter(filter);
+          setPage(1);
+        }}
+      />
       {loading ? (
         <LoadingSkeleton variant="list" label={t.loading} />
       ) : (
@@ -344,115 +471,10 @@ export function DailyWork({
                 <h2>{t.empty}</h2>
                 <p>{data.capabilities.manage ? t.managerHint : t.emptyHint}</p>
               </div>
+            ) : layout === "board" ? (
+              <DailyWorkBoard items={data.items} filter={filter} renderTask={renderTask} copy={t} />
             ) : (
-              <ul className="task-list">
-                {data.items.map((task) => (
-                  <li key={task.id}>
-                    <article aria-label={task.title}>
-                      <div className="task-content">
-                        <span
-                          className={`task-status ${task.status === "COMPLETED" ? "is-completed" : ""}`}
-                        >
-                          {task.status === "COMPLETED" ? t.completed : t.open}
-                        </span>
-                        <h2>{task.title}</h2>
-                        <p>
-                          {task.ownerName}
-                          {task.ownerArchived ? ` · ${t.archived}` : ""}
-                        </p>
-                        <p className="task-muted">
-                          {task.dueAt ? (
-                            <time dateTime={task.dueAt}>
-                              {new Date(task.dueAt).toLocaleString(locale, {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })}
-                            </time>
-                          ) : (
-                            t.noDue
-                          )}
-                        </p>
-                        {task.checklist && (
-                          <div className="task-checklist">
-                            <p className="task-muted">
-                              {task.checklist.filter((s) => s.completed).length}/
-                              {task.checklist.length} {c.progress}
-                              {task.recurrence
-                                ? ` · ${task.recurrence.localDate} · ${task.recurrence.timezone}`
-                                : ""}
-                            </p>
-                            {task.checklist.map((step) => (
-                              <label className="checklist-check" key={step.id}>
-                                <input
-                                  type="checkbox"
-                                  checked={step.completed}
-                                  disabled={
-                                    task.status !== "OPEN" ||
-                                    !!editing ||
-                                    !(data.capabilities.manage || data.capabilities.completeOwn)
-                                  }
-                                  aria-disabled={busy}
-                                  onChange={(event) => {
-                                    if (!busy) {
-                                      void command(
-                                        `/${task.id}/checklist/${step.id}`,
-                                        "POST",
-                                        { version: task.version, completed: event.target.checked },
-                                        true
-                                      );
-                                    }
-                                  }}
-                                />
-                                {step.title}
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="task-actions">
-                        {data.capabilities.manage && (
-                          <Button
-                            className="task-secondary"
-                            disabled={busy || !!editing}
-                            onClick={() => begin(task)}
-                          >
-                            {t.edit}
-                          </Button>
-                        )}
-                        {(data.capabilities.manage || data.capabilities.completeOwn) && (
-                          <Button
-                            className="task-primary"
-                            disabled={
-                              busy ||
-                              !!editing ||
-                              (task.status === "OPEN" &&
-                                task.checklist?.some((step) => !step.completed))
-                            }
-                            onClick={() =>
-                              void command(
-                                `/${task.id}/${task.status === "OPEN" ? "complete" : "reopen"}`,
-                                "POST",
-                                { version: task.version }
-                              )
-                            }
-                          >
-                            {task.status === "OPEN" ? t.complete : t.reopen}
-                          </Button>
-                        )}
-                      </div>
-                    </article>
-                    {client.context && (
-                      <TaskContextPanel
-                        client={client.context}
-                        taskId={task.id}
-                        workspaceId={task.workspaceId}
-                        locale={locale}
-                        canWrite={data.capabilities.manage || data.capabilities.completeOwn}
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <ul className="task-list">{data.items.map(renderTask)}</ul>
             )}
             <footer className="task-pagination">
               <Button

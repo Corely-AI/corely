@@ -1,6 +1,7 @@
 import type { TaskCreationGuidance } from "@corely/tasks-ui";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { apiClient } from "@corely/web-shared/lib/api-client";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
@@ -18,6 +19,8 @@ export function DailyWorkPage({
   const { activeWorkspaceId } = useWorkspace();
   const { user } = useAuth();
   const { i18n } = useTranslation();
+  const [query] = useSearchParams();
+  const taskId = query.get("task") ?? undefined;
   const client = useMemo(
     () => createTasksClient(apiClient, activeWorkspaceId ?? ""),
     [activeWorkspaceId]
@@ -38,8 +41,9 @@ export function DailyWorkPage({
   }
   return (
     <DailyWork
-      key={JSON.stringify([user?.userId, user?.activeTenantId, activeWorkspaceId])}
+      key={JSON.stringify([user?.userId, user?.activeTenantId, activeWorkspaceId, taskId])}
       client={client}
+      taskId={taskId}
       creationGuidance={activeWorkspaceId ? getCreationGuidance?.(activeWorkspaceId) : undefined}
       locale={i18n.language.split("-")[0]}
     />

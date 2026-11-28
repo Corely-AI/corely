@@ -31,6 +31,7 @@ describe.skipIf(!enabled)("private procedure publication with PostgreSQL", () =>
   const outsider = { tenantId, workspaceId: randomUUID(), userId: author.userId };
   const otherTenant = { ...author, tenantId: randomUUID() };
   const noAccess = { tenantId, workspaceId, userId: randomUUID() };
+  const revoked = new Set<string>();
   let prisma: PrismaService;
   let app: ProceduresUseCase;
 
@@ -54,7 +55,10 @@ describe.skipIf(!enabled)("private procedure publication with PostgreSQL", () =>
             ctx.userId === author.userId
               ? ["knowledge.read", "knowledge.manage"]
               : ["knowledge.read"],
-          denied: ctx.userId === noAccess.userId ? ["knowledge.read"] : [],
+          denied:
+            ctx.userId === noAccess.userId || (ctx.userId && revoked.has(ctx.userId))
+              ? ["knowledge.read"]
+              : [],
           allowAll: false,
         },
       }),
@@ -214,6 +218,10 @@ describe.skipIf(!enabled)("private procedure publication with PostgreSQL", () =>
       bytes,
       filename: "checklist.txt",
     });
+    expect(await app.download(created.id, fileId, author, true)).toEqual({
+      bytes,
+      filename: "checklist.txt",
+    });
     await expect(app.download(created.id, fileId, outsider)).rejects.toMatchObject({ status: 404 });
     await app.command(
       "archive",
@@ -223,5 +231,113 @@ describe.skipIf(!enabled)("private procedure publication with PostgreSQL", () =>
       author
     );
     await expect(app.download(created.id, fileId, reader)).rejects.toMatchObject({ status: 404 });
+    await expect(app.download(created.id, fileId, author, true)).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it("searches only the current publication and rechecks current access for every reference", async () => {
+    const fields = {
+      title: "Werkstattübergabe",
+      reviewDate: "2000-01-01",
+      content: { kind: "page", text: "Check the blue equipment cart." },
+    };
+    const created = await app.command("create", undefined, fields, randomUUID(), author);
+    expect(await app.canRead(created.id, author)).toBe(false);
+    expect((await app.searchPublished({ query: "Werkstatt" }, author)).items).toEqual([]);
+    const first = await app.command(
+      "publish",
+      created.id,
+      { revision: created.revision },
+      randomUUID(),
+      author
+    );
+    const current = await app.command(
+      "edit",
+      created.id,
+      {
+        ...fields,
+        title: "Private future process",
+        reviewDate: "2100-01-01",
+        content: { kind: "page", text: "Red equipment cart" },
+        revision: first.revision,
+      },
+      randomUUID(),
+      author
+    );
+    const summary = {
+      id: created.id,
+      title: fields.title,
+      reviewDate: fields.reviewDate,
+      version: 1,
+      reviewOverdue: true,
+      ownerName: null,
+    };
+    for (const actor of [author, reader]) {
+      expect((await app.searchPublished({ query: "  BLUE equipment  " }, actor)).items).toEqual([
+        summary,
+      ]);
+      expect(
+        (await app.searchPublished({ query: "WERKSTATTU\u0308BERGABE" }, actor)).items
+      ).toEqual([summary]);
+      expect((await app.searchPublished({ query: "Private future" }, actor)).items).toEqual([]);
+      expect(await app.previewPublished(created.id, actor)).toEqual(summary);
+      expect(await app.detailPublished(created.id, actor)).toEqual({
+        id: created.id,
+        ownerName: null,
+        published: first.published,
+        reviewOverdue: true,
+      });
+    }
+    expect(await app.canRead(created.id, outsider)).toBe(false);
+    expect(await app.canRead(created.id, otherTenant)).toBe(false);
+    expect((await app.searchPublished({}, outsider)).items).toEqual([]);
+    const question = "Where is the blue equipment cart?";
+    const citations = await app.findPublishedPassages(question, reader);
+    expect(citations).toMatchObject([
+      {
+        id: created.id,
+        title: fields.title,
+        quote: "Check the blue equipment cart.",
+        version: 1,
+        reviewOverdue: true,
+      },
+    ]);
+    expect(await app.findPublishedPassages(question, outsider)).toEqual([]);
+    expect(await app.findPublishedPassages(question, otherTenant)).toEqual([]);
+    expect(await app.findPublishedPassages("Red equipment cart", reader)).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ quote: "Red equipment cart" })])
+    );
+    if (!reader.userId) throw new Error("Missing reader fixture");
+    revoked.add(reader.userId);
+    try {
+      expect(await app.canRead(created.id, reader)).toBe(false);
+      await expect(app.previewPublished(created.id, reader)).rejects.toMatchObject({ status: 403 });
+      await expect(app.detailPublished(created.id, reader)).rejects.toMatchObject({ status: 403 });
+      await expect(app.searchPublished({}, reader)).rejects.toMatchObject({ status: 403 });
+      await expect(app.findPublishedPassages(question, reader)).rejects.toMatchObject({
+        status: 403,
+      });
+    } finally {
+      revoked.delete(reader.userId);
+    }
+    const next = await app.command(
+      "publish",
+      created.id,
+      { revision: current.revision },
+      randomUUID(),
+      author
+    );
+    expect((await app.searchPublished({ query: "blue equipment" }, reader)).items).toEqual([]);
+    expect(await app.previewPublished(created.id, reader)).toMatchObject({
+      id: created.id,
+      title: "Private future process",
+      version: 2,
+      reviewOverdue: false,
+    });
+    await app.command("archive", created.id, { revision: next.revision }, randomUUID(), author);
+    expect(await app.canRead(created.id, author)).toBe(false);
+    await expect(app.previewPublished(created.id, author)).rejects.toMatchObject({ status: 404 });
+    expect((await app.searchPublished({}, author)).items).toEqual([]);
   });
 });
