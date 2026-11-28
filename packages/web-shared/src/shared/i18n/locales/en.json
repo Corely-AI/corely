@@ -5563,6 +5563,7 @@
       "issue-created": "Issue created"
     },
     "notifications-notification-item": {
+      "request-awaiting-review": "A request awaits review",
       "view-details": "View details",
       "mark-as-read": "Mark as read"
     },

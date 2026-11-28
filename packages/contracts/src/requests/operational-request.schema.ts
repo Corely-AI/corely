@@ -172,14 +172,43 @@ export const OperationalRequestSchema = OperationalRequestSummarySchema.extend({
   application: OperationalRequestApplicationSchema.nullable().default(null),
   actions: OperationalRequestActionsSchema.optional(),
 });
+const OperationalRequestQueueItemSchema = OperationalRequestSummarySchema.extend({
+  queueStatus: z
+    .enum([
+      "DRAFT",
+      "SUBMITTED",
+      "RETURNED",
+      "REJECTED",
+      "APPROVED",
+      "WITHDRAWN",
+      "PENDING_APPLICATION",
+      "FAILED_APPLICATION",
+      "APPLIED",
+    ])
+    .optional(),
+  submittedAt: utcInstantSchema.nullable().optional(),
+  ageSeconds: z.number().int().nonnegative().optional(),
+});
+export const OperationalRequestQueueStatusSchema =
+  OperationalRequestQueueItemSchema.shape.queueStatus.unwrap();
+const OperationalRequestQueueCountsSchema = z.record(
+  OperationalRequestQueueStatusSchema,
+  z.number().int().nonnegative()
+);
 export const OperationalRequestsPageSchema = z.object({
-  items: z.array(OperationalRequestSummarySchema),
+  items: z.array(OperationalRequestQueueItemSchema),
+  counts: OperationalRequestQueueCountsSchema.optional(),
+  total: z.number().int().nonnegative().optional(),
+  evaluatedAt: utcInstantSchema.optional(),
+  sourceUnavailable: z.boolean().optional(),
+  canReview: z.boolean().optional(),
   hasMore: z.boolean(),
   canSubmit: z.boolean(),
   canManageRouting: z.boolean(),
 });
 export const OperationalRequestListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(1000).default(1),
+  status: OperationalRequestQueueStatusSchema.optional(),
 });
 
 export const OperationalRequestRouteSchema = z.object({
@@ -201,3 +230,14 @@ export type AddOperationalRequestAttachment = z.infer<typeof AddOperationalReque
 export type OperationalRequestDecision = z.infer<typeof OperationalRequestDecisionSchema>;
 export type OperationalRequestReviewEntry = z.infer<typeof OperationalRequestReviewEntrySchema>;
 export type OperationalRequestApplication = z.infer<typeof OperationalRequestApplicationSchema>;
+
+export type OperationalRequestQueueStatus = z.infer<typeof OperationalRequestQueueStatusSchema>;
+export type OperationalRequestQueueItem = z.infer<typeof OperationalRequestQueueItemSchema>;
+
+export const OperationalRequestReviewReminderType = "requests.review-reminder";
+export const OperationalRequestReminderEvent = "requests.operational.reminder-due";
+export const OperationalRequestReminderSchema = z.object({
+  requestId: z.string().uuid(),
+  workspaceId: z.string().min(1),
+  version: z.number().int().positive(),
+});

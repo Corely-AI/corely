@@ -17,6 +17,9 @@ import {
   OperationalRequestDraftSchema,
   OperationalRequestKindSchema,
   OperationalRequestListQuerySchema,
+  OperationalRequestReminderEvent,
+  OperationalRequestReminderSchema,
+  type OperationalRequestQueueStatus,
   OperationalRequestRoutingMissingCode,
   OperationalRequestVersionSchema,
   SubmitOperationalRequestDraftSchema,
@@ -50,6 +53,7 @@ import { OperationalRequestRepository, type RequestScope } from "./ports/request
 import type { OperationalRequestRecord } from "./request-record";
 
 const PAGE_SIZE = 25;
+const REVIEW_REMINDER_DELAY_MS = 24 * 60 * 60 * 1000;
 const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
 const approvalSpec = z.object({
@@ -90,19 +94,95 @@ export class OperationalRequestsUseCase {
 
   async list(query: unknown, ctx: UseCaseContext): Promise<OperationalRequestsPage> {
     const auth = await this.authorize(ctx);
-    const { page } = OperationalRequestListQuerySchema.parse(query);
     const records = await this.repo.list(auth.scope, auth.userId);
-    records.sort(
+    return this.queuePage(records, query, auth);
+  }
+
+  async inbox(query: unknown, ctx: UseCaseContext): Promise<OperationalRequestsPage> {
+    const initial = await this.authorize(ctx);
+    if (!initial.can("requests.review")) {
+      throw new ForbiddenException("Request review permission required");
+    }
+    return this.repo.transaction(initial.scope, async (tx) => {
+      const auth = await this.authorize(ctx, tx);
+      if (!auth.can("requests.review")) {
+        throw new ForbiddenException("Request review permission required");
+      }
+      const records = await this.repo.listAssigned(auth.scope, auth.userId, tx);
+      const policies = new Map<string, string | null>();
+      const available: OperationalRequestRecord[] = [];
+      for (const record of records) {
+        if (!record.approval || !isAssignedReviewer(record, auth)) {
+          continue;
+        }
+        const { policyId } = record.approval;
+        if (!policies.has(policyId)) {
+          policies.set(policyId, await this.reviewerForPolicy(auth.scope, policyId, tx));
+        }
+        if (policies.get(policyId) === auth.userId) {
+          available.push(record);
+        }
+      }
+      return {
+        ...this.queuePage(available, query, auth, true),
+        sourceUnavailable: records.length !== available.length,
+      };
+    });
+  }
+
+  private queuePage(
+    records: OperationalRequestRecord[],
+    query: unknown,
+    auth: RequestAuthorization,
+    reviewQueue = false
+  ): OperationalRequestsPage {
+    const { page, status: filter } = OperationalRequestListQuerySchema.parse(query);
+    const now = new Date();
+    const counts: Partial<Record<OperationalRequestQueueStatus, number>> = {};
+    const items = records
+      .map((record) => {
+        const { id, kind, status, submittedAt, createdAt, updatedAt, application } = record;
+        const queueStatus: OperationalRequestQueueStatus =
+          application?.status === "PENDING"
+            ? "PENDING_APPLICATION"
+            : application?.status === "FAILED"
+              ? "FAILED_APPLICATION"
+              : application?.status === "APPLIED"
+                ? "APPLIED"
+                : status;
+        counts[queueStatus] = (counts[queueStatus] ?? 0) + 1;
+        const since =
+          status === "SUBMITTED"
+            ? (submittedAt ?? updatedAt)
+            : status === "DRAFT"
+              ? createdAt
+              : updatedAt;
+        return {
+          id,
+          kind,
+          status,
+          queueStatus,
+          submittedAt,
+          updatedAt,
+          ageSeconds: Math.max(0, Math.floor((now.getTime() - Date.parse(since)) / 1000)),
+        };
+      })
+      .filter((record) => !filter || filter === record.queueStatus);
+    items.sort(
       (first, second) =>
-        second.updatedAt.localeCompare(first.updatedAt) || first.id.localeCompare(second.id)
+        (reviewQueue
+          ? second.ageSeconds - first.ageSeconds
+          : second.updatedAt.localeCompare(first.updatedAt)) || first.id.localeCompare(second.id)
     );
     return {
-      items: records
-        .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-        .map(({ id, kind, status, updatedAt }) => ({ id, kind, status, updatedAt })),
-      hasMore: records.length > page * PAGE_SIZE,
+      items: items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+      counts,
+      total: items.length,
+      evaluatedAt: now.toISOString(),
+      hasMore: items.length > page * PAGE_SIZE,
       canSubmit: auth.can("requests.own.submit"),
       canManageRouting: auth.can("requests.routing.manage"),
+      canReview: auth.can("requests.review"),
     };
   }
 
@@ -216,7 +296,10 @@ export class OperationalRequestsUseCase {
     if (
       !record ||
       (record.requesterUserId !== auth.userId &&
-        (record.status === "RETURNED" || !isAssignedReviewer(record, auth)))
+        (record.status === "RETURNED" ||
+          !record.approval ||
+          !isAssignedReviewer(record, auth) ||
+          (await this.reviewerForPolicy(auth.scope, record.approval.policyId, tx)) !== auth.userId))
     ) {
       throw new NotFoundException("Request not found");
     }
@@ -451,6 +534,22 @@ export class OperationalRequestsUseCase {
       await this.repo.save(auth.scope, next, tx);
       await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, record: next }, tx);
       await this.recordMutation(auth.scope, auth.userId, next, parsed.kind, ctx.correlationId, tx);
+      if (parsed.kind === "submit") {
+        await this.outbox.enqueue(
+          {
+            eventType: OperationalRequestReminderEvent,
+            tenantId: auth.scope.tenantId,
+            payload: {
+              requestId: next.id,
+              workspaceId: auth.scope.workspaceId,
+              version: next.version,
+            },
+            correlationId: ctx.correlationId,
+            availableAt: new Date(Date.parse(now) + REVIEW_REMINDER_DELAY_MS),
+          },
+          tx
+        );
+      }
       return this.project(next, ctx, auth);
     });
   }
@@ -630,13 +729,53 @@ export class OperationalRequestsUseCase {
   private async canReview(scope: RequestScope, userId: string, tx: TransactionContext) {
     try {
       const { permissions } = await this.permissions.execute({ ...scope, userId }, tx);
-      return grants(permissions, "requests.review");
+      return grants(permissions, "requests.read") && grants(permissions, "requests.review");
     } catch (error) {
       if (error instanceof ForbiddenException) {
         return false;
       }
       throw error;
     }
+  }
+
+  async deliverReminder(
+    tenantId: string,
+    raw: unknown,
+    deliver: (
+      input: {
+        scope: RequestScope;
+        reviewerUserId: string;
+        requestId: string;
+        version: number;
+      },
+      tx: TransactionContext
+    ) => Promise<void>
+  ): Promise<void> {
+    const { workspaceId, requestId, version } = OperationalRequestReminderSchema.parse(raw);
+    const scope = { tenantId, workspaceId };
+    await this.repo.transaction(scope, async (tx) => {
+      const record = await this.repo.get(scope, requestId, tx);
+      if (!record?.approval || record.status !== "SUBMITTED" || record.version !== version) {
+        return;
+      }
+      const reviewerUserId = record.approval.reviewerUserId;
+      let auth: RequestAuthorization;
+      try {
+        auth = await this.authorize({ ...scope, userId: reviewerUserId }, tx);
+      } catch (error) {
+        if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+          return;
+        }
+        throw error;
+      }
+      if (
+        !isAssignedReviewer(record, auth) ||
+        (await this.reviewerForPolicy(scope, record.approval.policyId, tx)) !== reviewerUserId
+      ) {
+        return;
+      }
+      await deliver({ scope, reviewerUserId, requestId, version }, tx);
+    });
   }
 
   private async activeStaff(scope: RequestScope, userId: string, tx: TransactionContext) {

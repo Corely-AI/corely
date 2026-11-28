@@ -8,9 +8,12 @@ import {
 } from "@corely/data";
 import type { EnvService } from "@corely/config";
 import type { OutboxPort, UseCaseContext } from "@corely/kernel";
-import { StaffProfileSchema } from "@corely/contracts";
+import { OperationalRequestReminderEvent, StaffProfileSchema } from "@corely/contracts";
 import { NotFoundError, err } from "@corely/kernel";
 import { describe, expect, it, beforeAll, afterAll, vi } from "vitest";
+import { OperationalRequestReminderHandler } from "../../background/runtime/modules/outbox/operational-request-reminder.handler";
+import { PublishNotificationUseCase } from "../../notifications/public";
+import { PrismaNotificationRepository } from "../../notifications/infrastructure/prisma-notification.repository";
 import { ApprovalPolicyService } from "../../approvals/public";
 import { PrismaApprovalPolicyRepository } from "../../approvals/infrastructure/repositories/prisma-approval-policy-repository";
 import { DocumentsApplication, type PersonnelDocumentsPort } from "../../documents/public";
@@ -212,6 +215,9 @@ describe.skipIf(!database)(
           ],
         },
       });
+      await prisma.notification.deleteMany({
+        where: { tenantId: "tenant-a", type: "requests.review-reminder" },
+      });
       await prisma.outboxEvent.deleteMany({
         where: {
           tenantId: "tenant-a",
@@ -332,6 +338,7 @@ describe.skipIf(!database)(
         ["create", "submit", "withdraw"].map((action) => `requests.operational.${action}`)
       );
       expect(events.map(({ eventType }) => eventType).sort()).toEqual([
+        OperationalRequestReminderEvent,
         "requests.operational.submit",
         "requests.operational.withdraw",
       ]);
@@ -549,6 +556,175 @@ describe.skipIf(!database)(
       await expect(
         usecase.applyApprovedAbsence(draft.id, retry, randomUUID(), reviewer)
       ).rejects.toMatchObject({ status: 409 });
+    });
+
+    it("counts visible queue records and distinguishes missing policies from empty filters", async () => {
+      const actor = ctx("queue-requester");
+      const reviewer = ctx("queue-reviewer");
+      reviewers.add("queue-reviewer");
+      try {
+        await usecase.configureRoute(
+          "GENERAL",
+          { reviewerUserId: "queue-reviewer" },
+          randomUUID(),
+          ctx("routing-admin")
+        );
+        const draft = await command("create", "", general, actor);
+        const submitted = await command("submit", draft.id, { version: draft.version }, actor);
+        await command("create", "", general, actor);
+        const mine = await usecase.list({ status: "SUBMITTED" }, actor);
+        expect(mine).toMatchObject({
+          counts: { DRAFT: 1, SUBMITTED: 1 },
+          total: 1,
+          canReview: false,
+          items: [
+            {
+              id: draft.id,
+              kind: "GENERAL",
+              queueStatus: "SUBMITTED",
+              ageSeconds: expect.any(Number),
+            },
+          ],
+        });
+        expect(JSON.stringify(mine)).not.toContain(general.details);
+        const inbox = await usecase.inbox({}, reviewer);
+        expect(inbox).toMatchObject({
+          counts: { SUBMITTED: 1 },
+          total: 1,
+          sourceUnavailable: false,
+          items: [{ id: draft.id, kind: "GENERAL", queueStatus: "SUBMITTED" }],
+        });
+        expect(Object.keys(inbox.items[0]).sort()).toEqual(
+          ["id", "kind", "status", "queueStatus", "submittedAt", "updatedAt", "ageSeconds"].sort()
+        );
+        await expect(usecase.inbox({}, ctx("queue-reviewer", "workspace-b"))).rejects.toMatchObject(
+          { status: 403 }
+        );
+        await expect(usecase.inbox({}, actor)).rejects.toMatchObject({ status: 403 });
+        await expect(
+          usecase.inbox({ status: "FAILED_APPLICATION" }, reviewer)
+        ).resolves.toMatchObject({
+          counts: { SUBMITTED: 1 },
+          total: 0,
+          items: [],
+        });
+        const record = await repo.get(
+          { tenantId: "tenant-a", workspaceId: "workspace-a" },
+          submitted.id
+        );
+        if (!record?.approval) {
+          throw new Error("Synthetic submitted request is missing its owner policy");
+        }
+        await prisma.workflowDefinition.update({
+          where: { id: record.approval.policyId },
+          data: { status: "INACTIVE" },
+        });
+        await expect(usecase.inbox({}, reviewer)).resolves.toMatchObject({
+          counts: {},
+          total: 0,
+          items: [],
+          sourceUnavailable: true,
+        });
+        await expect(usecase.detail(draft.id, reviewer)).rejects.toMatchObject({ status: 404 });
+        await expect(usecase.detail(draft.id, actor)).resolves.toMatchObject({
+          version: submitted.version,
+        });
+        reviewers.delete("queue-reviewer");
+        await expect(usecase.inbox({}, reviewer)).rejects.toMatchObject({ status: 403 });
+      } finally {
+        reviewers.delete("queue-reviewer");
+      }
+    });
+
+    it("schedules and delivers one neutral reminder and cancels overdue versions after decisions or revocation", async () => {
+      const actor = ctx("reminder-requester");
+      const reviewerUserId = "reminder-reviewer";
+      const reviewer = ctx(reviewerUserId);
+      const handler = new OperationalRequestReminderHandler(
+        usecase,
+        new PublishNotificationUseCase(new PrismaNotificationRepository(prisma))
+      );
+      const remindersFor = (requestId: string) =>
+        prisma.outboxEvent.findMany({
+          where: {
+            tenantId: "tenant-a",
+            eventType: OperationalRequestReminderEvent,
+            payloadJson: { contains: requestId },
+          },
+        });
+      async function submit() {
+        const draft = await command("create", "", general, actor);
+        const key = randomUUID();
+        const [first, replay] = await Promise.all([
+          usecase.command("submit", draft.id, { version: draft.version }, key, actor),
+          usecase.command("submit", draft.id, { version: draft.version }, key, actor),
+        ]);
+        expect(first).toEqual(replay);
+        const [queued, duplicate] = await remindersFor(first.id);
+        expect(duplicate).toBeUndefined();
+        expect(JSON.parse(queued.payloadJson)).toEqual({
+          requestId: first.id,
+          workspaceId: "workspace-a",
+          version: first.version,
+        });
+        expect(queued.availableAt.getTime()).toBe(Date.parse(first.submittedAt!) + 86_400_000);
+        return {
+          request: first,
+          event: {
+            id: queued.id,
+            tenantId: "tenant-a",
+            eventType: queued.eventType,
+            payload: JSON.parse(queued.payloadJson),
+          },
+        };
+      }
+      reviewers.add(reviewerUserId);
+      try {
+        await usecase.configureRoute(
+          "GENERAL",
+          { reviewerUserId },
+          randomUUID(),
+          ctx("routing-admin")
+        );
+        const eligible = await submit();
+        await Promise.all([handler.handle(eligible.event), handler.handle(eligible.event)]);
+        const reviewThenCancel = await submit();
+        await usecase.decide(
+          reviewThenCancel.request.id,
+          {
+            version: reviewThenCancel.request.version,
+            decision: "RETURN",
+            note: "Add context",
+          },
+          randomUUID(),
+          reviewer
+        );
+        await handler.handle(reviewThenCancel.event);
+        const revoked = await submit();
+        reviewers.delete(reviewerUserId);
+        await handler.handle(revoked.event);
+        const delivered = await prisma.notification.findMany({
+          where: {
+            tenantId: "tenant-a",
+            workspaceId: "workspace-a",
+            type: "requests.review-reminder",
+          },
+          include: { recipients: true },
+        });
+        expect(delivered).toHaveLength(1);
+        expect(delivered[0]).toMatchObject({
+          title: "A request awaits review",
+          dedupeKey: `requests.review:${eligible.request.id}:${eligible.request.version}`,
+          resource: { url: "/requests/inbox" },
+          recipients: [{ userId: reviewerUserId }],
+        });
+        expect(JSON.stringify(delivered)).not.toContain(general.details);
+        await expect(usecase.detail(eligible.request.id, actor)).resolves.toMatchObject({
+          status: "SUBMITTED",
+        });
+      } finally {
+        reviewers.delete(reviewerUserId);
+      }
     });
   }
 );
