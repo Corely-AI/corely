@@ -16,3 +16,16 @@ existing outbox. There is no migration.
 
 See [the Requests backend notes](../backend/operational-requests.md) for
 behavior and the linked Draft PR for executed checks and browser evidence.
+
+## Verification
+
+The disposable PostgreSQL suite passed seven tests, and ten AppModule and
+dependency-injection checks passed. API and web builds and typechecks passed.
+A Chromium fixture-based browser test submitted a request, switched to the
+assigned reviewer, confirmed the decision and reconciled both lists. The
+same flow checked loading with reduced motion, filtering, partial
+unavailability, a mobile viewport and revoked access.
+
+- [Desktop inbox](311-assets/desktop-inbox.png)
+- [Desktop loading](311-assets/desktop-inbox-loading.png)
+- [Mobile partial availability](311-assets/mobile-inbox-unavailable.png)
