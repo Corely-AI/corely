@@ -127,7 +127,11 @@ test("opens a private studio and follows a public booking with manual staff work
       .click();
     await guest.getByLabel("Full name", { exact: true }).fill("Synthetic guest");
     await guest.getByLabel("Email", { exact: true }).fill("guest-" + id + "@example.test");
-    await guest.getByRole("checkbox").check();
+    await guest
+      .getByRole("checkbox", {
+        name: "I agree that the studio may use these details to manage my appointment.",
+      })
+      .check();
     await guest.getByRole("button", { name: /^Confirm booking/ }).click();
     await expect(guest.getByRole("heading", { name: "You’re booked in." })).toBeVisible();
   } finally {
