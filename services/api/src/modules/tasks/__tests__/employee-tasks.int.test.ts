@@ -154,6 +154,29 @@ describe.skipIf(!enabled)("Employee tasks persisted lifecycle and trust boundari
       (await http("post", `/${mine.id}/reopen`, "staff").send({ version: 2 })).body.status
     ).toBe("OPEN");
   });
+  it("combines task filters with personal or authorized team scope", async () => {
+    const personal = await f.usecase.command(
+      "create",
+      null,
+      { displayName: "Manager profile", accountId: f.manager },
+      randomUUID(),
+      f.ctx
+    );
+    const task = (await create({ title: "Water the orchids", ownerStaffId: personal.id })).body;
+    const colleague = (await create({ title: "Water the ferns", ownerStaffId: other.id })).body;
+    const mine = await http("get", "?view=mine&q=WATER");
+    expect(mine.status).toBe(200);
+    expect(mine.body.items.map((item: EmployeeTask) => item.id)).toEqual([task.id]);
+    expect(mine.body.timezone).toBe("UTC");
+    const team = await http("get", "?view=team&q=water");
+    expect(team.status).toBe(200);
+    expect(team.body.total).toBe(2);
+    expect(team.body.items.map((item: EmployeeTask) => item.id)).toEqual(
+      expect.arrayContaining([task.id, colleague.id])
+    );
+    expect((await http("get", "?view=team", "staff")).status).toBe(403);
+    expect((await http("get", "?view=mine&q=water", "staff")).body.items).toEqual([]);
+  });
   it("rejects cross-tenant/workspace requests and stale token roles", async () => {
     const task = (await create()).body as EmployeeTask;
     expect((await http("get", `/${task.id}`, "manager", f.workspaceA2)).status).toBe(404);
