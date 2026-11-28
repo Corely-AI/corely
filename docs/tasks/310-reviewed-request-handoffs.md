@@ -20,6 +20,11 @@ record, Requests application status and outbox events commit in the same databas
 transaction. A failed handoff is visible and retryable. Equipment and general
 requests record decisions. The decision inbox and reminders belong to #311.
 
+Requests loads the narrow Approval Policies module. Approvals re-exports the
+same policy service alongside its existing services. This removes the module
+cycle found when the Requests, Tasks, published procedure linking and reviewed
+operations branches are composed.
+
 ## Verification
 
 Five disposable PostgreSQL integration tests and six People and Approvals unit
