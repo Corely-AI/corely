@@ -3,8 +3,8 @@
 [PLAT-01 / #301](https://github.com/Corely-AI/corely/issues/301) composes a
 configuration view for the existing OpenBuk client, following the
 [replacement decision](../products/corely/pilot-booking-decision.md).
-This is configuration delivery; it does not deliver the operational shell,
-employee directory, employee tasks or a pilot-ready booking system.
+[PLAT-03 / #303](https://github.com/Corely-AI/corely/issues/303) consumes that
+configuration in the OpenBuk staff shell on Backoffice.
 
 ## Request and compatibility
 
@@ -22,20 +22,25 @@ uses the existing platform/app surface identity and names `openbuk-web` as its
 client; POS/CRM requests for this package are rejected. Omitting `packageId`
 retains existing personal/company/POS/CRM configuration behavior.
 
-The response adds `operationalPackage`, whose experiences are Schedule, Team
-and Daily Work. The current provider is the existing `booking` manifest, with
-Schedule pointing to OpenBuk `/app` when available. Team and Daily Work have
-`not-implemented` availability and no route or invented app ID. Workspaces
-membership administration is not presented as an employee directory; workflow
-tasks and CRM activities are not presented as employee Tasks.
+The response adds `operationalPackage`. Booking contributes Schedule, People
+contributes the staff profile as Team, and Tasks contributes Daily Work.
+Schedule uses `/openbuk/app`, Team uses `/openbuk/app/me`, and Daily Work uses
+`/openbuk/app/tasks`. The calendar, settings and checklist template links remain
+valid. Decisions and Knowledge acquire actionable shell links when their owners
+publish an authorized contribution for `/requests/inbox` and `/knowledge`,
+respectively. Those links carry the selected workspace and interface language
+through the existing Backoffice route guard.
 
-The operational view suppresses legacy finance/navigation widgets and menu
-groups; the selected client's shell consumes experience descriptors separately.
-No existing screen or route switches to this view in PLAT-01. Shell consumption
-and rendered navigation belong to [PLAT-03 / #303](https://github.com/Corely-AI/corely/issues/303).
-Resumable opt-in/setup and app enablement belong to
-[PLAT-04 / #304](https://github.com/Corely-AI/corely/issues/304). Persisting the
-selection or automatically opting existing workspaces in is outside this change.
+The staff shell uses the verified workspace configuration and the existing
+owning APIs. It offers a keyboard skip link, reports unavailable sections and
+offline status, and provides a retry on failed configuration and schedule
+reads. Current OpenBuk setup and staff invitations still use their existing
+authorization. Manual operations use their existing commands and work with AI
+disabled.
+
+The operational configuration has a separate menu response. Selecting its
+view does not persist a package selection; the [pilot setup
+workflow](pilot-setup.md) owns opt-in and setup.
 
 ## Existing owners and independent gates
 
@@ -86,7 +91,6 @@ It covers independent gate failures, unchanged legacy defaults, disabled-record
 preservation, invalid scopes, workspace isolation and request compatibility.
 It performs no PostgreSQL, provider, public-browser or migration acceptance.
 
-The operational shell, staff/task owners, working patterns, private absences,
-guest management, delivery consumers and selected import remain their existing
-delivery tickets. This configuration does not make those capabilities available.
-See the [task record](../tasks/301-compose-operational-package.md) for actual checks.
+See the [configuration task record](../tasks/301-compose-operational-package.md)
+and the [staff shell task record](../tasks/303-operational-shell.md) for the
+checks run against each change.

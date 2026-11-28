@@ -231,13 +231,24 @@ describe("Operational package configuration integration (in-memory persistence)"
       {
         id: "team",
         label: "Team",
-        availability: { status: "unavailable", reason: "not-implemented" },
+        appId: "people",
+        availability: { status: "unavailable", reason: "app-disabled" },
       },
       {
         id: "daily-work",
         label: "Daily Work",
         appId: "tasks",
         availability: { status: "unavailable", reason: "app-disabled" },
+      },
+      {
+        id: "decisions",
+        label: "Decisions",
+        availability: { status: "unavailable", reason: "not-implemented" },
+      },
+      {
+        id: "knowledge",
+        label: "Knowledge",
+        availability: { status: "unavailable", reason: "not-implemented" },
       },
     ]);
     expect(result.home.widgets).toEqual([]);
@@ -268,6 +279,21 @@ describe("Operational package configuration integration (in-memory persistence)"
     );
     expect([...f.installs.keys()]).toEqual(["booking", "tasks", "people"]);
   });
+  it("limits the Team route to People users with self-service access", async () => {
+    const f = fixture();
+    f.install("people");
+    const team = (result: Awaited<ReturnType<typeof f.config>>) =>
+      result.operationalPackage?.experiences.find((experience) => experience.id === "team");
+    expect(team(await f.config({ permissions: ["people.self.read"] }))?.availability).toEqual({
+      status: "available",
+      route: "/app/me",
+    });
+    expect(team(await f.config())?.availability).toEqual({
+      status: "unavailable",
+      reason: "permission-denied",
+    });
+  });
+
   it("keeps installation, effective app enablement and product access separate", async () => {
     const f = fixture();
     f.install("booking", false);

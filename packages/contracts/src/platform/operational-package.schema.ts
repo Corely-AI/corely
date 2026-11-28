@@ -4,7 +4,14 @@ import { ExperienceTargetingSchema } from "./experience-targeting.schema";
 export const WorkspacePackageIdSchema = z.literal("internal-operations");
 export type WorkspacePackageId = z.infer<typeof WorkspacePackageIdSchema>;
 
-export const OperationalExperienceIdSchema = z.enum(["schedule", "team", "daily-work"]);
+export const OperationalExperienceIdSchema = z.enum([
+  "schedule",
+  "team",
+  "daily-work",
+  "decisions",
+  "knowledge",
+]);
+export type OperationalExperienceId = z.infer<typeof OperationalExperienceIdSchema>;
 
 /** Metadata on an existing app, never a new app ID or an authorization grant. */
 export const OperationalExperienceContributionSchema = ExperienceTargetingSchema.extend({

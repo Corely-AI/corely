@@ -48,6 +48,8 @@ export class OperationalPackageService {
       { id: "schedule", label: "Schedule" },
       { id: "team", label: "Team" },
       { id: "daily-work", label: "Daily Work" },
+      { id: "decisions", label: "Decisions" },
+      { id: "knowledge", label: "Knowledge" },
     ] as const;
 
     return {

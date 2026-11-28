@@ -32,6 +32,9 @@ export const peopleAppManifest: AppManifest = {
     "people.documents.read",
   ],
   entitlement: { enabledFeatureKey: "app.people.enabled", defaultEnabled: true },
+  operationalExperiences: [
+    { experienceId: "team", route: "/app/me", requiredPermissions: ["people.self.read"] },
+  ],
   menu: [
     {
       id: "people-self-service",
