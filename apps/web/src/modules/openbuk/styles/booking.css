@@ -46,6 +46,9 @@
     font-size: 20px;
     margin-bottom: 9px;
   }
+  .selected-service .muted {
+    color: #556258;
+  }
   .selected-service p {
     font-size: 12px;
     margin: 0;

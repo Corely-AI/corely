@@ -215,4 +215,5 @@ General developer guides and references.
 - [Frontend consumer checks](frontend/consumer-ci.md) — local checks for focused and existing Vite consumers.
 
 - [Multi-origin session and authorization regressions](testing/multi-origin-regressions.md) — disposable real-session browser journeys and sanitized evidence.
+- [Pilot accessibility and locales](tasks/332-pilot-accessibility-locales.md) — keyboard, responsive and locale evidence for the focused package.
 - [Native signing ownership](decisions/ADR-0005-native-sign.md)

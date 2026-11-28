@@ -23,6 +23,7 @@ export default defineConfig({
     "**/focused-hr/**",
     "**/invoice-links/**",
     "**/requests/**",
+    "**/pilot-accessibility/**",
     "**/operations-today/**",
     "**/focused-ux/**",
     "**/observability/**",
