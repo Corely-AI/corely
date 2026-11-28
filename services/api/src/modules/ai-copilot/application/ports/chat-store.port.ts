@@ -4,6 +4,7 @@ import { type CopilotTaskState } from "../../domain/types/chat-task-state";
 export interface CopilotChatMetadata {
   workspaceId?: string;
   userId?: string;
+  operationalTasks?: true;
   taskState?: CopilotTaskState;
   taxAnnual?: {
     workspaceId?: string;

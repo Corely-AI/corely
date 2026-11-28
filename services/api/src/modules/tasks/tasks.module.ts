@@ -32,7 +32,7 @@ import { ExtTaskRepositoryAdapter } from "./infrastructure/ext-task-repository.a
     BookingModule,
   ],
   controllers: [RecurringChecklistsController, EmployeeTasksController, TaskContextController],
-  exports: [RecurringGenerationUseCase],
+  exports: [RecurringGenerationUseCase, EmployeeTasksUseCase],
   providers: [
     TaskContextUseCase,
     ExtTaskContextAdapter,
