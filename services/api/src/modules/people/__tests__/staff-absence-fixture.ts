@@ -9,7 +9,7 @@ const url = process.env.PEOPLE_TEST_DATABASE_URL;
 export const absenceTestsEnabled =
   !!url && /^postgres(?:ql)?:\/\/[^/]+\/people_test_[a-z0-9_]+(?:\?.*)?$/.test(url);
 
-export function absenceTestFixture() {
+export function absenceTestFixture(includeTasks = false) {
   let prisma: PrismaService;
   let f: Awaited<ReturnType<typeof staffFixture>>;
   let now: Date, staffId: string;
@@ -86,7 +86,7 @@ export function absenceTestFixture() {
     });
     prisma = new PrismaService();
     await prisma.$connect();
-    f = await staffFixture(prisma, { now: () => now }, storage);
+    f = await staffFixture(prisma, { now: () => now }, storage, undefined, includeTasks);
     staffId = (
       await f.usecase.command(
         "create",

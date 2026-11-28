@@ -33,7 +33,12 @@
     "saved": "Pattern published",
     "unlinked": "No Booking resource linked. Patterns can be prepared now.",
     "dates": "Dates and times use the pattern timezone.",
-    "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    "reloadImpact": "Refresh exceptions",
+    "taskImpact": "Tasks due during approved absence",
+    "reviewTasks": "Open Tasks",
+    "noTaskImpact": "No open tasks are due during approved absence.",
+    "taskImpactUnavailable": "Task exceptions are unavailable in this workspace."
   },
   "de": {
     "title": "Arbeitszeiten",
@@ -69,7 +74,12 @@
     "saved": "Muster veröffentlicht",
     "unlinked": "Keine Buchungsressource verknüpft. Muster können bereits vorbereitet werden.",
     "dates": "Datum und Uhrzeit gelten in der Zeitzone des Musters.",
-    "days": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+    "days": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+    "reloadImpact": "Konflikte aktualisieren",
+    "taskImpact": "Aufgaben während genehmigter Abwesenheit",
+    "reviewTasks": "Aufgaben öffnen",
+    "noTaskImpact": "Während der genehmigten Abwesenheit sind keine offenen Aufgaben fällig.",
+    "taskImpactUnavailable": "Aufgabenkonflikte sind in diesem Arbeitsbereich nicht verfügbar."
   },
   "vi": {
     "title": "Lịch làm việc",
@@ -105,7 +115,12 @@
     "saved": "Đã công bố lịch",
     "unlinked": "Chưa liên kết tài nguyên Booking. Có thể chuẩn bị lịch ngay.",
     "dates": "Ngày và giờ theo múi giờ của lịch.",
-    "days": ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
+    "days": ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"],
+    "reloadImpact": "Làm mới các xung đột",
+    "taskImpact": "Công việc đến hạn trong thời gian nghỉ đã duyệt",
+    "reviewTasks": "Mở Công việc",
+    "noTaskImpact": "Không có công việc đang mở đến hạn trong thời gian nghỉ đã duyệt.",
+    "taskImpactUnavailable": "Không thể xem xung đột công việc trong không gian làm việc này."
   },
   "tr": {
     "title": "Çalışma düzenleri",
@@ -141,7 +156,12 @@
     "saved": "Desen yayınlandı",
     "unlinked": "Bağlı Rezervasyon kaynağı yok. Artık desenler hazırlanabilir.",
     "dates": "Tarihler ve saatler kalıp saat dilimini kullanır.",
-    "days": ["Pazar", "Pazartesi", "Salı", "Çarşamba", "perşembe", "Cuma", "Cumartesi"]
+    "days": ["Pazar", "Pazartesi", "Salı", "Çarşamba", "perşembe", "Cuma", "Cumartesi"],
+    "reloadImpact": "Çakışmaları yenile",
+    "taskImpact": "Onaylı izin sırasında süresi dolan görevler",
+    "reviewTasks": "Görevleri aç",
+    "noTaskImpact": "Onaylı izin sırasında süresi dolan açık görev yok.",
+    "taskImpactUnavailable": "Bu çalışma alanında görev çakışmaları kullanılamıyor."
   },
   "pl": {
     "title": "Wzory pracy",
@@ -177,7 +197,12 @@
     "saved": "Wzór opublikowany",
     "unlinked": "Brak powiązanych zasobów rezerwacji. Wzory można już przygotować.",
     "dates": "Daty i godziny korzystają ze wzorcowej strefy czasowej.",
-    "days": ["niedziela", "poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota"]
+    "days": ["niedziela", "poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota"],
+    "reloadImpact": "Odśwież konflikty",
+    "taskImpact": "Zadania do wykonania podczas zatwierdzonej nieobecności",
+    "reviewTasks": "Otwórz zadania",
+    "noTaskImpact": "Podczas zatwierdzonej nieobecności nie ma otwartych zadań do wykonania.",
+    "taskImpactUnavailable": "Konflikty zadań są niedostępne w tym obszarze roboczym."
   },
   "ru": {
     "title": "Рабочие шаблоны",
@@ -213,7 +238,12 @@
     "saved": "Шаблон опубликован",
     "unlinked": "Ресурс Booking не связан. Выкройки можно подготовить уже сейчас.",
     "dates": "Даты и время используют часовой пояс шаблона.",
-    "days": ["воскресенье", "понедельник", "вторник", "среда", "Четверг", "пятница", "Суббота"]
+    "days": ["воскресенье", "понедельник", "вторник", "среда", "Четверг", "пятница", "Суббота"],
+    "reloadImpact": "Обновить конфликты",
+    "taskImpact": "Задачи со сроком во время согласованного отсутствия",
+    "reviewTasks": "Открыть задачи",
+    "noTaskImpact": "На период согласованного отсутствия нет открытых задач со сроком выполнения.",
+    "taskImpactUnavailable": "Конфликты задач недоступны в этом рабочем пространстве."
   },
   "pt-PT": {
     "title": "Padrões de trabalho",
@@ -257,7 +287,12 @@
       "Quinta-feira",
       "Sexta-feira",
       "Sábado"
-    ]
+    ],
+    "reloadImpact": "Atualizar conflitos",
+    "taskImpact": "Tarefas com prazo durante a ausência aprovada",
+    "reviewTasks": "Abrir Tarefas",
+    "noTaskImpact": "Não há tarefas abertas com prazo durante a ausência aprovada.",
+    "taskImpactUnavailable": "Os conflitos de tarefas não estão disponíveis neste espaço de trabalho."
   },
   "it": {
     "title": "Modelli di lavoro",
@@ -293,7 +328,12 @@
     "saved": "Modello pubblicato",
     "unlinked": "Nessuna risorsa di prenotazione collegata. I modelli possono essere preparati ora.",
     "dates": "Le date e le ore utilizzano il fuso orario del modello.",
-    "days": ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"]
+    "days": ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+    "reloadImpact": "Aggiorna i conflitti",
+    "taskImpact": "Attività in scadenza durante l’assenza approvata",
+    "reviewTasks": "Apri Attività",
+    "noTaskImpact": "Non ci sono attività aperte in scadenza durante l’assenza approvata.",
+    "taskImpactUnavailable": "I conflitti delle attività non sono disponibili in questo spazio di lavoro."
   },
   "fr": {
     "title": "Modèles de travail",
@@ -329,7 +369,12 @@
     "saved": "Patron publié",
     "unlinked": "Aucune ressource de réservation liée. Les modèles peuvent être préparés dès maintenant.",
     "dates": "Les dates et les heures utilisent le fuseau horaire du modèle.",
-    "days": ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"]
+    "days": ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+    "reloadImpact": "Actualiser les conflits",
+    "taskImpact": "Tâches à échéance pendant une absence approuvée",
+    "reviewTasks": "Ouvrir les tâches",
+    "noTaskImpact": "Aucune tâche ouverte n’arrive à échéance pendant une absence approuvée.",
+    "taskImpactUnavailable": "Les conflits de tâches sont indisponibles dans cet espace de travail."
   },
   "es": {
     "title": "Patrones de trabajo",
@@ -365,6 +410,11 @@
     "saved": "Patrón publicado",
     "unlinked": "No hay ningún recurso de reserva vinculado. Los patrones se pueden preparar ahora.",
     "dates": "Las fechas y horas utilizan la zona horaria del patrón.",
-    "days": ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
+    "days": ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+    "reloadImpact": "Actualizar conflictos",
+    "taskImpact": "Tareas con vencimiento durante una ausencia aprobada",
+    "reviewTasks": "Abrir Tareas",
+    "noTaskImpact": "No hay tareas abiertas que venzan durante una ausencia aprobada.",
+    "taskImpactUnavailable": "Los conflictos de tareas no están disponibles en este espacio de trabajo."
   }
 }

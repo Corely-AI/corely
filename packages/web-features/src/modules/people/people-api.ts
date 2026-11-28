@@ -93,7 +93,11 @@ export function createPeopleApi(
       return response.blob();
     },
     availability: (id: string, signal: AbortSignal) =>
-      request<StaffAvailabilityView>(`/${encodeURIComponent(id)}/availability`, {}, signal),
+      request<StaffAvailabilityView>(
+        `/${encodeURIComponent(id)}/availability?includeTaskImpact=true`,
+        {},
+        signal
+      ),
     saveAvailability: (id: string, body: unknown, key: string) =>
       request<StaffAvailabilityView>(
         `/${encodeURIComponent(id)}/availability`,

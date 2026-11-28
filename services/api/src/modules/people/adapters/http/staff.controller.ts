@@ -44,8 +44,12 @@ export class StaffController {
   }
   @Get(":id/availability")
   @Header("Cache-Control", "private, no-store")
-  availabilityDetail(@Param("id") id: string, @Req() req: ContextAwareRequest) {
-    return this.availability.detail(id, toUseCaseContext(req));
+  availabilityDetail(
+    @Param("id") id: string,
+    @Query("includeTaskImpact") includeTaskImpact: string | undefined,
+    @Req() req: ContextAwareRequest
+  ) {
+    return this.availability.detail(id, toUseCaseContext(req), includeTaskImpact === "true");
   }
   @Post(":id/availability")
   @Header("Cache-Control", "private, no-store")
