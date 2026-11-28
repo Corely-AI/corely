@@ -1,0 +1,50 @@
+{
+  "en": {
+    "title": "Morning briefing",
+    "generate": "Generate briefing",
+    "loading": "Checking today’s sources",
+    "coverage": "Check appointment coverage",
+    "appointment": "Prepare for an upcoming appointment",
+    "task": "Review a task due today",
+    "decision": "Review a request decision",
+    "insufficient": "There are no current, accessible items to recommend.",
+    "changed": "A selected source changed. Generate a new briefing or check Today.",
+    "unavailable": "The briefing is unavailable. Today still shows the records you can access.",
+    "useful": "Useful",
+    "review": "Needs review",
+    "feedbackSaved": "Feedback recorded.",
+    "feedbackFailed": "Feedback could not be recorded."
+  },
+  "de": {
+    "title": "Morgenbriefing",
+    "generate": "Briefing erstellen",
+    "loading": "Heutige Quellen werden geprüft",
+    "coverage": "Personalbesetzung für einen Termin prüfen",
+    "appointment": "Anstehenden Termin vorbereiten",
+    "task": "Heute fällige Aufgabe prüfen",
+    "decision": "Antragsentscheidung prüfen",
+    "insufficient": "Es gibt keine aktuellen, zugänglichen Empfehlungen.",
+    "changed": "Eine ausgewählte Quelle hat sich geändert. Erstelle ein neues Briefing oder öffne Heute.",
+    "unavailable": "Das Briefing ist nicht verfügbar. Unter Heute findest du weiterhin zugängliche Einträge.",
+    "useful": "Hilfreich",
+    "review": "Prüfung nötig",
+    "feedbackSaved": "Rückmeldung gespeichert.",
+    "feedbackFailed": "Die Rückmeldung konnte nicht gespeichert werden."
+  },
+  "vi": {
+    "title": "Tóm tắt buổi sáng",
+    "generate": "Tạo bản tóm tắt",
+    "loading": "Đang kiểm tra nguồn hôm nay",
+    "coverage": "Kiểm tra bố trí nhân sự cho lịch hẹn",
+    "appointment": "Chuẩn bị cho lịch hẹn sắp tới",
+    "task": "Xem công việc đến hạn hôm nay",
+    "decision": "Xem quyết định về yêu cầu",
+    "insufficient": "Chưa có mục hiện hành và có thể truy cập để đề xuất.",
+    "changed": "Một nguồn đã thay đổi. Hãy tạo lại bản tóm tắt hoặc mở Hôm nay.",
+    "unavailable": "Không có bản tóm tắt. Bạn vẫn có thể xem các mục được phép truy cập trong Hôm nay.",
+    "useful": "Hữu ích",
+    "review": "Cần kiểm tra",
+    "feedbackSaved": "Đã lưu phản hồi.",
+    "feedbackFailed": "Không thể lưu phản hồi."
+  }
+}

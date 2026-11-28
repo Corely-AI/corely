@@ -93,6 +93,7 @@ export class EmployeeTasksUseCase {
       .filter(
         (t) =>
           (auth.manage || t.ownerStaffId === auth.self?.id) &&
+          (!input.taskId || t.id === input.taskId) &&
           (input.status === "all" || t.status === input.status)
       )
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));
@@ -108,6 +109,24 @@ export class EmployeeTasksUseCase {
       capabilities: { manage: auth.manage, completeOwn: auth.completeOwn && Boolean(auth.self) },
     };
   }
+  async dueToday(window: { from: Date; to: Date }, ctx: UseCaseContext) {
+    const auth = await this.authorize(ctx);
+    const from = window.from.toISOString();
+    const to = window.to.toISOString();
+    return (await this.repo.list(auth.scope))
+      .flatMap(({ id, ownerStaffId, dueAt, title, status }) => {
+        const due = dueAt ? new Date(dueAt).toISOString() : null;
+        if (!due || due < from || due >= to || (!auth.manage && ownerStaffId !== auth.self?.id)) {
+          return [];
+        }
+        return [{ id, title, dueAt: due, status }];
+      })
+      .sort(
+        (first, second) =>
+          first.dueAt.localeCompare(second.dueAt) || first.id.localeCompare(second.id)
+      );
+  }
+
   async assignees(ctx: UseCaseContext) {
     const auth = await this.authorize(ctx);
     if (!auth.manage) {
@@ -192,8 +211,9 @@ export class EmployeeTasksUseCase {
           const message = taskCreationRejection(taskCreationPolicies, auth.scope, {
             dueAt: fields.dueAt,
           });
-          if (message)
-            {throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });}
+          if (message) {
+            throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });
+          }
         }
         next = {
           ...fields,

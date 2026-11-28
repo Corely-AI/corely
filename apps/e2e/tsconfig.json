@@ -16,6 +16,7 @@
     "playwright.invoice-links.config.ts",
     "playwright.requests.config.ts",
     "playwright.pilot-accessibility.config.ts",
+    "playwright.operations-today.config.ts",
     "playwright.focused-ux.config.ts",
     "playwright.openbuk.config.ts",
     "playwright.sign.config.ts",

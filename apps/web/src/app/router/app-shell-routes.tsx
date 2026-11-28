@@ -1,3 +1,5 @@
+import { OperationsTodayPage } from "../../modules/operations-today/operations-today-page";
+import { OperationsBriefingPage } from "../../modules/operations-today/operations-briefing-page";
 import { OperationalRequestsPage } from "../../modules/operational-requests/operational-requests-page";
 import { StaffProfilePage } from "../../modules/people/staff-profile-extensions";
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
@@ -179,6 +181,22 @@ export const appShellRoutes = (
         ))}
       </Route>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
+      <Route
+        path="/today"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationsTodayPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/today/briefing"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationsBriefingPage />
+          </RequireSurface>
+        }
+      />
       <Route
         path="/tasks"
         element={<DailyWorkPage getCreationGuidance={getTaskCreationGuidance} />}

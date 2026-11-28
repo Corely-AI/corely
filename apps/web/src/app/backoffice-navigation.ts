@@ -48,6 +48,7 @@ const appRoutes = {
 
 const generalRoutes = [
   "/dashboard",
+  "/today",
   "/apps",
   settingsOverviewPath,
   `${workspaceSettingsPath}/*`,

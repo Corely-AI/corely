@@ -24,6 +24,7 @@ export default defineConfig({
     "**/invoice-links/**",
     "**/requests/**",
     "**/pilot-accessibility/**",
+    "**/operations-today/**",
     "**/focused-ux/**",
     "**/observability/**",
     "**/multi-origin/**",

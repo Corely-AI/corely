@@ -408,3 +408,5 @@ export * from "./sign/request.schema";
 export * from "./sign/ceremony.schema";
 export * from "./sign/field-placement";
 export * from "./localization";
+
+export * from "./platform/operations-today.schema";

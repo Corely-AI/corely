@@ -435,6 +435,7 @@
     "noResults": "Không tìm thấy mục nào."
   },
   "nav": {
+    "operationsToday": "Hôm nay",
     "people": "Danh bạ nhân viên",
     "peopleSelfService": "Hồ sơ của tôi",
     "dashboard": "Tổng quan",

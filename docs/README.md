@@ -56,6 +56,7 @@ High-level design, boundaries, and core decisions.
 Design and implementation of the AI features.
 
 - [AI Copilot](./ai/ai-copilot.md)
+- [Morning operations briefing verification](./tasks/329-source-linked-operations-briefing.md)
 - [Streaming Architecture](./ai/COPILOT_STREAMING.md)
 - [Streaming Implementation](./ai/copilot-streaming.md)
 - [Prompt Management](./ai/prompt-management.md)
@@ -70,6 +71,7 @@ Backend specific documentation.
 - [Recurring checklists](./backend/recurring-checklists.md) — one task per assignee/local day, checkbox snapshots and bounded background recurrence
 - [Employee tasks](./backend/employee-tasks.md) — Daily Work lifecycle, ownership, permissions and replay/version guarantees
 - [Operational requests](./backend/operational-requests.md) — private drafts, reviewer routing and supporting documents
+- [Operations Today](platform/operations-today.md) — local-day summaries and source availability.
 - [People staff directory](./backend/people.md) — workspace profiles, identity links and private-field access
 - [Staff availability and Booking](./backend/people-availability.md) — effective working patterns, dated exceptions and Booking constraints
 - [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files

@@ -64,6 +64,10 @@ import { PlatformModule } from "../platform/platform.module";
 import { copilotToolsProvider } from "./ai-copilot.tools.provider";
 import { AI_TEXT_PORT } from "../../shared/ai/ai-text.port";
 import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
+import { KernelModule } from "../../shared/kernel/kernel.module";
+import { OperationsTodayModule } from "../operations-today/operations-today.module";
+import { OperationsBriefingController } from "./adapters/http/operations-briefing.controller";
+import { OperationsBriefingUseCase } from "./application/use-cases/operations-briefing.usecase";
 
 @Module({
   imports: [
@@ -87,8 +91,10 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     PlatformEntitlementsModule,
     PlatformModule,
     PromptModule,
+    KernelModule,
+    OperationsTodayModule,
   ],
-  controllers: [CopilotController],
+  controllers: [CopilotController, OperationsBriefingController],
   providers: [
     PrismaAgentRunRepository,
     PrismaMessageRepository,
@@ -102,6 +108,7 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     TenantGuard,
     AuthorizeToolService,
     AiSdkTextAdapter,
+    OperationsBriefingUseCase,
     { provide: AI_TEXT_PORT, useExisting: AiSdkTextAdapter },
     { provide: "COPILOT_LOGGER", useClass: NestLoggerAdapter },
     {
