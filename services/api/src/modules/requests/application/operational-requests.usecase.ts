@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  HttpException,
   Inject,
   Injectable,
   NotFoundException,
@@ -9,6 +10,8 @@ import {
 import { createHash, randomUUID } from "node:crypto";
 import {
   AddOperationalRequestAttachmentSchema,
+  ApplyOperationalRequestSchema,
+  DecideOperationalRequestSchema,
   ApprovalPolicyStepSchema,
   ConfigureOperationalRequestRouteSchema,
   OperationalRequestDraftSchema,
@@ -21,6 +24,8 @@ import {
   type AddOperationalRequestAttachment,
   type OperationalRequest,
   type OperationalRequestDraft,
+  type OperationalRequestApplication,
+  type OperationalRequestReviewEntry,
   type OperationalRequestsPage,
 } from "@corely/contracts";
 import {
@@ -40,7 +45,7 @@ import {
   OperationalRequestDocuments,
 } from "../../documents/public";
 import { GetWorkspacePermissionsUseCase } from "../../identity/public";
-import { StaffOperationsLookup } from "../../people/public";
+import { StaffAbsenceUseCase, StaffOperationsLookup } from "../../people/public";
 import { TenantEntitlementService } from "../../platform/public";
 import { OperationalRequestRepository, type RequestScope } from "./ports/request-repository.port";
 import type { OperationalRequestRecord } from "./request-record";
@@ -56,6 +61,12 @@ const idKeySchema = z
   .min(1)
   .max(160)
   .regex(/^[\w-]+$/);
+
+type RequestAuthorization = {
+  scope: RequestScope;
+  userId: string;
+  can: (key: string) => boolean;
+};
 
 type Command =
   | { kind: "create"; draft: OperationalRequestDraft }
@@ -74,7 +85,8 @@ export class OperationalRequestsUseCase {
     private readonly attachments: OperationalRequestDocuments,
     private readonly documents: DocumentsApplication,
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
-    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
+    private readonly absences: StaffAbsenceUseCase
   ) {}
 
   async list(query: unknown, ctx: UseCaseContext): Promise<OperationalRequestsPage> {
@@ -97,17 +109,13 @@ export class OperationalRequestsUseCase {
 
   async detail(id: string, ctx: UseCaseContext) {
     const auth = await this.authorize(ctx);
-    return this.project(
-      await this.requireOwnedRecord(auth.scope, auth.userId, id),
-      ctx,
-      auth.can("documents.read")
-    );
+    return this.project(await this.requireVisibleRecord(auth, id), ctx, auth);
   }
 
   async canRead(id: string, ctx: UseCaseContext): Promise<boolean> {
     try {
       const auth = await this.authorize(ctx);
-      await this.requireOwnedRecord(auth.scope, auth.userId, id);
+      await this.requireVisibleRecord(auth, id);
       return true;
     } catch (error) {
       if (error instanceof ForbiddenException || error instanceof NotFoundException) {
@@ -200,9 +208,203 @@ export class OperationalRequestsUseCase {
     });
   }
 
+  private async requireVisibleRecord(
+    auth: RequestAuthorization,
+    id: string,
+    tx?: TransactionContext
+  ) {
+    const record = await this.repo.get(auth.scope, id, tx);
+    if (
+      !record ||
+      (record.requesterUserId !== auth.userId &&
+        (record.status === "RETURNED" || !isAssignedReviewer(record, auth)))
+    ) {
+      throw new NotFoundException("Request not found");
+    }
+    return record;
+  }
+
+  private async requireReviewer(auth: RequestAuthorization, id: string, tx: TransactionContext) {
+    const record = await this.repo.get(auth.scope, id, tx);
+    if (!record || (record.requesterUserId !== auth.userId && !isAssignedReviewer(record, auth))) {
+      throw new NotFoundException("Request not found");
+    }
+    if (
+      !isAssignedReviewer(record, auth) ||
+      !record.approval ||
+      (await this.reviewerForPolicy(auth.scope, record.approval.policyId, tx)) !== auth.userId
+    ) {
+      throw new ForbiddenException("Only the assigned reviewer can act on this request");
+    }
+    return record;
+  }
+
+  private async reviewReplay(
+    auth: RequestAuthorization,
+    key: string,
+    fingerprint: string,
+    tx: TransactionContext
+  ) {
+    const existing = await this.repo.replay(auth.scope, key, tx);
+    if (existing && existing.fingerprint !== fingerprint) {
+      throw new ConflictException("The idempotency key is already used for another command");
+    }
+    return existing?.record;
+  }
+
+  private async saveReviewMutation(
+    auth: RequestAuthorization,
+    record: OperationalRequestRecord,
+    kind: "decide" | "apply" | "apply-failed",
+    key: string,
+    fingerprint: string,
+    ctx: UseCaseContext,
+    tx: TransactionContext
+  ) {
+    await this.repo.save(auth.scope, record, tx);
+    await this.repo.saveReplay(auth.scope, key, { fingerprint, record }, tx);
+    await this.recordMutation(auth.scope, auth.userId, record, kind, ctx.correlationId, tx);
+    return this.project(record, ctx, auth);
+  }
+
+  async decide(id: string, raw: unknown, key: string | undefined, ctx: UseCaseContext) {
+    const initial = await this.authorize(ctx);
+    const input = DecideOperationalRequestSchema.parse(raw);
+    const commandKey = digest([initial.userId, idKeySchema.parse(key)]);
+    const fingerprint = digest(["decide", id, input]);
+    return this.repo.transaction(initial.scope, async (tx) => {
+      const auth = await this.authorize(ctx, tx);
+      const record = await this.requireReviewer(auth, id, tx);
+      const replay = await this.reviewReplay(auth, commandKey, fingerprint, tx);
+      if (replay) {
+        return this.project(replay, ctx, auth);
+      }
+      if (record.status !== "SUBMITTED" || record.version !== input.version) {
+        throw new ConflictException("The request changed. Reload it before deciding.");
+      }
+      const next = nextVersion(record);
+      const status = { APPROVE: "APPROVED", RETURN: "RETURNED", REJECT: "REJECTED" } as const;
+      return this.saveReviewMutation(
+        auth,
+        {
+          ...next,
+          status: status[input.decision],
+          review: appendReview(record, {
+            action: input.decision,
+            note: input.note,
+            at: next.updatedAt,
+            version: next.version,
+          }),
+          application:
+            input.decision === "APPROVE" && record.kind === "ABSENCE"
+              ? { status: "PENDING" }
+              : null,
+        },
+        "decide",
+        commandKey,
+        fingerprint,
+        ctx,
+        tx
+      );
+    });
+  }
+
+  async applyApprovedAbsence(
+    id: string,
+    raw: unknown,
+    key: string | undefined,
+    ctx: UseCaseContext
+  ) {
+    const initial = await this.authorize(ctx);
+    const input = ApplyOperationalRequestSchema.parse(raw);
+    const commandKey = digest([initial.userId, idKeySchema.parse(key)]);
+    const fingerprint = digest(["apply", id, input]);
+    let attempted = false;
+    try {
+      return await this.repo.transaction(initial.scope, async (tx) => {
+        const auth = await this.authorize(ctx, tx);
+        const record = await this.requireReviewer(auth, id, tx);
+        const replay = await this.reviewReplay(auth, commandKey, fingerprint, tx);
+        if (replay) {
+          return this.project(replay, ctx, auth);
+        }
+        if (!canApplyAbsence(record) || record.version !== input.version) {
+          throw new ConflictException("The approved request changed. Reload it before applying.");
+        }
+        const draft = SubmitOperationalRequestDraftSchema.parse(record.draft);
+        if (draft.kind !== "ABSENCE" || !draft.firstDay || !draft.lastDay) {
+          throw new ConflictException("The approved absence is incomplete");
+        }
+        attempted = true;
+        const applicationAbsenceId = await this.absences.applyReviewedAbsence(
+          record.requesterStaffId,
+          record.requesterUserId,
+          {
+            range: {
+              kind: "full-day",
+              startDate: draft.firstDay,
+              endDate: followingDay(draft.lastDay),
+              timezone: input.timezone,
+            },
+            reason: draft.reason,
+            notes: null,
+          },
+          `request-${record.id}-${record.version}`,
+          ctx,
+          tx
+        );
+        const next = nextVersion(record);
+        return this.saveReviewMutation(
+          auth,
+          {
+            ...next,
+            applicationAbsenceId,
+            application: { status: "APPLIED", at: next.updatedAt },
+          },
+          "apply",
+          commandKey,
+          fingerprint,
+          ctx,
+          tx
+        );
+      });
+    } catch (error) {
+      if (!attempted) {
+        throw error;
+      }
+      const failure: Extract<OperationalRequestApplication, { status: "FAILED" }>["failure"] =
+        error instanceof HttpException && error.getStatus() < 500
+          ? "REJECTED_BY_PEOPLE"
+          : "TEMPORARILY_UNAVAILABLE";
+      return this.repo.transaction(initial.scope, async (tx) => {
+        const auth = await this.authorize(ctx, tx);
+        const record = await this.requireReviewer(auth, id, tx);
+        const replay = await this.reviewReplay(auth, commandKey, fingerprint, tx);
+        if (replay) {
+          return this.project(replay, ctx, auth);
+        }
+        if (!canApplyAbsence(record) || record.version !== input.version) {
+          throw new ConflictException("The approved request changed. Reload it before retrying.");
+        }
+        return this.saveReviewMutation(
+          auth,
+          {
+            ...nextVersion(record),
+            application: { status: "FAILED", failure },
+          },
+          "apply-failed",
+          commandKey,
+          fingerprint,
+          ctx,
+          tx
+        );
+      });
+    }
+  }
+
   async download(id: string, attachmentId: string, ctx: UseCaseContext) {
     const auth = await this.authorize(ctx);
-    const request = await this.requireOwnedRecord(auth.scope, auth.userId, id);
+    const request = await this.requireVisibleRecord(auth, id);
     if (!request.attachments.some((attachment) => attachment.id === attachmentId)) {
       throw new NotFoundException("Request attachment not found");
     }
@@ -239,7 +441,7 @@ export class OperationalRequestsUseCase {
           throw new ConflictException("The idempotency key is already used for another command");
         }
         await this.requireOwnedRecord(auth.scope, auth.userId, existing.record.id, tx);
-        return this.project(existing.record, ctx, auth.can("documents.read"));
+        return this.project(existing.record, ctx, auth);
       }
       const now = new Date().toISOString();
       const previous =
@@ -250,7 +452,7 @@ export class OperationalRequestsUseCase {
       await this.repo.save(auth.scope, next, tx);
       await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, record: next }, tx);
       await this.recordMutation(auth.scope, auth.userId, next, parsed.kind, ctx.correlationId, tx);
-      return this.project(next, ctx, auth.can("documents.read"));
+      return this.project(next, ctx, auth);
     });
   }
 
@@ -279,6 +481,9 @@ export class OperationalRequestsUseCase {
         withdrawnAt: null,
         attachments: [],
         approval: null,
+        review: [],
+        application: null,
+        applicationAbsenceId: null,
       };
     }
     if (!previous) {
@@ -290,13 +495,13 @@ export class OperationalRequestsUseCase {
     }
     const next = { ...previous, version: previous.version + 1, updatedAt: now };
     if (command.kind === "withdraw") {
-      if (previous.status === "WITHDRAWN") {
-        throw new ConflictException("This request has already been withdrawn");
+      if (!["DRAFT", "SUBMITTED", "RETURNED"].includes(previous.status)) {
+        throw new ConflictException("This request cannot be withdrawn");
       }
       return { ...next, status: "WITHDRAWN", withdrawnAt: now };
     }
-    if (previous.status !== "DRAFT") {
-      throw new ConflictException("Only drafts can be changed or submitted");
+    if (previous.status !== "DRAFT" && previous.status !== "RETURNED") {
+      throw new ConflictException("Only drafts and returned requests can be changed or submitted");
     }
     if (command.kind === "update") {
       if (previous.kind !== command.draft.kind) {
@@ -339,6 +544,12 @@ export class OperationalRequestsUseCase {
       status: "SUBMITTED",
       submittedAt: now,
       approval: { policyId, reviewerUserId },
+      review: appendReview(previous, {
+        action: "SUBMIT",
+        at: now,
+        note: null,
+        version: next.version,
+      }),
     };
   }
 
@@ -370,7 +581,7 @@ export class OperationalRequestsUseCase {
     scope: RequestScope,
     userId: string,
     request: OperationalRequestRecord,
-    kind: Command["kind"],
+    kind: Command["kind"] | "decide" | "apply" | "apply-failed",
     correlationId: string | undefined,
     tx: TransactionContext
   ) {
@@ -387,7 +598,7 @@ export class OperationalRequestsUseCase {
       },
       tx
     );
-    if (kind === "submit" || kind === "withdraw") {
+    if (["submit", "withdraw", "decide", "apply", "apply-failed"].includes(kind)) {
       await this.outbox.enqueue(
         {
           tenantId: scope.tenantId,
@@ -467,7 +678,7 @@ export class OperationalRequestsUseCase {
   private async project(
     record: OperationalRequestRecord,
     ctx: UseCaseContext,
-    permitted: boolean
+    auth: RequestAuthorization
   ): Promise<OperationalRequest> {
     const {
       id,
@@ -481,7 +692,13 @@ export class OperationalRequestsUseCase {
       withdrawnAt,
       attachments,
     } = record;
-    const canReadPolicy = await this.canReadPolicy(draft.policyDocumentId, ctx, permitted);
+    const canReadPolicy = await this.canReadPolicy(
+      draft.policyDocumentId,
+      ctx,
+      auth.can("documents.read")
+    );
+    const ownerCanWrite = record.requesterUserId === auth.userId && auth.can("requests.own.submit");
+    const reviewer = isAssignedReviewer(record, auth);
     return {
       id,
       kind,
@@ -494,10 +711,21 @@ export class OperationalRequestsUseCase {
       attachments,
       draft: { ...draft, policyDocumentId: canReadPolicy ? draft.policyDocumentId : null },
       canReadPolicy,
+      review: record.review,
+      application: record.application,
+      actions: {
+        canEdit: ownerCanWrite && ["DRAFT", "RETURNED"].includes(status),
+        canWithdraw: ownerCanWrite && ["DRAFT", "SUBMITTED", "RETURNED"].includes(status),
+        canDecide: reviewer && status === "SUBMITTED",
+        canApply: reviewer && canApplyAbsence(record),
+      },
     };
   }
 
-  private async authorize(ctx: UseCaseContext, tx?: TransactionContext) {
+  private async authorize(
+    ctx: UseCaseContext,
+    tx?: TransactionContext
+  ): Promise<RequestAuthorization> {
     const { tenantId, workspaceId, userId } = ctx;
     if (!tenantId || !workspaceId || !userId) {
       throw new ForbiddenException("Workspace membership required");
@@ -514,6 +742,39 @@ export class OperationalRequestsUseCase {
     }
     return { scope: { tenantId, workspaceId }, userId, can };
   }
+}
+
+function isAssignedReviewer(record: OperationalRequestRecord, auth: RequestAuthorization) {
+  return (
+    record.requesterUserId !== auth.userId &&
+    record.approval?.reviewerUserId === auth.userId &&
+    auth.can("requests.review")
+  );
+}
+
+function canApplyAbsence(record: OperationalRequestRecord) {
+  return (
+    record.kind === "ABSENCE" &&
+    record.status === "APPROVED" &&
+    (record.application?.status === "PENDING" || record.application?.status === "FAILED")
+  );
+}
+
+function nextVersion(record: OperationalRequestRecord): OperationalRequestRecord {
+  return { ...record, version: record.version + 1, updatedAt: new Date().toISOString() };
+}
+
+function appendReview(record: OperationalRequestRecord, entry: OperationalRequestReviewEntry) {
+  if (record.review.length >= 250) {
+    throw new ConflictException("The request review history limit was reached");
+  }
+  return [...record.review, entry];
+}
+
+function followingDay(date: string) {
+  const end = new Date(date);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return end.toISOString().slice(0, 10);
 }
 
 function grants(

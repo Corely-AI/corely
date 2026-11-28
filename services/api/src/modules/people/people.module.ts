@@ -83,6 +83,7 @@ import { StaffController } from "./adapters/http/staff.controller";
     { provide: STAFF_RESOURCE_LOOKUP, useExisting: StaffResourceLookupAdapter },
   ],
   exports: [
+    StaffAbsenceUseCase,
     StaffDirectoryUseCase,
     StaffOperationsLookup,
     StaffWorkdayLookup,

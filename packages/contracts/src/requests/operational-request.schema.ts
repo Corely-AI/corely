@@ -99,7 +99,61 @@ export const AddOperationalRequestAttachmentSchema = OperationalRequestVersionSc
     .max(2_796_204)
     .regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/),
 });
-export const OperationalRequestStatusSchema = z.enum(["DRAFT", "SUBMITTED", "WITHDRAWN"]);
+export const OperationalRequestStatusSchema = z.enum([
+  "DRAFT",
+  "SUBMITTED",
+  "RETURNED",
+  "REJECTED",
+  "APPROVED",
+  "WITHDRAWN",
+]);
+export const OperationalRequestDecisionSchema = z.enum(["APPROVE", "REJECT", "RETURN"]);
+export const DecideOperationalRequestSchema = OperationalRequestVersionSchema.extend({
+  decision: OperationalRequestDecisionSchema,
+  note: z.string().trim().max(500).nullable().default(null),
+}).superRefine(({ decision, note }, ctx) => {
+  if (decision !== "APPROVE" && !note) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["note"],
+      message: "Explain the decision to the requester",
+    });
+  }
+});
+export const ApplyOperationalRequestSchema = OperationalRequestVersionSchema.extend({
+  timezone: z
+    .string()
+    .min(1)
+    .max(100)
+    .refine((value) => {
+      try {
+        new Intl.DateTimeFormat("en", { timeZone: value });
+        return true;
+      } catch {
+        return false;
+      }
+    }, "Choose a valid time zone"),
+});
+export const OperationalRequestReviewEntrySchema = z.object({
+  action: z.enum(["SUBMIT", "APPROVE", "RETURN", "REJECT"]),
+  version: z.number().int().positive(),
+  at: utcInstantSchema,
+  note: z.string().nullable(),
+});
+export const OperationalRequestApplicationSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("PENDING") }),
+  z.object({
+    status: z.literal("FAILED"),
+    failure: z.enum(["REJECTED_BY_PEOPLE", "TEMPORARILY_UNAVAILABLE"]),
+  }),
+  z.object({ status: z.literal("APPLIED"), at: utcInstantSchema }),
+]);
+const OperationalRequestActionsSchema = z.object({
+  canEdit: z.boolean(),
+  canWithdraw: z.boolean(),
+  canDecide: z.boolean(),
+  canApply: z.boolean(),
+});
 export const OperationalRequestSummarySchema = z.object({
   id: z.string().uuid(),
   kind: OperationalRequestKindSchema,
@@ -114,6 +168,9 @@ export const OperationalRequestSchema = OperationalRequestSummarySchema.extend({
   withdrawnAt: utcInstantSchema.nullable(),
   attachments: z.array(OperationalRequestAttachmentSchema).max(5),
   canReadPolicy: z.boolean(),
+  review: z.array(OperationalRequestReviewEntrySchema).default([]),
+  application: OperationalRequestApplicationSchema.nullable().default(null),
+  actions: OperationalRequestActionsSchema.optional(),
 });
 export const OperationalRequestsPageSchema = z.object({
   items: z.array(OperationalRequestSummarySchema),
@@ -141,3 +198,6 @@ export type OperationalRequestAttachment = z.infer<typeof OperationalRequestAtta
 export type OperationalRequestsPage = z.infer<typeof OperationalRequestsPageSchema>;
 export type OperationalRequestRoute = z.infer<typeof OperationalRequestRouteSchema>;
 export type AddOperationalRequestAttachment = z.infer<typeof AddOperationalRequestAttachmentSchema>;
+export type OperationalRequestDecision = z.infer<typeof OperationalRequestDecisionSchema>;
+export type OperationalRequestReviewEntry = z.infer<typeof OperationalRequestReviewEntrySchema>;
+export type OperationalRequestApplication = z.infer<typeof OperationalRequestApplicationSchema>;

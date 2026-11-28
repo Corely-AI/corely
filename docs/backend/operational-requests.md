@@ -23,9 +23,20 @@ workspace scope. Approvals uses a single, named reviewer for these policies.
 Requests checks membership and permission again at submission and denies
 self-routing. A missing or ineligible reviewer leaves the existing draft available.
 
-This slice records the selected reviewer and policy version. Reviewing,
-returning and applying decisions are covered by [#310](https://github.com/Corely-AI/corely/issues/310).
-People remains the owner of absence records.
+## Decisions and People handoff
+
+The assigned reviewer can open the submitted request and approve, reject or
+return the current version. Rejection and return require a message for the
+requester. Returned requests retain the entire decision history and can be edited
+privately and resubmitted. Permissions and the selected reviewer are rechecked for
+each command.
+
+An approved absence remains pending until the reviewer applies it with a valid
+time zone. People revalidates permissions, the staff profile link and date range.
+The approved absence and Requests application result are committed together.
+A failed application is visible and retryable. Approval of equipment or a
+general request records the decision without creating an asset or payment.
+The review inbox and reminders are covered by [#311](https://github.com/Corely-AI/corely/issues/311).
 
 ## Supporting documents and state
 
