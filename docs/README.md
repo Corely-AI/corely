@@ -110,6 +110,7 @@ Frontend guidelines and specific docs.
 Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
+- [Operational recovery rehearsal](./devops/operational-recovery.md)
 - [GitHub Actions backup](../backup/github-actions/README.md)
 - [Deploy with Vercel and Supabase](./devops/vercel-supabase.md)
 - [Prisma Migration Baseline](./devops/prisma-baseline.md)
