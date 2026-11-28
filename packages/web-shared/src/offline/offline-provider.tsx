@@ -19,7 +19,7 @@ import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { getActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
 import { getTenantAdminSession } from "../lib/tenant-admin-session";
-import { scopePersister } from "./scope-persister";
+import { canPersistQuery, scopePersister } from "./scope-persister";
 
 interface OfflineContextValue {
   syncEngine: SyncEngine | null;
@@ -113,10 +113,7 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ queryClient, c
       // Drop snapshots written before workspace transitions were isolated.
       buster: "workspace-scope-v2",
       dehydrateOptions: {
-        shouldDehydrateQuery: (query) =>
-          query.state.status === "success" &&
-          query.queryKey[0] !== "permissions" &&
-          query.meta?.persist !== false,
+        shouldDehydrateQuery: (query) => query.state.status === "success" && canPersistQuery(query),
       },
     });
     restorePromise.catch((err) => consoleLogger.warn("Failed to restore query cache", err));

@@ -218,6 +218,8 @@ export const appShellRoutes = (
         }
       />
       <Route path="/knowledge" element={<KnowledgePage />} />
+      <Route path="/knowledge/manage" element={<KnowledgePage mode="list" />} />
+      <Route path="/knowledge/published/:id" element={<KnowledgePage mode="published" />} />
       <Route path="/knowledge/new" element={<KnowledgePage mode="new" />} />
       <Route path="/knowledge/:id" element={<KnowledgePage mode="detail" />} />
       <Route path="/knowledge/:id/edit" element={<KnowledgePage mode="edit" />} />

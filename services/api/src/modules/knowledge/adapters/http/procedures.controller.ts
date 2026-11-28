@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -31,6 +32,43 @@ export class ProceduresController {
     return this.procedures.list(toUseCaseContext(req));
   }
 
+  @Get("published")
+  @Header("Cache-Control", "private, no-store")
+  async published(@Query() query: unknown, @Req() req: ContextAwareRequest) {
+    try {
+      return await this.procedures.searchPublished(query, toUseCaseContext(req));
+    } catch (error) {
+      if (error instanceof ZodError) {
+        throw new BadRequestException("Invalid procedure search");
+      }
+      throw error;
+    }
+  }
+
+  @Get("published/:id")
+  @Header("Cache-Control", "private, no-store")
+  publishedDetail(@Param("id", ParseUUIDPipe) id: string, @Req() req: ContextAwareRequest) {
+    return this.procedures.detailPublished(id, toUseCaseContext(req));
+  }
+
+  @Get("published/:id/preview")
+  @Header("Cache-Control", "private, no-store")
+  preview(@Param("id", ParseUUIDPipe) id: string, @Req() req: ContextAwareRequest) {
+    return this.procedures.previewPublished(id, toUseCaseContext(req));
+  }
+
+  @Get("published/:id/files/:fileId")
+  @Header("Cache-Control", "private, no-store")
+  async publishedFile(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("fileId", ParseUUIDPipe) fileId: string,
+    @Req() req: ContextAwareRequest,
+    @Res() res: Response
+  ) {
+    const file = await this.procedures.download(id, fileId, toUseCaseContext(req), true);
+    return this.sendFile(file, res);
+  }
+
   @Get(":id")
   @Header("Cache-Control", "private, no-store")
   detail(@Param("id", ParseUUIDPipe) id: string, @Req() req: ContextAwareRequest) {
@@ -46,6 +84,10 @@ export class ProceduresController {
     @Res() res: Response
   ) {
     const file = await this.procedures.download(id, fileId, toUseCaseContext(req));
+    return this.sendFile(file, res);
+  }
+
+  private sendFile(file: { bytes: Buffer; filename: string }, res: Response) {
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader(

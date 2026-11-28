@@ -66,3 +66,42 @@ it("does not persist the new scope's cache through an obsolete subscription", as
   await scopePersister(original, () => false).persistClient(snapshot());
   expect(persist).not.toHaveBeenCalled();
 });
+
+it("purges old Knowledge and explicitly live-only data while retaining the rest of the snapshot", async () => {
+  const originalClient = new QueryClient();
+  originalClient.setQueryData(["knowledge", "workspace-a", "detail"], {
+    title: "Private procedure",
+  });
+  originalClient.setQueryData(["workspace-summary"], "Offline workspace summary");
+  await originalClient.fetchQuery({
+    queryKey: ["other-private-record"],
+    queryFn: () => "Current private details",
+    meta: { persist: false },
+  });
+  const previous = {
+    timestamp: Date.now(),
+    buster: "test",
+    clientState: dehydrate(originalClient),
+  };
+  const persist = vi.fn();
+  const original: Persister = {
+    restoreClient: async () => previous,
+    persistClient: persist,
+    removeClient: vi.fn(),
+  };
+  const client = new QueryClient();
+  const persister = scopePersister(original, () => true);
+  await persistQueryClientRestore({ queryClient: client, buster: "test", persister });
+  expect(client.getQueryData(["knowledge", "workspace-a", "detail"])).toBeUndefined();
+  expect(client.getQueryData(["other-private-record"])).toBeUndefined();
+  expect(client.getQueryData(["workspace-summary"])).toBe("Offline workspace summary");
+  await persister.persistClient(previous);
+  expect(persist).toHaveBeenCalledTimes(2);
+  for (const [stored] of persist.mock.calls) {
+    expect(
+      stored.clientState.queries.map((query: { queryKey: unknown }) => query.queryKey)
+    ).toEqual([["workspace-summary"]]);
+  }
+  originalClient.clear();
+  client.clear();
+});

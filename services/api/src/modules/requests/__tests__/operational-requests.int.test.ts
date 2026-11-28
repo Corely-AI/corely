@@ -10,6 +10,10 @@ import type { EnvService } from "@corely/config";
 import type { UseCaseContext } from "@corely/kernel";
 import { NotFoundError, err } from "@corely/kernel";
 import { describe, expect, it, beforeAll, afterAll, vi } from "vitest";
+import { Test } from "@nestjs/testing";
+import type { ExecutionContext } from "@nestjs/common";
+import supertest from "supertest";
+import type { ContextAwareRequest } from "../../../shared/request-context";
 import { ApprovalPolicyService } from "../../approvals/public";
 import { PrismaApprovalPolicyRepository } from "../../approvals/infrastructure/repositories/prisma-approval-policy-repository";
 import { DocumentsApplication } from "../../documents/public";
@@ -19,10 +23,14 @@ import { PrismaDocumentRepoAdapter } from "../../documents/infrastructure/prisma
 import { PrismaFileRepoAdapter } from "../../documents/infrastructure/prisma/prisma-file-repo.adapter";
 import { FakeObjectStoragePort } from "../../documents/testkit/fakes/fake-object-storage";
 import { GetWorkspacePermissionsUseCase } from "../../identity/public";
+import { AuthGuard } from "../../identity/adapters/http/auth.guard";
+import { ProceduresUseCase } from "../../knowledge/application/procedures.usecase";
+import { ExtProcedureRepository } from "../../knowledge/infrastructure/ext-procedure-repository.adapter";
 import { StaffOperationsLookup } from "../../people/public";
 import { TenantEntitlementService } from "../../platform/public";
 import { ExtOperationalRequestRepository } from "../infrastructure/ext-operational-request-repository";
 import { OperationalRequestsUseCase } from "../application/operational-requests.usecase";
+import { OperationalRequestsController } from "../adapters/http/operational-requests.controller";
 
 const database = process.env.OPERATIONAL_REQUEST_TEST_DATABASE_URL;
 const ctx = (
@@ -59,6 +67,8 @@ describe.skipIf(!database)(
     let usecase: OperationalRequestsUseCase;
     let repo: ExtOperationalRequestRepository;
     let approvals: ApprovalPolicyService;
+    let procedures: ProceduresUseCase;
+    const revokedKnowledge = new Set<string>();
     const reviewers = new Set(["reviewer"]);
     const policyLookup = vi.fn(async () => err(new NotFoundError("Document not found")));
 
@@ -111,6 +121,27 @@ describe.skipIf(!database)(
       approvals = new ApprovalPolicyService(
         new PrismaApprovalPolicyRepository(new WorkflowDefinitionRepository(prisma))
       );
+      procedures = new ProceduresUseCase(
+        new ExtProcedureRepository(prisma, new PrismaExtKvAdapter(prisma)),
+        { store: async () => undefined, read: async () => null },
+        {
+          execute: async (context) => ({
+            permissions: {
+              allowed:
+                context.userId === "author"
+                  ? ["knowledge.read", "knowledge.manage"]
+                  : ["knowledge.read"],
+              denied:
+                context.userId && revokedKnowledge.has(context.userId) ? ["knowledge.read"] : [],
+              allowAll: false,
+            },
+          }),
+        },
+        { isAppEnabled: async () => true },
+        { findById: async () => null },
+        new PrismaAuditAdapter(prisma),
+        new PrismaOutboxAdapter(prisma)
+      );
       usecase = new OperationalRequestsUseCase(
         repo,
         permissions,
@@ -122,7 +153,8 @@ describe.skipIf(!database)(
         ),
         documents,
         new PrismaAuditAdapter(prisma),
-        new PrismaOutboxAdapter(prisma)
+        new PrismaOutboxAdapter(prisma),
+        procedures
       );
     });
 
@@ -137,14 +169,24 @@ describe.skipIf(!database)(
         where: { tenantId: "tenant-a", id: { startsWith: "req-file-" } },
       });
       await prisma.extKv.deleteMany({ where: { tenantId: "tenant-a", moduleId: "requests" } });
+      await prisma.extKv.deleteMany({ where: { tenantId: "tenant-a", moduleId: "knowledge" } });
       await prisma.workflowDefinition.deleteMany({
         where: { tenantId: "tenant-a", key: { startsWith: "approval.operational-request." } },
       });
       await prisma.auditLog.deleteMany({
-        where: { tenantId: "tenant-a", action: { startsWith: "requests." } },
+        where: {
+          tenantId: "tenant-a",
+          OR: [{ action: { startsWith: "requests." } }, { action: { startsWith: "knowledge." } }],
+        },
       });
       await prisma.outboxEvent.deleteMany({
-        where: { tenantId: "tenant-a", eventType: { startsWith: "requests." } },
+        where: {
+          tenantId: "tenant-a",
+          OR: [
+            { eventType: { startsWith: "requests." } },
+            { eventType: { startsWith: "knowledge." } },
+          ],
+        },
       });
       await prisma.$disconnect();
     });
@@ -156,6 +198,144 @@ describe.skipIf(!database)(
       actor = ctx(),
       key = randomUUID().toString()
     ) => usecase.command(action, id, body, key, actor);
+
+    it("links only authorized publications with request ownership, version and replay checks", async () => {
+      const request = await command("create", "", general);
+      const fields = {
+        title: "Private procedure",
+        reviewDate: "2030-01-01",
+        content: { kind: "page", text: "Follow approved preparation steps." },
+      };
+      const author = ctx("author");
+      const draft = await procedures.command("create", undefined, fields, randomUUID(), author);
+      const input = { version: request.version, procedureId: draft.id };
+      await expect(command("link-procedure", request.id, input)).rejects.toMatchObject({
+        status: 404,
+      });
+      const published = await procedures.command(
+        "publish",
+        draft.id,
+        { revision: draft.revision },
+        randomUUID(),
+        author
+      );
+      await expect(
+        command("link-procedure", request.id, input, ctx("another"))
+      ).rejects.toMatchObject({ status: 404 });
+      await expect(
+        command("link-procedure", request.id, input, ctx("staff", "workspace-b"))
+      ).rejects.toMatchObject({ status: 404 });
+      const key = randomUUID();
+      const [first, replay] = await Promise.all([
+        command("link-procedure", request.id, input, ctx(), key),
+        command("link-procedure", request.id, input, ctx(), key),
+      ]);
+      expect(replay).toEqual(first);
+      expect(first.procedure).toEqual({ state: "available", id: draft.id });
+      expect(JSON.stringify(first)).not.toContain(fields.title);
+      expect(
+        await prisma.auditLog.count({
+          where: {
+            tenantId: "tenant-a",
+            entityId: request.id,
+            action: "requests.operational.link-procedure",
+          },
+        })
+      ).toBe(1);
+      expect(
+        await prisma.outboxEvent.count({
+          where: {
+            tenantId: "tenant-a",
+            eventType: "requests.operational.link-procedure",
+            payloadJson: { contains: request.id },
+          },
+        })
+      ).toBe(1);
+      await expect(command("link-procedure", request.id, input)).rejects.toMatchObject({
+        status: 409,
+      });
+      revokedKnowledge.add("staff");
+      try {
+        expect((await usecase.detail(request.id, ctx())).procedure).toEqual({
+          state: "unavailable",
+        });
+        expect((await command("link-procedure", request.id, input, ctx(), key)).procedure).toEqual({
+          state: "unavailable",
+        });
+      } finally {
+        revokedKnowledge.delete("staff");
+      }
+      await procedures.command(
+        "archive",
+        draft.id,
+        { revision: published.revision },
+        randomUUID(),
+        author
+      );
+      expect((await usecase.detail(request.id, ctx())).procedure).toEqual({ state: "unavailable" });
+      expect(
+        (await command("link-procedure", request.id, { version: first.version, procedureId: null }))
+          .procedure
+      ).toBeNull();
+      expect((await command("link-procedure", request.id, input, ctx(), key)).procedure).toBeNull();
+    });
+
+    it("serves the authorized link command over HTTP through the owning use case", async () => {
+      const draftRequest = await command("create", "", general);
+      const author = ctx("author");
+      const draft = await procedures.command(
+        "create",
+        undefined,
+        {
+          title: "Workspace opening",
+          reviewDate: "2030-01-01",
+          content: { kind: "page", text: "Check the equipment." },
+        },
+        randomUUID(),
+        author
+      );
+      await procedures.command(
+        "publish",
+        draft.id,
+        { revision: draft.revision },
+        randomUUID(),
+        author
+      );
+      const module = await Test.createTestingModule({
+        controllers: [OperationalRequestsController],
+        providers: [{ provide: OperationalRequestsUseCase, useValue: usecase }],
+      })
+        .overrideGuard(AuthGuard)
+        .useValue({
+          canActivate(execution: ExecutionContext) {
+            const req = execution.switchToHttp().getRequest<ContextAwareRequest>();
+            if (req.headers.authorization !== "Bearer fixture-staff") {
+              return false;
+            }
+            req.user = { userId: "staff", tenantId: "tenant-a", workspaceId: "workspace-a" };
+            return true;
+          },
+        })
+        .compile();
+      const api = module.createNestApplication();
+      await api.init();
+      try {
+        const endpoint = `/operational-requests/${draftRequest.id}/procedure`;
+        const input = { version: draftRequest.version, procedureId: draft.id };
+        const key = randomUUID();
+        const send = () =>
+          supertest(api.getHttpServer()).patch(endpoint).set("X-Idempotency-Key", key).send(input);
+        await send().expect(403);
+        const link = await send()
+          .set("Authorization", "Bearer fixture-staff")
+          .set("X-Workspace-Id", "workspace-a")
+          .expect(200);
+        expect(link.headers["cache-control"]).toContain("no-store");
+        expect(link.body.procedure).toEqual({ state: "available", id: draft.id });
+      } finally {
+        await api.close();
+      }
+    });
 
     it("preserves drafts through missing routing, selects a configured active reviewer and rejects invalid or self routing", async () => {
       const draft = await command("create", "", absence);

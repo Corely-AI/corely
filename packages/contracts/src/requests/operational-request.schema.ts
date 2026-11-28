@@ -84,6 +84,9 @@ export const OperationalRequestVersionSchema = z
 export const UpdateOperationalRequestSchema = OperationalRequestVersionSchema.extend({
   draft: OperationalRequestDraftSchema,
 });
+export const LinkOperationalRequestProcedureSchema = OperationalRequestVersionSchema.extend({
+  procedureId: z.string().uuid().nullable(),
+});
 export const OperationalRequestAttachmentSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -114,6 +117,13 @@ export const OperationalRequestSchema = OperationalRequestSummarySchema.extend({
   withdrawnAt: utcInstantSchema.nullable(),
   attachments: z.array(OperationalRequestAttachmentSchema).max(5),
   canReadPolicy: z.boolean(),
+  procedure: z
+    .discriminatedUnion("state", [
+      z.object({ state: z.literal("available"), id: z.string().uuid() }).strict(),
+      z.object({ state: z.literal("unavailable") }).strict(),
+    ])
+    .nullable()
+    .default(null),
 });
 export const OperationalRequestsPageSchema = z.object({
   items: z.array(OperationalRequestSummarySchema),

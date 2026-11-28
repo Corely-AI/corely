@@ -5,6 +5,10 @@ import { TASK_CONTEXT_STORE, TASK_SOURCE_READERS } from "./application/ports/tas
 import { DocumentsModule } from "../documents/documents.module";
 import { BookingModule } from "../booking/booking.module";
 import { BookingSourceAccess } from "../booking/public";
+import { KnowledgeModule } from "../knowledge/knowledge.module";
+import { PUBLISHED_PROCEDURES, type PublishedProcedureReader } from "../knowledge/public";
+import { OperationalRequestsModule } from "../requests/requests.module";
+import { OperationalRequestsUseCase } from "../requests/public";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { RecurringChecklistsController } from "./adapters/http/recurring-checklists.controller";
 import { RecurringChecklistsUseCase } from "./application/recurring-checklists.usecase";
@@ -30,6 +34,8 @@ import { ExtTaskRepositoryAdapter } from "./infrastructure/ext-task-repository.a
     PlatformModule,
     DocumentsModule,
     BookingModule,
+    KnowledgeModule,
+    OperationalRequestsModule,
   ],
   controllers: [RecurringChecklistsController, EmployeeTasksController, TaskContextController],
   exports: [RecurringGenerationUseCase],
@@ -39,8 +45,12 @@ import { ExtTaskRepositoryAdapter } from "./infrastructure/ext-task-repository.a
     { provide: TASK_CONTEXT_STORE, useExisting: ExtTaskContextAdapter },
     {
       provide: TASK_SOURCE_READERS,
-      useFactory: (booking: BookingSourceAccess) => ({ booking }),
-      inject: [BookingSourceAccess],
+      useFactory: (
+        booking: BookingSourceAccess,
+        procedure: PublishedProcedureReader,
+        request: OperationalRequestsUseCase
+      ) => ({ booking, procedure, request }),
+      inject: [BookingSourceAccess, PUBLISHED_PROCEDURES, OperationalRequestsUseCase],
     },
     RecurringChecklistsUseCase,
     RecurringGenerationUseCase,
