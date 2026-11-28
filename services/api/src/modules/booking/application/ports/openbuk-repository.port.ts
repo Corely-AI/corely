@@ -20,6 +20,10 @@ export type BookingReceiptRecord = {
   guestBookingId?: string;
 };
 export type OpenBukSelection = Pick<OpenBukManagerBook, "serviceId" | "staffId">;
+export type OpenBukAppointmentSnapshot = OpenBukReceipt & {
+  locale?: OpenBukLocale;
+  confirmationEmailRequested?: boolean;
+};
 export type OpenBukTeamConfiguration = {
   revision: string;
   fingerprint: string;
@@ -79,14 +83,15 @@ export interface OpenBukRepositoryPort {
     scope: StudioScope,
     bookingId: string,
     tx?: TransactionContext
-  ): Promise<(OpenBukReceipt & { locale?: OpenBukLocale }) | null>;
+  ): Promise<OpenBukAppointmentSnapshot | null>;
   create(
     scope: StudioScope,
     studio: OpenBukStudio,
     input: OpenBukManagerBook,
     receipt: OpenBukReceipt,
     tx: TransactionContext,
-    createdByUserId?: string
+    createdByUserId?: string,
+    confirmationEmailRequested?: boolean
   ): Promise<string>;
   appointments(scope: StudioScope, day: string): Promise<OpenBukAppointment[]>;
 }

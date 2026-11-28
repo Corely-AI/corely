@@ -8,7 +8,12 @@ import {
   PrismaService,
   PrismaUnitOfWork,
 } from "@corely/data";
-import type { UseCaseContext } from "@corely/kernel";
+import { APPOINTMENT_DELIVERY_REQUESTED, AppointmentDeliveryEventSchema } from "@corely/contracts";
+import type { EmailSenderPort, SendEmailRequest, UseCaseContext } from "@corely/kernel";
+import { AppointmentDeliveryUseCase } from "../../notifications/application/use-cases/appointment-delivery.usecase";
+import { PrismaAppointmentDeliveryStore } from "../../notifications/infrastructure/prisma-appointment-delivery.store";
+import { AppointmentDeliveryHandler } from "../../background/runtime/modules/booking/appointment-delivery.handler";
+import { OpenBukBookingCreatedHandler } from "../../background/runtime/modules/booking/openbuk-booking-created.handler";
 import { OpenBukAppointmentChangeUseCase } from "../application/use-cases/openbuk-appointment-change.usecase";
 import { OpenBukStudioUseCase } from "../application/use-cases/openbuk-studio.usecase";
 import { RescheduleBookingUseCase } from "../application/use-cases/reschedule-booking.usecase";
@@ -45,7 +50,7 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
   let serviceId: string;
   let staffId: string;
 
-  async function book(startAt: string) {
+  async function book(startAt: string, preference?: boolean, ctx = guest) {
     return studioApp.book(
       {
         serviceId,
@@ -53,9 +58,11 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
         startAt,
         customer: { name: "Synthetic guest", email: "guest@example.test" },
         consentAccepted: true,
+        locale: "vi",
+        ...(preference === undefined ? {} : { confirmationEmailRequested: preference }),
       },
       randomUUID(),
-      guest
+      ctx
     );
   }
 
@@ -175,5 +182,152 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
     expect(result.appointment).toEqual(newPlan.replacement);
     expect(result.version).not.toBe(newPlan.version);
     expect(await events()).toBe(1);
+  });
+
+  it("delivers a committed opt-in once through Notifications and keeps opted-out, unpublished and imported requests silent", async () => {
+    const clock = { now: () => new Date("2026-10-01T00:00:00Z") };
+    const outbox = new PrismaOutboxAdapter(prisma);
+    const deliveries = new AppointmentDeliveryUseCase(
+      new PrismaAppointmentDeliveryStore(prisma, new PrismaExtKvAdapter(prisma)),
+      changes,
+      uow,
+      outbox,
+      clock
+    );
+    const createdHandler = new OpenBukBookingCreatedHandler(deliveries);
+    const accepted = new Map<string, SendEmailRequest>();
+    const sink: EmailSenderPort = {
+      sendEmail: async (message) => {
+        const key = message.idempotencyKey ?? "";
+        if (!accepted.has(key)) {
+          accepted.set(key, message);
+          throw new Error("Synthetic provider response lost");
+        }
+        return { provider: "isolated-test-sink", providerMessageId: "synthetic" };
+      },
+    };
+    const requested = () =>
+      prisma.outboxEvent.findMany({
+        where: { tenantId: scope.tenantId, eventType: APPOINTMENT_DELIVERY_REQUESTED },
+      });
+    const bookingEvent = async (reference: string) => {
+      const row = await prisma.booking.findFirstOrThrow({
+        where: { ...scope, referenceNumber: reference },
+      });
+      const matches = await prisma.outboxEvent.findMany({
+        where: { tenantId: scope.tenantId, eventType: "booking.created" },
+      });
+      const event = matches.find((record) => JSON.parse(record.payloadJson).bookingId === row.id)!;
+      return {
+        id: event.id,
+        tenantId: event.tenantId,
+        eventType: event.eventType,
+        payload: JSON.parse(event.payloadJson),
+      };
+    };
+
+    await expect(
+      book("2026-10-12T12:00:00.000Z", true, {
+        ...guest,
+        metadata: {
+          public: {
+            workspaceSlug: "test-studio",
+            resolutionMethod: "path",
+            publicEnabled: false,
+            publicModules: { booking: true },
+          },
+        },
+      })
+    ).rejects.toThrow();
+    expect(
+      await prisma.booking.count({
+        where: { ...scope, startAt: new Date("2026-10-12T12:00:00.000Z") },
+      })
+    ).toBe(0);
+    for (const [time, preference] of [
+      ["12:00", undefined],
+      ["13:00", false],
+    ] as const) {
+      const { receipt } = await book(`2026-10-12T${time}:00.000Z`, preference);
+      await createdHandler.handle(await bookingEvent(receipt.reference));
+    }
+    const { receipt } = await book("2026-10-12T14:00:00.000Z", true);
+    const event = await bookingEvent(receipt.reference);
+    expect(Object.keys(event.payload).sort()).toEqual([
+      "bookingId",
+      "source",
+      "status",
+      "workspaceId",
+    ]);
+    expect(JSON.stringify(event.payload)).not.toContain("guest@example.test");
+    await createdHandler.handle({
+      ...event,
+      payload: { ...event.payload, source: "openbuk-import" },
+    });
+    await createdHandler.handle({
+      ...event,
+      payload: { ...event.payload, workspaceId: randomUUID() },
+    });
+    expect(await requested()).toHaveLength(0);
+    expect(accepted.size).toBe(0);
+
+    await Promise.all([
+      createdHandler.handle(event),
+      createdHandler.handle({ ...event, id: randomUUID() }),
+    ]);
+    const pending = await requested();
+    expect(pending).toHaveLength(1);
+    const payload = AppointmentDeliveryEventSchema.parse(JSON.parse(pending[0]!.payloadJson));
+    const handler = new AppointmentDeliveryHandler(deliveries, sink);
+    const deliveryEvent = {
+      id: pending[0]!.id,
+      tenantId: scope.tenantId,
+      eventType: APPOINTMENT_DELIVERY_REQUESTED,
+      payload,
+    };
+    await expect(handler.handle(deliveryEvent)).rejects.toThrow(
+      "Appointment update sender unavailable"
+    );
+    expect(await deliveries.getStatus(scope, payload.deliveryId)).toMatchObject({
+      state: "failed",
+      attempts: 1,
+    });
+    await handler.handle(deliveryEvent);
+    await createdHandler.handle(event);
+    await handler.handle(deliveryEvent);
+    expect(await requested()).toHaveLength(1);
+    expect(await deliveries.getStatus(scope, payload.deliveryId)).toMatchObject({
+      state: "accepted",
+      attempts: 2,
+    });
+    expect(accepted.size).toBe(1);
+    expect([...accepted.values()][0]).toMatchObject({
+      to: ["guest@example.test"],
+      subject: "Đã xác nhận lịch hẹn",
+    });
+    expect([...accepted.values()][0]?.text).toMatch(/Thời gian — .*16:00.*\(Europe\/Berlin\)/);
+
+    const cancelled = await book("2026-10-12T15:00:00.000Z", true);
+    const cancelledEvent = await bookingEvent(cancelled.receipt.reference);
+    await createdHandler.handle(cancelledEvent);
+    const cancelledDelivery = (await requested()).find((row) => row.id !== pending[0]!.id)!;
+    const cancelledPayload = AppointmentDeliveryEventSchema.parse(
+      JSON.parse(cancelledDelivery.payloadJson)
+    );
+    await prisma.booking.update({
+      where: { id: cancelledEvent.payload.bookingId, ...scope },
+      data: { status: "CANCELLED" },
+    });
+    await handler.handle({
+      id: cancelledDelivery.id,
+      tenantId: scope.tenantId,
+      eventType: APPOINTMENT_DELIVERY_REQUESTED,
+      payload: cancelledPayload,
+    });
+    expect(await deliveries.getStatus(scope, cancelledPayload.deliveryId)).toMatchObject({
+      state: "superseded",
+      attempts: 0,
+    });
+    expect(accepted.size).toBe(1);
   });
 });

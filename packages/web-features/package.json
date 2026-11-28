@@ -9,6 +9,7 @@
     "./*": "./src/*",
     "./modules/tasks": "./src/modules/tasks/index.ts",
     "./modules/tasks/daily-work-page": "./src/modules/tasks/daily-work-page.tsx",
+    "./modules/knowledge/knowledge-page": "./src/modules/knowledge/knowledge-page.tsx",
     "./modules/people": "./src/modules/people/index.ts",
     "./modules/people/self-service": "./src/modules/people/self-service.ts",
     "./modules/sign/overview-page": "./src/modules/sign/overview-page.tsx",

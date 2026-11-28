@@ -1,5 +1,6 @@
 {
   "en": {
+    "emailBookingConfirmation": "Email me a booking confirmation (optional)",
     "guestManage": "Manage appointment",
     "guestManagePrivate": "Save this private link to manage your appointment.",
     "guestManageUnavailable": "This appointment link is unavailable or has expired.",
@@ -183,6 +184,7 @@
     "withStaff": "With"
   },
   "de": {
+    "emailBookingConfirmation": "Terminbestätigung per E-Mail erhalten (optional)",
     "guestManage": "Termin verwalten",
     "guestManagePrivate": "Speichere diesen privaten Link, um deinen Termin zu verwalten.",
     "guestManageUnavailable": "Dieser Terminlink ist nicht verfügbar oder abgelaufen.",
@@ -366,6 +368,7 @@
     "withStaff": "Bei"
   },
   "vi": {
+    "emailBookingConfirmation": "Gửi xác nhận đặt lịch qua email (không bắt buộc)",
     "guestManage": "Quản lý cuộc hẹn",
     "guestManagePrivate": "Lưu liên kết riêng tư này để quản lý cuộc hẹn.",
     "guestManageUnavailable": "Liên kết cuộc hẹn này không khả dụng hoặc đã hết hạn.",
@@ -549,6 +552,7 @@
     "withStaff": "Với"
   },
   "tr": {
+    "emailBookingConfirmation": "Randevu onayını e-postayla gönder (isteğe bağlı)",
     "guestManage": "Randevuyu yönet",
     "guestManagePrivate": "Randevunuzu yönetmek için bu özel bağlantıyı kaydedin.",
     "guestManageUnavailable": "Bu randevu bağlantısı kullanılamıyor veya süresi doldu.",
@@ -732,6 +736,7 @@
     "withStaff": "ile"
   },
   "pl": {
+    "emailBookingConfirmation": "Wyślij mi potwierdzenie rezerwacji e-mailem (opcjonalnie)",
     "guestManage": "Zarządzaj wizytą",
     "guestManagePrivate": "Zapisz ten prywatny link, aby zarządzać wizytą.",
     "guestManageUnavailable": "Link do wizyty jest niedostępny lub wygasł.",
@@ -915,6 +920,7 @@
     "withStaff": "Z"
   },
   "ru": {
+    "emailBookingConfirmation": "Получить подтверждение записи по электронной почте (необязательно)",
     "guestManage": "Управление записью",
     "guestManagePrivate": "Сохраните эту личную ссылку для управления записью.",
     "guestManageUnavailable": "Эта ссылка недоступна или срок её действия истёк.",
@@ -1098,6 +1104,7 @@
     "withStaff": "С"
   },
   "pt-PT": {
+    "emailBookingConfirmation": "Enviar confirmação da marcação por email (opcional)",
     "guestManage": "Gerir marcação",
     "guestManagePrivate": "Guarde esta ligação privada para gerir a sua marcação.",
     "guestManageUnavailable": "A ligação da marcação está indisponível ou expirou.",
@@ -1281,6 +1288,7 @@
     "withStaff": "Com"
   },
   "it": {
+    "emailBookingConfirmation": "Inviami una conferma della prenotazione via e-mail (facoltativo)",
     "guestManage": "Gestisci appuntamento",
     "guestManagePrivate": "Salva questo link privato per gestire l’appuntamento.",
     "guestManageUnavailable": "Il link per l’appuntamento è scaduto o non disponibile.",
@@ -1464,6 +1472,7 @@
     "withStaff": "Con"
   },
   "fr": {
+    "emailBookingConfirmation": "M’envoyer une confirmation de rendez-vous par e-mail (facultatif)",
     "guestManage": "Gérer le rendez-vous",
     "guestManagePrivate": "Enregistrez ce lien privé pour gérer votre rendez-vous.",
     "guestManageUnavailable": "Ce lien de rendez-vous a expiré ou est indisponible.",
@@ -1647,6 +1656,7 @@
     "withStaff": "Avec"
   },
   "es": {
+    "emailBookingConfirmation": "Enviarme una confirmación de la cita por correo electrónico (opcional)",
     "guestManage": "Gestionar cita",
     "guestManagePrivate": "Guarda este enlace privado para gestionar tu cita.",
     "guestManageUnavailable": "Este enlace de cita no está disponible o ha caducado.",

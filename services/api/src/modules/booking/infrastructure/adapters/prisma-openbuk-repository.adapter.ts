@@ -16,6 +16,7 @@ import {
 import type { TransactionContext } from "@corely/kernel";
 
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import type {
   OpenBukRepositoryPort,
   StudioScope,
@@ -28,6 +29,7 @@ import { listStudioAppointments, snapshotKey } from "./openbuk-appointment-recor
 
 const ConfirmationSnapshotSchema = OpenBukReceiptSchema.extend({
   locale: OpenBukLocaleSchema.optional(),
+  confirmationEmailRequested: z.literal(true).optional(),
 });
 
 const extensionScope = (scope: StudioScope) => ({
@@ -434,7 +436,8 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     input: OpenBukManagerBook,
     receipt: OpenBukReceipt,
     tx: TransactionContext,
-    createdByUserId?: string
+    createdByUserId?: string,
+    confirmationEmailRequested?: boolean
   ) {
     const id = randomUUID();
     await getPrismaClient(this.prisma, tx).booking.create({
@@ -461,7 +464,16 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
       },
     });
     await this.kv.set(
-      { ...snapshotKey(scope, id), value: { ...receipt, locale: input.locale ?? studio.locale } },
+      {
+        ...snapshotKey(scope, id),
+        value: {
+          ...receipt,
+          locale: input.locale ?? studio.locale,
+          ...(!createdByUserId && confirmationEmailRequested
+            ? { confirmationEmailRequested: true }
+            : {}),
+        },
+      },
       tx
     );
     return id;

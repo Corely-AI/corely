@@ -439,6 +439,7 @@
   "nav": {
     "people": "Annuaire du personnel",
     "peopleSelfService": "Mon profil",
+    "knowledge": "Connaissances",
     "dashboard": "Tableau de bord",
     "portfolio": "Portefeuille",
     "rentals": {

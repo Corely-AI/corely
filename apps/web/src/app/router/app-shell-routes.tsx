@@ -3,6 +3,7 @@ import { StaffProfilePage } from "../../modules/people/staff-profile-extensions"
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
 import { getTaskCreationGuidance } from "../../modules/tasks/task-creation-guidance";
 import { DailyWorkPage } from "@corely/web-features/modules/tasks/daily-work-page";
+import { KnowledgePage } from "@corely/web-features/modules/knowledge/knowledge-page";
 import { PeopleDirectoryPage, StaffJourneyPage } from "@corely/web-features/modules/people";
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
@@ -225,6 +226,10 @@ export const appShellRoutes = (
           </RequireSurface>
         }
       />
+      <Route path="/knowledge" element={<KnowledgePage />} />
+      <Route path="/knowledge/new" element={<KnowledgePage mode="new" />} />
+      <Route path="/knowledge/:id" element={<KnowledgePage mode="detail" />} />
+      <Route path="/knowledge/:id/edit" element={<KnowledgePage mode="edit" />} />
       <Route path="/people/me" element={<StaffJourneyPage />} />
       <Route path="/people/staff/:id/lifecycle" element={<StaffJourneyPage manager />} />
       <Route path="/people/staff" element={<PeopleDirectoryPage />} />

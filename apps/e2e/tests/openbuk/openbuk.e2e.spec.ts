@@ -47,7 +47,7 @@ test("studio signup → setup → anonymous booking → appointment in studio", 
   await slot.click();
   await guest.getByLabel("Full name", { exact: true }).fill("OpenBuk Guest");
   await guest.getByLabel("Email", { exact: true }).fill("guest@example.test");
-  await guest.getByRole("checkbox").check();
+  await guest.locator('input[name="consentAccepted"]').check();
   const responsePromise = guest.waitForResponse(
     (r) => r.url().endsWith("/public/openbuk/bookings") && r.request().method() === "POST"
   );

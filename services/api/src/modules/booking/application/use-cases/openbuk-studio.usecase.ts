@@ -296,7 +296,7 @@ export class OpenBukStudioUseCase {
   }
 
   private async commitBooking(
-    input: OpenBukManagerBook,
+    input: OpenBukManagerBook & Pick<OpenBukBook, "confirmationEmailRequested">,
     key: string,
     scope: StudioScope,
     manager?: UseCaseContext
@@ -363,7 +363,15 @@ export class OpenBukStudioUseCase {
         currency: studio.currency,
         timezone: studio.timezone,
       };
-      const bookingId = await this.repo.create(scope, studio, input, receipt, tx, userId);
+      const bookingId = await this.repo.create(
+        scope,
+        studio,
+        input,
+        receipt,
+        tx,
+        userId,
+        !manager && input.confirmationEmailRequested
+      );
       const management = !manager
         ? await this.guestCredentials?.issue(
             scope,
