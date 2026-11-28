@@ -1,4 +1,5 @@
 import { tasksAppManifest } from "../../../tasks/tasks.manifest";
+import { requestsAppManifest } from "../../../requests/requests.manifest";
 import { peopleAppManifest } from "../../../people/people.manifest";
 import { signAppManifest } from "../../../sign/sign.manifest";
 import { Injectable } from "@nestjs/common";
@@ -126,6 +127,7 @@ export class AppRegistry implements AppRegistryPort {
     this.register(bookingAppManifest);
     this.register(peopleAppManifest);
     this.register(tasksAppManifest);
+    this.register(requestsAppManifest);
     this.register(signAppManifest);
     this.register(formsAppManifest);
     this.register(coachingEngagementsAppManifest);
