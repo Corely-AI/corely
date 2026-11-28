@@ -144,6 +144,22 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
     await prisma.onModuleDestroy();
   });
 
+  it("looks up confirmation details with a review actor and keeps the workspace boundary", async () => {
+    const details = await uow.withinTransaction((tx) =>
+      changes.customerMessageContext(manager, appointment.bookingId, tx)
+    );
+    expect(details).toMatchObject({
+      recipient: "guest@example.test",
+      startAt: "2026-10-12T07:00:00.000Z",
+    });
+    expect(
+      await changes.customerMessageContext(
+        { tenantId: scope.tenantId, workspaceId: randomUUID() },
+        appointment.bookingId
+      )
+    ).toBeNull();
+  });
+
   it("isolates preview, rechecks competing commitments and applies only the exact reviewed slot", async () => {
     await expect(changes.preview(appointment, { ...manager, userId: "staff" })).rejects.toThrow(
       "Manager required"

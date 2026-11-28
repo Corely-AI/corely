@@ -29,6 +29,12 @@ const retryWindow = 3_600_000;
 const leaseTime = 60_000;
 const maxAttempts = 5;
 
+function confirmationId(scope: AppointmentDeliveryScope, bookingId: string) {
+  return createHash("sha256")
+    .update(JSON.stringify([scope.tenantId, scope.workspaceId, bookingId, "confirmation"]))
+    .digest("hex");
+}
+
 @Injectable()
 export class AppointmentDeliveryUseCase {
   constructor(
@@ -47,20 +53,24 @@ export class AppointmentDeliveryUseCase {
   async enqueue(
     scope: AppointmentDeliveryScope,
     input: AppointmentUpdateMessage,
-    tx: TransactionContext
+    tx: TransactionContext,
+    options: { expiresAt?: string; confirmation?: boolean } = {}
   ) {
     const message = AppointmentUpdateMessageSchema.parse(input);
-    const id = createHash("sha256")
-      .update(
-        JSON.stringify([
-          scope.tenantId,
-          scope.workspaceId,
-          message.bookingId,
-          message.bookingVersion,
-          ...(message.scheduledFor ? ["reviewed-reminder"] : []),
-        ])
-      )
-      .digest("hex");
+    const id =
+      options.confirmation && !message.scheduledFor
+        ? confirmationId(scope, message.bookingId)
+        : createHash("sha256")
+            .update(
+              JSON.stringify([
+                scope.tenantId,
+                scope.workspaceId,
+                message.bookingId,
+                message.bookingVersion,
+                ...(message.scheduledFor ? ["reviewed-reminder"] : []),
+              ])
+            )
+            .digest("hex");
     const current = await this.currentBooking(scope, message, tx);
     await this.store.lock(scope, id, tx);
     const prior = await this.store.get(scope, id, tx);
@@ -73,14 +83,15 @@ export class AppointmentDeliveryUseCase {
     if (!current) {
       throw new ConflictException("Notifications:AppointmentUpdateStale");
     }
+    if (options.expiresAt && Date.parse(options.expiresAt) <= this.clock.now().getTime()) {
+      throw new ConflictException("Notifications:ReviewExpired");
+    }
     return this.createPending(scope, id, message, current.startAt, tx);
   }
 
   /** Called by the booking-created outbox consumer after the booking commits. */
   async enqueueConfirmation(scope: AppointmentDeliveryScope, bookingId: string) {
-    const id = createHash("sha256")
-      .update(JSON.stringify([scope.tenantId, scope.workspaceId, bookingId, "confirmation"]))
-      .digest("hex");
+    const id = confirmationId(scope, bookingId);
     return this.uow.withinTransaction(async (tx) => {
       const current = await this.booking.confirmationMessageContext(scope, bookingId, tx);
       if (!current) {
@@ -132,8 +143,8 @@ export class AppointmentDeliveryUseCase {
     return this.status(scope, id, record);
   }
 
-  async getStatus(scope: AppointmentDeliveryScope, id: string) {
-    const record = await this.store.get(scope, id);
+  async getStatus(scope: AppointmentDeliveryScope, id: string, tx?: TransactionContext) {
+    const record = await this.store.get(scope, id, tx);
     if (!record) {
       throw new NotFoundException("Delivery not found");
     }

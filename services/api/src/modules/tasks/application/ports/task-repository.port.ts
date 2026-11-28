@@ -9,7 +9,11 @@ export interface TaskReplay {
   taskId: string;
 }
 export interface TaskRepositoryPort {
-  transaction<T>(scope: TaskScope, work: (tx: TransactionContext) => Promise<T>): Promise<T>;
+  transaction<T>(
+    scope: TaskScope,
+    work: (tx: TransactionContext) => Promise<T>,
+    existing?: TransactionContext
+  ): Promise<T>;
   list(scope: TaskScope, tx?: TransactionContext): Promise<TaskRecord[]>;
   get(scope: TaskScope, id: string, tx?: TransactionContext): Promise<TaskRecord | null>;
   save(scope: TaskScope, task: TaskRecord, tx: TransactionContext): Promise<void>;

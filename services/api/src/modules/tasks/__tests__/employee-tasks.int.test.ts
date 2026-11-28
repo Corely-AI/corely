@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import request from "supertest";
-import { PrismaService } from "@corely/data";
+import { PrismaService, PrismaUnitOfWork } from "@corely/data";
 import type { EmployeeTask, StaffDirectoryEntry } from "@corely/contracts";
 import { tasksFixture } from "./task-fixture";
 const url = process.env.TASKS_TEST_DATABASE_URL;
@@ -90,6 +90,36 @@ describe.skipIf(!enabled)("Employee tasks persisted lifecycle and trust boundari
         },
       })
     ).toBe(4);
+  });
+  it("rolls back a reviewed completion and its replay entry with the caller transaction", async () => {
+    const { body } = await create();
+    const task = body as EmployeeTask;
+    const key = randomUUID();
+    const uow = new PrismaUnitOfWork(prisma);
+    const complete = () =>
+      uow.withinTransaction(async (tx) => {
+        const completed = await f.tasks.command(
+          "complete",
+          task.id,
+          { version: 1 },
+          key,
+          f.ctx,
+          undefined,
+          undefined,
+          tx
+        );
+        expect(completed).toMatchObject({ status: "COMPLETED", version: 2 });
+        throw new Error("Review persistence failed");
+      });
+    await expect(complete()).rejects.toThrow("Review persistence failed");
+    expect(await f.tasks.detail(task.id, f.ctx)).toMatchObject({ status: "OPEN", version: 1 });
+    expect(await prisma.auditLog.count({ where: { tenantId: f.tenantA, entityId: task.id } })).toBe(
+      1
+    );
+    expect(
+      (await http("post", `/${task.id}/complete`, "manager", undefined, key).send({ version: 1 }))
+        .body
+    ).toMatchObject({ status: "COMPLETED", version: 2 });
   });
   it("validates contracts, idempotency headers and active workspace assignees", async () => {
     for (const fields of [

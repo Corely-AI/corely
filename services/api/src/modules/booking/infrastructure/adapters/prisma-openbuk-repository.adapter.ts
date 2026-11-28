@@ -70,6 +70,7 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
 
   private async roster(scope: StudioScope, tx?: TransactionContext) {
     const client = getPrismaClient(this.prisma, tx);
+    const { tenantId, workspaceId } = scope;
     const [record, saved] = await Promise.all([
       this.kv.get(settingsKey(scope), tx),
       this.kv.get(settingsKey(scope, "openbuk-team"), tx),
@@ -83,11 +84,11 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     const services = team?.services ?? [{ id: config.serviceId, staffIds }];
     const [serviceRows, staffRows] = await Promise.all([
       client.bookingServiceOffering.findMany({
-        where: { ...scope, id: { in: services.map((service) => service.id) } },
+        where: { tenantId, workspaceId, id: { in: services.map((service) => service.id) } },
       }),
       client.bookingResource.findMany({
-        where: { ...scope, id: { in: staffIds }, type: "STAFF" },
-        include: { availabilityRule: { where: { tenantId: scope.tenantId } } },
+        where: { tenantId, workspaceId, id: { in: staffIds }, type: "STAFF" },
+        include: { availabilityRule: { where: { tenantId } } },
       }),
     ]);
     return {
