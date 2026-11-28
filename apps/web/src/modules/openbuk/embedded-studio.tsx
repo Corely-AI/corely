@@ -5,12 +5,16 @@ import StudioPage from "./modules/studio/studio-page";
 import "./styles.css";
 
 export default function EmbeddedStudio() {
-  const { activeWorkspaceId } = useWorkspace();
+  const { activeWorkspaceId, setWorkspace } = useWorkspace();
   return (
     <div className="openbuk-surface openbuk-embedded">
       <TenantAdminSessionBanner />
       <LanguageProvider>
-        <StudioPage key={activeWorkspaceId} embedded />
+        <StudioPage
+          key={activeWorkspaceId}
+          embedded
+          onWorkspaceSaved={(workspace) => setWorkspace(workspace.id, workspace)}
+        />
       </LanguageProvider>
     </div>
   );

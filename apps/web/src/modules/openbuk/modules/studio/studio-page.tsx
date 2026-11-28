@@ -47,7 +47,13 @@ function observeConnection(change: () => void) {
     window.removeEventListener("offline", change);
   };
 }
-export default function StudioPage({ embedded = false }: { embedded?: boolean }) {
+export default function StudioPage({
+  embedded = false,
+  onWorkspaceSaved,
+}: {
+  embedded?: boolean;
+  onWorkspaceSaved?: (workspace: WorkspaceDto) => void;
+}) {
   const { t, locale } = useLanguage();
   const prefix = embedded ? "/openbuk" : "";
   const navigate = useNavigate();
@@ -345,7 +351,12 @@ export default function StudioPage({ embedded = false }: { embedded?: boolean })
               onDraftSaved={setDraft}
               workspace={workspace}
               studio={studio}
-              onWorkspace={(next) => {
+              onWorkspace={async (next) => {
+                if (onWorkspaceSaved) {
+                  onWorkspaceSaved(next);
+                } else {
+                  await storage.setActiveWorkspaceId(next.id);
+                }
                 setWorkspace(next);
                 setCanManage(true);
               }}
