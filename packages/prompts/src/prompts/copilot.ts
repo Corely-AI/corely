@@ -3,6 +3,25 @@ import { type PromptDefinition } from "../types";
 
 export const copilotPrompts: PromptDefinition[] = [
   {
+    id: "operations.copilot.briefing",
+    description: "Prioritize current neutral operational facts for the morning briefing.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        description: "Select source ordinals only.",
+        template:
+          "Prioritize today's most actionable operations facts from the provided list. " +
+          "Use only the listed facts. Prefer uncovered appointments and review needs before routine upcoming appointments. " +
+          "Do not infer causes, personal information, or employee scores. " +
+          'Return only JSON such as {"ids":[2,1]}. Select at most five IDs. Return {"ids":[]} when no actionable facts are supplied.',
+        variablesSchema: z.object({}),
+        variables: [],
+      },
+    ],
+    tags: ["system", "copilot", "operations"],
+  },
+  {
     id: "copilot.system",
     description: "System prompt for the Corely Copilot chat runtime.",
     defaultVersion: "v2",

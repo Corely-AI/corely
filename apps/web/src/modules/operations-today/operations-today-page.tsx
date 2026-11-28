@@ -15,7 +15,9 @@ import {
 import { apiClient } from "@corely/web-shared/lib/api-client";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
+import { useWorkspaceConfig } from "@corely/web-shared/shared/workspaces/workspace-config-provider";
 import localized from "./operations-today-copy.json";
+import briefingStrings from "./operations-briefing-copy.json";
 
 type Copy = typeof localized.en;
 type Row = { id: string; href: string; title: string; detail?: string };
@@ -27,6 +29,13 @@ export function OperationsTodayPage() {
   const copy = language === "de" ? localized.de : language === "vi" ? localized.vi : localized.en;
   const { user } = useAuth();
   const { activeWorkspaceId, isInitialLoading } = useWorkspace();
+  const { hasCapability } = useWorkspaceConfig();
+  const briefingCopy =
+    language === "de"
+      ? briefingStrings.de
+      : language === "vi"
+        ? briefingStrings.vi
+        : briefingStrings.en;
   const query = useQuery({
     queryKey: ["operations-today", user?.activeTenantId, activeWorkspaceId, user?.userId],
     enabled: Boolean(activeWorkspaceId && user?.userId),
@@ -37,7 +46,7 @@ export function OperationsTodayPage() {
           { method: "GET", headers: { "X-Workspace-Id": activeWorkspaceId! } },
           { workspaceScope: "none", signal }
         )
-      );
+      ) as OperationsToday;
       if (today.workspaceId !== activeWorkspaceId) {
         throw new Error("Unexpected workspace in today's response");
       }
@@ -108,13 +117,20 @@ export function OperationsTodayPage() {
           )}
         </div>
         {activeWorkspaceId && user?.userId && (
-          <Button
-            variant="outline"
-            onClick={() => void query.refetch()}
-            disabled={query.isFetching}
-          >
-            {copy.refresh}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {hasCapability("ai.copilot") && (
+              <Button asChild>
+                <Link to="/today/briefing">{briefingCopy.title}</Link>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => void query.refetch()}
+              disabled={query.isFetching}
+            >
+              {copy.refresh}
+            </Button>
+          </div>
         )}
       </header>
       <div aria-busy={query.isFetching}>{content}</div>

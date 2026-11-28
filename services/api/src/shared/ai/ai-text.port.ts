@@ -3,6 +3,7 @@ export type AiTextRequest = {
   userPrompt: string;
   temperature?: number;
   maxOutputTokens?: number;
+  onUsage?: (usage: { inputTokens?: number; outputTokens?: number }) => void;
 };
 
 export interface AiTextPort {
