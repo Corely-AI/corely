@@ -68,6 +68,7 @@ Design and implementation of the AI features.
 Backend specific documentation.
 
 - [Incoming invoice email](./backend/incoming-invoice-email.md) — workspace forwarding, draft review, and Resend setup
+- [Customer invoice issuance and corrections](./backend/invoice-lifecycle.md) — tax and currency checks, issuance retries, correction drafts and optional Accounting
 - [Incoming expense receipts](./backend/incoming-expense-receipts.md) — receipt forwarding, assignment, expense submission, and Resend setup
 - [Staff self-service and departure](./backend/staff-self-service.md) — own-field edits, approved onboarding and explicit workspace access follow-up
 - [Recurring checklists](./backend/recurring-checklists.md) — one task per assignee/local day, checkbox snapshots and bounded background recurrence

@@ -3,6 +3,7 @@ import {
   type UseCaseContext,
   type UseCaseError,
   type Result,
+  type TransactionContext,
   ok,
   err,
   ValidationError,
@@ -26,7 +27,18 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
     input: CreateJournalEntryInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateJournalEntryOutput, UseCaseError>> {
-    const tenantId = ctx.tenantId!;
+    return this.create(input, ctx);
+  }
+
+  async create(
+    input: CreateJournalEntryInput,
+    ctx: UseCaseContext,
+    tx?: TransactionContext
+  ): Promise<Result<CreateJournalEntryOutput, UseCaseError>> {
+    const tenantId = ctx.tenantId;
+    if (!tenantId) {
+      return err(new ValidationError("tenantId is required"));
+    }
     if (!ctx.userId) {
       return err(new ValidationError("userId is required"));
     }
@@ -67,7 +79,7 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
       now,
     });
 
-    await this.deps.entryRepo.save(entry);
+    await this.deps.entryRepo.save(entry, tx);
 
     return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, tenantId) });
   }

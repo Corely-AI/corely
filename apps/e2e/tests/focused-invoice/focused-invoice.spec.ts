@@ -1,6 +1,51 @@
 import { test, expect } from "@playwright/test";
 import { invoiceTransport } from "./invoice-fixture";
 
+test("creates an editable correction draft and links back to the canceled original", async ({
+  page,
+  context,
+}, testInfo) => {
+  const fixture = await invoiceTransport(context, { correction: "allowed" });
+  await page.goto("/invoices/invoice-1?workspaceId=workspace-a");
+  const createCorrection = page.getByRole("button", { name: "Create correction draft" });
+  await expect(createCorrection).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("invoice-line-description-0")).toBeDisabled();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-correction-original-desktop.png"),
+  });
+  await createCorrection.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/invoices\/created-1\?workspaceId=workspace-a/);
+  await expect(page.getByTestId("invoice-line-description-0")).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Issue invoice", exact: true })).toBeVisible();
+  expect(fixture.commands.map(({ path }) => path)).toEqual(["/api/bff/invoices"]);
+  expect(fixture.commands[0].body).toMatchObject({
+    correctsInvoiceId: "invoice-1",
+    notes: "Original invoice notes",
+    lineItems: [{ description: "Consulting package", qty: 2, unitPriceCents: 15000 }],
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const original = page.getByRole("button", { name: "View original invoice" });
+  await expect(original).toBeVisible();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-correction-draft-mobile.png"),
+  });
+  await original.click();
+  await expect(page).toHaveURL(/\/invoices\/invoice-1\?workspaceId=workspace-a/);
+  await expect(page.getByTestId("invoice-line-description-0")).toBeDisabled();
+});
+
+test("stays on the original when creating a correction is rejected", async ({ page, context }) => {
+  const fixture = await invoiceTransport(context, { correction: "conflict" });
+  await page.goto("/invoices/invoice-1?workspaceId=workspace-a");
+  await page.getByRole("button", { name: "Create correction draft" }).click();
+  await expect(page.getByText("Action failed", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/invoices\/invoice-1\?workspaceId=workspace-a/);
+  expect(fixture.commands).toHaveLength(1);
+});
+
 test("downloads a draft PDF through its owner without calling forbidden settings", async ({
   page,
   context,

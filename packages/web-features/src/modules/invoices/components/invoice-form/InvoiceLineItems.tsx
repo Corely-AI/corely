@@ -91,8 +91,9 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         type="number"
                         {...register(`lineItems.${index}.qty` as const, { valueAsNumber: true })}
                         className="w-16 border-0 focus-visible:ring-0 px-0"
-                        min="0"
-                        step="0.01"
+                        min="1"
+                        step="1"
+                        aria-invalid={Boolean(errors.lineItems?.[index]?.qty)}
                       />
                       <Controller
                         control={control}
@@ -116,6 +117,11 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         )}
                       />
                     </div>
+                    {errors.lineItems?.[index]?.qty && (
+                      <p role="alert" className="mt-1 text-xs text-destructive">
+                        {t("invoices.wholeQuantityRequired")}
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center">

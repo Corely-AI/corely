@@ -3,6 +3,7 @@ import {
   InvoiceDtoSchema,
   InvoiceCapabilitiesSchema,
   RequestInvoicePdfOutputSchema,
+  type InvoiceAction,
   type InvoiceDto,
 } from "@corely/contracts";
 import {
@@ -11,6 +12,52 @@ import {
 } from "../../../../packages/web-shared/testkit/workspace-api-fixture";
 
 const date = "2026-11-09T10:00:00Z";
+
+const canceledCorrectionActions: InvoiceAction[] = [
+  {
+    key: "create_correction",
+    label: "Create correction draft",
+    icon: "Copy",
+    placement: "primary",
+    enabled: true,
+    dangerous: false,
+  },
+  {
+    key: "download_pdf",
+    label: "Download PDF",
+    icon: "Download",
+    placement: "secondary",
+    enabled: true,
+    dangerous: false,
+  },
+  {
+    key: "view_audit",
+    label: "View Audit Log",
+    icon: "History",
+    placement: "overflow",
+    enabled: true,
+    dangerous: false,
+  },
+];
+
+const correctionDraftActions: InvoiceAction[] = [
+  {
+    key: "issue",
+    label: "Issue invoice",
+    icon: "FileCheck",
+    placement: "primary",
+    enabled: true,
+    dangerous: false,
+  },
+  {
+    key: "duplicate",
+    label: "Duplicate",
+    icon: "Copy",
+    placement: "overflow",
+    enabled: true,
+    dangerous: false,
+  },
+];
 export function invoiceFixture(id = "invoice-1"): InvoiceDto {
   return InvoiceDtoSchema.parse({
     id,
@@ -50,12 +97,17 @@ export async function invoiceTransport(
     customerFail?: boolean;
     copilotFail?: boolean;
     sendDenied?: boolean;
+    correction?: "allowed" | "conflict";
   } = {}
 ) {
   let invoice = invoiceFixture();
   if (options.issued) {
     invoice = { ...invoice, status: "ISSUED" };
   }
+  if (options.correction) {
+    invoice = { ...invoice, status: "CANCELED", issuedAt: date, notes: "Original invoice notes" };
+  }
+  const originalInvoice = invoice;
   if (options.pdf) {
     invoice = { ...invoice, legalEntityId: "legal-1", paymentMethodId: null };
   }
@@ -130,11 +182,25 @@ export async function invoiceTransport(
         if (path.endsWith("/finalize")) {
           invoice = { ...invoice, status: "ISSUED" };
         } else if (path === "/api/bff/invoices") {
-          invoice = { ...invoice, id: "created-1", status: "DRAFT" };
+          if (options.correction === "conflict") {
+            await route.fulfill({ status: 409, json: { detail: "Original invoice has changed." } });
+            return;
+          }
+          invoice = {
+            ...invoice,
+            id: "created-1",
+            status: "DRAFT",
+            ...(options.correction
+              ? { number: null, sourceType: "invoice_correction", sourceId: originalInvoice.id }
+              : {}),
+          };
         }
         await route.fulfill({ json: { invoice } });
         return;
       }
+      const displayed =
+        options.correction && path.endsWith(`/${originalInvoice.id}`) ? originalInvoice : invoice;
+      const canceled = displayed.status === "CANCELED";
       await route.fulfill({
         json:
           path === "/api/bff/invoices"
@@ -143,26 +209,34 @@ export async function invoiceTransport(
                 pageInfo: { page: 1, pageSize: 20, total: 1, hasNextPage: false },
               }
             : {
-                invoice,
-                ...(options.pdf || options.issued
+                invoice: displayed,
+                ...(options.pdf || options.issued || options.correction
                   ? {
                       capabilities: InvoiceCapabilitiesSchema.parse({
-                        status: { value: invoice.status, label: "Draft", tone: "muted" },
+                        status: {
+                          value: displayed.status,
+                          label: canceled ? "Canceled" : "Draft",
+                          tone: canceled ? "destructive" : "muted",
+                        },
                         badges: [],
                         transitions: [],
-                        actions: [
-                          {
-                            key: options.issued ? "send" : "download_pdf",
-                            label: options.issued ? "Send invoice" : "Download PDF",
-                            placement: "primary",
-                            enabled: true,
-                            dangerous: false,
-                          },
-                        ],
+                        actions: options.correction
+                          ? canceled
+                            ? canceledCorrectionActions
+                            : correctionDraftActions
+                          : [
+                              {
+                                key: options.issued ? "send" : "download_pdf",
+                                label: options.issued ? "Send invoice" : "Download PDF",
+                                placement: "primary",
+                                enabled: true,
+                                dangerous: false,
+                              },
+                            ],
                         editability: {
-                          canEditHeader: true,
-                          canEditDates: true,
-                          canEditLineItems: true,
+                          canEditHeader: !canceled,
+                          canEditDates: !canceled,
+                          canEditLineItems: !canceled,
                         },
                         audit: { trackChanges: true },
                       }),

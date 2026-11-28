@@ -113,6 +113,10 @@ export class PrismaCatalogRepositoryAdapter implements CatalogRepositoryPort {
       tenantId: scope.tenantId,
       workspaceId: scope.workspaceId,
     };
+    if (params.name) {
+      where.name = params.name;
+      where.archivedAt = null;
+    }
     if (params.q) {
       where.OR = [
         { code: { contains: params.q, mode: "insensitive" } },

@@ -1,7 +1,8 @@
 import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
+import { invoiceActionError } from "../utils/invoice-action-error";
 import { InvoiceDraftGuidanceSlot } from "@corely/invoices-ui";
 import { invoiceCustomerOptions } from "../utils/invoice-customer-options";
-import { invoiceFormValues } from "../utils/invoice-form-values";
+import { copyInvoiceDraftInput, invoiceFormValues } from "../utils/invoice-form-values";
 import {
   useInvoicesApi,
   useInvoiceKeys,
@@ -66,6 +67,7 @@ export default function InvoiceDetailPage() {
   });
 
   const invoice = invoiceData?.invoice;
+  const originalInvoiceId = invoice?.sourceType === "invoice_correction" ? invoice.sourceId : null;
   const capabilities = invoiceData?.capabilities;
   const isViewOnly = invoice ? invoice.status !== "DRAFT" : false;
   const outstandingGrossDueCents = useMemo(() => {
@@ -179,7 +181,7 @@ export default function InvoiceDetailPage() {
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       } catch (err) {
         console.error("Transition failed", err);
-        toast.error(t("invoices.status.updateFailed"));
+        toast.error(invoiceActionError(err, t("invoices.status.updateFailed")));
       } finally {
         setIsProcessing(false);
       }
@@ -226,39 +228,21 @@ export default function InvoiceDetailPage() {
             toast.success(t("invoices.notifications.canceled"));
             break;
           case "duplicate":
-            if (!invoice) {
-              return;
-            }
-            try {
-              const duplicated = await invoicesApi.createInvoice({
-                customerPartyId: invoice.customerPartyId,
-                currency: invoice.currency,
-                notes: invoice.notes ?? undefined,
-                terms: invoice.terms ?? undefined,
-                invoiceDate: new Date().toISOString().slice(0, 10),
-                dueDate: invoice.dueDate
-                  ? new Date(invoice.dueDate).toISOString().slice(0, 10)
-                  : undefined,
-                lineItems: invoice.lineItems.map((item) => ({
-                  description: item.description,
-                  qty: item.qty,
-                  unitPriceCents: item.unitPriceCents,
-                })),
-                paymentMethodId: invoice.paymentMethodId ?? undefined,
-              });
-              toast.success(
-                t("invoices.notifications.duplicated", { defaultValue: "Invoice duplicated" })
-              );
-              navigate(`/invoices/${duplicated.id}`);
-            } catch (err) {
-              console.error("Duplicate failed", err);
-              toast.error(t("invoices.errors.actionFailed"));
-            }
+          case "create_correction": {
+            const isCorrection = actionKey === "create_correction";
+            const draft = await invoicesApi.createInvoice(
+              copyInvoiceDraftInput(invoice, isCorrection)
+            );
+            toast.success(
+              isCorrection
+                ? t("invoices.notifications.correctionDraftCreated")
+                : t("invoices.notifications.duplicated", { defaultValue: "Invoice duplicated" })
+            );
+            void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
+            navigate(`/invoices/${draft.id}`);
             return;
+          }
           case "export":
-            if (!invoice) {
-              return;
-            }
             downloadInvoiceExportCsv(invoice, i18n.language);
             toast.success(t("common.success"));
             return;
@@ -273,7 +257,7 @@ export default function InvoiceDetailPage() {
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       } catch (err) {
         console.error("Action failed", err);
-        toast.error(t("invoices.errors.actionFailed"));
+        toast.error(invoiceActionError(err, t("invoices.errors.actionFailed")));
       } finally {
         setIsProcessing(false);
       }
@@ -407,6 +391,16 @@ export default function InvoiceDetailPage() {
           onTransition={handleTransition}
           onAction={handleAction}
         />
+
+        {originalInvoiceId && (
+          <Button
+            variant="link"
+            className="px-0"
+            onClick={() => navigate(`/invoices/${encodeURIComponent(originalInvoiceId)}`)}
+          >
+            {t("invoices.viewCorrectedInvoice")}
+          </Button>
+        )}
 
         {invoice.status === "DRAFT" && (
           <InvoiceDraftGuidanceSlot workspaceId={activeWorkspace?.id} />

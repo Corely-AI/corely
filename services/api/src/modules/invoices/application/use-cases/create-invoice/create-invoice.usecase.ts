@@ -21,6 +21,7 @@ import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 import { type CustomerQueryPort } from "../../ports/customer-query.port";
 import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
 import { type LegalEntityQueryPort } from "../../ports/legal-entity-query.port";
+import { validateInvoiceCurrency, validateInvoiceLineAmounts } from "../../../domain/invoice-money";
 
 type Deps = {
   logger: LoggerPort;
@@ -43,11 +44,13 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
     if (!input.customerPartyId) {
       throw new ValidationError("customerPartyId is required");
     }
-    if (!input.currency) {
-      throw new ValidationError("currency is required");
-    }
+    validateInvoiceCurrency(input.currency);
     if (!Array.isArray(input.lineItems) || input.lineItems.length === 0) {
       throw new ValidationError("At least one line item is required");
+    }
+    validateInvoiceLineAmounts(input.lineItems);
+    if (input.correctsInvoiceId && (input.sourceType || input.sourceId)) {
+      throw new ValidationError("An invoice correction cannot specify a second source.");
     }
     return input;
   }
@@ -58,6 +61,24 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
   ): Promise<Result<CreateInvoiceOutput, UseCaseError>> {
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId missing from context"));
+    }
+
+    if (input.correctsInvoiceId) {
+      const original = await this.useCaseDeps.invoiceRepo.findById(
+        ctx.workspaceId,
+        input.correctsInvoiceId
+      );
+      if (!original) {
+        return err(new NotFoundError("Original invoice not found"));
+      }
+      if (
+        original.status !== "CANCELED" ||
+        !original.number ||
+        !original.issuedAt ||
+        original.payments.length > 0
+      ) {
+        return err(new ValidationError("Only a canceled, unpaid issued invoice can be corrected."));
+      }
     }
 
     const customer = await this.useCaseDeps.customerQuery.getCustomerBillingSnapshot(
@@ -119,8 +140,8 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
             }
           : undefined,
       },
-      sourceType: input.sourceType ?? null,
-      sourceId: input.sourceId ?? null,
+      sourceType: input.correctsInvoiceId ? "invoice_correction" : (input.sourceType ?? null),
+      sourceId: input.correctsInvoiceId ?? input.sourceId ?? null,
       // New snapshots
       legalEntityId: input.legalEntityId ?? null,
       paymentMethodId: input.paymentMethodId ?? null,

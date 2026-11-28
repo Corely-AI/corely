@@ -10,6 +10,7 @@ import type {
 
 export type CatalogListParams = {
   q?: string;
+  name?: string;
   page: number;
   pageSize: number;
   sort?: string;

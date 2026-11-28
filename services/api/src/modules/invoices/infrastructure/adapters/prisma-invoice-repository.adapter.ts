@@ -1,5 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { getPrismaClient, PrismaService } from "@corely/data";
+import { Prisma } from "@prisma/client";
+import {
+  InvoiceChangedError,
+  InvoiceNumberConflictError,
+} from "../../application/ports/invoice-repository.port";
 import {
   InvoiceReminderCandidate,
   InvoiceRepoPort,
@@ -14,7 +19,7 @@ import {
   PdfStatus,
   PaymentDetailsSnapshot,
 } from "../../domain/invoice.types";
-import { LocalDate } from "@corely/kernel";
+import { ConflictError, type LocalDate, type TransactionContext } from "@corely/kernel";
 
 const toPrismaDate = (localDate: LocalDate | null): Date | null =>
   localDate ? new Date(`${localDate}T00:00:00.000Z`) : null;
@@ -26,7 +31,11 @@ const fromPrismaDate = (value: Date | null | undefined): LocalDate | null =>
 export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(workspaceId: string, invoice: InvoiceAggregate): Promise<void> {
+  async save(
+    workspaceId: string,
+    invoice: InvoiceAggregate,
+    options: { expectedRevision: number; tx?: TransactionContext }
+  ): Promise<void> {
     if (workspaceId !== invoice.tenantId) {
       throw new Error("Workspace mismatch when saving invoice");
     }
@@ -34,114 +43,118 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       throw new Error("Cannot persist PAID invoice without payment records");
     }
 
-    await this.prisma.invoice.upsert({
-      where: { id: invoice.id },
-      update: {
-        customerPartyId: invoice.customerPartyId,
-        number: invoice.number,
-        status: invoice.status as any,
-        currency: invoice.currency,
-        notes: invoice.notes,
-        terms: invoice.terms,
-        invoiceDate: toPrismaDate(invoice.invoiceDate),
-        dueDate: toPrismaDate(invoice.dueDate),
-        issuedAt: invoice.issuedAt,
-        sentAt: invoice.sentAt,
-        billToName: invoice.billToName,
-        billToEmail: invoice.billToEmail,
-        billToVatId: invoice.billToVatId,
-        billToAddressLine1: invoice.billToAddressLine1,
-        billToAddressLine2: invoice.billToAddressLine2,
-        billToCity: invoice.billToCity,
-        billToPostalCode: invoice.billToPostalCode,
-        billToCountry: invoice.billToCountry,
-        updatedAt: invoice.updatedAt,
-        pdfStorageKey: invoice.pdfStorageKey,
-        pdfGeneratedAt: invoice.pdfGeneratedAt,
-        pdfSourceVersion: invoice.pdfSourceVersion,
-        pdfStatus: invoice.pdfStatus as any,
-        pdfFailureReason: invoice.pdfFailureReason,
-        sourceType: invoice.sourceType,
-        sourceId: invoice.sourceId,
-        paymentDetails: invoice.paymentDetails as any,
-        taxSnapshot: invoice.taxSnapshot as any,
-        issuerSnapshot: invoice.issuerSnapshot as any,
-        paymentSnapshot: invoice.paymentSnapshot as any,
-        legalEntityId: invoice.legalEntityId,
-        paymentMethodId: invoice.paymentMethodId,
-      },
-      create: {
-        id: invoice.id,
-        tenantId: invoice.tenantId,
-        customerPartyId: invoice.customerPartyId,
-        number: invoice.number,
-        status: invoice.status as any,
-        currency: invoice.currency,
-        notes: invoice.notes,
-        terms: invoice.terms,
-        invoiceDate: toPrismaDate(invoice.invoiceDate),
-        dueDate: toPrismaDate(invoice.dueDate),
-        issuedAt: invoice.issuedAt,
-        sentAt: invoice.sentAt,
-        billToName: invoice.billToName,
-        billToEmail: invoice.billToEmail,
-        billToVatId: invoice.billToVatId,
-        billToAddressLine1: invoice.billToAddressLine1,
-        billToAddressLine2: invoice.billToAddressLine2,
-        billToCity: invoice.billToCity,
-        billToPostalCode: invoice.billToPostalCode,
-        billToCountry: invoice.billToCountry,
-        createdAt: invoice.createdAt,
-        updatedAt: invoice.updatedAt,
-        pdfStorageKey: invoice.pdfStorageKey,
-        pdfGeneratedAt: invoice.pdfGeneratedAt,
-        pdfSourceVersion: invoice.pdfSourceVersion,
-        pdfStatus: invoice.pdfStatus as any,
-        pdfFailureReason: invoice.pdfFailureReason,
-        sourceType: invoice.sourceType,
-        sourceId: invoice.sourceId,
-        paymentDetails: invoice.paymentDetails as any,
-        taxSnapshot: invoice.taxSnapshot as any,
-        issuerSnapshot: invoice.issuerSnapshot as any,
-        paymentSnapshot: invoice.paymentSnapshot as any,
-        legalEntityId: invoice.legalEntityId,
-        paymentMethodId: invoice.paymentMethodId,
-        lines: {
-          create: invoice.lineItems.map((line) => ({
-            id: line.id,
-            description: line.description,
-            qty: line.qty,
-            unitPriceCents: line.unitPriceCents,
-          })),
-        },
-      },
-    });
-
-    if (invoice.lineItems.length) {
-      for (const line of invoice.lineItems) {
-        await this.prisma.invoiceLine.upsert({
-          where: { id: line.id },
-          update: {
-            description: line.description,
-            qty: line.qty,
-            unitPriceCents: line.unitPriceCents,
-          },
-          create: {
-            id: line.id,
-            invoiceId: invoice.id,
-            description: line.description,
-            qty: line.qty,
-            unitPriceCents: line.unitPriceCents,
-          },
-        });
+    const persist = async (client: Prisma.TransactionClient) => {
+      const result = await client.invoice.updateMany({
+        where: { id: invoice.id, tenantId: workspaceId, revision: options.expectedRevision },
+        data: { ...this.invoiceData(invoice), revision: { increment: 1 } },
+      });
+      if (result.count !== 1) {
+        throw new InvoiceChangedError();
       }
-    }
 
-    await this.syncPayments(invoice.id, invoice.payments);
+      if (invoice.status === "DRAFT") {
+        await client.invoiceLine.deleteMany({
+          where: { invoiceId: invoice.id, id: { notIn: invoice.lineItems.map(({ id }) => id) } },
+        });
+        for (const { id, description, qty, unitPriceCents } of invoice.lineItems) {
+          const line = { description, qty, unitPriceCents };
+          await client.invoiceLine.upsert({
+            where: { id, invoiceId: invoice.id },
+            update: line,
+            create: { id, invoiceId: invoice.id, ...line },
+          });
+        }
+      }
+      await this.syncPayments(client, invoice.id, invoice.payments);
+    };
+
+    try {
+      if (options.tx) {
+        await persist(getPrismaClient(this.prisma, options.tx));
+      } else {
+        await this.prisma.$transaction(persist);
+      }
+      invoice.revision = options.expectedRevision + 1;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        const target = error.meta?.target;
+        const driverError = error.meta?.driverAdapterError as
+          | { cause?: { constraint?: { fields?: string[] } } }
+          | undefined;
+        const reportedFields = Array.isArray(target)
+          ? target
+          : driverError?.cause?.constraint?.fields;
+        const fields = reportedFields?.map((field) => String(field).replace(/^"|"$/g, ""));
+        if (
+          target === "Invoice_tenantId_number_key" ||
+          (fields?.includes("tenantId") && fields.includes("number"))
+        ) {
+          throw new InvoiceNumberConflictError("Invoice number is already in use.");
+        }
+        if (
+          target === "Invoice_one_issued_correction_per_original" ||
+          (fields?.includes("tenantId") && fields.includes("sourceId"))
+        ) {
+          throw new ConflictError("A correction has already been issued for the original invoice.");
+        }
+      }
+      throw error;
+    }
   }
 
   async create(workspaceId: string, invoice: InvoiceAggregate): Promise<void> {
-    await this.save(workspaceId, invoice);
+    if (workspaceId !== invoice.tenantId || invoice.status !== "DRAFT") {
+      throw new Error("Only a draft belonging to the workspace can be created");
+    }
+    await this.prisma.invoice.create({
+      data: {
+        ...this.invoiceData(invoice),
+        id: invoice.id,
+        tenantId: workspaceId,
+        createdAt: invoice.createdAt,
+        lines: { create: invoice.lineItems },
+      },
+    });
+  }
+
+  private invoiceData(invoice: InvoiceAggregate) {
+    // Snapshots originate from wire-safe DTOs and contain only JSON values.
+    const snapshot = (value: unknown) =>
+      value === null ? Prisma.DbNull : (JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue);
+    return {
+      customerPartyId: invoice.customerPartyId,
+      number: invoice.number,
+      status: invoice.status,
+      currency: invoice.currency,
+      notes: invoice.notes,
+      terms: invoice.terms,
+      invoiceDate: toPrismaDate(invoice.invoiceDate),
+      dueDate: toPrismaDate(invoice.dueDate),
+      issuedAt: invoice.issuedAt,
+      sentAt: invoice.sentAt,
+      billToName: invoice.billToName,
+      billToEmail: invoice.billToEmail,
+      billToVatId: invoice.billToVatId,
+      billToAddressLine1: invoice.billToAddressLine1,
+      billToAddressLine2: invoice.billToAddressLine2,
+      billToCity: invoice.billToCity,
+      billToPostalCode: invoice.billToPostalCode,
+      billToCountry: invoice.billToCountry,
+      updatedAt: invoice.updatedAt,
+      pdfStorageKey: invoice.pdfStorageKey,
+      pdfGeneratedAt: invoice.pdfGeneratedAt,
+      pdfSourceVersion: invoice.pdfSourceVersion,
+      pdfStatus: invoice.pdfStatus,
+      pdfFailureReason: invoice.pdfFailureReason,
+      sourceType: invoice.sourceType,
+      sourceId: invoice.sourceId,
+      paymentDetails: snapshot(invoice.paymentDetails),
+      taxSnapshot: snapshot(invoice.taxSnapshot),
+      issuerSnapshot: snapshot(invoice.issuerSnapshot),
+      paymentSnapshot: snapshot(invoice.paymentSnapshot),
+      legalEntityId: invoice.legalEntityId,
+      paymentMethodId: invoice.paymentMethodId,
+    };
   }
 
   async findById(workspaceId: string, id: string): Promise<InvoiceAggregate | null> {
@@ -356,14 +369,18 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     return count > 0;
   }
 
-  private async syncPayments(invoiceId: string, payments: InvoicePayment[]): Promise<void> {
+  private async syncPayments(
+    client: Prisma.TransactionClient,
+    invoiceId: string,
+    payments: InvoicePayment[]
+  ): Promise<void> {
     if (payments.length === 0) {
-      await this.prisma.invoicePayment.deleteMany({ where: { invoiceId } });
+      await client.invoicePayment.deleteMany({ where: { invoiceId } });
       return;
     }
 
     const paymentIds = payments.map((payment) => payment.id);
-    await this.prisma.invoicePayment.deleteMany({
+    await client.invoicePayment.deleteMany({
       where: {
         invoiceId,
         id: {
@@ -373,8 +390,8 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     });
 
     for (const payment of payments) {
-      await this.prisma.invoicePayment.upsert({
-        where: { id: payment.id },
+      await client.invoicePayment.upsert({
+        where: { id: payment.id, invoiceId },
         update: {
           invoiceId,
           amountCents: payment.amountCents,
@@ -400,6 +417,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     issuedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    revision: number;
     lines: Array<{ id: string; description: string; qty: number; unitPriceCents: number }>;
     payments: Array<{ id: string; amountCents: number; paidAt: Date; note: string | null }>;
   }) {
@@ -441,6 +459,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       billToCountry: (data as any).billToCountry ?? null,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      revision: data.revision,
       pdfStorageKey: (data as any).pdfStorageKey ?? null,
       pdfGeneratedAt: (data as any).pdfGeneratedAt ?? null,
       pdfSourceVersion: (data as any).pdfSourceVersion ?? null,

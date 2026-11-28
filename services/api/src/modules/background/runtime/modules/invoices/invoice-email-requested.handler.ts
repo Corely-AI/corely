@@ -66,6 +66,12 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
     if (!invoice) {
       throw new Error(`Invoice not found: ${payload.invoiceId}`);
     }
+    if (invoice.status === "CANCELED") {
+      await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "FAILED", {
+        lastError: "Invoice was canceled before delivery.",
+      });
+      return;
+    }
 
     // 3. Prepare email template props
     const companyName = this.resolveCompanyName(invoice);
@@ -95,6 +101,12 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
             invoiceNumber: invoice.number ?? undefined,
           }),
         ];
+        if (await this.repo.isInvoiceCanceled(event.tenantId, payload.invoiceId)) {
+          await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "FAILED", {
+            lastError: "Invoice was canceled before delivery.",
+          });
+          return;
+        }
       }
 
       // 5. Send email via provider

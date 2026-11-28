@@ -1,8 +1,14 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
-import { formatLocalDate, parseLocalDate } from "@corely/kernel";
+import { getPrismaClient, PrismaService } from "@corely/data";
+import {
+  ConflictError,
+  formatLocalDate,
+  parseLocalDate,
+  type TransactionContext,
+} from "@corely/kernel";
 import type {
   InventoryLotRepositoryPort,
+  InvoiceInventoryLotPort,
   InventoryLot,
   ListLotsFilter,
   ExpiryItem,
@@ -10,8 +16,61 @@ import type {
 import type { InventoryLotStatus } from "../../domain/inventory.types";
 
 @Injectable()
-export class PrismaInventoryLotRepository implements InventoryLotRepositoryPort {
+export class PrismaInventoryLotRepository
+  implements InventoryLotRepositoryPort, InvoiceInventoryLotPort
+{
   constructor(private readonly prisma: PrismaService) {}
+
+  async hasProductLots(
+    tenantId: string,
+    productId: string,
+    tx: TransactionContext
+  ): Promise<boolean> {
+    const lot = await getPrismaClient(this.prisma, tx).inventoryLot.findFirst({
+      where: { tenantId, productId, archivedAt: null },
+      select: { id: true },
+    });
+    return lot !== null;
+  }
+
+  async listAvailableLots(
+    tenantId: string,
+    productId: string,
+    tx: TransactionContext
+  ): Promise<InventoryLot[]> {
+    const lots = await getPrismaClient(this.prisma, tx).inventoryLot.findMany({
+      where: { tenantId, productId, archivedAt: null, status: "AVAILABLE", qtyOnHand: { gt: 0 } },
+      orderBy: [
+        { expiryDate: "asc" },
+        { receivedDate: "asc" },
+        { createdAt: "asc" },
+        { id: "asc" },
+      ],
+    });
+    return lots.map((lot) => this.mapToEntity(lot));
+  }
+
+  async consumeInvoiceLot(
+    lot: InventoryLot,
+    quantity: number,
+    tx: TransactionContext
+  ): Promise<void> {
+    const result = await getPrismaClient(this.prisma, tx).inventoryLot.updateMany({
+      where: {
+        id: lot.id,
+        tenantId: lot.tenantId,
+        status: "AVAILABLE",
+        archivedAt: null,
+        updatedAt: lot.updatedAt,
+        qtyOnHand: lot.qtyOnHand,
+        qtyReserved: lot.qtyReserved,
+      },
+      data: { qtyOnHand: { decrement: quantity } },
+    });
+    if (result.count !== 1) {
+      throw new ConflictError("Stock changed while issuing the invoice. Retry finalizing.");
+    }
+  }
 
   async create(_tenantId: string, lot: InventoryLot): Promise<void> {
     await this.prisma.inventoryLot.create({

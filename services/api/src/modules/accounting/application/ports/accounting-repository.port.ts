@@ -2,7 +2,8 @@ import type { LedgerAccountAggregate } from "../../domain/ledger-account.aggrega
 import type { JournalEntryAggregate } from "../../domain/journal-entry.aggregate";
 import type { AccountingSettingsAggregate } from "../../domain/accounting-settings.aggregate";
 import type { AccountingPeriodAggregate } from "../../domain/accounting-period.aggregate";
-import type { AccountType, EntryStatus } from "@corely/contracts";
+import type { AccountType, EntryStatus, SourceType } from "@corely/contracts";
+import type { TransactionContext } from "@corely/kernel";
 
 // Repository ports for Accounting aggregates
 
@@ -31,6 +32,12 @@ export interface LedgerAccountRepoPort {
 
 export interface JournalEntryRepoPort {
   findById(tenantId: string, entryId: string): Promise<JournalEntryAggregate | null>;
+  existsBySource(
+    tenantId: string,
+    sourceType: SourceType,
+    sourceId: string,
+    tx: TransactionContext
+  ): Promise<boolean>;
   list(
     tenantId: string,
     filters: {
@@ -43,7 +50,7 @@ export interface JournalEntryRepoPort {
       cursor?: string;
     }
   ): Promise<{ entries: JournalEntryAggregate[]; nextCursor: string | null; total: number }>;
-  save(entry: JournalEntryAggregate): Promise<void>;
+  save(entry: JournalEntryAggregate, tx?: TransactionContext): Promise<void>;
   delete(tenantId: string, entryId: string): Promise<void>;
 }
 

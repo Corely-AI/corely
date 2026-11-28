@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { getPrismaClient, PrismaService, type PrismaTransactionClient } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
 import type {
   AccountingSettingsRepoPort,
   LedgerAccountRepoPort,
@@ -20,7 +21,7 @@ import {
   accountingPeriodFromPrisma,
   accountingPeriodToPrisma,
 } from "./mappers";
-import type { AccountType, EntryStatus } from "@corely/contracts";
+import type { AccountType, EntryStatus, SourceType } from "@corely/contracts";
 
 @Injectable()
 export class PrismaAccountingSettingsRepository implements AccountingSettingsRepoPort {
@@ -148,6 +149,19 @@ export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
 export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
+  async existsBySource(
+    tenantId: string,
+    sourceType: SourceType,
+    sourceId: string,
+    tx: TransactionContext
+  ): Promise<boolean> {
+    const entry = await getPrismaClient(this.prisma, tx).journalEntry.findFirst({
+      where: { tenantId, sourceType, sourceId },
+      select: { id: true },
+    });
+    return entry !== null;
+  }
+
   async findById(tenantId: string, entryId: string): Promise<JournalEntryAggregate | null> {
     const entry = await this.prisma.journalEntry.findFirst({
       where: { id: entryId, tenantId },
@@ -219,10 +233,10 @@ export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
     };
   }
 
-  async save(entry: JournalEntryAggregate): Promise<void> {
+  async save(entry: JournalEntryAggregate, transaction?: TransactionContext): Promise<void> {
     const { entry: entryData, lines: linesData } = journalEntryToPrisma(entry);
 
-    await this.prisma.$transaction(async (tx) => {
+    const persist = async (tx: PrismaTransactionClient) => {
       // Upsert entry payload only; lines are replaced in a single pass below.
       await tx.journalEntry.upsert({
         where: { id: entry.id },
@@ -240,7 +254,12 @@ export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
           data: linesData.map((l) => ({ ...l, tenantId: entry.tenantId })),
         });
       }
-    });
+    };
+    if (transaction) {
+      await persist(getPrismaClient(this.prisma, transaction));
+    } else {
+      await this.prisma.$transaction(persist);
+    }
   }
 
   async delete(tenantId: string, entryId: string): Promise<void> {

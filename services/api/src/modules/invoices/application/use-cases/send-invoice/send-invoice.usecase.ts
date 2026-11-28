@@ -131,8 +131,9 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
   private async ensureSentAndReminderState(invoice: any, ctx: UseCaseContext) {
     const now = this.useCaseDeps.clock.now();
     if (invoice.status !== "SENT") {
+      const expectedRevision: number = invoice.revision;
       invoice.markSent(now, now);
-      await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId!, invoice);
+      await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId!, invoice, { expectedRevision });
     }
 
     const policy = await this.useCaseDeps.reminderSettings.getPolicy(

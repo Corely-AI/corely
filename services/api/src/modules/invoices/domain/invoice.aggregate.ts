@@ -50,6 +50,7 @@ type InvoiceProps = {
   billToCountry?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  revision?: number;
   pdfStorageKey?: string | null;
   pdfGeneratedAt?: Date | null;
   pdfSourceVersion?: string | null;
@@ -92,6 +93,7 @@ export class InvoiceAggregate {
   billToCountry: string | null;
   createdAt: Date;
   updatedAt: Date;
+  revision: number;
   pdfStorageKey: string | null;
   pdfGeneratedAt: Date | null;
   pdfSourceVersion: string | null;
@@ -134,6 +136,7 @@ export class InvoiceAggregate {
     this.billToCountry = props.billToCountry ?? null;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.revision = props.revision ?? 0;
     this.pdfStorageKey = props.pdfStorageKey ?? null;
     this.pdfGeneratedAt = props.pdfGeneratedAt ?? null;
     this.pdfSourceVersion = props.pdfSourceVersion ?? null;
@@ -192,12 +195,8 @@ export class InvoiceAggregate {
     patch: Partial<Pick<InvoiceProps, "customerPartyId" | "currency" | "notes" | "terms">>,
     now: Date
   ) {
-    const allowedAfterDraft = ["notes", "terms"];
     if (this.status !== "DRAFT") {
-      const disallowedPatch = Object.keys(patch).some((k) => !allowedAfterDraft.includes(k));
-      if (disallowedPatch) {
-        throw new Error("Cannot update invoice header after finalize");
-      }
+      throw new Error("Cannot update invoice header after finalize");
     }
 
     if (patch.customerPartyId !== undefined) {
@@ -315,16 +314,14 @@ export class InvoiceAggregate {
     this.touch(now);
   }
 
-  cancel(reason: string | undefined, canceledAt: Date | undefined, now: Date) {
-    if (this.status === "PAID") {
-      throw new Error("Cannot cancel a paid invoice");
+  cancel(now: Date) {
+    if (this.status === "PAID" || this.payments.length > 0) {
+      throw new Error("Cannot cancel an invoice with recorded payments");
     }
     if (this.status === "CANCELED") {
       return;
     }
     this.status = "CANCELED";
-    this.notes = reason ?? this.notes ?? null;
-    this.sentAt = canceledAt ?? this.sentAt;
     this.touch(now);
   }
 

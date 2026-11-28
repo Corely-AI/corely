@@ -1,10 +1,13 @@
 import {
   BaseUseCase,
+  type AuditPort,
   type ClockPort,
   ConflictError,
   type LoggerPort,
   NotFoundError,
   type Result,
+  type TransactionContext,
+  type UnitOfWorkPort,
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
@@ -16,15 +19,23 @@ import {
   invoiceFinalizationRejection,
   type InvoiceFinalizationRegistration,
 } from "@corely/invoices/extensions";
-import { type FinalizeInvoiceInput, type FinalizeInvoiceOutput } from "@corely/contracts";
-import type { PrismaService } from "@corely/data";
-import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
-import { type InvoiceNumberingPort } from "../../ports/invoice-numbering.port";
+import { validateInvoiceDraft } from "@corely/invoices";
+import type { FinalizeInvoiceInput, FinalizeInvoiceOutput } from "@corely/contracts";
+import { TaxJurisdictionUnsupportedError, TaxProfileMissingError } from "@corely/domain";
+import {
+  InvoiceChangedError,
+  InvoiceNumberConflictError,
+  type InvoiceRepoPort,
+} from "../../ports/invoice-repository.port";
+import type { InvoiceNumberingPort } from "../../ports/invoice-numbering.port";
+import type { CustomerQueryPort } from "../../ports/customer-query.port";
+import type { PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
+import type { TaxEngineService } from "../../../../tax/application/services/tax-engine.service";
+import type { InvoiceAggregate } from "../../../domain/invoice.aggregate";
+import { validateInvoiceCurrency, validateInvoiceLineAmounts } from "../../../domain/invoice-money";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
-import { type CustomerQueryPort } from "../../ports/customer-query.port";
-import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
-import { type TaxEngineService } from "../../../../tax/application/services/tax-engine.service";
-import { CogsPostingService } from "../../../../accounting/application/services/cogs-posting.service";
+
+const numberingAttempts = 6;
 
 type Deps = {
   logger: LoggerPort;
@@ -33,9 +44,21 @@ type Deps = {
   clock: ClockPort;
   customerQuery: CustomerQueryPort;
   paymentMethodQuery: PaymentMethodQueryPort;
-  taxEngine: TaxEngineService;
-  prisma: PrismaService;
-  cogsPostingService: CogsPostingService;
+  taxEngine: Pick<TaxEngineService, "calculate">;
+  unitOfWork: UnitOfWorkPort;
+  audit: AuditPort;
+  accounting?: {
+    assertCorrectionAllowed(
+      tenantId: string,
+      invoiceId: string,
+      tx: TransactionContext
+    ): Promise<void>;
+    postForInvoice(
+      invoice: InvoiceAggregate,
+      ctx: UseCaseContext,
+      tx: TransactionContext
+    ): Promise<void>;
+  };
   policies?: readonly InvoiceFinalizationRegistration[];
 };
 
@@ -52,396 +75,176 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
     input: FinalizeInvoiceInput,
     ctx: UseCaseContext
   ): Promise<Result<FinalizeInvoiceOutput, UseCaseError>> {
-    if (!ctx.workspaceId) {
-      return err(new ValidationError("workspaceId missing from context"));
+    const { workspaceId, tenantId } = ctx;
+    if (!workspaceId || !tenantId) {
+      return err(new ValidationError("Tenant and workspace context are required"));
     }
 
-    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId, input.invoiceId);
+    const { invoiceRepo, customerQuery, paymentMethodQuery, taxEngine, clock, numbering } =
+      this.useCaseDeps;
+    const invoice = await invoiceRepo.findById(workspaceId, input.invoiceId);
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
-
-    if (invoice.status === "DRAFT" && ctx.tenantId && this.useCaseDeps.policies?.length) {
-      const rejection = invoiceFinalizationRejection(
-        this.useCaseDeps.policies,
-        { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId },
-        { dueDate: invoice.dueDate }
-      );
-      if (rejection) {
-        return err(
-          new ValidationError(rejection, undefined, "Invoices:FinalizationPolicyRejected")
-        );
-      }
+    if (invoice.status === "CANCELED") {
+      return err(new ConflictError("Cannot finalize a canceled invoice."));
+    }
+    if (invoice.status !== "DRAFT") {
+      return ok({ invoice: toInvoiceDto(invoice) });
+    }
+    const expectedRevision = invoice.revision;
+    const rejection = invoiceFinalizationRejection(
+      this.useCaseDeps.policies ?? [],
+      { tenantId, workspaceId },
+      { dueDate: invoice.dueDate }
+    );
+    if (rejection) {
+      return err(new ValidationError(rejection, undefined, "Invoices:FinalizationPolicyRejected"));
     }
 
-    const customer = await this.useCaseDeps.customerQuery.getCustomerBillingSnapshot(
-      ctx.tenantId,
+    validateInvoiceCurrency(invoice.currency);
+    validateInvoiceLineAmounts(invoice.lineItems);
+    const customer = await customerQuery.getCustomerBillingSnapshot(
+      tenantId,
       invoice.customerPartyId
     );
     if (!customer) {
       return err(new NotFoundError("Customer not found"));
     }
-
     try {
-      const paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
-        ctx.tenantId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (input as any).paymentMethodId
+      validateInvoiceDraft(invoice, customer.displayName);
+    } catch (error) {
+      return err(
+        new ValidationError(error instanceof Error ? error.message : "Invalid invoice draft")
+      );
+    }
+
+    const now = clock.now();
+    const documentDate = invoice.invoiceDate
+      ? `${invoice.invoiceDate}T00:00:00.000Z`
+      : now.toISOString();
+    const buyerCountry = customer.billingAddress?.country;
+    if (!buyerCountry && customer.vatId) {
+      return err(
+        new ValidationError("Add the customer's billing country before issuing this invoice.")
+      );
+    }
+    try {
+      const tax = await taxEngine.calculate(
+        {
+          jurisdiction: invoice.issuerSnapshot?.address?.country ?? "",
+          documentDate,
+          currency: invoice.currency,
+          customer: buyerCountry
+            ? { country: buyerCountry, isBusiness: !!customer.vatId, vatId: customer.vatId }
+            : undefined,
+          lines: invoice.lineItems.map((line) => ({
+            id: line.id,
+            description: line.description,
+            qty: line.qty,
+            netAmountCents: line.qty * line.unitPriceCents,
+          })),
+        },
+        tenantId,
+        { invoiceIssuance: true }
       );
 
-      // Calculate tax snapshot before finalizing
-      const now = this.useCaseDeps.clock.now();
-      const documentDate = invoice.issuedAt ?? now;
-
-      let taxSnapshot = null;
-      try {
-        const taxBreakdown = await this.useCaseDeps.taxEngine.calculate(
-          {
-            jurisdiction: "DE",
-            documentDate: documentDate.toISOString(),
-            currency: invoice.currency,
-            customer:
-              customer.vatId || customer.billingAddress?.country
-                ? {
-                    country: customer.billingAddress?.country ?? "DE",
-                    isBusiness: !!customer.vatId,
-                    vatId: customer.vatId ?? undefined,
-                  }
-                : undefined,
-            lines: invoice.lineItems.map((line) => ({
-              id: line.id,
-              description: line.description,
-              qty: line.qty,
-              netAmountCents: line.qty * line.unitPriceCents,
-              taxCodeId: undefined,
-            })),
-          },
-          ctx.tenantId
-        );
-
-        taxSnapshot = {
-          subtotalAmountCents: taxBreakdown.subtotalAmountCents,
-          taxTotalAmountCents: taxBreakdown.taxTotalAmountCents,
-          totalAmountCents: taxBreakdown.totalAmountCents,
-          lines: taxBreakdown.lines,
-          totalsByKind: taxBreakdown.totalsByKind,
-          appliedAt: now.toISOString(),
-        };
-      } catch (taxError: unknown) {
-        // If tax calculation fails, log but don't block finalization
-        console.error("TAX CALC FAILURE:", JSON.stringify(taxError, null, 2));
-        this.useCaseDeps.logger.warn(
-          `Failed to calculate tax for invoice ${invoice.id}`,
-          taxError as Record<string, unknown>
-        );
-
-        taxSnapshot = await this.buildFallbackTaxSnapshot(invoice, ctx, now);
+      if (
+        tax.subtotalAmountCents !== invoice.totals.subtotalCents ||
+        tax.totalAmountCents !== tax.subtotalAmountCents + tax.taxTotalAmountCents ||
+        !Number.isSafeInteger(tax.taxTotalAmountCents) ||
+        tax.taxTotalAmountCents < 0 ||
+        !Number.isSafeInteger(tax.totalAmountCents)
+      ) {
+        return err(new ValidationError("Tax calculation returned invalid invoice totals."));
       }
-
-      // Update tax snapshot before finalizing
-      if (taxSnapshot) {
-        invoice.updateSnapshots({ taxSnapshot }, now);
-      }
-
-      const number = await this.useCaseDeps.numbering.nextInvoiceNumber(ctx.workspaceId);
-      invoice.finalize(
-        number,
-        now,
-        now,
-        {
-          name: customer.displayName,
-          email: customer.email ?? null,
-          vatId: customer.vatId ?? null,
-          address: customer.billingAddress
-            ? {
-                line1: customer.billingAddress.line1,
-                line2: customer.billingAddress.line2 ?? null,
-                city: customer.billingAddress.city ?? null,
-                postalCode: customer.billingAddress.postalCode ?? null,
-                country: customer.billingAddress.country ?? null,
-              }
-            : undefined,
-        },
-        paymentSnapshot ?? undefined
+      const { packId: _packId, ...taxSnapshot } = tax;
+      invoice.updateSnapshots(
+        { taxSnapshot: { ...taxSnapshot, appliedAt: now.toISOString() } },
+        now
       );
     } catch (error) {
-      if (error instanceof ValidationError || error instanceof ConflictError) {
-        return err(error);
+      if (
+        error instanceof TaxProfileMissingError ||
+        error instanceof TaxJurisdictionUnsupportedError
+      ) {
+        return err(
+          new ValidationError(error.publicMessage ?? "Invoice tax configuration is unavailable.")
+        );
       }
-      return err(new ConflictError((error as Error).message));
+      throw error;
     }
-
-    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice);
-    await this.tryPostCogsFromLots(invoice, ctx);
-    return ok({ invoice: toInvoiceDto(invoice) });
-  }
-
-  private async buildFallbackTaxSnapshot(
-    invoice: {
-      currency: string;
-      invoiceDate: string | null;
-      issuedAt: Date | null;
-      lineItems: Array<{ id: string; qty: number; unitPriceCents: number }>;
-    },
-    ctx: UseCaseContext,
-    now: Date
-  ) {
-    if (!ctx.workspaceId) {
-      return null;
-    }
-
-    const workspace = await this.useCaseDeps.prisma.workspace.findUnique({
-      where: { id: ctx.workspaceId },
-      include: { legalEntity: true },
-    });
-    const platformTenantId = workspace?.tenantId ?? ctx.tenantId;
-    if (!platformTenantId) {
-      return null;
-    }
-    const legalEntityCountry = workspace?.legalEntity?.countryCode ?? null;
-    const documentDate = invoice.invoiceDate
-      ? new Date(`${invoice.invoiceDate}T00:00:00.000Z`)
-      : (invoice.issuedAt ?? now);
-
-    const taxProfile = await this.useCaseDeps.prisma.taxProfile.findFirst({
-      where: { tenantId: platformTenantId },
-      orderBy: { effectiveFrom: "desc" },
-    });
-
-    let vatRateBps = 0;
-    if (taxProfile?.vatEnabled && taxProfile.regime !== "SMALL_BUSINESS") {
-      const rate = await this.useCaseDeps.prisma.taxRate.findFirst({
-        where: {
-          tenantId: platformTenantId,
-          effectiveFrom: { lte: documentDate },
-          taxCode: { kind: "STANDARD", isActive: true },
-        },
-        orderBy: { effectiveFrom: "desc" },
-      });
-      vatRateBps = rate?.rateBps ?? 0;
-    }
-
-    // Keep PDF rendering behavior: DE defaults to 19% when no explicit profile/rate blocks it.
-    if (vatRateBps === 0 && legalEntityCountry === "DE" && taxProfile?.vatEnabled !== false) {
-      vatRateBps = 1900;
-    }
-
-    const subtotalAmountCents = invoice.lineItems.reduce(
-      (sum, line) => sum + line.qty * line.unitPriceCents,
-      0
+    const paymentMethodId = input.paymentMethodId ?? invoice.paymentMethodId ?? undefined;
+    const paymentSnapshot = await paymentMethodQuery.getPaymentMethodSnapshot(
+      tenantId,
+      paymentMethodId
     );
-    const lines = invoice.lineItems.map((line) => {
-      const netAmountCents = line.qty * line.unitPriceCents;
-      const taxAmountCents = Math.round((netAmountCents * vatRateBps) / 10000);
-      return {
-        lineId: line.id,
-        kind: vatRateBps > 0 ? "STANDARD" : "EXEMPT",
-        rateBps: vatRateBps,
-        netAmountCents,
-        taxAmountCents,
-        grossAmountCents: netAmountCents + taxAmountCents,
-      };
-    });
-    const taxTotalAmountCents = lines.reduce((sum, line) => sum + line.taxAmountCents, 0);
-    const totalAmountCents = subtotalAmountCents + taxTotalAmountCents;
-    const totalsByKind = {
-      [vatRateBps > 0 ? "STANDARD" : "EXEMPT"]: {
-        netAmountCents: subtotalAmountCents,
-        taxAmountCents: taxTotalAmountCents,
-        grossAmountCents: totalAmountCents,
-        rateBps: vatRateBps,
-      },
-    };
-
-    return {
-      subtotalAmountCents,
-      taxTotalAmountCents,
-      totalAmountCents,
-      roundingMode: "PER_DOCUMENT",
-      lines,
-      totalsByKind,
-      flags: {
-        needsReverseChargeNote: false,
-        isSmallBusinessNoVatCharged: vatRateBps === 0,
-      },
-      appliedAt: now.toISOString(),
-    };
-  }
-
-  private async tryPostCogsFromLots(
-    invoice: {
-      id: string;
-      number: string | null;
-      currency: string;
-      issuedAt: Date | null;
-      lineItems: Array<{ description: string; qty: number }>;
-    },
-    ctx: UseCaseContext
-  ): Promise<void> {
-    const tenantId = ctx.tenantId;
-    if (!tenantId) {
-      return;
+    if (input.paymentMethodId && !paymentSnapshot) {
+      return err(new ValidationError("The selected invoice payment method is unavailable."));
     }
-
-    const existingCogsEntry = await this.useCaseDeps.prisma.journalEntry.findFirst({
-      where: {
-        tenantId,
-        sourceType: "Invoice",
-        sourceId: invoice.id,
-      },
-      select: { id: true },
-    });
-    if (existingCogsEntry) {
-      return;
+    if (paymentSnapshot) {
+      invoice.updateSnapshots({ paymentMethodId, paymentSnapshot }, now);
     }
+    const firstNumber = await numbering.nextInvoiceNumber(workspaceId, now);
+    invoice.finalize(firstNumber, now, now, {
+      name: customer.displayName,
+      email: customer.email ?? null,
+      vatId: customer.vatId ?? null,
+      address: customer.billingAddress?.line1
+        ? {
+            ...customer.billingAddress,
+            line1: customer.billingAddress.line1,
+          }
+        : undefined,
+    });
 
-    const allocations: Array<{
-      lotId: string;
-      lotNumber: string;
-      productName: string;
-      quantityPicked: number;
-      unitCostCents: number;
-    }> = [];
-    const lotUsage = new Map<string, number>();
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-
-    for (const line of invoice.lineItems) {
-      const productId = await this.resolveProductIdFromLine(line.description, tenantId);
-      if (!productId) {
-        continue;
+    for (let attempt = 0; attempt < numberingAttempts; attempt++) {
+      if (attempt > 0) {
+        // The previous number was never committed. Replace it without reapplying the transition.
+        invoice.number = await numbering.nextInvoiceNumber(workspaceId, now);
       }
-
-      const qtyRequested = Math.max(0, Math.trunc(line.qty));
-      if (qtyRequested === 0) {
-        continue;
-      }
-
-      const lots = await this.useCaseDeps.prisma.inventoryLot.findMany({
-        where: {
-          tenantId,
-          productId,
-          archivedAt: null,
-          status: "AVAILABLE",
-          qtyOnHand: { gt: 0 },
-        },
-        orderBy: [{ expiryDate: "asc" }, { receivedDate: "asc" }, { createdAt: "asc" }],
-      });
-
-      const nonExpiredLots = lots.filter((lot) => !lot.expiryDate || lot.expiryDate >= today);
-      const hasExpiredStock = lots.some((lot) => lot.expiryDate && lot.expiryDate < today);
-      const availableQty = nonExpiredLots.reduce(
-        (sum, lot) => sum + Math.max(0, lot.qtyOnHand - lot.qtyReserved),
-        0
-      );
-
-      if (availableQty < qtyRequested) {
-        if (hasExpiredStock) {
-          throw new ValidationError(
-            "Cannot issue invoice because available lots for a product are expired."
+      try {
+        await this.useCaseDeps.unitOfWork.withinTransaction(async (tx) => {
+          if (invoice.sourceType === "invoice_correction" && invoice.sourceId) {
+            await this.useCaseDeps.accounting?.assertCorrectionAllowed(
+              tenantId,
+              invoice.sourceId,
+              tx
+            );
+          }
+          await invoiceRepo.save(workspaceId, invoice, { expectedRevision, tx });
+          await this.useCaseDeps.accounting?.postForInvoice(invoice, ctx, tx);
+          await this.useCaseDeps.audit.log(
+            {
+              tenantId,
+              userId: ctx.userId ?? "system",
+              action: "invoice.issued",
+              entityType: "Invoice",
+              entityId: invoice.id,
+              metadata: {
+                workspaceId,
+                number: invoice.number,
+                sourceType: invoice.sourceType,
+                sourceId: invoice.sourceId,
+              },
+            },
+            tx
           );
-        }
-        throw new ValidationError("Insufficient available lot quantity for invoice line", {
-          productId,
-          qtyRequested,
-          availableQty,
         });
-      }
-
-      let remaining = qtyRequested;
-      for (const lot of nonExpiredLots) {
-        if (remaining <= 0) {
-          break;
+        return ok({ invoice: toInvoiceDto(invoice) });
+      } catch (error) {
+        if (error instanceof InvoiceChangedError) {
+          const current = await invoiceRepo.findById(workspaceId, invoice.id);
+          if (current?.number && current.status !== "CANCELED") {
+            return ok({ invoice: toInvoiceDto(current) });
+          }
         }
-
-        const alreadyAllocated = lotUsage.get(lot.id) ?? 0;
-        const freeQty = Math.max(0, lot.qtyOnHand - lot.qtyReserved - alreadyAllocated);
-        if (freeQty <= 0) {
-          continue;
+        if (!(error instanceof InvoiceNumberConflictError)) {
+          throw error;
         }
-
-        const picked = Math.min(remaining, freeQty);
-        const unitCostCents = lot.unitCostCents ?? 0;
-
-        allocations.push({
-          lotId: lot.id,
-          lotNumber: lot.lotNumber,
-          productName: productId,
-          quantityPicked: picked,
-          unitCostCents,
-        });
-
-        lotUsage.set(lot.id, alreadyAllocated + picked);
-        remaining -= picked;
       }
     }
 
-    if (allocations.length === 0) {
-      return;
-    }
-
-    const cogsResult = await this.useCaseDeps.cogsPostingService.postCogsFromLots(
-      {
-        invoiceId: invoice.id,
-        invoiceNumber: invoice.number ?? invoice.id,
-        invoiceDate: (invoice.issuedAt ?? this.useCaseDeps.clock.now()).toISOString().slice(0, 10),
-        lotAllocations: allocations,
-        currency: invoice.currency,
-      },
-      ctx
-    );
-
-    if (!cogsResult.journalEntryId) {
-      return;
-    }
-
-    await this.useCaseDeps.prisma.$transaction(async (tx) => {
-      for (const [lotId, qty] of lotUsage.entries()) {
-        await tx.inventoryLot.update({
-          where: { id: lotId },
-          data: {
-            qtyOnHand: { decrement: qty },
-          },
-        });
-      }
-    });
-  }
-
-  private async resolveProductIdFromLine(
-    description: string,
-    tenantId: string
-  ): Promise<string | null> {
-    const trimmed = description.trim();
-    if (!trimmed) {
-      return null;
-    }
-
-    const inlineProductReference = trimmed.match(/\[product:([a-zA-Z0-9_-]+)\]/i);
-    if (inlineProductReference?.[1]) {
-      return inlineProductReference[1];
-    }
-
-    const lotForDirectId = await this.useCaseDeps.prisma.inventoryLot.findFirst({
-      where: {
-        tenantId,
-        productId: trimmed,
-        archivedAt: null,
-      },
-      select: { id: true },
-    });
-    if (lotForDirectId) {
-      return trimmed;
-    }
-
-    const catalogItem = await this.useCaseDeps.prisma.catalogItem.findFirst({
-      where: {
-        tenantId,
-        archivedAt: null,
-        OR: [{ id: trimmed }, { code: trimmed }, { name: trimmed }],
-      },
-      select: { id: true },
-    });
-
-    return catalogItem?.id ?? null;
+    return err(new ConflictError("Could not allocate a unique invoice number. Retry finalizing."));
   }
 }

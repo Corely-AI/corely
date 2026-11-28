@@ -49,6 +49,7 @@ export class RecordPaymentUseCase extends BaseUseCase<RecordPaymentInput, Record
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
+    const expectedRevision = invoice.revision;
 
     try {
       const now = this.useCaseDeps.clock.now();
@@ -68,7 +69,7 @@ export class RecordPaymentUseCase extends BaseUseCase<RecordPaymentInput, Record
       return err(new ConflictError((error as Error).message));
     }
 
-    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice);
+    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice, { expectedRevision });
     return ok({ invoice: toInvoiceDto(invoice) });
   }
 }

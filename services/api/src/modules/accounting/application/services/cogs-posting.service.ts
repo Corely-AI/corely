@@ -1,8 +1,16 @@
 import { Injectable, Inject } from "@nestjs/common";
 import type { LoggerPort } from "@corely/kernel";
 import { CreateJournalEntryUseCase } from "../use-cases/create-journal-entry.usecase";
-import { LEDGER_ACCOUNT_REPO_PORT } from "../ports/accounting-repository.port";
-import type { LedgerAccountRepoPort } from "../ports/accounting-repository.port";
+import {
+  JOURNAL_ENTRY_REPO_PORT,
+  LEDGER_ACCOUNT_REPO_PORT,
+} from "../ports/accounting-repository.port";
+import type {
+  JournalEntryRepoPort,
+  LedgerAccountRepoPort,
+} from "../ports/accounting-repository.port";
+import type { TransactionContext } from "@corely/kernel";
+import type { CreateJournalEntryInput } from "@corely/contracts";
 import type { UseCaseContext } from "@corely/kernel";
 
 /**
@@ -20,8 +28,13 @@ export class CogsPostingService {
   constructor(
     @Inject("LoggerPort") private readonly logger: LoggerPort,
     private readonly createJournalEntry: CreateJournalEntryUseCase,
-    @Inject(LEDGER_ACCOUNT_REPO_PORT) private readonly accountRepo: LedgerAccountRepoPort
+    @Inject(LEDGER_ACCOUNT_REPO_PORT) private readonly accountRepo: LedgerAccountRepoPort,
+    @Inject(JOURNAL_ENTRY_REPO_PORT) private readonly journalRepo: JournalEntryRepoPort
   ) {}
+
+  hasInvoicePosting(tenantId: string, invoiceId: string, tx: TransactionContext): Promise<boolean> {
+    return this.journalRepo.existsBySource(tenantId, "Invoice", invoiceId, tx);
+  }
 
   /**
    * Posts COGS journal entry for an issued invoice
@@ -43,7 +56,8 @@ export class CogsPostingService {
       }>;
       currency: string;
     },
-    ctx: UseCaseContext
+    ctx: UseCaseContext,
+    tx?: TransactionContext
   ): Promise<{ journalEntryId: string | null; error?: string }> {
     const tenantId = ctx.tenantId!;
 
@@ -90,43 +104,43 @@ export class CogsPostingService {
       // Create journal entry: Debit COGS, Credit Inventory
       const memo = `COGS for Invoice ${params.invoiceNumber} - ${lineDetails.slice(0, 3).join(", ")}${lineDetails.length > 3 ? ` and ${lineDetails.length - 3} more` : ""}`;
 
-      const result = await this.createJournalEntry.execute(
-        {
-          postingDate: params.invoiceDate,
-          memo,
-          sourceType: "Invoice",
-          sourceId: params.invoiceId,
-          sourceRef: params.invoiceNumber,
-          lines: [
-            {
-              ledgerAccountId: cogsAccount.id,
-              direction: "Debit",
-              amountCents: totalCogsCents,
-              currency: params.currency,
-              lineMemo: "Cost of goods sold",
-              reference: params.invoiceNumber,
-              tags: ["auto-cogs", `invoice:${params.invoiceId}`],
-            },
-            {
-              ledgerAccountId: inventoryAccount.id,
-              direction: "Credit",
-              amountCents: totalCogsCents,
-              currency: params.currency,
-              lineMemo: "Inventory reduction",
-              reference: params.invoiceNumber,
-              tags: ["auto-cogs", `invoice:${params.invoiceId}`],
-            },
-          ],
-        },
-        ctx
-      );
+      const input: CreateJournalEntryInput = {
+        postingDate: params.invoiceDate,
+        memo,
+        sourceType: "Invoice",
+        sourceId: params.invoiceId,
+        sourceRef: params.invoiceNumber,
+        lines: [
+          {
+            ledgerAccountId: cogsAccount.id,
+            direction: "Debit",
+            amountCents: totalCogsCents,
+            currency: params.currency,
+            lineMemo: "Cost of goods sold",
+            reference: params.invoiceNumber,
+            tags: ["auto-cogs", `invoice:${params.invoiceId}`],
+          },
+          {
+            ledgerAccountId: inventoryAccount.id,
+            direction: "Credit",
+            amountCents: totalCogsCents,
+            currency: params.currency,
+            lineMemo: "Inventory reduction",
+            reference: params.invoiceNumber,
+            tags: ["auto-cogs", `invoice:${params.invoiceId}`],
+          },
+        ],
+      };
+      const result = tx
+        ? await this.createJournalEntry.create(input, ctx, tx)
+        : await this.createJournalEntry.execute(input, ctx);
 
-      if (!result.ok) {
+      if (result.ok === false) {
         this.logger.error("Failed to create COGS journal entry", {
           invoiceId: params.invoiceId,
-          error: (result as any).error,
+          error: result.error,
         });
-        return { journalEntryId: null, error: (result as any).error.message };
+        return { journalEntryId: null, error: result.error.message };
       }
 
       this.logger.info("COGS journal entry created successfully", {
@@ -169,7 +183,8 @@ export class CogsPostingService {
       }>;
       currency: string;
     },
-    ctx: UseCaseContext
+    ctx: UseCaseContext,
+    tx?: TransactionContext
   ): Promise<{ journalEntryId: string | null; error?: string }> {
     // Calculate line costs from lot allocations
     const lines = params.lotAllocations.map((allocation) => ({
@@ -187,7 +202,8 @@ export class CogsPostingService {
         lines,
         currency: params.currency,
       },
-      ctx
+      ctx,
+      tx
     );
   }
 }
