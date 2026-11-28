@@ -20,7 +20,9 @@ export class OpenBukGuestCredentials {
   ) {}
 
   private tokenFor(scope: StudioScope, bookingId: string) {
-    if (this.secret.length < 32) {return null;}
+    if (this.secret.length < 32) {
+      return null;
+    }
     return createHmac("sha256", this.secret)
       .update(
         JSON.stringify(["openbuk.guest.manage.v1", scope.tenantId, scope.workspaceId, bookingId])
@@ -40,7 +42,9 @@ export class OpenBukGuestCredentials {
     tx: TransactionContext
   ) {
     const token = this.tokenFor(scope, bookingId);
-    if (!token) {return undefined;}
+    if (!token) {
+      return undefined;
+    }
     const expiresAt = new Date(
       Math.min(Date.parse(startsAt), now.getTime() + MAX_AGE_MS)
     ).toISOString();
@@ -50,7 +54,9 @@ export class OpenBukGuestCredentials {
 
   async replay(scope: StudioScope, bookingId: string, now: Date, tx?: TransactionContext) {
     const token = this.tokenFor(scope, bookingId);
-    if (!token) {return undefined;}
+    if (!token) {
+      return undefined;
+    }
     const record = await this.find(scope, token, now, tx);
     return record && !record.credential.revokedAt
       ? { token, expiresAt: record.credential.expiresAt }
@@ -58,7 +64,9 @@ export class OpenBukGuestCredentials {
   }
 
   async find(scope: StudioScope, token: string, now: Date, tx?: TransactionContext) {
-    if (!TOKEN_PATTERN.test(token)) {return null;}
+    if (!TOKEN_PATTERN.test(token)) {
+      return null;
+    }
     const digest = this.digest(token);
     const credential = await this.store.find(scope, digest, tx);
     return credential && Date.parse(credential.expiresAt) > now.getTime()

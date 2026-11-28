@@ -195,9 +195,10 @@ export class EmployeeTasksUseCase {
     key: string | undefined,
     ctx: UseCaseContext,
     stepId?: string,
-    followUp?: FollowUpCreation
+    followUp?: FollowUpCreation,
+    existing?: TransactionContext
   ) {
-    const initial = await this.authorize(ctx);
+    const initial = await this.authorize(ctx, existing);
     if (!key || key.length > 160 || !/^[\w-]+$/.test(key)) {
       throw new BadRequestException("A valid Idempotency-Key is required");
     }
@@ -223,7 +224,7 @@ export class EmployeeTasksUseCase {
     const commandKey = createHash("sha256")
       .update(JSON.stringify([ctx.userId, key]))
       .digest("hex");
-    return this.repo.transaction(initial.scope, async (tx) => {
+    const execute = async (tx: TransactionContext) => {
       // Coordinate assignment with People archival/link changes before checking the current owner.
       await this.staff.lock(initial.scope, tx);
       const auth = await this.authorize(ctx, tx);
@@ -326,6 +327,7 @@ export class EmployeeTasksUseCase {
       }
       await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, taskId: next.id }, tx);
       return this.projection(auth.scope, next, tx);
-    });
+    };
+    return this.repo.transaction(initial.scope, execute, existing);
   }
 }

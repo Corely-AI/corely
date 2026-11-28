@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import type { OpenBukAgendaQuery, OpenBukAppointment, OpenBukStudio } from "@corely/contracts";
 import { useLanguage } from "../../shared/i18n";
 import { Field, Loading, localDay, time } from "../../shared/ui";
@@ -10,12 +11,26 @@ export function StudioAgenda({
   workspaceId,
   studio,
   showWeek,
+  reviewsEnabled = false,
 }: {
   workspaceId: string;
   studio: OpenBukStudio;
   showWeek: boolean;
+  reviewsEnabled?: boolean;
 }) {
   const { t, locale } = useLanguage();
+  const confirmationLabel =
+    locale === "de"
+      ? "Buchungsbestätigung entwerfen"
+      : locale === "vi"
+        ? "Soạn xác nhận đặt lịch"
+        : "Draft booking confirmation";
+  const reviewLabel =
+    locale === "de"
+      ? "Betriebsplan prüfen"
+      : locale === "vi"
+        ? "Xem kế hoạch vận hành"
+        : "Review a plan";
   const [query, setQuery] = useState<OpenBukAgendaQuery>(() => ({
     day: localDay(studio.timezone),
     span: showWeek ? "week" : "day",
@@ -98,6 +113,28 @@ export function StudioAgenda({
                 {t("agendaMove")}
               </button>
             )}
+            {movable && reviewsEnabled && (
+              <Link
+                className="button secondary small"
+                to={
+                  "/openbuk/app/reviews/new?" +
+                  new URLSearchParams({ booking: appointment.id, workspaceId })
+                }
+              >
+                {reviewLabel}
+              </Link>
+            )}
+            {movable && reviewsEnabled && (
+              <Link
+                className="button secondary small"
+                to={
+                  "/openbuk/app/reviews/new?" +
+                  new URLSearchParams({ confirmation: appointment.id, workspaceId })
+                }
+              >
+                {confirmationLabel}
+              </Link>
+            )}
             {cancellable && (
               <button
                 className="button secondary small"
@@ -115,6 +152,14 @@ export function StudioAgenda({
   const step = query.span === "week" ? 7 : 1;
   return (
     <section className="studio-agenda" aria-label={t("calendar")}>
+      {reviewsEnabled ? (
+        <Link
+          className="button secondary small"
+          to={"/openbuk/app/reviews/new?" + new URLSearchParams({ workspaceId })}
+        >
+          {reviewLabel}
+        </Link>
+      ) : null}
       <div className="agenda-toolbar">
         <div className="agenda-range">
           <button
@@ -184,8 +229,9 @@ export function StudioAgenda({
               value={selection.serviceId}
               onChange={(e) => {
                 const next = data.services.find((item) => item.serviceId === e.target.value);
-                if (next?.staff[0])
-                  {setQuery({ ...query, serviceId: next.serviceId, staffId: next.staff[0].staffId });}
+                if (next?.staff[0]) {
+                  setQuery({ ...query, serviceId: next.serviceId, staffId: next.staff[0].staffId });
+                }
               }}
             >
               {data.services.map((item) => (

@@ -363,6 +363,7 @@ export default function StudioPage({
             </div>
             {workspace && (
               <StudioAgenda
+                reviewsEnabled={embedded}
                 key={`${workspace.id}:${location.pathname}`}
                 workspaceId={workspace.id}
                 studio={studio}

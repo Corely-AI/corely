@@ -58,17 +58,22 @@ export function BookingManagementPage({
       signal: abort.signal,
     })
       .then((response) => {
-        if (!abort.signal.aborted)
-          {setView({ state: "ready", appointment: OpenBukManageDetailsSchema.parse(response) });}
+        if (!abort.signal.aborted) {
+          setView({ state: "ready", appointment: OpenBukManageDetailsSchema.parse(response) });
+        }
       })
       .catch(() => {
-        if (!abort.signal.aborted) {setView({ state: "unavailable" });}
+        if (!abort.signal.aborted) {
+          setView({ state: "unavailable" });
+        }
       });
     return () => abort.abort();
   }, [studioSlug, token]);
 
   useEffect(() => {
-    if (mode !== "move" || !day) {return;}
+    if (mode !== "move" || !day) {
+      return;
+    }
     const abort = new AbortController();
     setSlotLoading(true);
     setSlots([]);
@@ -77,20 +82,27 @@ export function BookingManagementPage({
       signal: abort.signal,
     })
       .then((response) => {
-        if (!abort.signal.aborted) {setSlots(response.slots);}
+        if (!abort.signal.aborted) {
+          setSlots(response.slots);
+        }
       })
       .catch(() => {
-        if (!abort.signal.aborted) {setError("requestFailed");}
+        if (!abort.signal.aborted) {
+          setError("requestFailed");
+        }
       })
       .finally(() => {
-        if (!abort.signal.aborted) {setSlotLoading(false);}
+        if (!abort.signal.aborted) {
+          setSlotLoading(false);
+        }
       });
     return () => abort.abort();
   }, [mode, day, studioSlug, token, revision]);
 
   function change(next: Mode) {
-    if (next === "move" && appointment)
-      {setDay(studioDay(appointment.startAt, appointment.timezone));}
+    if (next === "move" && appointment) {
+      setDay(studioDay(appointment.startAt, appointment.timezone));
+    }
     setError(null);
     setSelected("");
     setMoved(false);
@@ -102,16 +114,18 @@ export function BookingManagementPage({
       !appointment ||
       pending ||
       (action === "move" && !slots.some(({ startAt }) => startAt === selected))
-    )
-      {return;}
+    ) {
+      return;
+    }
     const body = {
       token,
       version: appointment.version,
       ...(action === "move" ? { startAt: selected } : {}),
     };
     const command = `${action}:${JSON.stringify(body)}`;
-    if (attempt.current?.command !== command)
-      {attempt.current = { command, key: crypto.randomUUID() };}
+    if (attempt.current?.command !== command) {
+      attempt.current = { command, key: crypto.randomUUID() };
+    }
     setPending(true);
     setError(null);
     try {
