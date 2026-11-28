@@ -34,10 +34,14 @@ export class RescheduleBookingUseCase {
   ) {}
 
   async execute(input: RescheduleBookingInput, ctx: UseCaseContext) {
-    return this.uow.withinTransaction((tx) => this.apply(input, ctx, tx));
+    return this.uow.withinTransaction((tx) => this.executeInTransaction(input, ctx, tx));
   }
 
-  private async apply(input: RescheduleBookingInput, ctx: UseCaseContext, tx: TransactionContext) {
+  async executeInTransaction(
+    input: RescheduleBookingInput,
+    ctx: UseCaseContext,
+    tx: TransactionContext
+  ) {
     const { tenantId } = ctx;
     const { bookingId, startAt, endAt, idempotencyKey } = input;
     if (!tenantId || !(startAt < endAt)) {

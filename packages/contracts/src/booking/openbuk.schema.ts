@@ -211,6 +211,8 @@ export const OpenBukBookSchema = z
   })
   .strict();
 export type OpenBukBook = z.infer<typeof OpenBukBookSchema>;
+export const OpenBukManagerBookSchema = OpenBukBookSchema.omit({ consentAccepted: true });
+export type OpenBukManagerBook = z.infer<typeof OpenBukManagerBookSchema>;
 export const OpenBukReceiptSchema = OpenBukSlotSchema.extend({
   reference: z.string(),
   serviceName: z.string(),
@@ -224,5 +226,63 @@ export const OpenBukAppointmentSchema = OpenBukReceiptSchema.extend({
   id: z.string(),
   customerName: z.string(),
   status: z.string(),
+  version: z.string().datetime().optional(),
+  serviceId: OpenBukIdSchema.nullable().optional(),
+  staffId: OpenBukIdSchema.nullable().optional(),
 });
 export type OpenBukAppointment = z.infer<typeof OpenBukAppointmentSchema>;
+
+export const OpenBukAgendaQuerySchema = z
+  .object({
+    day: OpenBukDaySchema,
+    span: z.enum(["day", "week"]).default("day"),
+    serviceId: OpenBukIdSchema.optional(),
+    staffId: OpenBukIdSchema.optional(),
+  })
+  .refine(
+    (query) => Boolean(query.serviceId) === Boolean(query.staffId),
+    "Select a service and staff member"
+  );
+export type OpenBukAgendaQuery = z.infer<typeof OpenBukAgendaQuerySchema>;
+export const OpenBukAgendaSchema = z.object({
+  timezone: z.string(),
+  services: z.array(OpenBukPublicServiceSchema),
+  selection: z.object({ serviceId: OpenBukIdSchema, staffId: OpenBukIdSchema }).nullable(),
+  days: z.array(
+    z.object({
+      day: OpenBukDaySchema,
+      appointments: z.array(OpenBukAppointmentSchema),
+      slots: z.array(OpenBukSlotSchema),
+    })
+  ),
+});
+export type OpenBukAgenda = z.infer<typeof OpenBukAgendaSchema>;
+
+export const OpenBukManagerCancelSchema = z
+  .object({ bookingId: OpenBukIdSchema, version: z.string().datetime() })
+  .strict();
+export type OpenBukManagerCancel = z.infer<typeof OpenBukManagerCancelSchema>;
+
+export const OpenBukReplacementInputSchema = z
+  .object({
+    bookingId: z.string().uuid(),
+    startAt: z.string().datetime({ offset: true }),
+  })
+  .strict();
+export type OpenBukReplacementInput = z.infer<typeof OpenBukReplacementInputSchema>;
+
+const OpenBukReplacementTimeSchema = OpenBukSlotSchema.extend({
+  resourceId: z.string(),
+  resourceName: z.string(),
+}).strict();
+export const OpenBukReplacementSchema = z
+  .object({
+    bookingId: z.string().uuid(),
+    reference: z.string(),
+    version: z.string().datetime(),
+    timezone: z.string(),
+    current: OpenBukReplacementTimeSchema,
+    replacement: OpenBukReplacementTimeSchema,
+  })
+  .strict();
+export type OpenBukReplacement = z.infer<typeof OpenBukReplacementSchema>;
