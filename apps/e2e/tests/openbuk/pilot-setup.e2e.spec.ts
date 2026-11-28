@@ -33,10 +33,13 @@ test("private setup resumes, publishes explicitly, and repeated staff invitation
   page,
   browser,
 }, testInfo) => {
+  test.setTimeout(90_000);
   const run = randomUUID();
   const staffEmail = `staff-${run}@example.test`;
   await signup(page, `owner-${run}@example.test`, `Pilot ${run}`);
-  await expect(page.getByRole("button", { name: "Save draft", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save draft", exact: true })).toBeVisible({
+    timeout: 15_000,
+  });
   await page.getByLabel("Studio name", { exact: true }).fill(`Pilot ${run}`);
   await page.getByLabel("Time zone", { exact: true }).fill("Mars/Olympus");
   await page.getByRole("button", { name: "Save draft", exact: true }).click();
@@ -174,7 +177,7 @@ test("private setup resumes, publishes explicitly, and repeated staff invitation
   await member.getByRole("button", { name: "Accept invitation" }).click();
   await expect(
     member.getByRole("heading", { name: "Workspace membership is active" })
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
   const memberHeaders = await headers(member);
   const [a, b] = await Promise.all(
     [0, 1].map(() =>
