@@ -25,7 +25,7 @@ availability exceptions ticket [#327](https://github.com/Corely-AI/corely/issues
 Eleven targeted tests cover fixed source and briefing fixtures, role-specific projection,
 expired and partial records, changed access, note content, provider failure and feedback.
 Eleven Task lifecycle tests passed on a migrated PostgreSQL database, including scoped
-lookup by task ID. API and Backoffice builds passed.
+lookup by task ID. API typecheck and API and Backoffice builds passed.
 
 ## UI/UX evidence
 

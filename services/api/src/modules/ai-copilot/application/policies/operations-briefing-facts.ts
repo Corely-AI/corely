@@ -17,6 +17,10 @@ function sourceStatus(source: Source, now: number) {
   return source.status;
 }
 
+function freshItems<T>(source: Source & { items: T[] }, now: Date): T[] {
+  return sourceStatus(source, now.getTime()) === "fresh" ? source.items : [];
+}
+
 const sourceNames = ["appointments", "tasks", "decisions", "exceptions"] as const;
 
 export function briefingSnapshot(today: OperationsToday, now: Date) {
@@ -37,14 +41,13 @@ export function briefingFacts(
   now: Date,
   limit = MAX_CANDIDATES
 ): OperationsBriefingEntry[] {
-  const fresh = (source: Source) => sourceStatus(source, now.getTime()) === "fresh";
   const appointmentHref = (id: string) => `/booking/bookings/${encodeURIComponent(id)}`;
   const relevantTime = (stamp: string) => Date.parse(stamp) >= Date.parse(today.evaluatedAt);
   const byTime = (left: OperationsBriefingEntry, right: OperationsBriefingEntry) =>
     Date.parse(left.at) - Date.parse(right.at) || left.href.localeCompare(right.href);
   const coverage: OperationsBriefingEntry[] =
-    fresh(today.exceptions) && fresh(today.appointments)
-      ? today.exceptions.items
+    sourceStatus(today.appointments, now.getTime()) === "fresh"
+      ? freshItems(today.exceptions, now)
           .filter((item) => relevantTime(item.startAt))
           .map((item) => ({
             kind: "coverage",
@@ -53,38 +56,32 @@ export function briefingFacts(
           }))
       : [];
   const coverageLinks = new Set(coverage.map((item) => item.href));
-  const appointments: OperationsBriefingEntry[] = fresh(today.appointments)
-    ? today.appointments.items
-        .filter(
-          (item) =>
-            item.status === "CONFIRMED" &&
-            relevantTime(item.startAt) &&
-            !coverageLinks.has(appointmentHref(item.id))
-        )
-        .map((item) => ({
-          kind: "appointment",
-          at: item.startAt,
-          href: appointmentHref(item.id),
-        }))
-    : [];
-  const tasks: OperationsBriefingEntry[] = fresh(today.tasks)
-    ? today.tasks.items
-        .filter((item) => item.status === "OPEN")
-        .map((item) => ({
-          kind: "task",
-          at: item.dueAt,
-          href: `/tasks?task=${encodeURIComponent(item.id)}`,
-        }))
-    : [];
-  const decisions: OperationsBriefingEntry[] = fresh(today.decisions)
-    ? today.decisions.items
-        .filter((item) => ["SUBMITTED", "RETURNED", "FAILED_APPLICATION"].includes(item.status))
-        .map((item) => ({
-          kind: "decision",
-          at: item.updatedAt,
-          href: `/requests/${encodeURIComponent(item.id)}`,
-        }))
-    : [];
+  const appointments: OperationsBriefingEntry[] = freshItems(today.appointments, now)
+    .filter(
+      (item) =>
+        item.status === "CONFIRMED" &&
+        relevantTime(item.startAt) &&
+        !coverageLinks.has(appointmentHref(item.id))
+    )
+    .map((item) => ({
+      kind: "appointment",
+      at: item.startAt,
+      href: appointmentHref(item.id),
+    }));
+  const tasks: OperationsBriefingEntry[] = freshItems(today.tasks, now)
+    .filter((item) => item.status === "OPEN")
+    .map((item) => ({
+      kind: "task",
+      at: item.dueAt,
+      href: `/tasks?task=${encodeURIComponent(item.id)}`,
+    }));
+  const decisions: OperationsBriefingEntry[] = freshItems(today.decisions, now)
+    .filter((item) => ["SUBMITTED", "RETURNED", "FAILED_APPLICATION"].includes(item.status))
+    .map((item) => ({
+      kind: "decision",
+      at: item.updatedAt,
+      href: `/requests/${encodeURIComponent(item.id)}`,
+    }));
   return [coverage, decisions, tasks, appointments]
     .flatMap((group) => group.sort(byTime))
     .slice(0, limit);
