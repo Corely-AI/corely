@@ -216,7 +216,7 @@ function fixture() {
 }
 
 describe("Operational package configuration integration (in-memory persistence)", () => {
-  it("composes the selected existing client without finance and names undelivered experiences honestly", async () => {
+  it("composes the selected client without finance and distinguishes unavailable experiences", async () => {
     const f = fixture();
     const result = await f.config();
     expect(WorkspaceConfigSchema.safeParse(result).success).toBe(true);
@@ -243,7 +243,8 @@ describe("Operational package configuration integration (in-memory persistence)"
       {
         id: "decisions",
         label: "Decisions",
-        availability: { status: "unavailable", reason: "not-implemented" },
+        appId: "requests",
+        availability: { status: "unavailable", reason: "app-disabled" },
       },
       {
         id: "knowledge",
