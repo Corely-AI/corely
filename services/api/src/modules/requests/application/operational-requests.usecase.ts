@@ -24,7 +24,6 @@ import {
   type AddOperationalRequestAttachment,
   type OperationalRequest,
   type OperationalRequestDraft,
-  type OperationalRequestApplication,
   type OperationalRequestReviewEntry,
   type OperationalRequestsPage,
 } from "@corely/contracts";

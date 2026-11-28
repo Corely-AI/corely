@@ -22,4 +22,13 @@ requests record decisions. The decision inbox and reminders belong to #311.
 
 ## Verification
 
-See the linked draft PR for verified checks and browser evidence.
+Five disposable PostgreSQL integration tests and six People and Approvals unit
+tests passed. The API and web builds and both scoped typechecks passed. The browser
+used synthetic fixtures in a locally built Backoffice to check reviewer-only
+actions, validation, Escape cancellation, separate approval and application, a
+failed handoff and successful retry, and requester history. German and Vietnamese
+status labels were checked. The browser fixtures simulate the API, and the
+PostgreSQL tests separately exercise real application writes and event persistence.
+
+- [Approved and pending in People at 1280 × 900](310-assets/approved-pending-desktop.jpg)
+- [Failed application and retry at 390 × 844](310-assets/apply-retry-mobile.jpg)
