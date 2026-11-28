@@ -109,8 +109,19 @@ test("a manager configures staff eligibility and archives a service with an upco
     await slot.click();
     await guest.getByLabel("Full name", { exact: true }).fill("Test guest");
     await guest.getByLabel("Email", { exact: true }).fill("guest@example.test");
-    await guest.getByRole("checkbox").check();
+    await guest.locator('input[name="consentAccepted"]').check();
+    await expect(
+      guest.getByRole("checkbox", {
+        name: "Email me a booking confirmation (optional)",
+      })
+    ).not.toBeChecked();
+    const submittedBooking = guest.waitForRequest(
+      (request) => request.method() === "POST" && request.url().endsWith("/public/openbuk/bookings")
+    );
     await guest.getByRole("button", { name: "Confirm booking" }).click();
+    expect((await submittedBooking).postDataJSON()).not.toHaveProperty(
+      "confirmationEmailRequested"
+    );
     await expect(guest.getByRole("heading", { name: "You’re booked in." })).toBeVisible();
 
     await page.reload();

@@ -8,6 +8,7 @@ import {
 import { createStaffLifecycleEventHandlers } from "../tasks/staff-lifecycle-recorded.handler";
 import { createChecklistEventHandlers } from "../tasks/recurring-checklist-recorded.handler";
 import { createEmployeeTaskEventHandlers } from "../tasks/employee-task-recorded.handler";
+import { createProcedurePublicationHandlers } from "../knowledge/procedure-publication.handler";
 import { SignModule } from "../../../../sign/public";
 import {
   SignVerifiedHandler,
@@ -37,6 +38,9 @@ import {
   type ObjectStoragePort,
 } from "@corely/kernel";
 import { NotificationsModule } from "../notifications/notifications.module";
+import { NotificationsModule as NotificationApplicationModule } from "../../../../notifications/public/appointment-delivery";
+import { AppointmentDeliveryHandler } from "../booking/appointment-delivery.handler";
+import { OpenBukBookingCreatedHandler } from "../booking/openbuk-booking-created.handler";
 import { OutboxPollerService } from "./outbox-poller.service";
 
 import { CashEntryCreatedHandler } from "../accounting/handlers/cash-entry-created.handler";
@@ -84,6 +88,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     ClassesWorkerModule,
     DirectoryWorkerModule,
     NotificationsModule,
+    NotificationApplicationModule,
     CoachingEngagementsModule,
     PartyModule,
     DocumentsModule,
@@ -93,6 +98,8 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
   ],
   providers: [
     IssueClientUpdateHandler,
+    AppointmentDeliveryHandler,
+    OpenBukBookingCreatedHandler,
     SsoEmailCodeRequestedHandler,
     SignVerifiedHandler,
     SignCollectedHandler,
@@ -169,13 +176,18 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         invite: SignInvitationHandler,
         coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler,
         clientUpdateHandler: IssueClientUpdateHandler,
-        ssoEmailHandler: SsoEmailCodeRequestedHandler
+        ssoEmailHandler: SsoEmailCodeRequestedHandler,
+        appointmentDeliveryHandler: AppointmentDeliveryHandler,
+        openBukBookingCreatedHandler: OpenBukBookingCreatedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           ssoEmailHandler,
           clientUpdateHandler,
+          appointmentDeliveryHandler,
+          openBukBookingCreatedHandler,
           ...createSsoRecordedEventHandlers(),
           ...createEmployeeTaskEventHandlers(),
+          ...createProcedurePublicationHandlers(),
           ...createChecklistEventHandlers(),
           ...createStaffLifecycleEventHandlers(),
           verified,
@@ -230,6 +242,8 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         CoachingExportBundleRequestedHandler,
         IssueClientUpdateHandler,
         SsoEmailCodeRequestedHandler,
+        AppointmentDeliveryHandler,
+        OpenBukBookingCreatedHandler,
       ],
     },
   ],

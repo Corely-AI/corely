@@ -19,14 +19,14 @@ import type {
   OpenBukSetupDraft,
   OpenBukSetupDraftResponse,
   OpenBukStudioResponse,
-  OpenBukAppointment,
 } from "@corely/contracts";
 import { api, auth, storage } from "../../shared/api";
 import { bookingLink } from "../../shared/brand";
 import { LanguageSwitch, useLanguage } from "../../shared/i18n";
-import { Logo, Field, Loading, ErrorMessage, localDay, time } from "../../shared/ui";
+import { Logo, Loading, ErrorMessage } from "../../shared/ui";
 import { StaffInvitations } from "./staff-invitations";
 import { SetupForm } from "./setup-form";
+import { StudioAgenda } from "./studio-agenda";
 import { StudioScheduleLoading } from "./studio-schedule-loading";
 import { getOperationalLinks, getStudioSection } from "./operational-navigation";
 import { useOperationalPackage } from "./use-operational-package";
@@ -73,7 +73,6 @@ export default function StudioPage({
   const sectionLink = links.find((link) => link.id === section);
   const canOpenSection = Boolean(sectionLink);
   const [workspaceAttempt, setWorkspaceAttempt] = useState(0);
-  const [scheduleAttempt, setScheduleAttempt] = useState(0);
   const staffClient = useMemo(
     () => createStaffJourneyClient(api, workspace?.id ?? ""),
     [workspace?.id]
@@ -89,10 +88,6 @@ export default function StudioPage({
   const [loading, setLoading] = useState(true);
   const [needsLogin, setNeedsLogin] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [scheduleFailed, setScheduleFailed] = useState(false);
-  const [day, setDay] = useState("");
-  const [appointments, setAppointments] = useState<OpenBukAppointment[]>([]);
-  const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
     let active = true;
@@ -150,7 +145,6 @@ export default function StudioPage({
             setDraft(setup?.draft ?? null);
             setCanManage(data.canManage);
             setStudio(data.studio);
-            setDay(localDay(data.studio?.timezone ?? "UTC"));
           }
         }
       } catch {
@@ -169,44 +163,6 @@ export default function StudioPage({
       controller.abort();
     };
   }, [bookingRoute, workspaceAttempt]);
-  useEffect(() => {
-    if (
-      !workspace?.id ||
-      !studio ||
-      !day ||
-      !canManage ||
-      !canOpenSection ||
-      section !== "schedule"
-    ) {
-      return;
-    }
-    const controller = new AbortController();
-    setBusy(true);
-    setScheduleFailed(false);
-    setAppointments([]);
-    api
-      .request<{ appointments: OpenBukAppointment[] }>(
-        `/openbuk/bookings?day=${day}`,
-        { headers: { "X-Workspace-Id": workspace.id } },
-        { workspaceScope: "none", signal: controller.signal }
-      )
-      .then((r) => {
-        if (!controller.signal.aborted) {
-          setAppointments(r.appointments);
-        }
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) {
-          setScheduleFailed(true);
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setBusy(false);
-        }
-      });
-    return () => controller.abort();
-  }, [studio, day, canManage, canOpenSection, section, workspace?.id, scheduleAttempt]);
   const setup =
     !studio ||
     !workspace?.publicEnabled ||
@@ -363,7 +319,6 @@ export default function StudioPage({
               onSaved={(s) => {
                 setDraft(null);
                 setStudio(s);
-                setDay(localDay(s.timezone));
                 retryPackage();
                 navigate(`${prefix}/app`);
               }}
@@ -378,17 +333,6 @@ export default function StudioPage({
                 <h1>{t(location.pathname.endsWith("/calendar") ? "calendar" : "today")}</h1>
                 <p className="muted">{t("scheduleIntro")}</p>
               </div>
-              <Field label={t("date")}>
-                <input
-                  type="date"
-                  value={day}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setDay(e.target.value);
-                    }
-                  }}
-                />
-              </Field>
             </div>
             <div className="live-card">
               <div>
@@ -417,60 +361,14 @@ export default function StudioPage({
                 </a>
               </div>
             </div>
-            <section className="schedule">
-              <div className="schedule-header">
-                <h2>{t("booked")}</h2>
-                {!busy && !scheduleFailed && <span className="count">{appointments.length}</span>}
-                <span className="muted">{studio.timezone}</span>
-              </div>
-              {busy ? (
-                <StudioScheduleLoading />
-              ) : scheduleFailed ? (
-                <>
-                  <ErrorMessage />
-                  <button
-                    className="button secondary"
-                    onClick={() => setScheduleAttempt((count) => count + 1)}
-                  >
-                    {t("retry")}
-                  </button>
-                </>
-              ) : appointments.length === 0 ? (
-                <div className="empty">
-                  <span aria-hidden="true">✳</span>
-                  <h2>{t("empty")}</h2>
-                  <p className="muted">{t("emptyBody")}</p>
-                </div>
-              ) : (
-                <div className="appointments">
-                  {appointments.map((a) => (
-                    <article key={a.id} className="appointment">
-                      <div className="appointment-time">
-                        <strong>{time(a.startAt, a.timezone, locale)}</strong>
-                        <small>{time(a.endAt, a.timezone, locale)}</small>
-                      </div>
-                      <div className="appointment-person">
-                        <h3>{a.customerName}</h3>
-                        <p>
-                          {a.serviceName} · {a.staffName}
-                        </p>
-                      </div>
-                      <span className="badge">
-                        {t(
-                          a.status === "CANCELLED"
-                            ? "cancelled"
-                            : a.status === "NO_SHOW"
-                              ? "noShow"
-                              : a.status === "COMPLETED"
-                                ? "completed"
-                                : "confirmed"
-                        )}
-                      </span>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
+            {workspace && (
+              <StudioAgenda
+                key={`${workspace.id}:${location.pathname}`}
+                workspaceId={workspace.id}
+                studio={studio}
+                showWeek={location.pathname.endsWith("/calendar")}
+              />
+            )}
           </>
         )}
       </main>

@@ -2,12 +2,13 @@ import { ConflictException, Injectable, NotFoundException } from "@nestjs/common
 import { PrismaService, PrismaExtKvAdapter, getPrismaClient } from "@corely/data";
 import {
   OpenBukReceiptSchema,
+  OpenBukLocaleSchema,
   OpenBukStudioSchema,
   OpenBukSetupDraftSchema,
   type OpenBukSetupDraft,
   type OpenBukSetup,
   type OpenBukStudio,
-  type OpenBukBook,
+  type OpenBukManagerBook,
   type OpenBukReceipt,
   type OpenBukPublicService,
   type OpenBukTeamUpdate,
@@ -15,6 +16,7 @@ import {
 import type { TransactionContext } from "@corely/kernel";
 
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import type {
   OpenBukRepositoryPort,
   StudioScope,
@@ -22,8 +24,13 @@ import type {
   OpenBukSelection,
   OpenBukTeamConfiguration,
 } from "../../application/ports/openbuk-repository.port";
-import { studioDate } from "../../domain/openbuk-availability";
 import { findTeamCommitments, writeTeamRecords } from "./openbuk-team-records";
+import { listStudioAppointments, snapshotKey } from "./openbuk-appointment-records";
+
+const ConfirmationSnapshotSchema = OpenBukReceiptSchema.extend({
+  locale: OpenBukLocaleSchema.optional(),
+  confirmationEmailRequested: z.literal(true).optional(),
+});
 
 const extensionScope = (scope: StudioScope) => ({
   tenantId: scope.tenantId,
@@ -34,8 +41,6 @@ const settingsKey = (scope: StudioScope, key = "openbuk-studio") => ({
   ...extensionScope(scope),
   key,
 });
-const snapshotKey = (scope: StudioScope, bookingId: string) =>
-  settingsKey(scope, `openbuk-appointment:${bookingId}`);
 
 @Injectable()
 export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
@@ -363,7 +368,8 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     from: Date,
     to: Date,
     now: Date,
-    tx?: TransactionContext
+    tx?: TransactionContext,
+    excludeBookingId?: string
   ) {
     const client = getPrismaClient(this.prisma, tx);
     const [allocations, holds] = await Promise.all([
@@ -371,6 +377,7 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
         where: {
           tenantId: scope.tenantId,
           resourceId: staffId,
+          ...(excludeBookingId ? { bookingId: { not: excludeBookingId } } : {}),
           startAt: { lt: to },
           endAt: { gt: from },
           booking: { status: { in: ["HOLD", "CONFIRMED"] } },
@@ -426,9 +433,11 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
   async create(
     scope: StudioScope,
     studio: OpenBukStudio,
-    input: OpenBukBook,
+    input: OpenBukManagerBook,
     receipt: OpenBukReceipt,
-    tx: TransactionContext
+    tx: TransactionContext,
+    createdByUserId?: string,
+    confirmationEmailRequested?: boolean
   ) {
     const id = randomUUID();
     await getPrismaClient(this.prisma, tx).booking.create({
@@ -442,6 +451,7 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
         serviceOfferingId: studio.serviceId,
         bookedByName: input.customer.name,
         bookedByEmail: input.customer.email,
+        createdByUserId,
         allocations: {
           create: {
             tenantId: scope.tenantId,
@@ -453,7 +463,19 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
         },
       },
     });
-    await this.kv.set({ ...snapshotKey(scope, id), value: receipt }, tx);
+    await this.kv.set(
+      {
+        ...snapshotKey(scope, id),
+        value: {
+          ...receipt,
+          locale: input.locale ?? studio.locale,
+          ...(!createdByUserId && confirmationEmailRequested
+            ? { confirmationEmailRequested: true }
+            : {}),
+        },
+      },
+      tx
+    );
     return id;
   }
 
@@ -462,38 +484,11 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     if (!studio) {
       return [];
     }
-    const midnight = Date.parse(`${day}T00:00:00Z`);
-    const rows = await this.prisma.booking.findMany({
-      where: {
-        ...scope,
-        startAt: { gte: new Date(midnight - 14 * 3600000), lt: new Date(midnight + 38 * 3600000) },
-      },
-      include: { serviceOffering: true, allocations: { include: { resource: true } } },
-      orderBy: { startAt: "asc" },
-    });
-    const appointments = rows.filter((row) => studioDate(row.startAt, studio.timezone) === day);
-    const snapshots = await this.kv.list({
-      ...extensionScope(scope),
-      keys: appointments.map((row) => snapshotKey(scope, row.id).key),
-    });
-    const receiptByKey = new Map(
-      snapshots.map(({ key, value }) => [key, OpenBukReceiptSchema.parse(value)])
-    );
-    return appointments.map((row) => {
-      const snapshot = receiptByKey.get(snapshotKey(scope, row.id).key);
-      return {
-        id: row.id,
-        reference: row.referenceNumber ?? row.id,
-        status: row.status,
-        customerName: row.bookedByName ?? "",
-        startAt: row.startAt.toISOString(),
-        endAt: row.endAt.toISOString(),
-        serviceName: snapshot?.serviceName ?? row.serviceOffering?.name ?? "",
-        staffName: snapshot?.staffName ?? row.allocations[0]?.resource.name ?? "",
-        priceCents: snapshot?.priceCents ?? row.serviceOffering?.priceCents ?? 0,
-        currency: snapshot?.currency ?? row.serviceOffering?.currency ?? studio.currency,
-        timezone: snapshot?.timezone ?? studio.timezone,
-      };
-    });
+    return listStudioAppointments(this.prisma, this.kv, scope, studio, day);
+  }
+
+  async snapshot(scope: StudioScope, bookingId: string, tx?: TransactionContext) {
+    const record = await this.kv.get(snapshotKey(scope, bookingId), tx);
+    return record ? ConfirmationSnapshotSchema.parse(record.value) : null;
   }
 }

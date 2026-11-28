@@ -19,16 +19,27 @@ import {
   OpenBukAvailabilityQuerySchema,
   OpenBukDaySchema,
   OpenBukTeamUpdateSchema,
+  OpenBukReplacementInputSchema,
+  OpenBukReplacementSchema,
+  OpenBukAgendaQuerySchema,
+  OpenBukManagerBookSchema,
+  OpenBukManagerCancelSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "../../identity/adapters/http/auth.guard";
-import { buildUseCaseContext } from "../../../shared/http/usecase-mappers";
+import { buildUseCaseContext, resolveIdempotencyKey } from "../../../shared/http/usecase-mappers";
 import { PublicWorkspaceRoute } from "../../../shared/public";
 import { OpenBukStudioUseCase } from "../application/use-cases/openbuk-studio.usecase";
+import { OpenBukAppointmentChangeUseCase } from "../application/use-cases/openbuk-appointment-change.usecase";
+import { OpenBukAgendaCommandsUseCase } from "../application/use-cases/openbuk-agenda-commands.usecase";
 
 @Controller("openbuk")
 @UseGuards(AuthGuard)
 export class OpenBukAdminController {
-  constructor(private readonly app: OpenBukStudioUseCase) {}
+  constructor(
+    private readonly app: OpenBukStudioUseCase,
+    private readonly changes: OpenBukAppointmentChangeUseCase,
+    private readonly agendaCommands: OpenBukAgendaCommandsUseCase
+  ) {}
   @Get("studio")
   @Header("Cache-Control", "no-store")
   studio(@Req() req: Request) {
@@ -65,6 +76,45 @@ export class OpenBukAdminController {
   @Header("Cache-Control", "no-store")
   saveTeam(@Body() body: unknown, @Req() req: Request) {
     return this.app.saveTeam(OpenBukTeamUpdateSchema.parse(body), buildUseCaseContext(req));
+  }
+  @Post("booking-changes/preview")
+  @Header("Cache-Control", "no-store")
+  previewChange(@Body() body: unknown, @Req() req: Request) {
+    return this.changes.preview(
+      OpenBukReplacementInputSchema.parse(body),
+      buildUseCaseContext(req)
+    );
+  }
+  @Get("agenda")
+  @Header("Cache-Control", "no-store")
+  agenda(@Query() query: Record<string, unknown>, @Req() req: Request) {
+    return this.app.agenda(OpenBukAgendaQuerySchema.parse(query), buildUseCaseContext(req));
+  }
+  @Post("agenda/bookings")
+  @Header("Cache-Control", "no-store")
+  book(@Body() body: unknown, @Req() req: Request) {
+    return this.app.bookForStudio(
+      OpenBukManagerBookSchema.parse(body),
+      resolveIdempotencyKey(req) ?? "",
+      buildUseCaseContext(req)
+    );
+  }
+  @Post("booking-changes/apply")
+  @Header("Cache-Control", "no-store")
+  applyChange(@Body() body: unknown, @Req() req: Request) {
+    return this.agendaCommands.move(
+      OpenBukReplacementSchema.parse(body),
+      resolveIdempotencyKey(req) ?? "",
+      buildUseCaseContext(req)
+    );
+  }
+  @Post("agenda/cancellations")
+  @Header("Cache-Control", "no-store")
+  cancel(@Body() body: unknown, @Req() req: Request) {
+    return this.agendaCommands.cancel(
+      OpenBukManagerCancelSchema.parse(body),
+      buildUseCaseContext(req)
+    );
   }
 }
 
