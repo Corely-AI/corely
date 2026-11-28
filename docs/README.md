@@ -70,6 +70,7 @@ Backend specific documentation.
 - [Recurring checklists](./backend/recurring-checklists.md) — one task per assignee/local day, checkbox snapshots and bounded background recurrence
 - [Employee tasks](./backend/employee-tasks.md) — Daily Work lifecycle, ownership, permissions and replay/version guarantees
 - [Operational requests](./backend/operational-requests.md) — private drafts, reviewer routing and supporting documents
+- [Operations Today](platform/operations-today.md) — local-day summaries and source availability.
 - [People staff directory](./backend/people.md) — workspace profiles, identity links and private-field access
 - [Staff availability and Booking](./backend/people-availability.md) — effective working patterns, dated exceptions and Booking constraints
 - [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files
@@ -189,7 +190,6 @@ General developer guides and references.
 - [Platform Menu API](./platform/menu.md)
 - [Resumable pilot setup](./platform/pilot-setup.md) — private OpenBuk checkpoints, explicit publication and manually shared staff invitations
 - [Operational package configuration](./platform/operational-package.md) — existing OpenBuk client, manifest composition and independent access gates
-- [Operations Today](platform/operations-today.md) — local-day summaries and source availability.
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)

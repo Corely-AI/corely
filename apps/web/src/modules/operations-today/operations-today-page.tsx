@@ -3,7 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { OperationsTodaySchema, type OperationsToday } from "@corely/contracts";
-import { Badge, Button, Card, CardContent, CardHeader, LoadingSkeleton } from "@corely/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  LoadingSkeleton,
+  Skeleton,
+} from "@corely/ui";
 import { apiClient } from "@corely/web-shared/lib/api-client";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
@@ -48,7 +56,24 @@ export function OperationsTodayPage() {
 
   let content: ReactNode;
   if (isInitialLoading || (activeWorkspaceId && user?.userId && query.isPending)) {
-    content = <LoadingSkeleton variant="cards" label={copy.loading} />;
+    content = (
+      <LoadingSkeleton label={copy.loading}>
+        <div className="grid gap-4 md:grid-cols-2">
+          {["appointments", "tasks", "decisions", "exceptions"].map((source) => (
+            <Card key={source}>
+              <CardHeader className="space-y-2">
+                <Skeleton className="h-5 w-40 max-w-full" />
+                <Skeleton className="h-3 w-32 max-w-full" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-9 w-28 max-w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </LoadingSkeleton>
+    );
   } else if (!activeWorkspaceId || !user?.userId) {
     content = (
       <p role="alert" className="text-sm">
