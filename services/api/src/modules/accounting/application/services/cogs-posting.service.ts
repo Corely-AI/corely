@@ -12,6 +12,7 @@ import type {
 import type { TransactionContext } from "@corely/kernel";
 import type { CreateJournalEntryInput } from "@corely/contracts";
 import type { UseCaseContext } from "@corely/kernel";
+import { AUTO_COGS_TAG } from "../../domain/stock-cost-tag";
 
 /**
  * Service for automatically posting COGS journal entries when invoices are issued
@@ -32,8 +33,12 @@ export class CogsPostingService {
     @Inject(JOURNAL_ENTRY_REPO_PORT) private readonly journalRepo: JournalEntryRepoPort
   ) {}
 
-  hasInvoicePosting(tenantId: string, invoiceId: string, tx: TransactionContext): Promise<boolean> {
-    return this.journalRepo.existsBySource(tenantId, "Invoice", invoiceId, tx);
+  hasInvoicePosting(
+    tenantId: string,
+    invoiceId: string,
+    tx?: TransactionContext
+  ): Promise<boolean> {
+    return this.journalRepo.hasInvoiceStockCost(tenantId, invoiceId, tx);
   }
 
   /**
@@ -88,8 +93,8 @@ export class CogsPostingService {
       }
 
       // Find COGS and Inventory accounts
-      const cogsAccount = await this.accountRepo.findBySystemKey(tenantId, "COGS");
-      const inventoryAccount = await this.accountRepo.findByCode(tenantId, "1500"); // Standard inventory account
+      const cogsAccount = await this.accountRepo.findBySystemKey(tenantId, "COGS", tx);
+      const inventoryAccount = await this.accountRepo.findByCode(tenantId, "1500", tx); // Standard inventory account
 
       if (!cogsAccount) {
         this.logger.error("COGS account not found - cannot post COGS", { tenantId });
@@ -118,7 +123,7 @@ export class CogsPostingService {
             currency: params.currency,
             lineMemo: "Cost of goods sold",
             reference: params.invoiceNumber,
-            tags: ["auto-cogs", `invoice:${params.invoiceId}`],
+            tags: [AUTO_COGS_TAG, `invoice:${params.invoiceId}`],
           },
           {
             ledgerAccountId: inventoryAccount.id,
@@ -127,13 +132,11 @@ export class CogsPostingService {
             currency: params.currency,
             lineMemo: "Inventory reduction",
             reference: params.invoiceNumber,
-            tags: ["auto-cogs", `invoice:${params.invoiceId}`],
+            tags: [AUTO_COGS_TAG, `invoice:${params.invoiceId}`],
           },
         ],
       };
-      const result = tx
-        ? await this.createJournalEntry.create(input, ctx, tx)
-        : await this.createJournalEntry.execute(input, ctx);
+      const result = await this.createJournalEntry.create(input, ctx, tx);
 
       if (result.ok === false) {
         this.logger.error("Failed to create COGS journal entry", {

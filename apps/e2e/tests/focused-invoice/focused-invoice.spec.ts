@@ -144,6 +144,44 @@ test("creates through existing contracts with deterministic cents and scoped coo
   }
 });
 
+test("saves a fractional invoice as a draft without attempting issuance", async ({
+  page,
+  context,
+}, testInfo) => {
+  const fixture = await invoiceTransport(context);
+  await page.goto("/invoices/new?workspaceId=workspace-a");
+  await page.getByTestId("invoice-customer-select").click({ timeout: 15_000 });
+  await page.getByTestId("invoice-customer-option-customer-1").click();
+  await page.getByTestId("invoice-line-description-0").fill("Design consultation");
+  const quantity = page.getByTestId("invoice-line-qty-0");
+  await quantity.fill("1.5");
+  await page.getByTestId("invoice-line-rate-0").fill("150");
+  const saveDraft = page.getByRole("button", { name: "Save as draft" });
+  await expect(saveDraft).toBeEnabled();
+  const guidance = page.getByText(
+    "You can save fractional quantities in drafts. Use whole quantities before issuing."
+  );
+  await expect(guidance).toBeVisible();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-fractional-entry-desktop.png"),
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await guidance.scrollIntoViewIfNeeded();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-fractional-entry-mobile.png"),
+  });
+  await saveDraft.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/invoices\/created-1\?workspaceId=workspace-a/);
+  await expect(quantity).toHaveValue("1.5");
+  expect(fixture.commands.map(({ path }) => path)).toEqual(["/api/bff/invoices"]);
+  expect(fixture.commands[0].body).toMatchObject({
+    lineItems: [{ description: "Design consultation", qty: 1.5, unitPriceCents: 15000 }],
+  });
+});
+
 test("updates an existing draft and keeps the same resource and workspace", async ({
   page,
   context,

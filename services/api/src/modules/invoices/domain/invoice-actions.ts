@@ -1,5 +1,6 @@
 import type { InvoiceAggregate } from "./invoice.aggregate";
 import type { InvoiceAction } from "./invoice-capabilities.builder";
+import { fractionalQuantityIssueReason } from "./invoice-money";
 
 export function buildInvoiceActions(invoice: InvoiceAggregate): InvoiceAction[] {
   const actions: InvoiceAction[] = [];
@@ -7,15 +8,21 @@ export function buildInvoiceActions(invoice: InvoiceAggregate): InvoiceAction[] 
   const hasDue = totals.dueCents > 0;
 
   switch (status) {
-    case "DRAFT":
+    case "DRAFT": {
+      const hasFractionalQuantity = invoice.lineItems.some(({ qty }) => !Number.isInteger(qty));
+      const issueReason = hasFractionalQuantity
+        ? fractionalQuantityIssueReason
+        : invoice.lineItems.length === 0
+          ? "Add at least one line item"
+          : undefined;
       // Primary: Issue Invoice (via transition, but also as action button)
       actions.push({
         key: "issue",
         label: "Issue Invoice",
         icon: "FileCheck",
         placement: "primary",
-        enabled: invoice.lineItems.length > 0 && Boolean(invoice.customerPartyId),
-        reason: invoice.lineItems.length === 0 ? "Add at least one line item" : undefined,
+        enabled: !issueReason && Boolean(invoice.customerPartyId),
+        reason: issueReason,
         dangerous: false,
         endpoint: { method: "POST", path: `/invoices/${id}/finalize` },
       });
@@ -30,6 +37,7 @@ export function buildInvoiceActions(invoice: InvoiceAggregate): InvoiceAction[] 
         dangerous: false,
       });
       break;
+    }
 
     case "ISSUED":
       // Primary: Record Payment (if has balance due)

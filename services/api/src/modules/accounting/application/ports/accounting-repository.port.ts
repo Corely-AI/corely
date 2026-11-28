@@ -2,20 +2,35 @@ import type { LedgerAccountAggregate } from "../../domain/ledger-account.aggrega
 import type { JournalEntryAggregate } from "../../domain/journal-entry.aggregate";
 import type { AccountingSettingsAggregate } from "../../domain/accounting-settings.aggregate";
 import type { AccountingPeriodAggregate } from "../../domain/accounting-period.aggregate";
-import type { AccountType, EntryStatus, SourceType } from "@corely/contracts";
+import type { AccountType, EntryStatus } from "@corely/contracts";
 import type { TransactionContext } from "@corely/kernel";
 
 // Repository ports for Accounting aggregates
 
 export interface AccountingSettingsRepoPort {
-  findByTenant(tenantId: string): Promise<AccountingSettingsAggregate | null>;
+  findByTenant(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<AccountingSettingsAggregate | null>;
   save(settings: AccountingSettingsAggregate): Promise<void>;
 }
 
 export interface LedgerAccountRepoPort {
-  findById(tenantId: string, accountId: string): Promise<LedgerAccountAggregate | null>;
-  findByCode(tenantId: string, code: string): Promise<LedgerAccountAggregate | null>;
-  findBySystemKey(tenantId: string, systemKey: string): Promise<LedgerAccountAggregate | null>;
+  findById(
+    tenantId: string,
+    accountId: string,
+    tx?: TransactionContext
+  ): Promise<LedgerAccountAggregate | null>;
+  findByCode(
+    tenantId: string,
+    code: string,
+    tx?: TransactionContext
+  ): Promise<LedgerAccountAggregate | null>;
+  findBySystemKey(
+    tenantId: string,
+    systemKey: string,
+    tx?: TransactionContext
+  ): Promise<LedgerAccountAggregate | null>;
   list(
     tenantId: string,
     filters: {
@@ -32,11 +47,10 @@ export interface LedgerAccountRepoPort {
 
 export interface JournalEntryRepoPort {
   findById(tenantId: string, entryId: string): Promise<JournalEntryAggregate | null>;
-  existsBySource(
+  hasInvoiceStockCost(
     tenantId: string,
-    sourceType: SourceType,
-    sourceId: string,
-    tx: TransactionContext
+    invoiceId: string,
+    tx?: TransactionContext
   ): Promise<boolean>;
   list(
     tenantId: string,

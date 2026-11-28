@@ -42,6 +42,7 @@ describe("CreateInvoiceUseCase", () => {
       customerQuery: customers,
       legalEntityQuery: { getIssuerSnapshot: async () => null },
       paymentMethodQuery: { getPaymentMethodSnapshot: async () => null },
+      accounting: { assertCorrectionAllowed: async () => undefined },
     });
   });
 

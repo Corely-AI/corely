@@ -27,6 +27,12 @@ const toPrismaDate = (localDate: LocalDate | null): Date | null =>
 const fromPrismaDate = (value: Date | null | undefined): LocalDate | null =>
   value ? (value.toISOString().slice(0, 10) as LocalDate) : null;
 
+const toPrismaLine = ({ qty, ...line }: InvoiceLine) => ({
+  ...line,
+  qty: Math.ceil(qty),
+  draftQuantity: Number.isInteger(qty) ? null : qty,
+});
+
 @Injectable()
 export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -56,8 +62,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         await client.invoiceLine.deleteMany({
           where: { invoiceId: invoice.id, id: { notIn: invoice.lineItems.map(({ id }) => id) } },
         });
-        for (const { id, description, qty, unitPriceCents } of invoice.lineItems) {
-          const line = { description, qty, unitPriceCents };
+        for (const { id, ...line } of invoice.lineItems.map(toPrismaLine)) {
           await client.invoiceLine.upsert({
             where: { id, invoiceId: invoice.id },
             update: line,
@@ -112,7 +117,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         id: invoice.id,
         tenantId: workspaceId,
         createdAt: invoice.createdAt,
-        lines: { create: invoice.lineItems },
+        lines: { create: invoice.lineItems.map(toPrismaLine) },
       },
     });
   }
@@ -283,7 +288,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       const lines: InvoiceLine[] = row.lines.map((line) => ({
         id: line.id,
         description: line.description,
-        qty: line.qty,
+        qty: line.draftQuantity ?? line.qty,
         unitPriceCents: line.unitPriceCents,
       }));
       return new InvoiceAggregate({
@@ -418,13 +423,19 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     createdAt: Date;
     updatedAt: Date;
     revision: number;
-    lines: Array<{ id: string; description: string; qty: number; unitPriceCents: number }>;
+    lines: Array<{
+      id: string;
+      description: string;
+      qty: number;
+      draftQuantity: number | null;
+      unitPriceCents: number;
+    }>;
     payments: Array<{ id: string; amountCents: number; paidAt: Date; note: string | null }>;
   }) {
     const lineItems: InvoiceLine[] = data.lines.map((line) => ({
       id: line.id,
       description: line.description,
-      qty: line.qty,
+      qty: line.draftQuantity ?? line.qty,
       unitPriceCents: line.unitPriceCents,
     }));
     const payments: InvoicePayment[] = data.payments.map((payment) => ({

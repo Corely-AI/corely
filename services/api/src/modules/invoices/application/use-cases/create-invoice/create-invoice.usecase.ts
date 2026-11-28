@@ -32,6 +32,7 @@ type Deps = {
   customerQuery: CustomerQueryPort;
   legalEntityQuery: LegalEntityQueryPort;
   paymentMethodQuery: PaymentMethodQueryPort;
+  accounting: { assertCorrectionAllowed(tenantId: string, invoiceId: string): Promise<void> };
 };
 
 @RequireTenant()
@@ -79,6 +80,7 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
       ) {
         return err(new ValidationError("Only a canceled, unpaid issued invoice can be corrected."));
       }
+      await this.useCaseDeps.accounting.assertCorrectionAllowed(ctx.tenantId, original.id);
     }
 
     const customer = await this.useCaseDeps.customerQuery.getCustomerBillingSnapshot(

@@ -21,14 +21,18 @@ import {
   accountingPeriodFromPrisma,
   accountingPeriodToPrisma,
 } from "./mappers";
-import type { AccountType, EntryStatus, SourceType } from "@corely/contracts";
+import type { AccountType, EntryStatus } from "@corely/contracts";
+import { AUTO_COGS_TAG } from "../../domain/stock-cost-tag";
 
 @Injectable()
 export class PrismaAccountingSettingsRepository implements AccountingSettingsRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByTenant(tenantId: string): Promise<AccountingSettingsAggregate | null> {
-    const settings = await this.prisma.accountingSettings.findUnique({
+  async findByTenant(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<AccountingSettingsAggregate | null> {
+    const settings = await getPrismaClient(this.prisma, tx).accountingSettings.findUnique({
       where: { tenantId },
     });
     return settings ? accountingSettingsFromPrisma(settings) : null;
@@ -48,15 +52,23 @@ export class PrismaAccountingSettingsRepository implements AccountingSettingsRep
 export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findById(tenantId: string, accountId: string): Promise<LedgerAccountAggregate | null> {
-    const account = await this.prisma.ledgerAccount.findFirst({
+  async findById(
+    tenantId: string,
+    accountId: string,
+    tx?: TransactionContext
+  ): Promise<LedgerAccountAggregate | null> {
+    const account = await getPrismaClient(this.prisma, tx).ledgerAccount.findFirst({
       where: { id: accountId, tenantId },
     });
     return account ? ledgerAccountFromPrisma(account) : null;
   }
 
-  async findByCode(tenantId: string, code: string): Promise<LedgerAccountAggregate | null> {
-    const account = await this.prisma.ledgerAccount.findUnique({
+  async findByCode(
+    tenantId: string,
+    code: string,
+    tx?: TransactionContext
+  ): Promise<LedgerAccountAggregate | null> {
+    const account = await getPrismaClient(this.prisma, tx).ledgerAccount.findUnique({
       where: { tenantId_code: { tenantId, code } },
     });
     return account ? ledgerAccountFromPrisma(account) : null;
@@ -64,9 +76,10 @@ export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
 
   async findBySystemKey(
     tenantId: string,
-    systemKey: string
+    systemKey: string,
+    tx?: TransactionContext
   ): Promise<LedgerAccountAggregate | null> {
-    const account = await this.prisma.ledgerAccount.findFirst({
+    const account = await getPrismaClient(this.prisma, tx).ledgerAccount.findFirst({
       where: { tenantId, systemAccountKey: systemKey },
     });
     return account ? ledgerAccountFromPrisma(account) : null;
@@ -149,14 +162,18 @@ export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
 export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async existsBySource(
+  async hasInvoiceStockCost(
     tenantId: string,
-    sourceType: SourceType,
-    sourceId: string,
-    tx: TransactionContext
+    invoiceId: string,
+    tx?: TransactionContext
   ): Promise<boolean> {
     const entry = await getPrismaClient(this.prisma, tx).journalEntry.findFirst({
-      where: { tenantId, sourceType, sourceId },
+      where: {
+        tenantId,
+        sourceType: "Invoice",
+        sourceId: invoiceId,
+        lines: { some: { tags: JSON.stringify([AUTO_COGS_TAG, `invoice:${invoiceId}`]) } },
+      },
       select: { id: true },
     });
     return entry !== null;

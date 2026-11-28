@@ -27,21 +27,33 @@ and records the action in the audit log. The existing invoice detail screen
 creates an editable linked draft. Paid and stock-backed originals require a
 specialist path. See [supported invoice lifecycle](../backend/invoice-lifecycle.md).
 
+PR review follow-up preserves fractional draft and quote quantities and keeps
+whole quantities as an issuance condition. Issuance reads Accounting and
+Catalog through its transaction. Stock allocation rejects ambiguous names,
+checks expiry during the decrement, and distinguishes automated stock costs
+from manual journals that reference the invoice. A recorded stock cost blocks the
+correction before saving the draft. Delivery rechecks cancellation before
+provider handoff with or without a PDF.
+
 ## Verification
 
-- PostgreSQL migrations were applied to a disposable `corely_invoice_test_353`
-  database. The isolated suite is
+- Both migrations were applied to a fresh, disposable
+  `corely_invoice_test_353_review` PostgreSQL database. PostgreSQL reported the
+  concurrent correction index ready and valid. The isolated suite is
   `pnpm --dir services/api exec vitest run src/modules/invoices/__tests__/invoice-tax-snapshot-usecase.int.test.ts`
-  with `INVOICE_TEST_DATABASE_URL` pointing at that database. All six cases
-  passed, including collision retry, workspace isolation, concurrent issue and
-  cancel, and rollback with or without Accounting.
+  with `INVOICE_TEST_DATABASE_URL` pointing at that database. All eight cases
+  passed, including fractional drafts, default payment details, concurrent issue
+  and cancellation, and rollback of invoice and stock changes.
+- The invoice HTTP suite in `invoices-api.int.test.ts` passed five cases with
+  local PostgreSQL and synthetic mail configuration.
 - Invoice unit command
   `pnpm --dir services/api exec vitest run src/modules/invoices --exclude '**/*.int.test.ts'`.
-  The invoice suite, Tax engine, German pack and rounding suites passed 113 tests.
+  The run included Accounting, Catalog, Inventory, the Tax engine, the German
+  pack and rounding tests. It passed 121 cases, including send revision races.
 - Focused client command
   `pnpm --dir apps/e2e exec playwright test --config playwright.invoice.config.ts`.
-  All 15 browser cases passed with Chrome. Both correction cases passed again
-  with the full set of draft and canceled invoice actions in the fixtures.
+  All 16 browser cases passed with Chrome, including fractional draft creation
+  by keyboard and reopening the saved quantity.
   The Invoice web client uses synthetic session and API responses in these checks.
 - API typecheck and build, changed-source ESLint and formatting passed.
 - The architecture checker reports 53 existing findings compared with 56 on the
@@ -58,16 +70,19 @@ request keeps the user on the original and displays an error.
 
 - [Canceled invoice with the correction action at 1280 × 720](../frontend/images/invoice-correction/invoice-correction-original-desktop.png)
 - [Correction draft with its original link at 390 × 844](../frontend/images/invoice-correction/invoice-correction-draft-mobile.png)
+- [Fractional quantity and Save as draft at 1280 × 720](../frontend/images/invoice-correction/invoice-fractional-entry-desktop.png)
+- [Fractional quantity guidance at 390 × 844](../frontend/images/invoice-correction/invoice-fractional-entry-mobile.png)
 
 ## Impact and remaining work
 
 An active Tax profile and supported treatment are required before issuance.
-Whole quantities match existing invoice storage. Historical issued invoices
-can be retrieved and finalize retries retain their existing number.
+Drafts retain exact input quantities and round each item's amount to the nearest
+cent. Historical issued invoices can be retrieved and finalize retries retain
+their existing number.
 
-The migration adds a defaulted revision and a unique partial index to the
-existing invoice table. Apply it before enabling code that issues linked
-corrections. Preserve the new index and original-invoice links on rollback.
+The migrations add an invoice revision, a fractional draft quantity, and a
+concurrent unique partial index. Follow the [rollout and rollback procedure](../backend/invoice-lifecycle.md#deploy-and-roll-back)
+to fence old API and background writers before applying the migrations.
 
 Pilot demand, specialist approval for broader tax or credited documents and
 the accountant handoff remain open. Provider delivery and production rollout

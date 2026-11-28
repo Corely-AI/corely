@@ -7,9 +7,11 @@ optional for issuing customer invoices.
 
 ## Issue a draft
 
-Save the draft with invoice lines expressed as whole positive quantities and
-nonnegative integer prices in cents. The invoice subtotal can be at most
-2,147,483,647 cents. Use a supported currency with two minor-unit digits.
+Draft lines, including lines copied from quotes, accept positive quantities and
+nonnegative integer prices in cents. Each draft line rounds to the nearest cent
+with half cents rounded up. Change fractional quantities to whole quantities
+before issuing. The invoice subtotal can be at most 2,147,483,647 cents. Use a
+supported currency with two minor-unit digits.
 
 Issuance resolves the Tax profile effective on the invoice date, or the
 issuance date when the draft has no invoice date. The currency and any explicit
@@ -47,3 +49,24 @@ may need separate customer notification or an accountant-directed correction.
 Queued delivery checks for cancellation before handing a message to the provider.
 Review jurisdiction, document format, export and accountant handoff with a
 specialist before extending the supported scope.
+
+## Deploy and roll back
+
+Pause invoice writes and drain in-flight invoice commands and deliveries before
+running the migrations and deploying the updated API and background workers.
+Resume traffic and job processing after all invoice writers run the updated
+code. Apply the same fence during rollback and retain the additive schema and
+index. Keep invoice writes paused if rolling back to code that cannot enforce
+revision checks or read fractional draft quantities. Before the first updated
+writer runs, verify that the correction index exists and is valid.
+
+The index is built concurrently in its own migration. If the build is
+interrupted, inspect `pg_index.indisvalid` and the migration record. If duplicate
+issued corrections caused the failure, reconcile the records with the invoice
+owner. With writers still fenced, drop an invalid index with
+`DROP INDEX CONCURRENTLY billing."Invoice_one_issued_correction_per_original"`
+outside a transaction. If the index is absent or was dropped, mark the failed
+`20261128121000_invoice_correction_unique_index` migration rolled back with
+`prisma migrate resolve --rolled-back` and rerun the deployment migration. If the
+index is valid and matches the checked-in definition, mark the failed migration
+applied with `prisma migrate resolve --applied`.

@@ -1,4 +1,4 @@
-import type { InvoiceDto } from "@corely/contracts";
+import { invoiceLineNetCents, type InvoiceDto } from "@corely/contracts";
 
 const CSV_MIME_TYPE = "text/csv;charset=utf-8;";
 
@@ -61,7 +61,7 @@ export function buildInvoiceExportCsv(invoice: InvoiceDto, locale?: string): str
     row("Line Items", "Description", "Qty", `Unit price (${currency})`, `Line total (${currency})`)
   );
   invoice.lineItems.forEach((line) => {
-    const lineTotal = Math.round(line.qty * line.unitPriceCents);
+    const lineTotal = invoiceLineNetCents(line.qty, line.unitPriceCents);
     rows.push(
       row(
         "Line Item",

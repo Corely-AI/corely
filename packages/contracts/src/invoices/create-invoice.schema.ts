@@ -4,7 +4,7 @@ import { localDateSchema } from "../shared/local-date.schema";
 
 export const InvoiceLineInputSchema = z.object({
   description: z.string(),
-  qty: z.number().int().positive().max(2_147_483_647),
+  qty: z.number().positive().max(2_147_483_647),
   unitPriceCents: z.number().int().nonnegative().max(2_147_483_647),
 });
 

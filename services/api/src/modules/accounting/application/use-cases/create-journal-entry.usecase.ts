@@ -13,6 +13,7 @@ import type { CreateJournalEntryInput, CreateJournalEntryOutput } from "@corely/
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapEntryToDto } from "../mappers/accounting.mapper";
 import { JournalEntryAggregate } from "../../domain/journal-entry.aggregate";
+import { hasStockCostTag } from "../../domain/stock-cost-tag";
 
 @RequireTenant()
 export class CreateJournalEntryUseCase extends BaseUseCase<
@@ -27,6 +28,11 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
     input: CreateJournalEntryInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateJournalEntryOutput, UseCaseError>> {
+    if (hasStockCostTag(input.lines)) {
+      return err(
+        new ValidationError("The stock-cost journal tag is reserved for automated entries.")
+      );
+    }
     return this.create(input, ctx);
   }
 
@@ -45,7 +51,7 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
 
     // Validate accounts exist and are active
     for (const line of input.lines) {
-      const account = await this.deps.accountRepo.findById(tenantId, line.ledgerAccountId);
+      const account = await this.deps.accountRepo.findById(tenantId, line.ledgerAccountId, tx);
       if (!account) {
         return err(new ValidationError(`Account ${line.ledgerAccountId} not found`));
       }
@@ -81,6 +87,6 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
 
     await this.deps.entryRepo.save(entry, tx);
 
-    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, tenantId) });
+    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, tenantId, tx) });
   }
 }

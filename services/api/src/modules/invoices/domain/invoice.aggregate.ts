@@ -1,4 +1,5 @@
 import { validateInvoiceDraft } from "@corely/invoices";
+import { invoiceLineNetCents } from "@corely/contracts";
 import { type LocalDate } from "@corely/kernel";
 import {
   type InvoiceLine,
@@ -337,7 +338,10 @@ export class InvoiceAggregate {
   }
 
   private calculateTotals(): InvoiceTotals {
-    const subtotal = this.lineItems.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
+    const subtotal = this.lineItems.reduce(
+      (sum, line) => sum + invoiceLineNetCents(line.qty, line.unitPriceCents),
+      0
+    );
     const taxCents = this.taxSnapshot?.taxTotalAmountCents ?? 0;
     const discountCents = 0;
     const totalCents = subtotal + taxCents - discountCents;

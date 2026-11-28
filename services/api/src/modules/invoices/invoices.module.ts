@@ -132,7 +132,8 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         timeService: TimeService,
         customerQuery: CustomerQueryPort,
         legalEntityQuery: any,
-        paymentMethodQuery: any
+        paymentMethodQuery: any,
+        accounting: InvoiceAccountingAdapter
       ) =>
         new CreateInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -143,6 +144,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
           customerQuery,
           legalEntityQuery,
           paymentMethodQuery,
+          accounting,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
@@ -152,6 +154,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         CUSTOMER_QUERY_PORT,
         LEGAL_ENTITY_QUERY_PORT,
         PAYMENT_METHOD_QUERY_PORT,
+        InvoiceAccountingAdapter,
       ],
     },
     {

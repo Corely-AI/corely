@@ -4,7 +4,6 @@ import {
   ValidationError,
   type TransactionContext,
   type UseCaseContext,
-  unwrap,
 } from "@corely/kernel";
 import { AccountingApplication } from "../../../accounting/application/accounting.application";
 import { CogsPostingService } from "../../../accounting/application/services/cogs-posting.service";
@@ -16,9 +15,8 @@ import {
 import {
   INVENTORY_LOT_REPO,
   type InvoiceInventoryLotPort,
-  type InventoryLot,
+  type InvoiceLotAllocation,
 } from "../../../inventory/application/ports/inventory-lot-repository.port";
-import { pickFEFO } from "../../../inventory/domain/fefo-picker";
 import type { InvoiceAggregate } from "../../domain/invoice.aggregate";
 
 @Injectable()
@@ -38,7 +36,7 @@ export class InvoiceAccountingAdapter {
         "Invoice accounting requires an issued invoice and workspace context."
       );
     }
-    const setup = unwrap(await this.accounting.getSetupStatus.execute(undefined, ctx));
+    const setup = await this.accounting.getSetupStatus.getStatus(tenantId, tx);
     if (!setup.isSetup || (await this.cogs.hasInvoicePosting(tenantId, invoice.id, tx))) {
       return;
     }
@@ -51,24 +49,9 @@ export class InvoiceAccountingAdapter {
       }
     }
 
-    const stock: Array<{ lot: InventoryLot; quantityPicked: number }> = [];
+    const stock: InvoiceLotAllocation[] = [];
     for (const [productId, qty] of quantities) {
-      const available = await this.lots.listAvailableLots(tenantId, productId, tx);
-      const pick = pickFEFO(available, qty);
-      if (pick.shortfall > 0) {
-        throw new ValidationError("Insufficient available, unexpired stock for an invoice line.", {
-          productId,
-          qtyRequested: qty,
-          availableQty: pick.quantityAllocated,
-        });
-      }
-      const lotsById = new Map(available.map((lot) => [lot.id, lot]));
-      for (const allocation of pick.allocations) {
-        const lot = lotsById.get(allocation.lotId);
-        if (lot) {
-          stock.push({ lot, quantityPicked: allocation.quantityPicked });
-        }
-      }
+      stock.push(...(await this.lots.allocateInvoiceLots(tenantId, productId, qty, tx)));
     }
     if (stock.length === 0) {
       return;
@@ -104,7 +87,7 @@ export class InvoiceAccountingAdapter {
     }
   }
 
-  async assertCorrectionAllowed(tenantId: string, invoiceId: string, tx: TransactionContext) {
+  async assertCorrectionAllowed(tenantId: string, invoiceId: string, tx?: TransactionContext) {
     if (await this.cogs.hasInvoicePosting(tenantId, invoiceId, tx)) {
       throw new ConflictError(
         "This invoice has recorded stock costs and requires a specialist correction."
@@ -125,16 +108,31 @@ export class InvoiceAccountingAdapter {
     if (productId) {
       return productId;
     }
-    if (await this.lots.hasProductLots(scope.tenantId, reference, tx)) {
+    const idMatch = await this.catalog.findItemById(scope, reference, tx);
+    if (!idMatch && (await this.lots.hasProductLots(scope.tenantId, reference, tx))) {
       return reference;
     }
-    const item =
-      (await this.catalog.findItemById(scope, reference)) ??
-      (await this.catalog.findItemByCode(scope, reference));
-    const candidate =
-      item && !item.archivedAt
-        ? item
-        : (await this.catalog.listItems(scope, { name: reference, page: 1, pageSize: 1 })).items[0];
+    let candidate = idMatch;
+    if (!candidate || candidate.status !== "ACTIVE" || candidate.archivedAt) {
+      const codeMatch = await this.catalog.findItemByCode(scope, reference, tx);
+      candidate = codeMatch?.status === "ACTIVE" && !codeMatch.archivedAt ? codeMatch : null;
+    }
+    if (!candidate) {
+      const matches = await this.catalog.listItems(
+        scope,
+        { name: reference, status: "ACTIVE", page: 1, pageSize: 2 },
+        tx
+      );
+      if (matches.total > 1) {
+        throw new ValidationError(
+          "More than one product matches an invoice line. Use its product code or ID.",
+          {
+            reference,
+          }
+        );
+      }
+      candidate = matches.items[0] ?? null;
+    }
     if (!candidate) {
       return null;
     }

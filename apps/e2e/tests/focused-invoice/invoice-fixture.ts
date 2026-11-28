@@ -1,5 +1,6 @@
 import type { BrowserContext } from "@playwright/test";
 import {
+  CreateInvoiceInputSchema,
   InvoiceDtoSchema,
   InvoiceCapabilitiesSchema,
   RequestInvoicePdfOutputSchema,
@@ -186,10 +187,12 @@ export async function invoiceTransport(
             await route.fulfill({ status: 409, json: { detail: "Original invoice has changed." } });
             return;
           }
+          const input = CreateInvoiceInputSchema.parse(body);
           invoice = {
             ...invoice,
             id: "created-1",
             status: "DRAFT",
+            lineItems: input.lineItems.map((line, index) => ({ ...line, id: `line-${index + 1}` })),
             ...(options.correction
               ? { number: null, sourceType: "invoice_correction", sourceId: originalInvoice.id }
               : {}),

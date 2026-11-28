@@ -32,7 +32,10 @@ import type { CustomerQueryPort } from "../../ports/customer-query.port";
 import type { PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
 import type { TaxEngineService } from "../../../../tax/application/services/tax-engine.service";
 import type { InvoiceAggregate } from "../../../domain/invoice.aggregate";
-import { validateInvoiceCurrency, validateInvoiceLineAmounts } from "../../../domain/invoice-money";
+import {
+  validateInvoiceCurrency,
+  validateIssuableInvoiceLineAmounts,
+} from "../../../domain/invoice-money";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 
 const numberingAttempts = 6;
@@ -103,7 +106,7 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
     }
 
     validateInvoiceCurrency(invoice.currency);
-    validateInvoiceLineAmounts(invoice.lineItems);
+    validateIssuableInvoiceLineAmounts(invoice.lineItems);
     const customer = await customerQuery.getCustomerBillingSnapshot(
       tenantId,
       invoice.customerPartyId
@@ -174,12 +177,13 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
       }
       throw error;
     }
-    const paymentMethodId = input.paymentMethodId ?? invoice.paymentMethodId ?? undefined;
+    const explicitPaymentMethodId = input.paymentMethodId?.trim() || undefined;
+    const paymentMethodId = explicitPaymentMethodId ?? (invoice.paymentMethodId || undefined);
     const paymentSnapshot = await paymentMethodQuery.getPaymentMethodSnapshot(
       tenantId,
       paymentMethodId
     );
-    if (input.paymentMethodId && !paymentSnapshot) {
+    if (explicitPaymentMethodId && !paymentSnapshot) {
       return err(new ValidationError("The selected invoice payment method is unavailable."));
     }
     if (paymentSnapshot) {

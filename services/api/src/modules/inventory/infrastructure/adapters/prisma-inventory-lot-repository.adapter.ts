@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { getPrismaClient, PrismaService } from "@corely/data";
 import {
   ConflictError,
+  ValidationError,
   formatLocalDate,
   parseLocalDate,
   type TransactionContext,
@@ -9,11 +10,13 @@ import {
 import type {
   InventoryLotRepositoryPort,
   InvoiceInventoryLotPort,
+  InvoiceLotAllocation,
   InventoryLot,
   ListLotsFilter,
   ExpiryItem,
 } from "../../application/ports/inventory-lot-repository.port";
 import type { InventoryLotStatus } from "../../domain/inventory.types";
+import { pickFEFO } from "../../domain/fefo-picker";
 
 @Injectable()
 export class PrismaInventoryLotRepository
@@ -33,11 +36,12 @@ export class PrismaInventoryLotRepository
     return lot !== null;
   }
 
-  async listAvailableLots(
+  async allocateInvoiceLots(
     tenantId: string,
     productId: string,
+    quantity: number,
     tx: TransactionContext
-  ): Promise<InventoryLot[]> {
+  ): Promise<InvoiceLotAllocation[]> {
     const lots = await getPrismaClient(this.prisma, tx).inventoryLot.findMany({
       where: { tenantId, productId, archivedAt: null, status: "AVAILABLE", qtyOnHand: { gt: 0 } },
       orderBy: [
@@ -47,7 +51,20 @@ export class PrismaInventoryLotRepository
         { id: "asc" },
       ],
     });
-    return lots.map((lot) => this.mapToEntity(lot));
+    const available = lots.map((lot) => this.mapToEntity(lot));
+    const pick = pickFEFO(available, quantity);
+    if (pick.shortfall > 0) {
+      throw new ValidationError("Insufficient available, unexpired stock for an invoice line.", {
+        productId,
+        qtyRequested: quantity,
+        availableQty: pick.quantityAllocated,
+      });
+    }
+    const lotsById = new Map(available.map((lot) => [lot.id, lot]));
+    return pick.allocations.flatMap(({ lotId, quantityPicked }) => {
+      const lot = lotsById.get(lotId);
+      return lot ? [{ lot, quantityPicked }] : [];
+    });
   }
 
   async consumeInvoiceLot(
@@ -55,6 +72,8 @@ export class PrismaInventoryLotRepository
     quantity: number,
     tx: TransactionContext
   ): Promise<void> {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
     const result = await getPrismaClient(this.prisma, tx).inventoryLot.updateMany({
       where: {
         id: lot.id,
@@ -64,6 +83,7 @@ export class PrismaInventoryLotRepository
         updatedAt: lot.updatedAt,
         qtyOnHand: lot.qtyOnHand,
         qtyReserved: lot.qtyReserved,
+        OR: [{ expiryDate: null }, { expiryDate: { gte: today } }],
       },
       data: { qtyOnHand: { decrement: quantity } },
     });

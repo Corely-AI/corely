@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
+import { invoiceLineNetCents } from "@corely/contracts";
 import { InvoicePdfModelPort } from "../../application/ports/invoice-pdf-model.port";
 import { IssuerSnapshot, PaymentDetailsSnapshot } from "../../domain/invoice.types";
 import type { Prisma } from "@prisma/client";
@@ -182,7 +183,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
 
     // Calculate totals
     const subtotalCents = invoice.lines.reduce(
-      (sum, line) => sum + line.qty * line.unitPriceCents,
+      (sum, line) => sum + invoiceLineNetCents(line.draftQuantity ?? line.qty, line.unitPriceCents),
       0
     );
     const vatCents = Math.round((subtotalCents * vatRateBps) / 10000);
@@ -202,9 +203,11 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     // Map line items
     const items = invoice.lines.map((line) => ({
       description: line.description,
-      qty: String(line.qty),
+      qty: String(line.draftQuantity ?? line.qty),
       unitPrice: formatCurrency(line.unitPriceCents),
-      lineTotal: formatCurrency(line.qty * line.unitPriceCents),
+      lineTotal: formatCurrency(
+        invoiceLineNetCents(line.draftQuantity ?? line.qty, line.unitPriceCents)
+      ),
     }));
 
     const paymentDetailsSnapshot =

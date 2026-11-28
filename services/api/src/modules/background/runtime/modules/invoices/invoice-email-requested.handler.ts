@@ -101,12 +101,12 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
             invoiceNumber: invoice.number ?? undefined,
           }),
         ];
-        if (await this.repo.isInvoiceCanceled(event.tenantId, payload.invoiceId)) {
-          await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "FAILED", {
-            lastError: "Invoice was canceled before delivery.",
-          });
-          return;
-        }
+      }
+      if (await this.repo.isInvoiceCanceled(event.tenantId, payload.invoiceId)) {
+        await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "FAILED", {
+          lastError: "Invoice was canceled before delivery.",
+        });
+        return;
       }
 
       // 5. Send email via provider

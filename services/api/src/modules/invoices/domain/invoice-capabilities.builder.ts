@@ -10,6 +10,7 @@
 import { type InvoiceAggregate } from "./invoice.aggregate";
 import { type InvoiceStatus } from "./invoice.types";
 import { buildInvoiceActions } from "./invoice-actions";
+import { fractionalQuantityIssueReason } from "./invoice-money";
 
 // -----------------------------------------------------------------------------
 // Types (mirroring contracts, but domain-local for computation)
@@ -180,18 +181,19 @@ export class InvoiceCapabilitiesBuilder {
         {
           const hasCustomer = Boolean(customerPartyId);
           const hasLineItems = lineItems.length > 0;
-          const enabled = hasCustomer && hasLineItems;
           let reason: string | undefined;
           if (!hasCustomer) {
             reason = "Customer is required";
           } else if (!hasLineItems) {
             reason = "At least one line item is required";
+          } else if (lineItems.some(({ qty }) => !Number.isInteger(qty))) {
+            reason = fractionalQuantityIssueReason;
           }
 
           transitions.push({
             to: "ISSUED",
             label: "Issue Invoice",
-            enabled,
+            enabled: !reason,
             reason,
             dangerous: false,
           });

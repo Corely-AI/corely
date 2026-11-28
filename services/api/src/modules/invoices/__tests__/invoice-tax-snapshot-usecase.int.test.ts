@@ -7,6 +7,7 @@ import { CreateInvoiceUseCase } from "../application/use-cases/create-invoice/cr
 import { FinalizeInvoiceUseCase } from "../application/use-cases/finalize-invoice/finalize-invoice.usecase";
 import { CancelInvoiceUseCase } from "../application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { RecordPaymentUseCase } from "../application/use-cases/record-payment/record-payment.usecase";
+import { UpdateInvoiceUseCase } from "../application/use-cases/update-invoice/update-invoice.usecase";
 import { PrismaInvoiceRepoAdapter } from "../infrastructure/adapters/prisma-invoice-repository.adapter";
 import { PrismaTaxProfileRepoAdapter } from "../../tax/infrastructure/prisma/prisma-tax-profile-repo.adapter";
 import { TaxEngineService } from "../../tax/application/services/tax-engine.service";
@@ -41,6 +42,9 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
   let finalize: FinalizeInvoiceUseCase;
   let cancel: CancelInvoiceUseCase;
   let payment: RecordPaymentUseCase;
+  let update: UpdateInvoiceUseCase;
+  let createJournalEntry: CreateJournalEntryUseCase;
+  const paymentMethodQuery = new FakePaymentMethodQuery();
   let audit: PrismaAuditAdapter;
   const tenantId = randomUUID();
   const workspaceId = randomUUID();
@@ -110,7 +114,6 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
       displayName: "Invoice Customer",
       billingAddress: { country: "DE", line1: "Test Address" },
     });
-    const paymentMethodQuery = new FakePaymentMethodQuery();
     const idGenerator = { newId: randomUUID };
     const accountingDeps = {
       logger,
@@ -121,18 +124,19 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
       accountRepo: new PrismaLedgerAccountRepository(prisma),
       periodRepo: new PrismaAccountingPeriodRepository(prisma),
     };
+    createJournalEntry = new CreateJournalEntryUseCase(accountingDeps);
     const accounting = new InvoiceAccountingAdapter(
       { getSetupStatus: new GetSetupStatusUseCase(accountingDeps) },
       new CogsPostingService(
         logger,
-        new CreateJournalEntryUseCase(accountingDeps),
+        createJournalEntry,
         accountingDeps.accountRepo,
         accountingDeps.entryRepo
       ),
       new PrismaCatalogRepositoryAdapter(prisma),
       new PrismaInventoryLotRepository(prisma)
     );
-    create = new CreateInvoiceUseCase({
+    const draftDeps = {
       logger,
       invoiceRepo: repo,
       idGenerator,
@@ -140,6 +144,11 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
       customerQuery,
       paymentMethodQuery,
       legalEntityQuery: { getIssuerSnapshot: async () => null },
+    };
+    update = new UpdateInvoiceUseCase(draftDeps);
+    create = new CreateInvoiceUseCase({
+      ...draftDeps,
+      accounting,
       timeService: new TimeService(clock, { getTenantTimeZone: async () => "UTC" }),
     });
     finalize = new FinalizeInvoiceUseCase({
@@ -336,11 +345,54 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
     }
   });
 
+  it("retains fractional quote quantities in drafts until they are edited for issuance", async () => {
+    const sourceId = randomUUID();
+    const invoice = await draft({
+      sourceType: "quote",
+      sourceId,
+      lineItems: [{ description: "Consulting", qty: 1.005, unitPriceCents: 100 }],
+    });
+    const saved = await repo.findBySource(workspaceId, "quote", sourceId);
+    expect(saved?.lineItems[0].qty).toBe(1.005);
+    expect(saved?.totals.subtotalCents).toBe(101);
+    expect(await finalize.execute({ invoiceId: invoice.id }, ctx)).toMatchObject({
+      ok: false,
+      error: { message: expect.stringContaining("whole quantities") },
+    });
+    expect(await repo.findById(workspaceId, invoice.id)).toMatchObject({
+      status: "DRAFT",
+      number: null,
+    });
+    unwrap(
+      await update.execute(
+        { invoiceId: invoice.id, lineItems: [{ ...invoice.lineItems[0], qty: 1 }] },
+        ctx
+      )
+    );
+    const issued = unwrap(await finalize.execute({ invoiceId: invoice.id }, ctx)).invoice;
+    expect(issued).toMatchObject({ status: "ISSUED", lineItems: [{ qty: 1 }] });
+  });
+
+  it("uses default payment details when issuance receives an empty payment method ID", async () => {
+    paymentMethodQuery.setDefaultMethod(tenantId, { label: "Default fixture payment" });
+    try {
+      const invoice = await draft();
+      unwrap(await finalize.execute({ invoiceId: invoice.id, paymentMethodId: "" }, ctx));
+      expect(await repo.findById(workspaceId, invoice.id)).toMatchObject({
+        status: "ISSUED",
+        paymentMethodId: null,
+        paymentSnapshot: { label: "Default fixture payment" },
+      });
+    } finally {
+      delete paymentMethodQuery.methods[`${tenantId}:default`];
+    }
+  });
+
   it("commits configured stock and journal changes with the invoice and rolls them back together", async () => {
     await prisma.accountingSettings.create({
       data: { tenantId, baseCurrency: "EUR", fiscalYearStartMonthDay: "01-01" },
     });
-    await prisma.ledgerAccount.createMany({
+    const accounts = await prisma.ledgerAccount.createManyAndReturn({
       data: [
         { tenantId, code: "1500", name: "Inventory", type: "Asset" },
         {
@@ -368,6 +420,23 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
         { description: "Inventory line [product:fixture-stock]", qty: 2, unitPriceCents: 200 },
       ],
     });
+    unwrap(
+      await createJournalEntry.execute(
+        {
+          memo: "Manual invoice journal",
+          postingDate: "2026-11-28",
+          sourceType: "Invoice",
+          sourceId: first.id,
+          lines: accounts.map(({ id, type }) => ({
+            ledgerAccountId: id,
+            direction: type === "Asset" ? "Debit" : "Credit",
+            amountCents: 50,
+            currency: "EUR",
+          })),
+        },
+        ctx
+      )
+    );
     const brokenAudit = vi
       .spyOn(audit, "log")
       .mockRejectedValueOnce(new Error("Synthetic audit failure"));
@@ -379,14 +448,14 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
         status: "DRAFT",
         revision: 0,
       });
-      expect(await prisma.journalEntry.count({ where: { tenantId, sourceId: first.id } })).toBe(0);
+      expect(await prisma.journalEntry.count({ where: { tenantId, sourceId: first.id } })).toBe(1);
       expect(await prisma.inventoryLot.findUnique({ where: { id: lot.id } })).toMatchObject({
         qtyOnHand: 5,
       });
 
       const issued = unwrap(await finalize.execute({ invoiceId: first.id }, ctx)).invoice;
       expect(issued.status).toBe("ISSUED");
-      expect(await prisma.journalEntry.count({ where: { tenantId, sourceId: first.id } })).toBe(1);
+      expect(await prisma.journalEntry.count({ where: { tenantId, sourceId: first.id } })).toBe(2);
       expect(await prisma.inventoryLot.findUnique({ where: { id: lot.id } })).toMatchObject({
         qtyOnHand: 3,
       });
@@ -396,7 +465,17 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
       });
       // Older releases let a stock-backed invoice be canceled without reversing its journal.
       await prisma.invoice.update({ where: { id: first.id }, data: { status: "CANCELED" } });
-      const legacyReplacement = await draft({ correctsInvoiceId: first.id });
+      expect(
+        await create.execute({ ...invoiceInput, correctsInvoiceId: first.id }, ctx)
+      ).toMatchObject({
+        ok: false,
+        error: { code: "CONFLICT", message: expect.stringContaining("recorded stock costs") },
+      });
+      const legacyReplacement = await draft();
+      await prisma.invoice.update({
+        where: { id: legacyReplacement.id },
+        data: { sourceType: "invoice_correction", sourceId: first.id },
+      });
       expect(await finalize.execute({ invoiceId: legacyReplacement.id }, ctx)).toMatchObject({
         ok: false,
         error: { code: "CONFLICT", message: expect.stringContaining("recorded stock costs") },

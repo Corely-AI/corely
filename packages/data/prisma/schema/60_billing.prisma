@@ -214,6 +214,7 @@ model InvoiceLine {
   invoiceId      String
   description    String
   qty            Int
+  draftQuantity  Float?
   unitPriceCents Int
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)

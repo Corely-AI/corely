@@ -3,9 +3,8 @@ import {
   type UseCaseContext,
   type UseCaseError,
   type Result,
+  type TransactionContext,
   ok,
-  err,
-  ValidationError,
   RequireTenant,
 } from "@corely/kernel";
 import type { SetupStatusOutput } from "@corely/contracts";
@@ -22,13 +21,14 @@ export class GetSetupStatusUseCase extends BaseUseCase<void, SetupStatusOutput> 
     _input: void,
     ctx: UseCaseContext
   ): Promise<Result<SetupStatusOutput, UseCaseError>> {
-    const tenantId = ctx.tenantId!;
+    return ok(await this.getStatus(ctx.tenantId!));
+  }
 
-    const settings = await this.deps.settingsRepo.findByTenant(tenantId);
-
-    return ok({
+  async getStatus(tenantId: string, tx?: TransactionContext): Promise<SetupStatusOutput> {
+    const settings = await this.deps.settingsRepo.findByTenant(tenantId, tx);
+    return {
       isSetup: !!settings,
       settings: settings ? mapSettingsToDto(settings) : null,
-    });
+    };
   }
 }

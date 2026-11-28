@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SendInvoiceUseCase } from "./send-invoice.usecase";
 import { InvoiceAggregate } from "../../../domain/invoice.aggregate";
 import { FixedClock, NoopLogger, unwrap } from "@corely/kernel";
@@ -9,7 +9,7 @@ import type {
   InvoiceReminderSettingsPort,
   TenantTimeZonePort,
 } from "@corely/kernel";
-import type { InvoiceRepoPort } from "../../ports/invoice-repository.port";
+import { InvoiceChangedError, type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import type { AuditPort } from "@/shared/ports/audit.port";
 
 class FakeDeliveryRepo implements InvoiceEmailDeliveryRepoPort {
@@ -224,4 +224,38 @@ describe("SendInvoiceUseCase", () => {
     expect(reminderState.created).toHaveLength(1);
     expect(outbox.events).toHaveLength(0);
   });
+
+  it.each(["SENT", "CANCELED"] as const)(
+    "rechecks the current invoice after another request changes its revision to %s",
+    async (status) => {
+      const data = {
+        id: "inv-3",
+        tenantId: "tenant-1",
+        customerPartyId: "cust",
+        currency: "EUR",
+        lineItems: [{ id: "l1", description: "A", qty: 1, unitPriceCents: 100 }],
+        createdAt: new Date(),
+      };
+      const invoice = InvoiceAggregate.createDraft(data);
+      invoice.status = "ISSUED";
+      const current = InvoiceAggregate.createDraft(data);
+      current.status = status;
+      current.sentAt = status === "SENT" ? new Date("2026-02-06T09:00:00Z") : null;
+      vi.spyOn(repo, "findById").mockResolvedValueOnce(invoice).mockResolvedValueOnce(current);
+      vi.spyOn(repo, "save").mockRejectedValueOnce(new InvoiceChangedError());
+
+      const result = await useCase.execute(
+        { invoiceId: invoice.id, to: "user@example.com" },
+        { tenantId: "tenant-1", workspaceId: "tenant-1", userId: "user-1" }
+      );
+
+      if (status === "SENT") {
+        expect(unwrap(result)).toMatchObject({ deliveryId: "id-1", status: "QUEUED" });
+        expect(reminderState.created).toHaveLength(1);
+      } else {
+        expect(result).toMatchObject({ ok: false, error: { code: "CONFLICT" } });
+        expect(reminderState.created).toHaveLength(0);
+      }
+    }
+  );
 });

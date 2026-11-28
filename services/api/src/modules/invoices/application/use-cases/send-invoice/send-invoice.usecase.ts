@@ -15,7 +15,8 @@ import {
   type ClockPort,
 } from "@corely/kernel";
 import { type SendInvoiceInput, type SendInvoiceOutput } from "@corely/contracts";
-import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
+import { InvoiceChangedError, type InvoiceRepoPort } from "../../ports/invoice-repository.port";
+import type { InvoiceAggregate } from "../../../domain/invoice.aggregate";
 import {
   type OutboxPort,
   type TenantTimeZonePort,
@@ -128,12 +129,23 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
     return ok({ deliveryId, status: "QUEUED" });
   }
 
-  private async ensureSentAndReminderState(invoice: any, ctx: UseCaseContext) {
+  private async ensureSentAndReminderState(invoice: InvoiceAggregate, ctx: UseCaseContext) {
     const now = this.useCaseDeps.clock.now();
     if (invoice.status !== "SENT") {
       const expectedRevision: number = invoice.revision;
       invoice.markSent(now, now);
-      await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId!, invoice, { expectedRevision });
+      try {
+        await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId!, invoice, { expectedRevision });
+      } catch (error) {
+        if (!(error instanceof InvoiceChangedError)) {
+          throw error;
+        }
+        const current = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId!, invoice.id);
+        if (current?.status !== "SENT" && !(current?.status === "PAID" && current.sentAt)) {
+          throw error;
+        }
+        invoice = current;
+      }
     }
 
     const policy = await this.useCaseDeps.reminderSettings.getPolicy(

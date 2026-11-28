@@ -1,6 +1,10 @@
 import { ValidationError } from "@corely/kernel";
+import { invoiceLineNetCents } from "@corely/contracts";
 const currencies = new Set(Intl.supportedValuesOf("currency"));
 const maxInteger = 2_147_483_647;
+
+export const fractionalQuantityIssueReason =
+  "Change fractional quantities to whole quantities before issuing.";
 
 export function validateInvoiceCurrency(currency: string): void {
   if (
@@ -19,8 +23,8 @@ export function validateInvoiceLineAmounts(
   for (const { qty, unitPriceCents } of lines) {
     if (
       typeof qty !== "number" ||
-      !Number.isInteger(qty) ||
-      qty < 1 ||
+      !Number.isFinite(qty) ||
+      qty <= 0 ||
       qty > maxInteger ||
       typeof unitPriceCents !== "number" ||
       !Number.isInteger(unitPriceCents) ||
@@ -28,12 +32,21 @@ export function validateInvoiceLineAmounts(
       unitPriceCents > maxInteger
     ) {
       throw new ValidationError(
-        "Invoice lines require a positive whole quantity and a valid price in cents."
+        "Invoice lines require a positive quantity and a valid price in cents."
       );
     }
-    subtotalCents += qty * unitPriceCents;
+    subtotalCents += invoiceLineNetCents(qty, unitPriceCents);
     if (subtotalCents > maxInteger) {
       throw new ValidationError("Invoice subtotal exceeds the supported amount.");
     }
+  }
+}
+
+export function validateIssuableInvoiceLineAmounts(
+  lines: ReadonlyArray<{ qty: number; unitPriceCents: number }>
+): void {
+  validateInvoiceLineAmounts(lines);
+  if (lines.some((line) => !Number.isInteger(line.qty))) {
+    throw new ValidationError(fractionalQuantityIssueReason);
   }
 }

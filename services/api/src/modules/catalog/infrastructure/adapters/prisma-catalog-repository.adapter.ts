@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { getPrismaClient, PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
 import type {
   CatalogCategoryDto,
   CatalogItemDto,
@@ -36,8 +37,12 @@ import {
 export class PrismaCatalogRepositoryAdapter implements CatalogRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findItemById(scope: CatalogScope, itemId: string): Promise<CatalogItemDto | null> {
-    const item = await this.prisma.catalogItem.findFirst({
+  async findItemById(
+    scope: CatalogScope,
+    itemId: string,
+    tx?: TransactionContext
+  ): Promise<CatalogItemDto | null> {
+    const item = await getPrismaClient(this.prisma, tx).catalogItem.findFirst({
       where: { id: itemId, tenantId: scope.tenantId, workspaceId: scope.workspaceId },
       include: {
         variants: { include: { barcodes: true }, orderBy: { createdAt: "asc" } },
@@ -47,8 +52,12 @@ export class PrismaCatalogRepositoryAdapter implements CatalogRepositoryPort {
     return item ? toCatalogItemDto(item) : null;
   }
 
-  async findItemByCode(scope: CatalogScope, code: string): Promise<CatalogItemDto | null> {
-    const item = await this.prisma.catalogItem.findFirst({
+  async findItemByCode(
+    scope: CatalogScope,
+    code: string,
+    tx?: TransactionContext
+  ): Promise<CatalogItemDto | null> {
+    const item = await getPrismaClient(this.prisma, tx).catalogItem.findFirst({
       where: { code, tenantId: scope.tenantId, workspaceId: scope.workspaceId },
       include: {
         variants: { include: { barcodes: true }, orderBy: { createdAt: "asc" } },
@@ -107,7 +116,8 @@ export class PrismaCatalogRepositoryAdapter implements CatalogRepositoryPort {
 
   async listItems(
     scope: CatalogScope,
-    params: CatalogListParams
+    params: CatalogListParams,
+    tx?: TransactionContext
   ): Promise<CatalogListResult<CatalogItemDto>> {
     const where: any = {
       tenantId: scope.tenantId,
@@ -130,8 +140,9 @@ export class PrismaCatalogRepositoryAdapter implements CatalogRepositoryPort {
       where.type = params.type;
     }
 
+    const client = getPrismaClient(this.prisma, tx);
     const [rows, total] = await Promise.all([
-      this.prisma.catalogItem.findMany({
+      client.catalogItem.findMany({
         where,
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
@@ -141,7 +152,7 @@ export class PrismaCatalogRepositoryAdapter implements CatalogRepositoryPort {
           categories: true,
         },
       }),
-      this.prisma.catalogItem.count({ where }),
+      client.catalogItem.count({ where }),
     ]);
 
     return { items: rows.map((row) => toCatalogItemDto(row)), total };

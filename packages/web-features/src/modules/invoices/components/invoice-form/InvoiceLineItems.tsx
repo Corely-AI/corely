@@ -7,6 +7,7 @@ import { Button } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { type InvoiceFormData } from "../../schemas/invoice-form.schema";
 import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
+import { invoiceLineNetCents } from "@corely/contracts";
 
 const UNITS = ["h", "day", "piece", "service"];
 
@@ -63,7 +64,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
             {fields.map((field, index) => {
               const qty = watch(`lineItems.${index}.qty`);
               const unitPriceCents = watch(`lineItems.${index}.unitPriceCents`);
-              const total = qty * unitPriceCents;
+              const total = invoiceLineNetCents(qty, unitPriceCents);
               const lineItemError = errors.lineItems?.[index]?.description;
 
               return (
@@ -91,8 +92,8 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         type="number"
                         {...register(`lineItems.${index}.qty` as const, { valueAsNumber: true })}
                         className="w-16 border-0 focus-visible:ring-0 px-0"
-                        min="1"
-                        step="1"
+                        min="0"
+                        step="any"
                         aria-invalid={Boolean(errors.lineItems?.[index]?.qty)}
                       />
                       <Controller
@@ -119,7 +120,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                     </div>
                     {errors.lineItems?.[index]?.qty && (
                       <p role="alert" className="mt-1 text-xs text-destructive">
-                        {t("invoices.wholeQuantityRequired")}
+                        {t("invoices.positiveQuantityRequired")}
                       </p>
                     )}
                   </td>

@@ -43,12 +43,15 @@ export interface InventoryLotRepositoryPort {
   ): Promise<{ expiringSoon: ExpiryItem[]; expired: ExpiryItem[] }>;
 }
 
+export type InvoiceLotAllocation = { lot: InventoryLot; quantityPicked: number };
+
 export type InvoiceInventoryLotPort = {
   hasProductLots(tenantId: string, productId: string, tx: TransactionContext): Promise<boolean>;
-  listAvailableLots(
+  allocateInvoiceLots(
     tenantId: string,
     productId: string,
+    quantity: number,
     tx: TransactionContext
-  ): Promise<InventoryLot[]>;
+  ): Promise<InvoiceLotAllocation[]>;
   consumeInvoiceLot(lot: InventoryLot, quantity: number, tx: TransactionContext): Promise<void>;
 };
