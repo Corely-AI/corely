@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Inject,
   Injectable,
+  Optional,
 } from "@nestjs/common";
 import { createHash } from "node:crypto";
 import {
@@ -25,6 +26,7 @@ import {
   type TransactionContext,
   type UseCaseContext,
 } from "@corely/kernel";
+import { STAFF_TASKS, type StaffTasksPort } from "./ports/staff-lifecycle.port";
 import { StaffDirectoryUseCase } from "./staff-directory.usecase";
 import {
   STAFF_REPOSITORY,
@@ -53,7 +55,10 @@ export class StaffAvailabilityUseCase {
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
-    @Inject(STAFF_ABSENCE_REPOSITORY) private readonly absences: StaffAbsenceRepository
+    @Inject(STAFF_ABSENCE_REPOSITORY) private readonly absences: StaffAbsenceRepository,
+    @Optional()
+    @Inject(STAFF_TASKS)
+    private readonly tasks?: Pick<StaffTasksPort, "affectedByAbsence">
   ) {}
   private async scope(id: string, ctx: UseCaseContext): Promise<StaffScope> {
     await this.directory.managementDetail(id, ctx);
@@ -73,15 +78,20 @@ export class StaffAvailabilityUseCase {
     scope: StaffScope,
     profile: StaffProfile,
     schedule: StaffAvailability,
-    tx?: TransactionContext
+    tx: TransactionContext,
+    taskActor?: UseCaseContext
   ): Promise<StaffAvailabilityView> {
     const now = this.clock.now();
     const commitments = profile.resourceId
       ? await this.booking.commitments(scope, profile.resourceId, now, tx)
       : [];
     const blocks = absenceBlocks(await this.absences.list(scope, profile.id, tx));
+    const affectedTasks = taskActor
+      ? await this.tasks?.affectedByAbsence(taskActor, profile.id, blocks, now, tx)
+      : undefined;
     return {
       ...schedule,
+      ...(affectedTasks ? { affectedTasks } : {}),
       profileVersion: profile.version,
       resourceId: profile.resourceId,
       evaluatedAt: now.toISOString(),
@@ -99,7 +109,7 @@ export class StaffAvailabilityUseCase {
       }),
     };
   }
-  async detail(id: string, ctx: UseCaseContext) {
+  async detail(id: string, ctx: UseCaseContext, includeTaskImpact = false) {
     // Manager-only raw patterns and impact IDs. Operational consumers receive windows only.
     const scope = await this.scope(id, ctx);
     return this.staff.transaction(scope, async (tx) => {
@@ -108,7 +118,13 @@ export class StaffAvailabilityUseCase {
       if (profile.resourceId) {
         await this.booking.lock(scope, [profile.resourceId], tx);
       }
-      return this.view(scope, profile, await this.schedules.get(scope, id, tx), tx);
+      return this.view(
+        scope,
+        profile,
+        await this.schedules.get(scope, id, tx),
+        tx,
+        includeTaskImpact ? ctx : undefined
+      );
     });
   }
   async save(id: string, body: unknown, key: string | undefined, ctx: UseCaseContext) {

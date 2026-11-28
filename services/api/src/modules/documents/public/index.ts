@@ -3,6 +3,11 @@ export {
   type PersonnelDocumentsPort,
 } from "../application/ports/personnel-documents.port";
 export { isPersonnelDocumentId } from "../domain/personnel-document";
+export { DocumentsApplication } from "../application/documents.application";
+export {
+  OperationalRequestDocuments,
+  OPERATIONAL_REQUEST_DOCUMENT_PREFIX,
+} from "../application/ports/operational-request-documents.port";
 export { TemplateDocuments } from "../application/ports/template-documents.port";
 export {
   PROCEDURE_DOCUMENTS,

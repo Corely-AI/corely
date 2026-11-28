@@ -35,7 +35,10 @@ export const buildDefaultRoleGrants = (
 
   const staffKeys = uniqueKeys.filter(
     (key) =>
-      (key.endsWith(".read") || key === "tasks.own.update" || key === "people.self.update") &&
+      (key.endsWith(".read") ||
+        key === "tasks.own.update" ||
+        key === "people.self.update" ||
+        key === "requests.own.submit") &&
       !key.startsWith("settings.") &&
       !sensitiveKeys.has(key)
   );

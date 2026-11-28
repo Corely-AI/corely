@@ -23,7 +23,7 @@ export interface ResourcePage {
 
 export interface ResourceRepositoryPort {
   create(resource: BookingResource): Promise<BookingResource>;
-  findById(id: string, tenantId: string): Promise<BookingResource | null>;
+  findById(id: string, tenantId: string, tx?: TransactionContext): Promise<BookingResource | null>;
   findMany(
     tenantId: string,
     filters: ResourceFilters,
@@ -66,8 +66,13 @@ export const SERVICE_REPOSITORY = "booking/service-repository";
 // ─── Availability Rule Repository ─────────────────────────────────────────────
 
 export interface AvailabilityRuleRepositoryPort {
-  upsert(rule: AvailabilityRule): Promise<AvailabilityRule>;
-  findByResourceId(resourceId: string, tenantId: string): Promise<AvailabilityRule | null>;
+  lockResource(tenantId: string, resourceId: string, tx: TransactionContext): Promise<void>;
+  upsert(rule: AvailabilityRule, tx?: TransactionContext): Promise<AvailabilityRule>;
+  findByResourceId(
+    resourceId: string,
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<AvailabilityRule | null>;
 }
 
 export const AVAILABILITY_RULE_REPOSITORY = "booking/availability-rule-repository";
@@ -145,7 +150,7 @@ export const BOOKING_REPOSITORY = "booking/booking-repository";
 // ─── Hold Repository ──────────────────────────────────────────────────────────
 
 export interface HoldRepositoryPort {
-  create(hold: BookingHold): Promise<BookingHold>;
+  create(hold: BookingHold, tx?: TransactionContext): Promise<BookingHold>;
   findById(id: string, tenantId: string): Promise<BookingHold | null>;
   update(hold: BookingHold): Promise<BookingHold>;
   hasActiveOverlap(

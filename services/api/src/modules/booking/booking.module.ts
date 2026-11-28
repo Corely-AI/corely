@@ -179,15 +179,15 @@ import { bookingPolicies } from "./booking-extensions";
     // Booking Use Cases
     {
       provide: CreateHoldUseCase,
-      useFactory: (holdRepo, bookingRepo, resourceRepo, idempotency, idgen, clock) =>
-        new CreateHoldUseCase(holdRepo, bookingRepo, resourceRepo, idempotency, idgen, clock),
+      useFactory: (holdRepo, bookingRepo, idempotency, idgen, clock, uow) =>
+        new CreateHoldUseCase(holdRepo, bookingRepo, idempotency, idgen, clock, uow),
       inject: [
         HOLD_REPOSITORY,
         BOOKING_REPOSITORY,
-        RESOURCE_REPOSITORY,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
       ],
     },
     {
@@ -260,21 +260,21 @@ import { bookingPolicies } from "./booking-extensions";
     // Availability Use Cases
     {
       provide: UpsertAvailabilityRuleUseCase,
-      useFactory: (ruleRepo, resourceRepo, audit, clock, idgen) =>
-        new UpsertAvailabilityRuleUseCase(ruleRepo, resourceRepo, audit, clock, idgen),
+      useFactory: (ruleRepo, resourceRepo, audit, clock, idgen, uow) =>
+        new UpsertAvailabilityRuleUseCase(ruleRepo, resourceRepo, audit, clock, idgen, uow),
       inject: [
         AVAILABILITY_RULE_REPOSITORY,
         RESOURCE_REPOSITORY,
         AUDIT_PORT,
         CLOCK_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
+        UNIT_OF_WORK,
       ],
     },
     {
       provide: GetAvailabilityUseCase,
-      useFactory: (ruleRepo, bookingRepo, resourceRepo) =>
-        new GetAvailabilityUseCase(ruleRepo, bookingRepo, resourceRepo),
-      inject: [AVAILABILITY_RULE_REPOSITORY, BOOKING_REPOSITORY, RESOURCE_REPOSITORY],
+      useFactory: (ruleRepo, resourceRepo) => new GetAvailabilityUseCase(ruleRepo, resourceRepo),
+      inject: [AVAILABILITY_RULE_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
   exports: [],

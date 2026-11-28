@@ -88,10 +88,26 @@ export const StaffCommitmentSchema = z.object({
 export type StaffPattern = z.infer<typeof StaffPatternSchema>;
 export type StaffAvailability = z.infer<typeof StaffAvailabilitySchema>;
 export type StaffCommitment = z.infer<typeof StaffCommitmentSchema>;
+export const StaffAbsenceTaskImpactSchema = z
+  .object({
+    available: z.boolean(),
+    items: z.array(
+      z
+        .object({
+          id: z.string().uuid(),
+          title: z.string(),
+          dueAt: z.string().datetime(),
+        })
+        .strict()
+    ),
+  })
+  .strict();
+export type StaffAbsenceTaskImpact = z.infer<typeof StaffAbsenceTaskImpactSchema>;
 export const StaffAvailabilityViewSchema = StaffAvailabilitySchema.extend({
   profileVersion: z.number().int().positive(),
   resourceId: z.string().nullable(),
   evaluatedAt: z.string().datetime(),
   affectedCommitments: z.array(StaffCommitmentSchema),
+  affectedTasks: StaffAbsenceTaskImpactSchema.optional(),
 }).strict();
 export type StaffAvailabilityView = z.infer<typeof StaffAvailabilityViewSchema>;

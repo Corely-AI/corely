@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import React, { useEffect, useRef, useState } from "react";
 import { SignCeremonyViewSchema, type SignRequestDraft } from "@corely/contracts";
 import { apiClient } from "@corely/web-shared/lib/api-client";
+import { RequestProgressSkeleton } from "./request-loading";
 
 export function RequestActions({
   workspace,
@@ -29,6 +30,7 @@ export function RequestActions({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [reload, setReload] = useState(0);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
   const [expiry, setExpiry] = useState(() =>
       new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
     ),
@@ -40,6 +42,7 @@ export function RequestActions({
   const prefix = "/sign/requests/" + draft.requestId;
   useEffect(() => {
     const controller = new AbortController();
+    setIsLoadingProgress(true);
     setError("");
     void apiClient
       .request(
@@ -48,10 +51,19 @@ export function RequestActions({
         { workspaceScope: "none", signal: controller.signal }
       )
       .then((v) => {
-        if (!controller.signal.aborted) setState(SignCeremonyViewSchema.parse(v));
+        if (!controller.signal.aborted) {
+          setState(SignCeremonyViewSchema.parse(v));
+        }
       })
       .catch((e) => {
-        if (!controller.signal.aborted) setError(String(e));
+        if (!controller.signal.aborted) {
+          setError(String(e));
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingProgress(false);
+        }
       });
     return () => controller.abort();
   }, [prefix, workspace, reload]);
@@ -113,6 +125,7 @@ export function RequestActions({
           {error}
         </p>
       )}
+      {!state && isLoadingProgress && <RequestProgressSkeleton />}
       {state && (
         <>
           <p>
@@ -320,10 +333,15 @@ export function RequestActions({
         </>
       )}
       <Button
-        className="justify-self-start"
+        className="justify-self-start aria-disabled:opacity-50"
         variant="outline"
         disabled={busy}
-        onClick={() => setReload((n) => n + 1)}
+        aria-disabled={isLoadingProgress}
+        onClick={() => {
+          if (!isLoadingProgress) {
+            setReload((n) => n + 1);
+          }
+        }}
       >
         {t("sign.refresh")}
       </Button>

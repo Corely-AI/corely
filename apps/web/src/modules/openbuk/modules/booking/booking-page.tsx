@@ -17,6 +17,8 @@ export default function BookingPage() {
   const [studio, setStudio] = useState<OpenBukPublicStudio | null>(null);
   const [slots, setSlots] = useState<OpenBukSlot[]>([]);
   const [day, setDay] = useState("");
+  const [serviceId, setServiceId] = useState("");
+  const [staffId, setStaffId] = useState("");
   const [slot, setSlot] = useState<OpenBukSlot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"requestFailed" | "slotConflict" | null>(null);
@@ -25,6 +27,10 @@ export default function BookingPage() {
   const [receipt, setReceipt] = useState<OpenBukReceipt | null>(null);
   const [revision, setRevision] = useState(0);
   const attempt = useRef<{ fingerprint: string; key: string } | null>(null);
+  const service = studio?.services?.find((item) => item.serviceId === serviceId) ?? studio;
+  const staff =
+    service && "staff" in service ? service.staff.find((item) => item.staffId === staffId) : studio;
+  const timezone = staff?.timezone ?? studio?.timezone ?? "UTC";
   useEffect(() => {
     const abort = new AbortController();
     setLoading(true);
@@ -33,6 +39,8 @@ export default function BookingPage() {
       .then((r) => {
         if (!abort.signal.aborted) {
           setStudio(r.studio);
+          setServiceId(r.studio.serviceId);
+          setStaffId(r.studio.staffId);
           setDay(localDay(r.studio.timezone));
           const requestedLocale = normalizeCorelyLocale(
             new URLSearchParams(location.search).get("lang")
@@ -51,7 +59,7 @@ export default function BookingPage() {
     return () => abort.abort();
   }, [studioSlug, setLocale]);
   useEffect(() => {
-    if (!day || !studio) {
+    if (!day || !studio || !serviceId || !staffId) {
       return;
     }
     const abort = new AbortController();
@@ -59,7 +67,8 @@ export default function BookingPage() {
     setPolicyRejection(null);
     setSlots([]);
     setLoading(true);
-    publicApi<{ slots: OpenBukSlot[] }>(studioSlug, `availability?day=${day}`, {
+    const query = new URLSearchParams({ day, serviceId, staffId });
+    publicApi<{ slots: OpenBukSlot[] }>(studioSlug, `availability?${query}`, {
       signal: abort.signal,
     })
       .then((r) => {
@@ -78,7 +87,23 @@ export default function BookingPage() {
         }
       });
     return () => abort.abort();
-  }, [studio, studioSlug, day, revision]);
+  }, [studio, studioSlug, day, revision, serviceId, staffId]);
+  function selectPair(nextServiceId: string, nextStaffId: string) {
+    const nextStaff = studio?.services
+      ?.find((item) => item.serviceId === nextServiceId)
+      ?.staff.find((item) => item.staffId === nextStaffId);
+    if (!nextStaff) {
+      return;
+    }
+    setSlot(null);
+    setSlots([]);
+    setLoading(true);
+    setError(null);
+    setServiceId(nextServiceId);
+    setStaffId(nextStaffId);
+    const firstDay = localDay(nextStaff.timezone);
+    setDay((selectedDay) => (selectedDay < firstDay ? firstDay : selectedDay));
+  }
   async function confirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!studio || !slot || pending) {
@@ -89,8 +114,8 @@ export default function BookingPage() {
     setPolicyRejection(null);
     const data = new FormData(event.currentTarget);
     const body = {
-      serviceId: studio.serviceId,
-      staffId: studio.staffId,
+      serviceId,
+      staffId,
       startAt: slot.startAt,
       customer: { name: String(data.get("name")), email: String(data.get("email")) },
       consentAccepted: true,
@@ -153,7 +178,7 @@ export default function BookingPage() {
             formatMoney={money}
             confirmationFooter={confirmationFooters.get(studio.slug)}
           />
-        ) : (
+        ) : service && staff ? (
           <>
             <div className="booking-banner">
               <span className="petal">✳</span>
@@ -162,20 +187,64 @@ export default function BookingPage() {
               <p>{t("bookingIntro")}</p>
             </div>
             <div className="booking-body">
+              {studio.services ? (
+                <div className="form-grid">
+                  {studio.services.length > 1 ? (
+                    <Field label={t("chooseService")}>
+                      <select
+                        value={serviceId}
+                        disabled={pending}
+                        onChange={(event) => {
+                          const next = studio.services?.find(
+                            (item) => item.serviceId === event.target.value
+                          );
+                          if (next) {
+                            selectPair(next.serviceId, next.staff[0].staffId);
+                          }
+                        }}
+                      >
+                        {studio.services.map((item) => (
+                          <option key={item.serviceId} value={item.serviceId}>
+                            {item.serviceName}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  ) : null}
+                  {"staff" in service && service.staff.length > 1 ? (
+                    <Field label={t("chooseBookingStaff")}>
+                      <select
+                        value={staffId}
+                        disabled={pending}
+                        onChange={(event) => selectPair(serviceId, event.target.value)}
+                      >
+                        {service.staff.map((item) => (
+                          <option key={item.staffId} value={item.staffId}>
+                            {item.staffName}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="selected-service">
                 <div>
-                  <h2>{studio.serviceName}</h2>
+                  {(studio.services?.length ?? 0) <= 1 ? <h2>{service.serviceName}</h2> : null}
                   <p className="muted">
-                    {studio.durationMinutes} {t("minutes")} · {t("withStaff")} {studio.staffName}
+                    {service.durationMinutes} {t("minutes")}
+                    {!("staff" in service) || service.staff.length === 1
+                      ? ` · ${t("withStaff")} ${staff.staffName}`
+                      : null}
                   </p>
                 </div>
-                <strong>{money(studio.priceCents, studio.currency, locale)}</strong>
+                <strong>{money(service.priceCents, service.currency, locale)}</strong>
               </div>
-              <Field label={`${t("date")} · ${studio.timezone}`}>
+              <Field label={`${t("date")} · ${timezone}`}>
                 <input
                   type="date"
                   value={day}
-                  min={localDay(studio.timezone)}
+                  min={localDay(timezone)}
                   disabled={pending}
                   onChange={(e) => {
                     if (e.target.value) {
@@ -204,11 +273,11 @@ export default function BookingPage() {
                         setError(null);
                       }}
                     >
-                      {time(s.startAt, studio.timezone, locale)}
+                      {time(s.startAt, timezone, locale)}
                       <small>
                         {
                           new Intl.DateTimeFormat(locale, {
-                            timeZone: studio.timezone,
+                            timeZone: timezone,
                             timeZoneName: "shortOffset",
                             hour: "2-digit",
                           })
@@ -259,7 +328,7 @@ export default function BookingPage() {
               ) : null}
             </div>
           </>
-        )}
+        ) : null}
       </main>
       <p className="booking-footer">{t("promise")}</p>
     </div>

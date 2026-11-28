@@ -3,7 +3,7 @@ import { OutboxRepository } from "@corely/data";
 import { EnvService } from "@corely/config";
 import { EventHandler } from "./event-handler.interface";
 import { Runner, RunnerReport, TickContext } from "../../application/runner.interface";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 class Semaphore {
   private inUse = 0;
@@ -261,6 +261,9 @@ export class OutboxPollerService implements Runner {
   ): Promise<EventResult> {
     const tenantId = event.tenantId ?? "";
     const handler = this.handlers.get(event.eventType);
+    const correlationKey = event.correlationId
+      ? createHash("sha256").update(event.correlationId).digest("hex").slice(0, 24)
+      : undefined;
     const heartbeatEveryMs = Math.min(
       Math.max(500, args.heartbeatMs),
       Math.max(500, args.leaseDurationMs - 250)
@@ -281,7 +284,7 @@ export class OutboxPollerService implements Runner {
             );
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.logger.warn(
             JSON.stringify({
               msg: "outbox.lease.extend_failed",
@@ -289,7 +292,8 @@ export class OutboxPollerService implements Runner {
               workerId: this.workerId,
               eventId: event.id,
               eventType: event.eventType,
-              error: error instanceof Error ? error.message : String(error),
+              correlationKey,
+              failureCode: "LEASE_EXTENSION_FAILED",
             })
           );
         });
@@ -335,11 +339,16 @@ export class OutboxPollerService implements Runner {
       }
       return { processed: 1, errors: 0 };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const failureCode =
+        error instanceof UnknownOutboxEventTypeError
+          ? "NO_HANDLER"
+          : error instanceof OutboxEventTimeoutError
+            ? "HANDLER_TIMEOUT"
+            : "HANDLER_FAILED";
       const retryable = this.isRetryableError(error);
       const failed = await this.outboxRepo.markFailed(event.id, {
         workerId: this.workerId,
-        error: errorMessage,
+        error: failureCode,
         retryable,
         maxAttempts: args.maxAttempts,
         retryBaseDelayMs: args.retryBaseDelayMs,
@@ -358,7 +367,8 @@ export class OutboxPollerService implements Runner {
           failureOutcome: failed.outcome,
           attempts: failed.attempts,
           nextAvailableAt: failed.nextAvailableAt?.toISOString(),
-          error: errorMessage,
+          correlationKey,
+          failureCode,
         })
       );
       return { processed: 1, errors: 1 };

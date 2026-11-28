@@ -9,3 +9,16 @@
 - API typecheck passed.
 - Twenty-eight tests passed across OpenBuk transaction, OpenBuk availability and People availability suites. PostgreSQL cases cover competing writes, live and expired holds, changed-payload retries, scope, original buffers, staff availability changes and rollback when the outbox fails.
 - The API changes preserve the existing routes and public checkout. No interface or database schema changes.
+
+## Availability edits and hold replay follow-up
+
+[#479](https://github.com/Corely-AI/corely/pull/479) delivered the booking write
+transaction, shared resource locks, buffer retention and confirmed-booking
+receipts on `development`. The follow-up extends the same locking policy to
+availability rule edits and scopes those reads and edits to the resource's
+workspace. It also makes hold creation and its workspace-scoped receipt atomic.
+Historical hold receipts continue to replay in the original workspace.
+
+These are server-side changes with existing interfaces. The public studio slot
+rules and manual internal reservation intake are documented in
+[Booking availability and write consistency](../products/openbuk/booking-availability.md).

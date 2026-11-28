@@ -10,12 +10,14 @@ export class PrismaIdempotencyStorageAdapter implements IdempotencyStoragePort {
   async get(
     actionKey: string,
     tenantId: string | null,
-    key: string
+    key: string,
+    tx?: TransactionContext
   ): Promise<StoredResponse | null> {
+    const client = getPrismaClient(this.prisma, tx);
     // When tenantId is null, we can't use findUnique with the compound key
     // so we use findFirst instead
     const existing = tenantId
-      ? await this.prisma.idempotencyKey.findUnique({
+      ? await client.idempotencyKey.findUnique({
           where: {
             tenantId_actionKey_key: {
               tenantId,
@@ -24,7 +26,7 @@ export class PrismaIdempotencyStorageAdapter implements IdempotencyStoragePort {
             },
           },
         })
-      : await this.prisma.idempotencyKey.findFirst({
+      : await client.idempotencyKey.findFirst({
           where: {
             tenantId: null,
             actionKey,

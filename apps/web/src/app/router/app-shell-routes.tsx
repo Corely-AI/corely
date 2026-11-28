@@ -1,3 +1,4 @@
+import { OperationalRequestsPage } from "../../modules/operational-requests/operational-requests-page";
 import { StaffProfilePage } from "../../modules/people/staff-profile-extensions";
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
 import { getTaskCreationGuidance } from "../../modules/tasks/task-creation-guidance";
@@ -146,8 +147,17 @@ export const appShellRoutes = (
         }
       />
     ))}
+    <Route
+      path="/openbuk/app/*"
+      element={
+        <RequireSurface surfaces={["platform"]}>
+          <React.Suspense fallback={<PageLoadingSkeleton variant="list" />}>
+            <OpenBukStudio />
+          </React.Suspense>
+        </RequireSurface>
+      }
+    />
     <Route element={<AppShell />}>
-      <Route path="/openbuk/app/*" element={<OpenBukStudio />} />
       <Route path="/apps" element={<BackofficeDirectory />} />
       <Route path="/freelancer/settings" element={<FreelancerSettings />} />
       {["/crm/assistant", "/crm/assistant/t/:threadId"].map((path) => (
@@ -184,6 +194,38 @@ export const appShellRoutes = (
         element={<DailyWorkPage getCreationGuidance={getTaskCreationGuidance} />}
       />
       <Route path="/tasks/templates" element={<DailyWorkPage templates />} />
+      <Route
+        path="/requests"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/requests/new"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="create" />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/requests/routing"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="routing" />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/requests/:id"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="detail" />
+          </RequireSurface>
+        }
+      />
       <Route path="/knowledge" element={<KnowledgePage />} />
       <Route path="/knowledge/new" element={<KnowledgePage mode="new" />} />
       <Route path="/knowledge/:id" element={<KnowledgePage mode="detail" />} />
