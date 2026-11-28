@@ -5,19 +5,45 @@ import type {
   OpenBukSetup,
   OpenBukSetupDraft,
   OpenBukStudio,
+  OpenBukPublicService,
+  OpenBukTeam,
+  OpenBukTeamUpdate,
 } from "@corely/contracts";
 import type { TransactionContext } from "@corely/kernel";
 import type { OccupiedInterval } from "../../domain/openbuk-availability";
 
 export type StudioScope = { tenantId: string; workspaceId: string };
 export type BookingReceiptRecord = { fingerprint: string; receipt: OpenBukReceipt };
+export type OpenBukSelection = Pick<OpenBukBook, "serviceId" | "staffId">;
+export type OpenBukTeamConfiguration = {
+  revision: string;
+  fingerprint: string;
+  staffIds: string[];
+  services: Pick<OpenBukTeam["services"][number], "id" | "staffIds">[];
+};
 export const OPENBUK_REPOSITORY = Symbol("OPENBUK_REPOSITORY");
 export interface OpenBukRepositoryPort {
   lock(scope: StudioScope, key: string, tx: TransactionContext): Promise<void>;
   draft(scope: StudioScope, tx?: TransactionContext): Promise<OpenBukSetupDraft | null>;
   saveDraft(scope: StudioScope, input: OpenBukSetupDraft, tx: TransactionContext): Promise<void>;
   isRegistered(scope: StudioScope): Promise<boolean>;
-  studio(scope: StudioScope, tx?: TransactionContext): Promise<OpenBukStudio | null>;
+  studio(
+    scope: StudioScope,
+    tx?: TransactionContext,
+    selection?: OpenBukSelection
+  ): Promise<OpenBukStudio | null>;
+  studioSettings(scope: StudioScope): Promise<OpenBukStudio | null>;
+  publicCatalog(
+    scope: StudioScope
+  ): Promise<{ studio: OpenBukStudio; services?: OpenBukPublicService[] } | null>;
+  team(scope: StudioScope, now: Date, tx?: TransactionContext): Promise<OpenBukTeam | null>;
+  saveTeam(
+    scope: StudioScope,
+    input: OpenBukTeamUpdate,
+    fingerprint: string,
+    now: Date,
+    tx: TransactionContext
+  ): Promise<{ team: OpenBukTeam; changed: boolean }>;
   configure(
     scope: StudioScope,
     input: OpenBukSetup,

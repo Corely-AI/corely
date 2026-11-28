@@ -93,6 +93,7 @@ export class PrismaExtKvAdapter implements ExtKvPort {
         tenantId: input.tenantId,
         moduleId: input.moduleId,
         ...(input.scope !== undefined ? { scope: input.scope } : {}),
+        ...(input.keys !== undefined ? { key: { in: input.keys } } : {}),
       },
       orderBy: {
         key: "asc",

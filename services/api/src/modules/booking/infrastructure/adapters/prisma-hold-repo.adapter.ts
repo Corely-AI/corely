@@ -5,6 +5,7 @@ import { PrismaService } from "@corely/data";
 import type { HoldRepositoryPort } from "../../application/ports/booking-repo.ports";
 import { BookingHold, type BookingHoldStatus } from "../../domain/booking.entities";
 import { Prisma } from "@prisma/client";
+import { assertBookingServiceAvailable } from "./booking-service-availability";
 
 @Injectable()
 export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
@@ -72,6 +73,12 @@ export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
             throw new ConflictException("Booking:SlotUnavailable");
           }
         }
+        await assertBookingServiceAvailable(
+          tx,
+          hold.tenantId,
+          hold.workspaceId,
+          hold.serviceOfferingId
+        );
         return tx.bookingHold.create({
           data: {
             id: hold.id,

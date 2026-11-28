@@ -84,15 +84,35 @@ atomic explicit publication and manually shared member invitation links in this 
 It preserves Booking ownership and normal Identity accounts. No invitation email is sent;
 member accounts do not yet gain employee self-service or bookable-resource associations.
 
+## Small-team booking
+
+After publishing the first service and member, an owner or admin can add services and
+bookable staff under **Studio settings → Team and services**. A service lists the
+staff who can perform it, and guests see only available combinations. The first
+service and staff member keep their original Booking IDs and remain editable in the
+studio setup form. Booking resources remain distinct from People profiles and login
+accounts. Where a resource represents an employee, create the explicit link in People.
+
+New staff start with the studio’s current weekly hours. Booking checks each staff
+member’s schedule and any linked availability constraints, then checks holds and
+existing appointments again when confirming. An archived service or member stops
+accepting new bookings. Settings show upcoming commitments for review in the schedule,
+and the schedule retains appointments even when the studio has no active pairs.
+New OpenBuk bookings retain the confirmed service, member, price, currency and timezone
+when the roster changes. Older bookings still display their existing Booking records.
+
+Booking stores service and resource records in its existing tables and uses its
+workspace-scoped extension storage for eligibility and appointment snapshots.
+Existing single-staff studios can keep using the original setup and public route.
+
 ## Next increments / release gates
 
 The [Corely pilot adoption decision](../corely/pilot-booking-decision.md) selects
 OpenBuk replacement and this client's existing staff surface. It defines import,
-authority and cutover/recovery gates; it does not implement the missing team,
-lifecycle or migration capabilities or establish pilot readiness.
+authority and cutover/recovery gates.
 
-This is the first vertical slice, not the complete production MVP. Next: Catalog-linked
-service editing, multiple staff and service capabilities, add-ons and physical resources,
+Remaining work includes Catalog-linked
+service editing, add-ons and physical resources,
 Party customer resolution/history, full lifecycle and day/week calendar, secure revocable
 management tokens, notification/reminder consumers, and Billing-backed deposits.
 Do not advertise those capabilities as implemented. An outbox event alone does not mean

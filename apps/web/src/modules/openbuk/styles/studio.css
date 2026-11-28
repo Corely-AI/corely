@@ -315,6 +315,23 @@
   .setup-form .muted {
     font-size: 12px;
   }
+  .team-booking-settings {
+    max-width: 800px;
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .team-booking-settings .setup-form > h3 {
+    margin: 24px 0 16px;
+  }
+  .team-booking-settings .team-eligibility {
+    margin: 4px 0 16px;
+    font-size: 13px;
+  }
+  .team-booking-settings .check-label {
+    min-height: 36px;
+    width: fit-content;
+  }
   .hours-row {
     display: flex;
     align-items: center;
