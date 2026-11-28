@@ -17,7 +17,7 @@ import { ExtTaskRepositoryAdapter } from "./infrastructure/ext-task-repository.a
 @Module({
   imports: [KernelModule, DataModule, IdentityModule, PeopleModule, PlatformModule],
   controllers: [RecurringChecklistsController, EmployeeTasksController],
-  exports: [RecurringGenerationUseCase],
+  exports: [RecurringGenerationUseCase, EmployeeTasksUseCase],
   providers: [
     RecurringChecklistsUseCase,
     RecurringGenerationUseCase,

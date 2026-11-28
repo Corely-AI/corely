@@ -32,5 +32,17 @@ export const tasksAppManifest: AppManifest = {
       requiresPermissions: ["tasks.read"],
       requiresCapabilities: ["tasks.basic"],
     },
+    {
+      id: "tasks-assistant",
+      scope: "web",
+      section: "team",
+      labelKey: "nav.assistant",
+      defaultLabel: "Assistant",
+      route: "/tasks/copilot",
+      icon: "Sparkles",
+      order: 3,
+      requiresPermissions: ["tasks.read"],
+      requiresCapabilities: ["tasks.basic", "ai.copilot"],
+    },
   ],
 };
