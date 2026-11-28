@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ApplyOperationalRequestSchema,
   DecideOperationalRequestSchema,
@@ -12,6 +12,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -48,8 +49,10 @@ export function RequestReview({
   const [invalid, setInvalid] = useState("");
   const [confirm, setConfirm] = useState<ReviewConfirmation | null>(null);
   const application = request.application;
+  const opener = useRef<HTMLButtonElement | null>(null);
+  const reviewSection = useRef<HTMLDivElement>(null);
 
-  function review(decision: OperationalRequestDecision) {
+  function review(decision: OperationalRequestDecision, trigger: HTMLButtonElement) {
     const input = DecideOperationalRequestSchema.safeParse({
       version: request.version,
       decision,
@@ -60,10 +63,11 @@ export function RequestReview({
       return;
     }
     setInvalid("");
+    opener.current = trigger;
     setConfirm({ kind: "decision", decision });
   }
 
-  function chooseApplication() {
+  function chooseApplication(trigger: HTMLButtonElement) {
     const input = ApplyOperationalRequestSchema.safeParse({
       version: request.version,
       timezone: timezone.trim(),
@@ -73,6 +77,7 @@ export function RequestReview({
       return;
     }
     setInvalid("");
+    opener.current = trigger;
     setConfirm({ kind: "apply" });
   }
 
@@ -82,6 +87,13 @@ export function RequestReview({
     REJECT: copy.rejected,
     RETURN: copy.returned,
   };
+  const confirmLabel =
+    confirm?.kind === "apply"
+      ? copy.applyAbsence
+      : confirm &&
+        { APPROVE: copy.approve, REJECT: copy.reject, RETURN: copy.returnForInformation }[
+          confirm.decision
+        ];
   const confirmText =
     confirm?.kind === "apply"
       ? copy.applyConfirm
@@ -90,7 +102,7 @@ export function RequestReview({
           confirm.decision
         ];
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={reviewSection} tabIndex={-1}>
       {(request.review.length > 0 || application) && (
         <Card>
           <CardContent className="space-y-4 p-4 sm:p-6">
@@ -151,13 +163,24 @@ export function RequestReview({
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button disabled={pending} onClick={() => review("APPROVE")}>
+                  <Button
+                    disabled={pending}
+                    onClick={(event) => review("APPROVE", event.currentTarget)}
+                  >
                     {copy.approve}
                   </Button>
-                  <Button disabled={pending} variant="outline" onClick={() => review("RETURN")}>
+                  <Button
+                    disabled={pending}
+                    variant="outline"
+                    onClick={(event) => review("RETURN", event.currentTarget)}
+                  >
                     {copy.returnForInformation}
                   </Button>
-                  <Button disabled={pending} variant="outline" onClick={() => review("REJECT")}>
+                  <Button
+                    disabled={pending}
+                    variant="outline"
+                    onClick={(event) => review("REJECT", event.currentTarget)}
+                  >
                     {copy.reject}
                   </Button>
                 </div>
@@ -173,7 +196,10 @@ export function RequestReview({
                   onChange={(event) => setTimezone(event.target.value)}
                   readOnly={pending}
                 />
-                <Button disabled={pending} onClick={chooseApplication}>
+                <Button
+                  disabled={pending}
+                  onClick={(event) => chooseApplication(event.currentTarget)}
+                >
                   {application?.status === "FAILED" ? copy.retryApplication : copy.applyAbsence}
                 </Button>
               </div>
@@ -194,9 +220,22 @@ export function RequestReview({
           }
         }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent
+          className="max-h-[calc(100dvh_-_2rem)] w-[calc(100%_-_2rem)] overflow-y-auto sm:w-full"
+          onCloseAutoFocus={(event) => {
+            const trigger = opener.current;
+            opener.current = null;
+            event.preventDefault();
+            if (trigger?.isConnected && !trigger.disabled) {
+              trigger.focus();
+            } else {
+              reviewSection.current?.focus();
+            }
+          }}
+        >
           <AlertDialogHeader>
-            <AlertDialogTitle>{confirmText}</AlertDialogTitle>
+            <AlertDialogTitle>{confirmLabel}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmText}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{copy.cancel}</AlertDialogCancel>
@@ -212,12 +251,7 @@ export function RequestReview({
                 }
               }}
             >
-              {confirm?.kind === "apply"
-                ? copy.applyAbsence
-                : confirm &&
-                  { APPROVE: copy.approve, REJECT: copy.reject, RETURN: copy.returnForInformation }[
-                    confirm.decision
-                  ]}
+              {confirmLabel}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
