@@ -36,6 +36,7 @@ import {
 } from "../../identity/public";
 import { TenantEntitlementService } from "../../platform/public";
 import { publishProcedure, type ProcedureRecord } from "../domain/procedure";
+import { findProcedurePassages } from "../domain/procedure-passages";
 import {
   PROCEDURE_REPOSITORY,
   type ProcedureRepository,
@@ -220,6 +221,15 @@ export class ProceduresUseCase implements PublishedProcedureReader {
       published,
       reviewOverdue: published.reviewDate < new Date().toISOString().slice(0, 10),
     };
+  }
+
+  async findPublishedPassages(question: string, ctx: UseCaseContext) {
+    const { scope } = await this.authorize(ctx);
+    return findProcedurePassages(
+      question,
+      await this.repo.list(scope),
+      new Date().toISOString().slice(0, 10)
+    );
   }
 
   async download(id: string, fileId: string, ctx: UseCaseContext, publishedOnly = false) {

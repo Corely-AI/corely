@@ -146,3 +146,27 @@ export type ProcedureList = z.infer<typeof ProcedureListSchema>;
 export type PublishedProcedureSummary = z.infer<typeof PublishedProcedureSummarySchema>;
 export type PublishedProcedureSearchResult = z.infer<typeof PublishedProcedureSearchResultSchema>;
 export type PublishedProcedureReaderDetail = z.infer<typeof PublishedProcedureReaderDetailSchema>;
+
+export const KnowledgeQuestionSchema = z
+  .object({ question: z.string().trim().min(3).max(400) })
+  .strict();
+export const KnowledgeCitationSchema = PublishedProcedureSummarySchema.omit({ ownerName: true })
+  .extend({
+    quote: z.string().min(1).max(480),
+    publishedAt: PublishedProcedureSchema.shape.publishedAt,
+  })
+  .strict();
+export const KnowledgeAnswerSchema = z.discriminatedUnion("status", [
+  z
+    .object({
+      status: z.literal("answered"),
+      checkedAt: z.string().datetime(),
+      citations: z.array(KnowledgeCitationSchema).min(1).max(3),
+    })
+    .strict(),
+  z.object({ status: z.literal("insufficient") }).strict(),
+  z.object({ status: z.literal("source-changed") }).strict(),
+  z.object({ status: z.literal("unavailable") }).strict(),
+]);
+export type KnowledgeAnswer = z.infer<typeof KnowledgeAnswerSchema>;
+export type KnowledgeCitation = z.infer<typeof KnowledgeCitationSchema>;
