@@ -1,4 +1,5 @@
 import { SignCeremonyStatusSchema } from "./ceremony.schema";
+import { SignFieldSchema } from "./layout.schema";
 import { z } from "zod";
 import { SignTemplateIdSchema } from "./template.schema";
 export const SignRecipientInputSchema = z
@@ -24,6 +25,12 @@ export const SignRequestDraftSchema = CreateSignRequestDraftSchema.extend({
   status: z.literal("DRAFT"),
 });
 export type SignRequestDraft = z.infer<typeof SignRequestDraftSchema>;
+
+export const SignRequestSourceSchema = z.object({
+  base64: z.string().min(8).max(13981016),
+  sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  fields: z.array(SignFieldSchema).max(250).optional(),
+});
 
 export const SignRequestSummarySchema = SignRequestDraftSchema.pick({
   requestId: true,

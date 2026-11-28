@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 for (const viewport of [
@@ -21,6 +22,7 @@ for (const viewport of [
     );
 
     const sendCommands = new Set<string>();
+    const pdf = await readFile(new URL("./sample-agreement.pdf", import.meta.url));
     let expiresAt: string | null = null;
     await page.route("**/api/**", async (route) => {
       const request = route.request();
@@ -30,9 +32,45 @@ for (const viewport of [
           json: {
             status: expiresAt ? "SENT" : "DRAFT",
             expiresAt,
+            sentAt: expiresAt ? "2026-11-27T10:00:00.000Z" : null,
             recipients: expiresAt
-              ? [{ roleId: "signer", status: "INVITED", deliveredAt: null, acceptedAt: null }]
+              ? [
+                  {
+                    roleId: "signer",
+                    status: "INVITED",
+                    deliveredAt: "2026-11-27T10:00:02.000Z",
+                    acceptedAt: null,
+                  },
+                  { roleId: "reviewer", status: "WAITING", deliveredAt: null, acceptedAt: null },
+                ]
               : [],
+          },
+        });
+      } else if (path.endsWith("/source") && request.method() === "GET") {
+        await route.fulfill({
+          json: {
+            base64: pdf.toString("base64"),
+            sha256: "a".repeat(64),
+            fields: [
+              {
+                id: "fixture-field",
+                type: "signature",
+                roleId: "signer",
+                documentId: "pdf",
+                pageIndex: 0,
+                rect: { x: 0.2, y: 0.4, width: 0.45, height: 0.1 },
+                required: true,
+              },
+              {
+                id: "second-field",
+                type: "initials",
+                roleId: "reviewer",
+                documentId: "pdf",
+                pageIndex: 0,
+                rect: { x: 0.2, y: 0.6, width: 0.45, height: 0.1 },
+                required: true,
+              },
+            ],
           },
         });
       } else if (/\/sign\/requests\/[^/]+\/send$/.test(path) && request.method() === "POST") {
@@ -68,7 +106,7 @@ for (const viewport of [
 
     await page.goto("/sign/requests/confirmation-fixture");
     const reviewButton = page.getByRole("button", { name: "Review and send invitations" });
-    const confirmation = page.getByRole("alertdialog", { name: "Confirm sending" });
+    const confirmation = page.getByRole("alertdialog", { name: "Review and send invitations" });
     const expectedExpiry =
       (await page.getByLabel("Expires on (UTC)").inputValue()) + "T23:59:59.000Z";
     const consent = page.getByLabel("Consent statement for recipients");
@@ -80,10 +118,28 @@ for (const viewport of [
     await page.getByLabel("Invitation message").fill("Please review and sign.");
     await reviewButton.click();
     await expect(confirmation).toHaveAccessibleDescription(
-      "Send signing invitations to the recipients listed above?"
+      "Check the document and recipient details before sending."
     );
     const cancel = confirmation.getByRole("button", { name: "Cancel" });
     await expect(cancel).toBeFocused();
+    await expect(
+      confirmation.getByText("Recipients are invited in the order shown.")
+    ).toBeVisible();
+    await expect(confirmation.getByText("jamie@example.test", { exact: true })).toBeVisible();
+    await expect(confirmation.getByText("Please review and sign.", { exact: true })).toBeVisible();
+    await expect(confirmation.getByText("I agree to sign this sample document.")).toBeVisible();
+    const recipientPreview = confirmation.getByLabel("Preview for recipient");
+    await expect(confirmation.getByLabel("PDF page 1")).toBeVisible();
+    await expect(
+      confirmation.getByRole("button", { name: /signature.*Jamie Example/i })
+    ).toBeVisible();
+    await recipientPreview.selectOption("reviewer");
+    await expect(
+      confirmation.getByRole("button", { name: /initials.*Avery Example/i })
+    ).toBeVisible();
+    await expect(
+      confirmation.getByRole("button", { name: /signature.*Jamie Example/i })
+    ).toHaveCount(0);
     await page.screenshot({
       path: testInfo.outputPath("send-confirmation.png"),
       animations: "disabled",
@@ -111,6 +167,22 @@ for (const viewport of [
     await reviewButton.click();
     await send.click();
     await expect(page.getByText("Status · Waiting for signatures")).toBeVisible();
+    const first = page.getByRole("listitem").filter({ hasText: "jamie@example.test" });
+    const second = page.getByRole("listitem").filter({ hasText: "avery@example.test" });
+    await expect(first.getByText("Needs to sign")).toBeVisible();
+    await expect(first.getByText("Sent to email provider")).toBeVisible();
+    await expect(second.getByText("Waiting for prior signer")).toBeVisible();
+    await expect(second.getByRole("button", { name: "Send reminder" })).toHaveCount(0);
+    await page.screenshot({
+      path: testInfo.outputPath("recipient-progress.png"),
+      animations: "disabled",
+    });
+    await first.getByRole("button", { name: "Send reminder" }).click();
+    const reminder = page.getByRole("alertdialog", { name: "Send reminder" });
+    await expect(reminder).toHaveAccessibleDescription(
+      /jamie@example.test.*revoke the previous link/
+    );
+    await reminder.getByRole("button", { name: "Cancel" }).click();
     expect(sendCommands.size).toBe(2);
   });
 }

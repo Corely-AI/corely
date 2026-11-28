@@ -76,7 +76,7 @@ for (const viewport of [
       detail.resolve();
 
       await expect(requestTitle).toBeVisible();
-      await expect(page.getByText("Jamie Example (jamie@example.test)")).toBeVisible();
+      await expect(page.getByText("jamie@example.test", { exact: true })).toBeVisible();
       await expect(loading).toHaveCount(1);
       await expect(sendButton).toHaveCount(0);
       await expect(refreshButton).toBeDisabled();
