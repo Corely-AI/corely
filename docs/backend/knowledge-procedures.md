@@ -12,6 +12,8 @@ current publication. It stores a procedure identifier and leaves publication tex
 and version history with Knowledge. The reader and preview recheck workspace membership,
 Knowledge access and the current publication. A draft, archived or deleted procedure has no
 reader preview. A published attachment has its own reader download path with the same checks.
+Task Context and the editable Request draft use these links. A revoked or archived source
+appears as unavailable when the Task or Request remains visible.
 
 Search reads the workspace collection directly and returns no cached excerpts. Reader
 responses use private no-store caching. The browser excludes Knowledge queries from offline

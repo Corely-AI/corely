@@ -1,5 +1,6 @@
 import {
   OperationalRequestDraftSchema,
+  LinkOperationalRequestProcedureSchema,
   OperationalRequestKindSchema,
   OperationalRequestRoutingMissingCode,
   SubmitOperationalRequestDraftSchema,
@@ -25,7 +26,8 @@ import {
 } from "@corely/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useWorkspaceConfig } from "@corely/web-shared/shared/workspaces/workspace-config-provider";
 import type { OperationalRequestsClient } from "./operational-requests-api";
 import { emptyDraft, kindLabel, RequestDraftFields } from "./request-draft-fields";
 import { formatDate, statusLabel, statusOf, type RequestsCopy } from "./requests-copy";
@@ -54,6 +56,7 @@ export function RequestForm({
   const [notice, setNotice] = useState("");
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const [stale, setStale] = useState(false);
+  const [procedureLink, setProcedureLink] = useState("");
   const keys = useRef(new Map<string, string>());
   const mounted = useRef(false);
   const inFlight = useRef(false);
@@ -64,10 +67,32 @@ export function RequestForm({
     };
   }, []);
   const client = useQueryClient();
+  const { hasCapability } = useWorkspaceConfig();
   const navigate = useNavigate();
   const editable = canSubmit && (!saved || saved.status === "DRAFT");
   const dirty = !saved || JSON.stringify(saved.draft) !== JSON.stringify(draft);
   const policyDocumentId = saved?.canReadPolicy ? saved.draft.policyDocumentId : null;
+  const linkedProcedure =
+    record && record.version >= (saved?.version ?? 0) ? record.procedure : saved?.procedure;
+
+  function changeProcedure(request: OperationalRequest, remove = false) {
+    const reference = remove ? null : publishedProcedureId(procedureLink);
+    if (!remove && !reference) {
+      setError(copy.invalidProcedure);
+      return;
+    }
+    return run(async () => {
+      const next = await withKey(
+        JSON.stringify(["procedure", request.id, request.version, reference]),
+        (key) => requestsApi.linkProcedure(request.id, request.version, reference, key)
+      );
+      accept(next);
+      if (mounted.current) {
+        setProcedureLink("");
+        setNotice(copy.saved);
+      }
+    }, copy.unavailableProcedure);
+  }
 
   async function withKey<T>(signature: string, work: (key: string) => Promise<T>) {
     const key = keys.current.get(signature) ?? crypto.randomUUID();
@@ -265,6 +290,54 @@ export function RequestForm({
           )}
         </CardContent>
       </Card>
+      {saved && (linkedProcedure || (editable && hasCapability("knowledge.procedures"))) && (
+        <Card>
+          <CardContent className="space-y-3 p-4 sm:p-6">
+            <h2 className="text-lg font-semibold">{copy.procedure}</h2>
+            {linkedProcedure?.state === "available" && (
+              <Link
+                className="text-sm text-primary underline"
+                to={`/knowledge/published/${encodeURIComponent(linkedProcedure.id)}`}
+              >
+                {copy.openProcedure}
+              </Link>
+            )}
+            {linkedProcedure?.state === "unavailable" && (
+              <p role="status">{copy.unavailableProcedure}</p>
+            )}
+            {editable && hasCapability("knowledge.procedures") && (
+              <div className="space-y-2">
+                <Label htmlFor="request-procedure-link">{copy.procedureLink}</Label>
+                <Input
+                  id="request-procedure-link"
+                  value={procedureLink}
+                  onChange={(event) => setProcedureLink(event.target.value)}
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={pending || stale || !procedureLink.trim()}
+                    onClick={() => void changeProcedure(saved)}
+                  >
+                    {copy.linkProcedure}
+                  </Button>
+                  {linkedProcedure && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      disabled={pending || stale}
+                      onClick={() => void changeProcedure(saved, true)}
+                    >
+                      {copy.removeProcedure}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardContent className="space-y-3 p-4 sm:p-6">
           <h2 className="text-lg font-semibold">{copy.attachments}</h2>
@@ -392,6 +465,22 @@ export function RequestForm({
       </AlertDialog>
     </div>
   );
+}
+
+function publishedProcedureId(raw: string) {
+  try {
+    const url = new URL(raw.trim(), window.location.origin);
+    const prefix = "/knowledge/published/";
+    if (url.origin !== window.location.origin || !url.pathname.startsWith(prefix)) {
+      return null;
+    }
+    const parsed = LinkOperationalRequestProcedureSchema.shape.procedureId.safeParse(
+      url.pathname.slice(prefix.length).replace(/\/$/, "")
+    );
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
 }
 
 function isRoutingError(error: unknown) {

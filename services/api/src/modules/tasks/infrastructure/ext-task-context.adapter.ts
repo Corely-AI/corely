@@ -23,9 +23,13 @@ const taskKey = (scope: TaskScope, taskId: string) => ({
 export class ExtTaskContextAdapter implements TaskContextStore {
   constructor(private readonly kv: PrismaExtKvAdapter) {}
 
-  async get(scope: TaskScope, taskId: string, tx?: TransactionContext) {
+  async get(scope: TaskScope, taskId: string, tx?: TransactionContext): Promise<StoredTaskContext> {
     const current = await this.kv.get(taskKey(scope, taskId), tx);
-    return current ? contextSchema.parse(current.value) : { comments: [], sources: [], files: [] };
+    if (!current) {
+      return { comments: [], sources: [], files: [] };
+    }
+    const { comments, sources, files } = contextSchema.parse(current.value);
+    return { comments, sources, files };
   }
 
   async save(scope: TaskScope, taskId: string, value: StoredTaskContext, tx: TransactionContext) {

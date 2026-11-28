@@ -11,6 +11,7 @@ import {
   AddOperationalRequestAttachmentSchema,
   ApprovalPolicyStepSchema,
   ConfigureOperationalRequestRouteSchema,
+  LinkOperationalRequestProcedureSchema,
   OperationalRequestDraftSchema,
   OperationalRequestKindSchema,
   OperationalRequestListQuerySchema,
@@ -40,6 +41,7 @@ import {
   OperationalRequestDocuments,
 } from "../../documents/public";
 import { GetWorkspacePermissionsUseCase } from "../../identity/public";
+import { PUBLISHED_PROCEDURES, type PublishedProcedureReader } from "../../knowledge/public";
 import { StaffOperationsLookup } from "../../people/public";
 import { TenantEntitlementService } from "../../platform/public";
 import { OperationalRequestRepository, type RequestScope } from "./ports/request-repository.port";
@@ -61,6 +63,7 @@ type Command =
   | { kind: "create"; draft: OperationalRequestDraft }
   | { kind: "update"; id: string; version: number; draft: OperationalRequestDraft }
   | { kind: "submit" | "withdraw"; id: string; version: number }
+  | { kind: "link-procedure"; id: string; version: number; procedureId: string | null }
   | { kind: "attach"; id: string; input: AddOperationalRequestAttachment };
 
 @Injectable()
@@ -74,7 +77,9 @@ export class OperationalRequestsUseCase {
     private readonly attachments: OperationalRequestDocuments,
     private readonly documents: DocumentsApplication,
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
-    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
+    @Inject(PUBLISHED_PROCEDURES)
+    private readonly procedures: Pick<PublishedProcedureReader, "canRead">
   ) {}
 
   async list(query: unknown, ctx: UseCaseContext): Promise<OperationalRequestsPage> {
@@ -238,8 +243,13 @@ export class OperationalRequestsUseCase {
         if (existing.fingerprint !== fingerprint) {
           throw new ConflictException("The idempotency key is already used for another command");
         }
-        await this.requireOwnedRecord(auth.scope, auth.userId, existing.record.id, tx);
-        return this.project(existing.record, ctx, auth.can("documents.read"));
+        const live = await this.requireOwnedRecord(auth.scope, auth.userId, existing.record.id, tx);
+        return this.project(
+          { ...existing.record, procedureId: live.procedureId },
+          ctx,
+          auth.can("documents.read"),
+          tx
+        );
       }
       const now = new Date().toISOString();
       const previous =
@@ -250,7 +260,7 @@ export class OperationalRequestsUseCase {
       await this.repo.save(auth.scope, next, tx);
       await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, record: next }, tx);
       await this.recordMutation(auth.scope, auth.userId, next, parsed.kind, ctx.correlationId, tx);
-      return this.project(next, ctx, auth.can("documents.read"));
+      return this.project(next, ctx, auth.can("documents.read"), tx);
     });
   }
 
@@ -279,6 +289,7 @@ export class OperationalRequestsUseCase {
         withdrawnAt: null,
         attachments: [],
         approval: null,
+        procedureId: null,
       };
     }
     if (!previous) {
@@ -297,6 +308,12 @@ export class OperationalRequestsUseCase {
     }
     if (previous.status !== "DRAFT") {
       throw new ConflictException("Only drafts can be changed or submitted");
+    }
+    if (command.kind === "link-procedure") {
+      if (command.procedureId && !(await this.procedures.canRead(command.procedureId, ctx, tx))) {
+        throw new NotFoundException("Procedure unavailable");
+      }
+      return { ...next, procedureId: command.procedureId };
     }
     if (command.kind === "update") {
       if (previous.kind !== command.draft.kind) {
@@ -387,7 +404,7 @@ export class OperationalRequestsUseCase {
       },
       tx
     );
-    if (kind === "submit" || kind === "withdraw") {
+    if (kind === "submit" || kind === "withdraw" || kind === "link-procedure") {
       await this.outbox.enqueue(
         {
           tenantId: scope.tenantId,
@@ -467,7 +484,8 @@ export class OperationalRequestsUseCase {
   private async project(
     record: OperationalRequestRecord,
     ctx: UseCaseContext,
-    permitted: boolean
+    permitted: boolean,
+    tx?: TransactionContext
   ): Promise<OperationalRequest> {
     const {
       id,
@@ -480,8 +498,14 @@ export class OperationalRequestsUseCase {
       submittedAt,
       withdrawnAt,
       attachments,
+      procedureId,
     } = record;
     const canReadPolicy = await this.canReadPolicy(draft.policyDocumentId, ctx, permitted);
+    const procedure = procedureId
+      ? (await this.procedures.canRead(procedureId, ctx, tx))
+        ? { state: "available" as const, id: procedureId }
+        : { state: "unavailable" as const }
+      : null;
     return {
       id,
       kind,
@@ -494,6 +518,7 @@ export class OperationalRequestsUseCase {
       attachments,
       draft: { ...draft, policyDocumentId: canReadPolicy ? draft.policyDocumentId : null },
       canReadPolicy,
+      procedure,
     };
   }
 
@@ -536,6 +561,10 @@ function parseCommand(kind: Command["kind"], id: string, raw: unknown): Command 
     }
     case "attach":
       return { kind, id, input: AddOperationalRequestAttachmentSchema.parse(raw) };
+    case "link-procedure": {
+      const { version, procedureId } = LinkOperationalRequestProcedureSchema.parse(raw);
+      return { kind, id, version, procedureId: procedureId ?? null };
+    }
     default:
       return { kind, id, version: OperationalRequestVersionSchema.parse(raw).version };
   }

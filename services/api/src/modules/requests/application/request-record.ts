@@ -3,7 +3,9 @@ import { z } from "zod";
 
 export const OperationalRequestRecordSchema = OperationalRequestSchema.omit({
   canReadPolicy: true,
+  procedure: true,
 }).extend({
+  procedureId: z.string().uuid().nullable().default(null),
   requesterUserId: z.string(),
   requesterStaffId: z.string(),
   approval: z
@@ -13,7 +15,8 @@ export const OperationalRequestRecordSchema = OperationalRequestSchema.omit({
     })
     .nullable(),
 });
-export type OperationalRequestRecord = Omit<OperationalRequest, "canReadPolicy"> & {
+export type OperationalRequestRecord = Omit<OperationalRequest, "canReadPolicy" | "procedure"> & {
+  procedureId?: string | null;
   requesterUserId: string;
   requesterStaffId: string;
   approval: { policyId: string; reviewerUserId: string } | null;
