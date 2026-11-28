@@ -1,6 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService, PrismaExtKvAdapter, getPrismaClient } from "@corely/data";
 import {
+  OpenBukReceiptSchema,
+  OpenBukLocaleSchema,
   OpenBukStudioSchema,
   OpenBukSetupDraftSchema,
   type OpenBukSetupDraft,
@@ -23,6 +25,10 @@ import type {
 } from "../../application/ports/openbuk-repository.port";
 import { findTeamCommitments, writeTeamRecords } from "./openbuk-team-records";
 import { listStudioAppointments, snapshotKey } from "./openbuk-appointment-records";
+
+const ConfirmationSnapshotSchema = OpenBukReceiptSchema.extend({
+  locale: OpenBukLocaleSchema.optional(),
+});
 
 const extensionScope = (scope: StudioScope) => ({
   tenantId: scope.tenantId,
@@ -454,7 +460,10 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
         },
       },
     });
-    await this.kv.set({ ...snapshotKey(scope, id), value: receipt }, tx);
+    await this.kv.set(
+      { ...snapshotKey(scope, id), value: { ...receipt, locale: input.locale ?? studio.locale } },
+      tx
+    );
     return id;
   }
 
@@ -464,5 +473,10 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
       return [];
     }
     return listStudioAppointments(this.prisma, this.kv, scope, studio, day);
+  }
+
+  async snapshot(scope: StudioScope, bookingId: string, tx?: TransactionContext) {
+    const record = await this.kv.get(snapshotKey(scope, bookingId), tx);
+    return record ? ConfirmationSnapshotSchema.parse(record.value) : null;
   }
 }

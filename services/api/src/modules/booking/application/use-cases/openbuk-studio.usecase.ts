@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from "@nestjs/common";
 import {
   AUDIT_PORT,
@@ -25,6 +26,7 @@ import {
   type OpenBukSetupDraft,
   type OpenBukSetup,
   type OpenBukBook,
+  type OpenBukPublicBookResponse,
   type OpenBukAgendaQuery,
   type OpenBukManagerBook,
   type OpenBukReceipt,
@@ -42,6 +44,7 @@ import {
 import { openBukAvailability, studioDate } from "../../domain/openbuk-availability";
 import { assertPublicModuleEnabled } from "../../../../shared/public";
 import { toHttpException } from "../../../../shared/http/usecase-error.mapper";
+import { OpenBukGuestCredentials } from "./openbuk-guest-credentials";
 
 import type { BookingPolicyRegistration } from "@corely/booking/extensions";
 import { BOOKING_POLICIES, enforceBookingPolicy } from "../booking-policy";
@@ -60,7 +63,8 @@ export class OpenBukStudioUseCase {
     @Inject(StaffAvailabilityConstraintService)
     private readonly staffAvailability: Pick<StaffAvailabilityConstraintService, "windows">,
     @Inject(BOOKING_POLICIES)
-    private readonly policies: readonly BookingPolicyRegistration[] = []
+    private readonly policies: readonly BookingPolicyRegistration[] = [],
+    @Optional() private readonly guestCredentials?: OpenBukGuestCredentials
   ) {}
 
   private scope(ctx: UseCaseContext): StudioScope {
@@ -261,6 +265,14 @@ export class OpenBukStudioUseCase {
     }
     return slot;
   }
+  async appointmentSlots(
+    scope: StudioScope,
+    day: string,
+    selection: OpenBukSelection,
+    bookingId: string
+  ) {
+    return this.slots(scope, day, selection, undefined, bookingId);
+  }
   async availability(day: string, ctx: UseCaseContext, selection?: OpenBukSelection) {
     const result = await this.slots(this.publicScope(ctx), day, selection);
     return { slots: result.slots, timezone: result.studio.timezone };
@@ -279,7 +291,7 @@ export class OpenBukStudioUseCase {
     key: string,
     scope: StudioScope,
     manager?: UseCaseContext
-  ) {
+  ): Promise<OpenBukPublicBookResponse> {
     if (!/^[a-zA-Z0-9_-]{16,128}$/.test(key)) {
       throw new BadRequestException("A valid Idempotency-Key is required");
     }
@@ -296,7 +308,11 @@ export class OpenBukStudioUseCase {
             message: "Booking:IdempotencyMismatch",
           });
         }
-        return { receipt: saved.receipt };
+        const management =
+          saved.guestBookingId && !manager
+            ? await this.guestCredentials?.replay(scope, saved.guestBookingId, this.clock.now(), tx)
+            : undefined;
+        return { receipt: saved.receipt, management };
       }
       const initial = await this.repo.studio(scope, tx, input);
       if (!initial) {
@@ -336,7 +352,25 @@ export class OpenBukStudioUseCase {
         timezone: studio.timezone,
       };
       const bookingId = await this.repo.create(scope, studio, input, receipt, tx, userId);
-      await this.repo.saveReceipt(scope, receiptKey, { fingerprint, receipt }, tx);
+      const management = !manager
+        ? await this.guestCredentials?.issue(
+            scope,
+            bookingId,
+            receipt.startAt,
+            this.clock.now(),
+            tx
+          )
+        : undefined;
+      await this.repo.saveReceipt(
+        scope,
+        receiptKey,
+        {
+          fingerprint,
+          receipt,
+          ...(management ? { guestBookingId: bookingId } : {}),
+        },
+        tx
+      );
       await this.audit.log(
         {
           tenantId: scope.tenantId,
@@ -361,7 +395,7 @@ export class OpenBukStudioUseCase {
         },
         tx
       );
-      return { receipt };
+      return { receipt, management };
     });
   }
   async appointments(day: string, ctx: UseCaseContext) {

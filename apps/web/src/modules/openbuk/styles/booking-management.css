@@ -1,0 +1,30 @@
+@scope (.openbuk-surface) {
+  .guest-management-link {
+    text-align: center;
+    padding: 0 24px 24px;
+  }
+  .guest-management {
+    padding: 24px;
+    display: grid;
+    gap: 18px;
+  }
+  .guest-management h1,
+  .guest-management h2,
+  .guest-current p {
+    margin: 0;
+  }
+  .guest-current {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    background: white;
+    border-radius: 10px;
+  }
+  .guest-current .field {
+    margin-bottom: 0;
+  }
+  .guest-management .actions {
+    flex-wrap: wrap;
+  }
+}

@@ -1,5 +1,12 @@
 {
   "en": {
+    "guestManage": "Manage appointment",
+    "guestManagePrivate": "Save this private link to manage your appointment.",
+    "guestManageUnavailable": "This appointment link is unavailable or has expired.",
+    "guestManageCopy": "Copy private link",
+    "guestManageMoved": "Your appointment has moved.",
+    "guestManageCancelled": "Your appointment has been cancelled.",
+    "guestCancelWarning": "Cancelling releases your time. You’ll need to make a new booking if you change your mind.",
     "agendaConfirmMove": "Confirm move",
     "agendaConfirmCancel": "Confirm cancellation",
     "agendaDay": "Day",
@@ -176,6 +183,13 @@
     "withStaff": "With"
   },
   "de": {
+    "guestManage": "Termin verwalten",
+    "guestManagePrivate": "Speichere diesen privaten Link, um deinen Termin zu verwalten.",
+    "guestManageUnavailable": "Dieser Terminlink ist nicht verfügbar oder abgelaufen.",
+    "guestManageCopy": "Privaten Link kopieren",
+    "guestManageMoved": "Dein Termin wurde verschoben.",
+    "guestManageCancelled": "Dein Termin wurde storniert.",
+    "guestCancelWarning": "Die Stornierung gibt deinen Termin frei. Wenn du es dir anders überlegst, buche bitte neu.",
     "agendaConfirmMove": "Verschiebung bestätigen",
     "agendaConfirmCancel": "Stornierung bestätigen",
     "agendaDay": "Tag",
@@ -352,6 +366,13 @@
     "withStaff": "Bei"
   },
   "vi": {
+    "guestManage": "Quản lý cuộc hẹn",
+    "guestManagePrivate": "Lưu liên kết riêng tư này để quản lý cuộc hẹn.",
+    "guestManageUnavailable": "Liên kết cuộc hẹn này không khả dụng hoặc đã hết hạn.",
+    "guestManageCopy": "Sao chép liên kết riêng tư",
+    "guestManageMoved": "Cuộc hẹn của bạn đã được dời.",
+    "guestManageCancelled": "Cuộc hẹn của bạn đã được hủy.",
+    "guestCancelWarning": "Việc hủy sẽ giải phóng khung giờ của bạn. Nếu đổi ý, bạn cần đặt lại.",
     "agendaConfirmMove": "Xác nhận dời lịch",
     "agendaConfirmCancel": "Xác nhận hủy",
     "agendaDay": "Ngày",
@@ -528,6 +549,13 @@
     "withStaff": "Với"
   },
   "tr": {
+    "guestManage": "Randevuyu yönet",
+    "guestManagePrivate": "Randevunuzu yönetmek için bu özel bağlantıyı kaydedin.",
+    "guestManageUnavailable": "Bu randevu bağlantısı kullanılamıyor veya süresi doldu.",
+    "guestManageCopy": "Özel bağlantıyı kopyala",
+    "guestManageMoved": "Randevunuz taşındı.",
+    "guestManageCancelled": "Randevunuz iptal edildi.",
+    "guestCancelWarning": "İptal saatinizi boşaltır. Fikrinizi değiştirirseniz yeni bir randevu alın.",
     "agendaConfirmMove": "Taşımayı onayla",
     "agendaConfirmCancel": "İptali onayla",
     "agendaDay": "Gün",
@@ -704,6 +732,13 @@
     "withStaff": "ile"
   },
   "pl": {
+    "guestManage": "Zarządzaj wizytą",
+    "guestManagePrivate": "Zapisz ten prywatny link, aby zarządzać wizytą.",
+    "guestManageUnavailable": "Link do wizyty jest niedostępny lub wygasł.",
+    "guestManageCopy": "Skopiuj prywatny link",
+    "guestManageMoved": "Wizyta została przeniesiona.",
+    "guestManageCancelled": "Wizyta została anulowana.",
+    "guestCancelWarning": "Anulowanie zwalnia termin. Jeśli zmienisz zdanie, zarezerwuj ponownie.",
     "agendaConfirmMove": "Potwierdź przeniesienie",
     "agendaConfirmCancel": "Potwierdź anulowanie",
     "agendaDay": "Dzień",
@@ -880,6 +915,13 @@
     "withStaff": "Z"
   },
   "ru": {
+    "guestManage": "Управление записью",
+    "guestManagePrivate": "Сохраните эту личную ссылку для управления записью.",
+    "guestManageUnavailable": "Эта ссылка недоступна или срок её действия истёк.",
+    "guestManageCopy": "Скопировать личную ссылку",
+    "guestManageMoved": "Ваша запись перенесена.",
+    "guestManageCancelled": "Ваша запись отменена.",
+    "guestCancelWarning": "При отмене время освобождается. Если передумаете, оформите новую запись.",
     "agendaConfirmMove": "Подтвердить перенос",
     "agendaConfirmCancel": "Подтвердить отмену",
     "agendaDay": "День",
@@ -1056,6 +1098,13 @@
     "withStaff": "С"
   },
   "pt-PT": {
+    "guestManage": "Gerir marcação",
+    "guestManagePrivate": "Guarde esta ligação privada para gerir a sua marcação.",
+    "guestManageUnavailable": "A ligação da marcação está indisponível ou expirou.",
+    "guestManageCopy": "Copiar ligação privada",
+    "guestManageMoved": "A sua marcação foi alterada.",
+    "guestManageCancelled": "A sua marcação foi cancelada.",
+    "guestCancelWarning": "O cancelamento liberta o horário. Faça uma nova marcação se mudar de ideias.",
     "agendaConfirmMove": "Confirmar alteração",
     "agendaConfirmCancel": "Confirmar cancelamento",
     "agendaDay": "Dia",
@@ -1232,6 +1281,13 @@
     "withStaff": "Com"
   },
   "it": {
+    "guestManage": "Gestisci appuntamento",
+    "guestManagePrivate": "Salva questo link privato per gestire l’appuntamento.",
+    "guestManageUnavailable": "Il link per l’appuntamento è scaduto o non disponibile.",
+    "guestManageCopy": "Copia link privato",
+    "guestManageMoved": "Il tuo appuntamento è stato spostato.",
+    "guestManageCancelled": "Il tuo appuntamento è stato annullato.",
+    "guestCancelWarning": "L’annullamento libera l’orario. Prenota un nuovo appuntamento se cambi idea.",
     "agendaConfirmMove": "Conferma lo spostamento",
     "agendaConfirmCancel": "Conferma l’annullamento",
     "agendaDay": "Giorno",
@@ -1408,6 +1464,13 @@
     "withStaff": "Con"
   },
   "fr": {
+    "guestManage": "Gérer le rendez-vous",
+    "guestManagePrivate": "Enregistrez ce lien privé pour gérer votre rendez-vous.",
+    "guestManageUnavailable": "Ce lien de rendez-vous a expiré ou est indisponible.",
+    "guestManageCopy": "Copier le lien privé",
+    "guestManageMoved": "Votre rendez-vous a été déplacé.",
+    "guestManageCancelled": "Votre rendez-vous a été annulé.",
+    "guestCancelWarning": "L’annulation libère votre créneau. Réservez un nouveau rendez-vous si vous changez d’avis.",
     "agendaConfirmMove": "Confirmer le déplacement",
     "agendaConfirmCancel": "Confirmer l’annulation",
     "agendaDay": "Jour",
@@ -1584,6 +1647,13 @@
     "withStaff": "Avec"
   },
   "es": {
+    "guestManage": "Gestionar cita",
+    "guestManagePrivate": "Guarda este enlace privado para gestionar tu cita.",
+    "guestManageUnavailable": "Este enlace de cita no está disponible o ha caducado.",
+    "guestManageCopy": "Copiar enlace privado",
+    "guestManageMoved": "Tu cita se ha cambiado de hora.",
+    "guestManageCancelled": "Tu cita se ha cancelado.",
+    "guestCancelWarning": "La cancelación libera tu hora. Si cambias de opinión, reserva una cita nueva.",
     "agendaConfirmMove": "Confirmar cambio",
     "agendaConfirmCancel": "Confirmar cancelación",
     "agendaDay": "Día",

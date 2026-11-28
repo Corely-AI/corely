@@ -208,6 +208,7 @@ export const OpenBukBookSchema = z
       })
       .strict(),
     consentAccepted: z.literal(true),
+    locale: OpenBukLocaleSchema.optional(),
   })
   .strict();
 export type OpenBukBook = z.infer<typeof OpenBukBookSchema>;
@@ -222,6 +223,36 @@ export const OpenBukReceiptSchema = OpenBukSlotSchema.extend({
   timezone: z.string(),
 });
 export type OpenBukReceipt = z.infer<typeof OpenBukReceiptSchema>;
+export const OpenBukManagementAccessSchema = z.object({
+  token: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  expiresAt: z.string().datetime(),
+});
+export const OpenBukPublicBookResponseSchema = z.object({
+  receipt: OpenBukReceiptSchema,
+  management: OpenBukManagementAccessSchema.optional(),
+});
+export type OpenBukPublicBookResponse = z.infer<typeof OpenBukPublicBookResponseSchema>;
+
+const ManagementTokenSchema = z.string().max(256);
+export const OpenBukManageInputSchema = z.object({ token: ManagementTokenSchema }).strict();
+export const OpenBukManageAvailabilityInputSchema = OpenBukManageInputSchema.extend({
+  day: OpenBukDaySchema,
+});
+export const OpenBukManageCancelInputSchema = OpenBukManageInputSchema.extend({
+  version: z.string().datetime(),
+});
+export const OpenBukManageMoveInputSchema = OpenBukManageCancelInputSchema.extend({
+  startAt: z.string().datetime(),
+});
+export const OpenBukManageDetailsSchema = OpenBukSlotSchema.extend({
+  reference: z.string(),
+  serviceName: z.string(),
+  staffName: z.string(),
+  timezone: z.string(),
+  version: z.string().datetime(),
+  canMove: z.boolean(),
+});
+export type OpenBukManageDetails = z.infer<typeof OpenBukManageDetailsSchema>;
 export const OpenBukAppointmentSchema = OpenBukReceiptSchema.extend({
   id: z.string(),
   customerName: z.string(),

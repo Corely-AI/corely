@@ -1,6 +1,7 @@
 import type {
   OpenBukAppointment,
   OpenBukManagerBook,
+  OpenBukLocale,
   OpenBukReceipt,
   OpenBukSetup,
   OpenBukSetupDraft,
@@ -13,7 +14,11 @@ import type { TransactionContext } from "@corely/kernel";
 import type { OccupiedInterval } from "../../domain/openbuk-availability";
 
 export type StudioScope = { tenantId: string; workspaceId: string };
-export type BookingReceiptRecord = { fingerprint: string; receipt: OpenBukReceipt };
+export type BookingReceiptRecord = {
+  fingerprint: string;
+  receipt: OpenBukReceipt;
+  guestBookingId?: string;
+};
 export type OpenBukSelection = Pick<OpenBukManagerBook, "serviceId" | "staffId">;
 export type OpenBukTeamConfiguration = {
   revision: string;
@@ -70,6 +75,11 @@ export interface OpenBukRepositoryPort {
     record: BookingReceiptRecord,
     tx: TransactionContext
   ): Promise<void>;
+  snapshot(
+    scope: StudioScope,
+    bookingId: string,
+    tx?: TransactionContext
+  ): Promise<(OpenBukReceipt & { locale?: OpenBukLocale }) | null>;
   create(
     scope: StudioScope,
     studio: OpenBukStudio,

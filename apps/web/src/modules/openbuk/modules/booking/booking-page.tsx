@@ -1,18 +1,31 @@
 import { BookingConfirmation } from "@corely/booking-ui";
 import { confirmationFooters } from "../../confirmation-extensions";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
   normalizeCorelyLocale,
   type OpenBukPublicStudio,
   type OpenBukSlot,
-  type OpenBukReceipt,
+  type OpenBukPublicBookResponse,
 } from "@corely/contracts";
 import { publicApi, json, BookingPolicyError } from "../../shared/api";
 import { LanguageSwitch, useLanguage } from "../../shared/i18n";
 import { Logo, Loading, ErrorMessage, Field, localDay, money, time } from "../../shared/ui";
+import { BookingManagementPage } from "./booking-management-page";
+
 export default function BookingPage() {
   const { studioSlug = "" } = useParams();
+  const location = useLocation();
+  const managementToken = new URLSearchParams(location.hash.slice(1)).get("manage");
+  return managementToken === null ? (
+    <BookingCheckout studioSlug={studioSlug} />
+  ) : (
+    <BookingManagementPage key={managementToken} studioSlug={studioSlug} token={managementToken} />
+  );
+}
+
+function BookingCheckout({ studioSlug }: { studioSlug: string }) {
+  const location = useLocation();
   const { t, locale, setLocale } = useLanguage();
   const [studio, setStudio] = useState<OpenBukPublicStudio | null>(null);
   const [slots, setSlots] = useState<OpenBukSlot[]>([]);
@@ -24,7 +37,7 @@ export default function BookingPage() {
   const [error, setError] = useState<"requestFailed" | "slotConflict" | null>(null);
   const [policyRejection, setPolicyRejection] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [receipt, setReceipt] = useState<OpenBukReceipt | null>(null);
+  const [confirmation, setConfirmation] = useState<OpenBukPublicBookResponse | null>(null);
   const [revision, setRevision] = useState(0);
   const attempt = useRef<{ fingerprint: string; key: string } | null>(null);
   const service = studio?.services?.find((item) => item.serviceId === serviceId) ?? studio;
@@ -119,17 +132,18 @@ export default function BookingPage() {
       startAt: slot.startAt,
       customer: { name: String(data.get("name")), email: String(data.get("email")) },
       consentAccepted: true,
+      locale,
     };
     const fingerprint = JSON.stringify(body);
     if (attempt.current?.fingerprint !== fingerprint) {
       attempt.current = { fingerprint, key: crypto.randomUUID() };
     }
     try {
-      const result = await publicApi<{ receipt: OpenBukReceipt }>(studioSlug, "bookings", {
+      const result = await publicApi<OpenBukPublicBookResponse>(studioSlug, "bookings", {
         ...json("POST", body),
         headers: { "Content-Type": "application/json", "Idempotency-Key": attempt.current.key },
       });
-      setReceipt(result.receipt);
+      setConfirmation(result);
     } catch (e) {
       if (e instanceof BookingPolicyError) {
         setPolicyRejection(e.message);
@@ -163,21 +177,38 @@ export default function BookingPage() {
               </button>
             </>
           )
-        ) : receipt ? (
-          <BookingConfirmation
-            studioName={studio.studioName}
-            receipt={receipt}
-            locale={locale}
-            labels={{
-              success: t("success"),
-              successBody: t("successBody"),
-              withStaff: t("withStaff"),
-              reference: t("reference"),
-            }}
-            formatTime={time}
-            formatMoney={money}
-            confirmationFooter={confirmationFooters.get(studio.slug)}
-          />
+        ) : confirmation ? (
+          <>
+            <BookingConfirmation
+              studioName={studio.studioName}
+              receipt={confirmation.receipt}
+              locale={locale}
+              labels={{
+                success: t("success"),
+                successBody: t("successBody"),
+                withStaff: t("withStaff"),
+                reference: t("reference"),
+              }}
+              formatTime={time}
+              formatMoney={money}
+              confirmationFooter={confirmationFooters.get(studio.slug)}
+            />
+            {confirmation.management && (
+              <div className="guest-management-link">
+                <Link
+                  className="button"
+                  to={{
+                    pathname: location.pathname,
+                    search: location.search,
+                    hash: `manage=${confirmation.management.token}`,
+                  }}
+                >
+                  {t("guestManage")}
+                </Link>
+                <p className="muted">{t("guestManagePrivate")}</p>
+              </div>
+            )}
+          </>
         ) : service && staff ? (
           <>
             <div className="booking-banner">

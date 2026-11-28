@@ -5,6 +5,14 @@ import { WorkspacesModule } from "../workspaces";
 import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
 import { OpenBukAppointmentChangeUseCase } from "./application/use-cases/openbuk-appointment-change.usecase";
 import { OpenBukAgendaCommandsUseCase } from "./application/use-cases/openbuk-agenda-commands.usecase";
+import { OpenBukGuestCredentials } from "./application/use-cases/openbuk-guest-credentials";
+import { OpenBukGuestManagementUseCase } from "./application/use-cases/openbuk-guest-management.usecase";
+import { OpenBukManagementController } from "./http/openbuk-management.controller";
+import {
+  OPENBUK_GUEST_ACCESS_STORE,
+  OPENBUK_GUEST_SIGNING_SECRET,
+} from "./application/ports/openbuk-guest-access.port";
+import { OpenBukGuestAccessAdapter } from "./infrastructure/adapters/openbuk-guest-access.adapter";
 import { OpenBukAdminController, OpenBukPublicController } from "./http/openbuk.controller";
 import { OPENBUK_REPOSITORY } from "./application/ports/openbuk-repository.port";
 import { PrismaOpenBukRepositoryAdapter } from "./infrastructure/adapters/prisma-openbuk-repository.adapter";
@@ -75,6 +83,7 @@ import { bookingPolicies } from "./booking-extensions";
   controllers: [
     OpenBukAdminController,
     OpenBukPublicController,
+    OpenBukManagementController,
     BookingResourceController,
     BookingServiceController,
     BookingController,
@@ -88,6 +97,14 @@ import { bookingPolicies } from "./booking-extensions";
     OpenBukStudioUseCase,
     OpenBukAppointmentChangeUseCase,
     OpenBukAgendaCommandsUseCase,
+    OpenBukGuestCredentials,
+    OpenBukGuestManagementUseCase,
+    { provide: OPENBUK_GUEST_ACCESS_STORE, useClass: OpenBukGuestAccessAdapter },
+    {
+      provide: OPENBUK_GUEST_SIGNING_SECRET,
+      useFactory: (env: EnvService) => env.JWT_SECRET ?? "",
+      inject: [EnvService],
+    },
     { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },

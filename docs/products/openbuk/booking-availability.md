@@ -58,3 +58,16 @@ time before confirmation. Booking locks the resources and rechecks the original
 version and the selected time. If the time is taken, the form reloads the
 available options and preserves the draft. Cancellation requires a separate
 confirmation and releases the time while preserving the appointment record.
+
+## Guest management
+
+Guests who confirm through the public OpenBuk page can save a private link to
+their appointment. Links expire at the original appointment start or after 90
+days. Cancellation revokes the link. The management view shows the booking
+reference and appointment details. Booking keeps customer contact and workspace
+records private.
+
+When the original staff member and service still support the appointment’s
+duration and buffers, a guest can choose another time. The move revalidates
+availability and policy under the same Booking locks. Guest cancellation checks
+the same booking policy and confirmation version before releasing the time.
