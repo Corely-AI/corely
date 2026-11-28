@@ -65,6 +65,11 @@ export class OperationalRequestsController {
     return this.command("update", id, body, req);
   }
 
+  @Patch(":id/procedure")
+  linkProcedure(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
+    return this.command("link-procedure", id, body, req);
+  }
+
   @Post(":id/submit")
   submit(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
     return this.command("submit", id, body, req);

@@ -65,6 +65,9 @@ import { copilotToolsProvider } from "./ai-copilot.tools.provider";
 import { TasksModule } from "../tasks/tasks.module";
 import { AI_TEXT_PORT } from "../../shared/ai/ai-text.port";
 import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
+import { KnowledgeModule } from "../knowledge/knowledge.module";
+import { KnowledgeQuestionController } from "./adapters/http/knowledge-question.controller";
+import { AnswerKnowledgeQuestionUseCase } from "./application/use-cases/answer-knowledge-question.usecase";
 
 @Module({
   imports: [
@@ -89,8 +92,9 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     PlatformEntitlementsModule,
     PlatformModule,
     PromptModule,
+    KnowledgeModule,
   ],
-  controllers: [CopilotController],
+  controllers: [CopilotController, KnowledgeQuestionController],
   providers: [
     PrismaAgentRunRepository,
     PrismaMessageRepository,
@@ -104,6 +108,7 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     TenantGuard,
     AuthorizeToolService,
     AiSdkTextAdapter,
+    AnswerKnowledgeQuestionUseCase,
     { provide: AI_TEXT_PORT, useExisting: AiSdkTextAdapter },
     { provide: "COPILOT_LOGGER", useClass: NestLoggerAdapter },
     {

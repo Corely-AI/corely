@@ -74,6 +74,11 @@ export function createRequestsClient(workspaceId: string) {
         await write(path(id), "PATCH", { version, draft }, key)
       );
     },
+    async linkProcedure(id: string, version: number, procedureId: string | null, key: string) {
+      return OperationalRequestSchema.parse(
+        await write(`${path(id)}/procedure`, "PATCH", { version, procedureId }, key)
+      );
+    },
     async transition(id: string, command: "submit" | "withdraw", version: number, key: string) {
       return OperationalRequestSchema.parse(
         await write(`${path(id)}/${command}`, "POST", { version }, key)

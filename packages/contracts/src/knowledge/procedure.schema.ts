@@ -100,6 +100,31 @@ export const ProcedureListSchema = z
     ),
   })
   .strict();
+
+export const PublishedProcedureSearchSchema = z
+  .object({ query: z.string().trim().max(160).default("") })
+  .strict();
+export const PublishedProcedureSummarySchema = identity
+  .extend({
+    title: metadata.shape.title,
+    reviewDate: metadata.shape.reviewDate,
+    version: PublishedProcedureSchema.shape.version,
+    reviewOverdue: z.boolean(),
+  })
+  .strict();
+export const PublishedProcedureSearchResultSchema = z
+  .object({
+    items: z.array(PublishedProcedureSummarySchema),
+    limited: z.boolean(),
+    canManage: z.boolean(),
+  })
+  .strict();
+export const PublishedProcedureReaderDetailSchema = identity
+  .extend({
+    published: PublishedProcedureSchema,
+    reviewOverdue: z.boolean(),
+  })
+  .strict();
 export const ProcedurePublicationEventTypeSchema = z.enum([
   "knowledge.procedure.publish",
   "knowledge.procedure.archive",
@@ -118,3 +143,30 @@ export type ProcedureFields = z.infer<typeof ProcedureFieldsSchema>;
 export type PublishedProcedure = z.infer<typeof PublishedProcedureSchema>;
 export type ProcedureDetail = z.infer<typeof ProcedureDetailSchema>;
 export type ProcedureList = z.infer<typeof ProcedureListSchema>;
+export type PublishedProcedureSummary = z.infer<typeof PublishedProcedureSummarySchema>;
+export type PublishedProcedureSearchResult = z.infer<typeof PublishedProcedureSearchResultSchema>;
+export type PublishedProcedureReaderDetail = z.infer<typeof PublishedProcedureReaderDetailSchema>;
+
+export const KnowledgeQuestionSchema = z
+  .object({ question: z.string().trim().min(3).max(400) })
+  .strict();
+export const KnowledgeCitationSchema = PublishedProcedureSummarySchema.omit({ ownerName: true })
+  .extend({
+    quote: z.string().min(1).max(480),
+    publishedAt: PublishedProcedureSchema.shape.publishedAt,
+  })
+  .strict();
+export const KnowledgeAnswerSchema = z.discriminatedUnion("status", [
+  z
+    .object({
+      status: z.literal("answered"),
+      checkedAt: z.string().datetime(),
+      citations: z.array(KnowledgeCitationSchema).min(1).max(3),
+    })
+    .strict(),
+  z.object({ status: z.literal("insufficient") }).strict(),
+  z.object({ status: z.literal("source-changed") }).strict(),
+  z.object({ status: z.literal("unavailable") }).strict(),
+]);
+export type KnowledgeAnswer = z.infer<typeof KnowledgeAnswerSchema>;
+export type KnowledgeCitation = z.infer<typeof KnowledgeCitationSchema>;

@@ -14,6 +14,7 @@ import {
   Badge,
   Button,
   EmptyState,
+  Input,
   LoadingSkeleton,
   Skeleton,
 } from "@corely/ui";
@@ -24,8 +25,9 @@ import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-pro
 import { createProceduresClient, type ProceduresClient } from "./procedures-client";
 import { knowledgeCopy, type KnowledgeCopy } from "./knowledge-copy";
 import { ProcedureForm } from "./procedure-form";
+import { KnowledgeAssistant } from "./knowledge-assistant";
 
-type Mode = "list" | "new" | "detail" | "edit";
+type Mode = "list" | "search" | "published" | "new" | "detail" | "edit" | "ask";
 type ScopeKey = readonly unknown[];
 type Action = "publish" | "archive";
 type FormValues = Pick<UpdateProcedure, "title" | "reviewDate" | "content">;
@@ -78,6 +80,180 @@ function ProcedureLoading({ copy, list = false }: { copy: KnowledgeCopy; list?: 
   );
 }
 
+const readerQueryOptions = {
+  gcTime: 0,
+  staleTime: 0,
+  networkMode: "always",
+  refetchOnMount: "always",
+  refetchOnReconnect: "always",
+  refetchOnWindowFocus: "always",
+  retry: false,
+  meta: { persist: false },
+} as const;
+
+type KnowledgeViewProps = {
+  client: ProceduresClient;
+  scope: ScopeKey;
+  copy: KnowledgeCopy;
+  locale: string;
+  basePath: string;
+};
+
+function PublishedSearchView({
+  client,
+  scope,
+  copy,
+  locale,
+  basePath,
+  assistantEnabled,
+}: KnowledgeViewProps & { assistantEnabled: boolean }) {
+  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
+  const query = useQuery({
+    ...readerQueryOptions,
+    queryKey: [...scope, "published", "search", search],
+    queryFn: ({ signal }) => client.searchPublished(search, signal),
+  });
+  return (
+    <>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">{copy.heading}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{copy.subtitle}</p>
+        </div>
+        {assistantEnabled && (
+          <Button variant="outline" asChild>
+            <Link to={`${basePath}/ask`}>{copy.ask}</Link>
+          </Button>
+        )}
+        {!query.isFetching && !query.isError && query.data?.canManage && (
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link to={`${basePath}/manage`}>{copy.manage}</Link>
+            </Button>
+            <Button asChild>
+              <Link to={`${basePath}/new`}>{copy.new}</Link>
+            </Button>
+          </div>
+        )}
+      </div>
+      <form
+        className="space-y-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = input.trim();
+          if (next === search) {
+            void query.refetch();
+          } else {
+            setSearch(next);
+          }
+        }}
+      >
+        <label htmlFor="published-knowledge-search" className="text-sm font-medium">
+          {copy.searchLabel}
+        </label>
+        <div className="flex gap-2">
+          <Input
+            id="published-knowledge-search"
+            type="search"
+            maxLength={160}
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+          />
+          <Button type="submit">{copy.search}</Button>
+        </div>
+      </form>
+      {query.isPending || query.isFetching ? (
+        <ProcedureLoading copy={copy} list />
+      ) : query.isError ? (
+        <ProcedureState copy={copy} error={query.error} retry={() => void query.refetch()} />
+      ) : query.data.items.length === 0 ? (
+        <div role="status" className="rounded-xl border border-border bg-card">
+          <EmptyState
+            title={search ? copy.unmatched : copy.none}
+            description={search ? copy.refine : copy.empty}
+          />
+        </div>
+      ) : (
+        <>
+          <ul
+            aria-label={copy.browse}
+            className="divide-y divide-border rounded-xl border border-border bg-card"
+          >
+            {query.data.items.map((item) => (
+              <li
+                key={item.id}
+                className="flex flex-wrap items-start justify-between gap-3 px-5 py-4"
+              >
+                <div className="min-w-0">
+                  <Link
+                    className="break-words font-semibold text-primary hover:underline"
+                    to={`${basePath}/published/${item.id}`}
+                  >
+                    {item.title}
+                  </Link>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {item.ownerName || copy.ownerUnknown} · {copy.review}{" "}
+                    {reviewDate(item.reviewDate, locale)} · {copy.version} {item.version}
+                  </p>
+                </div>
+                {item.reviewOverdue && <Badge variant="outline">{copy.overdue}</Badge>}
+              </li>
+            ))}
+          </ul>
+          {query.data.limited && <p className="text-sm text-muted-foreground">{copy.limited}</p>}
+        </>
+      )}
+    </>
+  );
+}
+
+function PublishedReaderView({
+  client,
+  scope,
+  copy,
+  locale,
+  basePath,
+  id,
+}: KnowledgeViewProps & { id: string }) {
+  const query = useQuery({
+    ...readerQueryOptions,
+    queryKey: [...scope, "published", "detail", id],
+    queryFn: ({ signal }) => client.published(id, signal),
+  });
+  return (
+    <>
+      <Link to={basePath} className="text-sm text-primary underline">
+        {copy.browse}
+      </Link>
+      {query.isPending || query.isFetching ? (
+        <ProcedureLoading copy={copy} />
+      ) : query.isError ? (
+        <ProcedureState copy={copy} error={query.error} retry={() => void query.refetch()} />
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="break-words text-2xl font-semibold">{query.data.published.title}</h1>
+            {query.data.reviewOverdue && <Badge variant="outline">{copy.overdue}</Badge>}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {copy.owner} · {query.data.ownerName || copy.ownerUnknown} · {copy.review}{" "}
+            {reviewDate(query.data.published.reviewDate, locale)} · {copy.version}{" "}
+            {query.data.published.version}
+          </p>
+          <ContentView
+            client={client}
+            copy={copy}
+            fields={query.data.published}
+            id={id}
+            publishedOnly
+          />
+        </>
+      )}
+    </>
+  );
+}
+
 function ProcedureListView({
   client,
   scope,
@@ -99,7 +275,10 @@ function ProcedureListView({
     <>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{copy.heading}</h1>
+          <Link to={basePath} className="text-sm text-primary underline">
+            {copy.browse}
+          </Link>
+          <h1 className="mt-3 text-2xl font-semibold">{copy.manage}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{copy.subtitle}</p>
         </div>
         {query.data?.canManage && !query.isError && (
@@ -112,6 +291,8 @@ function ProcedureListView({
         <ProcedureLoading copy={copy} list />
       ) : query.isError ? (
         <ProcedureState copy={copy} error={query.error} retry={() => void query.refetch()} />
+      ) : !query.data.canManage ? (
+        <p role="alert">{copy.denied}</p>
       ) : query.data.items.length === 0 ? (
         <div className="rounded-xl border border-border bg-card">
           <EmptyState title={copy.none} description={copy.empty} />
@@ -164,12 +345,14 @@ function ContentView({
   id,
   copy,
   client,
+  publishedOnly = false,
 }: {
   fields: ProcedureFields;
   label?: string;
   id: string;
   copy: KnowledgeCopy;
   client: ProceduresClient;
+  publishedOnly?: boolean;
 }) {
   const { content } = fields;
   const download = useMutation({
@@ -177,7 +360,7 @@ function ContentView({
       fileId,
       filename,
     }: Extract<ProcedureFields["content"], { kind?: "file" }>) => {
-      const blob = await client.download(id, fileId);
+      const blob = await client.download(id, fileId, publishedOnly);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -452,11 +635,13 @@ function ProcedureDetailView({
 }
 
 export function KnowledgePage({
-  mode = "list",
+  mode = "search",
   basePath = "/knowledge",
+  assistantEnabled = false,
 }: {
   mode?: Mode;
   basePath?: string;
+  assistantEnabled?: boolean;
 }) {
   const { activeWorkspaceId } = useWorkspace();
   const { user } = useAuth();
@@ -476,6 +661,36 @@ export function KnowledgePage({
     >
       {!activeWorkspaceId ? (
         <p role="alert">{copy.denied}</p>
+      ) : mode === "ask" ? (
+        <KnowledgeAssistant
+          client={client}
+          copy={copy}
+          locale={locale}
+          basePath={basePath}
+          enabled={assistantEnabled}
+        />
+      ) : mode === "search" ? (
+        <PublishedSearchView
+          client={client}
+          scope={scope}
+          copy={copy}
+          locale={locale}
+          basePath={basePath}
+          assistantEnabled={assistantEnabled}
+        />
+      ) : mode === "published" ? (
+        id ? (
+          <PublishedReaderView
+            client={client}
+            scope={scope}
+            copy={copy}
+            locale={locale}
+            basePath={basePath}
+            id={id}
+          />
+        ) : (
+          <p role="alert">{copy.denied}</p>
+        )
       ) : mode === "list" ? (
         <ProcedureListView
           client={client}

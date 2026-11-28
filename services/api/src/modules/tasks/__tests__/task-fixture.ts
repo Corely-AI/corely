@@ -1,5 +1,6 @@
 import { TaskContextController } from "../adapters/http/task-context.controller";
 import { TaskContextUseCase } from "../application/task-context.usecase";
+import type { TaskSourceReaders } from "../application/ports/task-context.port";
 import { ExtTaskContextAdapter } from "../infrastructure/ext-task-context.adapter";
 import { PrivateEmailOriginalsAdapter } from "../../documents/infrastructure/prisma/private-email-originals.adapter";
 import { TaskAttachmentsAdapter } from "../../documents/infrastructure/prisma/task-attachments.adapter";
@@ -60,7 +61,7 @@ import { PrismaWorkspaceRepository } from "../../workspaces/infrastructure/adapt
 import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
 import type { UseCaseContext } from "@corely/kernel";
 
-export async function tasksFixture(prisma: PrismaService) {
+export async function tasksFixture(prisma: PrismaService, externalSources: TaskSourceReaders = {}) {
   const uid = () => randomUUID();
   const tenantA = uid(),
     tenantB = uid(),
@@ -240,7 +241,9 @@ export async function tasksFixture(prisma: PrismaService) {
   const objectStorage = new FakeObjectStoragePort();
   objectStorage.getObject = async ({ objectKey }) => {
     const object = objectStorage.objects.get(objectKey);
-    if (!object) {throw new Error("Test attachment missing");}
+    if (!object) {
+      throw new Error("Test attachment missing");
+    }
     return object.bytes;
   };
   const env = { STORAGE_KEY_PREFIX: "" } as EnvService;
@@ -256,6 +259,7 @@ export async function tasksFixture(prisma: PrismaService) {
     taskRepo,
     new ExtTaskContextAdapter(new PrismaExtKvAdapter(prisma)),
     {
+      ...externalSources,
       booking: {
         canRead: async (id, current) =>
           bookingSourceAvailable &&
@@ -382,7 +386,9 @@ export async function tasksFixture(prisma: PrismaService) {
     for (const tenantId of [tenantA, tenantB]) {
       await prisma.file.deleteMany({ where: { tenantId } });
       await prisma.document.deleteMany({ where: { tenantId } });
-      await prisma.extKv.deleteMany({ where: { tenantId, moduleId: { in: ["people", "tasks"] } } });
+      await prisma.extKv.deleteMany({
+        where: { tenantId, moduleId: { in: ["people", "tasks", "knowledge"] } },
+      });
       await prisma.auditLog.deleteMany({ where: { tenantId } });
       await prisma.outboxEvent.deleteMany({ where: { tenantId } });
       await prisma.bookingResource.deleteMany({ where: { tenantId } });

@@ -11,9 +11,14 @@ import {
   CreateProcedureSchema,
   ProcedureFileMaxBytes,
   ProcedureTransitionSchema,
+  PublishedProcedureSearchSchema,
   UpdateProcedureSchema,
   type ProcedureDetail,
   type ProcedureList,
+  type PublishedProcedure,
+  type PublishedProcedureReaderDetail,
+  type PublishedProcedureSearchResult,
+  type PublishedProcedureSummary,
 } from "@corely/contracts";
 import {
   AUDIT_PORT,
@@ -31,15 +36,44 @@ import {
 } from "../../identity/public";
 import { TenantEntitlementService } from "../../platform/public";
 import { publishProcedure, type ProcedureRecord } from "../domain/procedure";
+import { findProcedurePassages } from "../domain/procedure-passages";
 import {
   PROCEDURE_REPOSITORY,
   type ProcedureRepository,
   type ProcedureScope,
 } from "./ports/procedure-repository.port";
+import type { PublishedProcedureReader } from "./ports/published-procedure-reader.port";
 
 type Command = "create" | "edit" | "publish" | "archive";
 type Input = ReturnType<typeof UpdateProcedureSchema.parse>;
 const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const READER_LIST_LIMIT = 100;
+
+function readPublication(record: ProcedureRecord): PublishedProcedure {
+  if (record.archivedAt || !record.published) {
+    throw new NotFoundException("Procedure not found");
+  }
+  return record.published;
+}
+
+function readerSummary(
+  record: ProcedureRecord,
+  published: PublishedProcedure,
+  today: string
+): PublishedProcedureSummary {
+  return {
+    id: record.id,
+    ownerName: record.ownerName,
+    title: published.title,
+    reviewDate: published.reviewDate,
+    version: published.version,
+    reviewOverdue: published.reviewDate < today,
+  };
+}
+
+function searchText(value: string) {
+  return value.normalize("NFKC").toLowerCase();
+}
 
 function commandId(values: unknown) {
   // An upload retried after a transaction failure writes to the same storage key.
@@ -48,7 +82,7 @@ function commandId(values: unknown) {
 }
 
 @Injectable()
-export class ProceduresUseCase {
+export class ProceduresUseCase implements PublishedProcedureReader {
   constructor(
     @Inject(PROCEDURE_REPOSITORY) private readonly repo: ProcedureRepository,
     @Inject(PROCEDURE_DOCUMENTS) private readonly files: ProcedureDocuments,
@@ -127,9 +161,80 @@ export class ProceduresUseCase {
     return this.view(await this.record(scope, id), canManage);
   }
 
-  async download(id: string, fileId: string, ctx: UseCaseContext) {
+  async searchPublished(
+    query: unknown,
+    ctx: UseCaseContext
+  ): Promise<PublishedProcedureSearchResult> {
     const { scope, canManage } = await this.authorize(ctx);
-    const record = this.view(await this.record(scope, id), canManage);
+    const { query: text } = PublishedProcedureSearchSchema.parse(query);
+    const search = searchText(text);
+    const today = new Date().toISOString().slice(0, 10);
+    const items = (await this.repo.list(scope)).flatMap((record) => {
+      const { published } = record;
+      if (record.archivedAt || !published) {
+        return [];
+      }
+      const { content, title } = published;
+      const matches =
+        !search ||
+        searchText(title).includes(search) ||
+        (content.kind === "page" && searchText(content.text).includes(search)) ||
+        (content.kind === "file" && searchText(content.filename).includes(search));
+      return matches ? [readerSummary(record, published, today)] : [];
+    });
+    items.sort(
+      (left, right) => left.title.localeCompare(right.title) || left.id.localeCompare(right.id)
+    );
+    return {
+      items: items.slice(0, READER_LIST_LIMIT),
+      limited: items.length > READER_LIST_LIMIT,
+      canManage,
+    };
+  }
+
+  async canRead(id: string, ctx: UseCaseContext, tx?: TransactionContext): Promise<boolean> {
+    try {
+      const { scope } = await this.authorize(ctx, tx);
+      readPublication(await this.record(scope, id, tx));
+      return true;
+    } catch (error) {
+      if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  async previewPublished(id: string, ctx: UseCaseContext): Promise<PublishedProcedureSummary> {
+    const { scope } = await this.authorize(ctx);
+    const record = await this.record(scope, id);
+    return readerSummary(record, readPublication(record), new Date().toISOString().slice(0, 10));
+  }
+
+  async detailPublished(id: string, ctx: UseCaseContext): Promise<PublishedProcedureReaderDetail> {
+    const { scope } = await this.authorize(ctx);
+    const record = await this.record(scope, id);
+    const published = readPublication(record);
+    return {
+      id: record.id,
+      ownerName: record.ownerName,
+      published,
+      reviewOverdue: published.reviewDate < new Date().toISOString().slice(0, 10),
+    };
+  }
+
+  async findPublishedPassages(question: string, ctx: UseCaseContext) {
+    const { scope } = await this.authorize(ctx);
+    return findProcedurePassages(
+      question,
+      await this.repo.list(scope),
+      new Date().toISOString().slice(0, 10)
+    );
+  }
+
+  async download(id: string, fileId: string, ctx: UseCaseContext, publishedOnly = false) {
+    const { scope, canManage } = await this.authorize(ctx);
+    const record = this.view(await this.record(scope, id), canManage && !publishedOnly);
     const file = [record.draft?.content, record.published?.content].find(
       (content) => content?.kind === "file" && content.fileId === fileId
     );

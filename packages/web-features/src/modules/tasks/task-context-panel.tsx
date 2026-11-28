@@ -11,7 +11,7 @@ import type { TaskContextClient } from "./tasks-client";
 const sourceRoutes = {
   booking: "/booking/bookings/",
   request: "/requests/",
-  procedure: "/knowledge/",
+  procedure: "/knowledge/published/",
 } as const;
 
 const text = {
@@ -25,13 +25,13 @@ const text = {
     attach: "Attach file",
     link: "Link source",
     links: "Linked records",
-    source: "Booking link",
+    source: "Record link",
     unavailable: "Source unavailable",
     empty: "No task context yet.",
     error: "Task context could not be loaded or saved.",
     retry: "Retry",
     loading: "Loading task context",
-    invalidLink: "Enter a booking URL from this workspace.",
+    invalidLink: "Enter a booking, request or published procedure URL from this workspace.",
     invalidFile: "Use a PDF, PNG or JPEG up to 1 MB.",
     booking: "Booking",
     request: "Request",
@@ -47,13 +47,14 @@ const text = {
     attach: "Datei anhängen",
     link: "Quelle verknüpfen",
     links: "Verknüpfte Einträge",
-    source: "Buchungslink",
+    source: "Link zum Eintrag",
     unavailable: "Quelle nicht verfügbar",
     empty: "Für diese Aufgabe gibt es noch keinen Kontext.",
     error: "Der Aufgabenkontext konnte nicht geladen oder gespeichert werden.",
     retry: "Erneut versuchen",
     loading: "Aufgabenkontext wird geladen",
-    invalidLink: "Gib eine Buchungs-URL aus diesem Arbeitsbereich ein.",
+    invalidLink:
+      "Gib einen Link zu einer Buchung, Anfrage oder veröffentlichten Anleitung aus diesem Arbeitsbereich ein.",
     invalidFile: "Verwende PDF, PNG oder JPEG bis 1 MB.",
     booking: "Buchung",
     request: "Anfrage",
@@ -69,13 +70,14 @@ const text = {
     attach: "Đính kèm tệp",
     link: "Liên kết nguồn",
     links: "Hồ sơ liên kết",
-    source: "Đường dẫn lịch hẹn",
+    source: "Đường dẫn hồ sơ",
     unavailable: "Nguồn không khả dụng",
     empty: "Công việc chưa có bối cảnh.",
     error: "Không thể tải hoặc lưu bối cảnh công việc.",
     retry: "Thử lại",
     loading: "Đang tải bối cảnh",
-    invalidLink: "Hãy nhập đường dẫn lịch hẹn trong không gian làm việc này.",
+    invalidLink:
+      "Hãy nhập đường dẫn lịch hẹn, yêu cầu hoặc quy trình đã xuất bản trong không gian làm việc này.",
     invalidFile: "Sử dụng PDF, PNG hoặc JPEG tối đa 1 MB.",
     booking: "Lịch hẹn",
     request: "Yêu cầu",
@@ -83,13 +85,20 @@ const text = {
   },
 } as const;
 
-function parseBookingUrl(raw: string): TaskSource | null {
+function parseRecordUrl(raw: string): TaskSource | null {
   try {
     const url = new URL(raw, window.location.origin);
-    const match = /^\/booking\/bookings\/([a-zA-Z0-9_-]{1,160})\/?$/.exec(url.pathname);
-    return url.origin === window.location.origin && match
-      ? { kind: "booking", id: match[1] }
-      : null;
+    if (url.origin !== window.location.origin) {
+      return null;
+    }
+    const kind = (Object.keys(sourceRoutes) as TaskSource["kind"][]).find((key) =>
+      url.pathname.startsWith(sourceRoutes[key])
+    );
+    if (!kind) {
+      return null;
+    }
+    const match = /^([a-zA-Z0-9_-]{1,160})\/?$/.exec(url.pathname.slice(sourceRoutes[kind].length));
+    return match ? { kind, id: match[1] } : null;
   } catch {
     return null;
   }
@@ -125,7 +134,7 @@ export function TaskContextPanel({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<"error" | "invalidLink" | "invalidFile">();
   const [comment, setComment] = useState("");
-  const [bookingLink, setBookingLink] = useState("");
+  const [recordLink, setRecordLink] = useState("");
   const [file, setFile] = useState<File>();
   const fileInput = useRef<HTMLInputElement>(null);
   const keys = useRef(new Map<string, string>());
@@ -134,7 +143,9 @@ export function TaskContextPanel({
   const [preview, setPreview] = useState<{ url: string; name: string }>();
 
   useEffect(() => {
-    if (!open) {return;}
+    if (!open) {
+      return;
+    }
     const controller = new AbortController();
     setData(undefined);
     setMessage(undefined);
@@ -143,21 +154,29 @@ export function TaskContextPanel({
       .get(taskId, controller.signal)
       .then(
         (next) => {
-          if (!controller.signal.aborted) {setData(next);}
+          if (!controller.signal.aborted) {
+            setData(next);
+          }
         },
         () => {
-          if (!controller.signal.aborted) {setMessage("error");}
+          if (!controller.signal.aborted) {
+            setMessage("error");
+          }
         }
       )
       .finally(() => {
-        if (!controller.signal.aborted) {setLoading(false);}
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       });
     return () => controller.abort();
   }, [client, open, retry, taskId]);
 
   useEffect(() => {
     return () => {
-      if (preview) {URL.revokeObjectURL(preview.url);}
+      if (preview) {
+        URL.revokeObjectURL(preview.url);
+      }
     };
   }, [preview]);
 
@@ -166,7 +185,9 @@ export function TaskContextPanel({
     action: (key: string) => Promise<TaskContext>,
     clear: () => void
   ) {
-    if (inFlight.current) {return;}
+    if (inFlight.current) {
+      return;
+    }
     inFlight.current = true;
     const version = disclosureVersion.current;
     const key = keys.current.get(signature) ?? crypto.randomUUID();
@@ -183,7 +204,9 @@ export function TaskContextPanel({
         setRetry((attempt) => attempt + 1);
       }
     } catch {
-      if (version === disclosureVersion.current) {setMessage("error");}
+      if (version === disclosureVersion.current) {
+        setMessage("error");
+      }
     } finally {
       inFlight.current = false;
       setBusy(false);
@@ -194,7 +217,9 @@ export function TaskContextPanel({
     const version = disclosureVersion.current;
     try {
       const blob = await client.download(taskId, attachment.documentId);
-      if (version !== disclosureVersion.current) {return;}
+      if (version !== disclosureVersion.current) {
+        return;
+      }
       if (attachment.contentType === "image/jpeg" || attachment.contentType === "image/png") {
         setPreview({
           url: URL.createObjectURL(new Blob([blob], { type: attachment.contentType })),
@@ -218,7 +243,7 @@ export function TaskContextPanel({
 
   function submitLink(event: FormEvent) {
     event.preventDefault();
-    const source = parseBookingUrl(bookingLink);
+    const source = parseRecordUrl(recordLink);
     if (!source) {
       setMessage("invalidLink");
       return;
@@ -226,7 +251,7 @@ export function TaskContextPanel({
     void save(
       "source:" + source.id,
       (key) => client.addSource(taskId, source, key),
-      () => setBookingLink("")
+      () => setRecordLink("")
     );
   }
 
@@ -254,7 +279,9 @@ export function TaskContextPanel({
         (key) => client.upload(taskId, { base64, contentType, filename: file.name }, key),
         () => {
           setFile(undefined);
-          if (fileInput.current) {fileInput.current.value = "";}
+          if (fileInput.current) {
+            fileInput.current.value = "";
+          }
         }
       );
     } catch {
@@ -366,12 +393,13 @@ export function TaskContextPanel({
                   <form
                     onSubmit={(event) => {
                       event.preventDefault();
-                      if (comment.trim())
-                        {void save(
+                      if (comment.trim()) {
+                        void save(
                           "comment:" + comment.trim(),
                           (key) => client.comment(taskId, comment.trim(), key),
                           () => setComment("")
-                        );}
+                        );
+                      }
                     }}
                   >
                     <label>
@@ -407,13 +435,13 @@ export function TaskContextPanel({
                     <label>
                       {translations.source}
                       <Input
-                        value={bookingLink}
+                        value={recordLink}
                         disabled={busy}
-                        onChange={(event) => setBookingLink(event.target.value)}
+                        onChange={(event) => setRecordLink(event.target.value)}
                         required
                       />
                     </label>
-                    <Button type="submit" variant="outline" disabled={busy || !bookingLink.trim()}>
+                    <Button type="submit" variant="outline" disabled={busy || !recordLink.trim()}>
                       {translations.link}
                     </Button>
                   </form>
