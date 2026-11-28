@@ -21,7 +21,11 @@ import { AuthorizeWorkspaceUseCase } from "../../../workspaces/public";
 import { BOOKING_POLICIES, enforceBookingPolicy } from "../booking-policy";
 import type { BookingPolicyRegistration } from "@corely/booking/extensions";
 import { BOOKING_REPOSITORY, type BookingRepositoryPort } from "../ports/booking-repo.ports";
-import { OPENBUK_REPOSITORY, type OpenBukRepositoryPort } from "../ports/openbuk-repository.port";
+import {
+  OPENBUK_REPOSITORY,
+  type OpenBukRepositoryPort,
+  type StudioScope,
+} from "../ports/openbuk-repository.port";
 import { OpenBukStudioUseCase } from "./openbuk-studio.usecase";
 import { RescheduleBookingUseCase } from "./reschedule-booking.usecase";
 
@@ -40,6 +44,75 @@ export class OpenBukAppointmentChangeUseCase {
 
   async preview(input: OpenBukReplacementInput, ctx: UseCaseContext) {
     return this.check(OpenBukReplacementInputSchema.parse(input), ctx);
+  }
+
+  /** Internal collaboration with the reviewed notification workflow. */
+  async customerMessageContext(scope: StudioScope, bookingId: string, tx?: TransactionContext) {
+    const current = await this.currentCustomerBooking(scope, bookingId, tx);
+    if (!current) {
+      return null;
+    }
+    const { booking, recipient } = current;
+    const allocation = booking.allocations[0];
+    const selection =
+      booking.serviceOfferingId && booking.allocations.length === 1 && allocation
+        ? { serviceId: booking.serviceOfferingId, staffId: allocation.resourceId }
+        : null;
+    const studio = selection ? await this.studioRepository.studio(scope, tx, selection) : null;
+    if (!studio) {
+      return null;
+    }
+    return {
+      bookingVersion: booking.updatedAt.toISOString(),
+      recipient,
+      reference: booking.referenceNumber ?? booking.id,
+      startAt: booking.startAt.toISOString(),
+      endAt: booking.endAt.toISOString(),
+      timezone: studio.timezone,
+      locale: studio.locale,
+    };
+  }
+
+  async confirmationMessageContext(scope: StudioScope, bookingId: string, tx: TransactionContext) {
+    const current = await this.currentCustomerBooking(scope, bookingId, tx);
+    if (!current) {
+      return null;
+    }
+    const { booking, recipient } = current;
+    const snapshot = await this.studioRepository.snapshot(scope, bookingId, tx);
+    if (!snapshot?.confirmationEmailRequested || !snapshot.locale) {
+      return null;
+    }
+    return {
+      bookingVersion: booking.updatedAt.toISOString(),
+      recipient,
+      reference: snapshot.reference,
+      serviceName: snapshot.serviceName,
+      startAt: booking.startAt.toISOString(),
+      timezone: snapshot.timezone,
+      locale: snapshot.locale,
+    };
+  }
+
+  private async currentCustomerBooking(
+    scope: StudioScope,
+    bookingId: string,
+    tx?: TransactionContext
+  ) {
+    if (tx) {
+      await this.bookings.lockMutation(scope.tenantId, bookingId, tx);
+    }
+    const booking = await this.bookings.findById(bookingId, scope.tenantId, tx);
+    if (
+      !booking ||
+      booking.workspaceId !== scope.workspaceId ||
+      booking.status !== "CONFIRMED" ||
+      booking.startAt <= this.clock.now() ||
+      !booking.bookedByEmail
+    ) {
+      return null;
+    }
+    return { booking, recipient: booking.bookedByEmail.trim() };
   }
 
   /** Called by the owning review workflow inside its apply transaction. */

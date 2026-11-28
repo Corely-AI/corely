@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ListQuerySchema, PageInfoSchema } from "../common/list.contract";
+export * from "./appointment-delivery.schema";
 
 // --- Domain Models ---
 

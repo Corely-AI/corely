@@ -39,7 +39,7 @@ test.describe("Booking release confirmation customization", () => {
           await slots[pick]().click();
           await page.getByLabel("Full name", { exact: true }).fill("Booking Upgrade Guest");
           await page.getByLabel("Email", { exact: true }).fill("guest@example.test");
-          await page.getByRole("checkbox").check();
+          await page.locator('input[name="consentAccepted"]').check();
           const request = page.waitForResponse(
             (response) =>
               response.url().endsWith("/public/openbuk/bookings") &&

@@ -133,6 +133,7 @@ function BookingCheckout({ studioSlug }: { studioSlug: string }) {
       customer: { name: String(data.get("name")), email: String(data.get("email")) },
       consentAccepted: true,
       locale,
+      ...(data.has("confirmationEmailRequested") ? { confirmationEmailRequested: true } : {}),
     };
     const fingerprint = JSON.stringify(body);
     if (attempt.current?.fingerprint !== fingerprint) {
@@ -349,8 +350,12 @@ function BookingCheckout({ studioSlug }: { studioSlug: string }) {
                     />
                   </Field>
                   <label className="check-label consent">
-                    <input type="checkbox" required disabled={pending} />
+                    <input type="checkbox" name="consentAccepted" required disabled={pending} />
                     {t("consent")}
+                  </label>
+                  <label className="check-label confirmation-email-choice">
+                    <input type="checkbox" name="confirmationEmailRequested" disabled={pending} />
+                    {t("emailBookingConfirmation")}
                   </label>
                   <button className="button full" disabled={pending}>
                     {t(pending ? "confirming" : "confirm")} ↗

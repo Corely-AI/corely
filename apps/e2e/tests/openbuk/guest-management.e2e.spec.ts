@@ -61,8 +61,29 @@ test("an anonymous guest can move and cancel only the appointment granted by a p
       .click();
     await phone.getByLabel("Full name", { exact: true }).fill("Private guest");
     await phone.getByLabel("Email", { exact: true }).fill("private-guest@example.test");
-    await phone.getByRole("checkbox").check();
+    await phone.locator('input[name="consentAccepted"]').check();
+    const emailConfirmation = phone.getByRole("checkbox", {
+      name: "Email me a booking confirmation (optional)",
+    });
+    await expect(emailConfirmation).not.toBeChecked();
+    await phone.locator(".customer-form").screenshot({
+      path: testInfo.outputPath("confirmation-opt-in-mobile.png"),
+    });
+    await phone.setViewportSize({ width: 1280, height: 800 });
+    await phone.locator(".customer-form").screenshot({
+      path: testInfo.outputPath("confirmation-opt-in-desktop.png"),
+    });
+    await phone.setViewportSize({ width: 390, height: 844 });
+    await emailConfirmation.focus();
+    await phone.keyboard.press("Space");
+    await expect(emailConfirmation).toBeChecked();
+    const submittedBooking = phone.waitForRequest(
+      (request) => request.method() === "POST" && request.url().endsWith("/public/openbuk/bookings")
+    );
     await phone.getByRole("button", { name: "Confirm booking" }).click();
+    expect((await submittedBooking).postDataJSON()).toMatchObject({
+      confirmationEmailRequested: true,
+    });
     await expect(phone.getByRole("heading", { name: "You’re booked in." })).toBeVisible();
     const manage = phone.getByRole("link", { name: "Manage appointment" });
     const href = await manage.getAttribute("href");

@@ -209,10 +209,14 @@ export const OpenBukBookSchema = z
       .strict(),
     consentAccepted: z.literal(true),
     locale: OpenBukLocaleSchema.optional(),
+    confirmationEmailRequested: z.boolean().optional(),
   })
   .strict();
 export type OpenBukBook = z.infer<typeof OpenBukBookSchema>;
-export const OpenBukManagerBookSchema = OpenBukBookSchema.omit({ consentAccepted: true });
+export const OpenBukManagerBookSchema = OpenBukBookSchema.omit({
+  consentAccepted: true,
+  confirmationEmailRequested: true,
+});
 export type OpenBukManagerBook = z.infer<typeof OpenBukManagerBookSchema>;
 export const OpenBukReceiptSchema = OpenBukSlotSchema.extend({
   reference: z.string(),

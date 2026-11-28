@@ -71,3 +71,9 @@ When the original staff member and service still support the appointment’s
 duration and buffers, a guest can choose another time. The move revalidates
 availability and policy under the same Booking locks. Guest cancellation checks
 the same booking policy and confirmation version before releasing the time.
+
+Guests can choose to receive a confirmation email at checkout. The
+optional checkbox starts unchecked. Booking commits the preference with
+the appointment, and Notifications handles the message after the commit
+using the recorded checkout language and timezone. Reviewed reminders use
+their own approval and appointment version.
