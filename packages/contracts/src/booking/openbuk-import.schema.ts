@@ -7,20 +7,22 @@ const mapping = z.record(sourceId, sourceId);
 const fingerprint = z.string().regex(/^[a-f0-9]{64}$/);
 const currency = z.string().regex(/^[A-Z]{3}$/);
 
+const confirmedRowSchema = z
+  .object({
+    sourceId,
+    status: z.literal("CONFIRMED"),
+    sourceServiceId: sourceId,
+    sourceStaffId: sourceId,
+    startAt: sourceInstant,
+    endAt: sourceInstant,
+    priceCents: z.number().int().nonnegative(),
+    currency,
+    customer: OpenBukBookSchema.shape.customer,
+  })
+  .strict();
+
 export const OpenBukImportRowSchema = z.discriminatedUnion("status", [
-  z
-    .object({
-      sourceId,
-      status: z.literal("CONFIRMED"),
-      sourceServiceId: sourceId,
-      sourceStaffId: sourceId,
-      startAt: sourceInstant,
-      endAt: sourceInstant,
-      priceCents: z.number().int().nonnegative(),
-      currency,
-      customer: OpenBukBookSchema.shape.customer,
-    })
-    .strict(),
+  confirmedRowSchema,
   z.object({ sourceId, status: z.literal("CANCELLED") }).strict(),
 ]);
 
@@ -45,8 +47,7 @@ export const OpenBukImportApplySchema = z
   .strict();
 
 export type OpenBukImportInput = z.infer<typeof OpenBukImportInputSchema>;
-export type OpenBukImportRow = z.infer<typeof OpenBukImportRowSchema>;
-export type OpenBukImportConfirmedRow = Extract<OpenBukImportRow, { status: "CONFIRMED" }>;
+export type OpenBukImportConfirmedRow = z.infer<typeof confirmedRowSchema>;
 
 export const OpenBukImportErrorSchema = z.enum([
   "INVALID_ROW",
@@ -58,6 +59,8 @@ export const OpenBukImportErrorSchema = z.enum([
   "SLOT_UNAVAILABLE",
   "BATCH_OVERLAP",
 ]);
+
+export type OpenBukImportError = z.infer<typeof OpenBukImportErrorSchema>;
 
 const row = z.object({ index: z.number().int().nonnegative(), sourceId: sourceId.nullable() });
 export const OpenBukImportResultSchema = z

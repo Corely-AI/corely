@@ -6,6 +6,7 @@ import {
   OpenBukImportRowSchema,
   type OpenBukImportConfirmedRow,
   type OpenBukImportInput,
+  type OpenBukImportError,
   type OpenBukImportResult,
   type OpenBukReceipt,
   type OpenBukStudio,
@@ -39,7 +40,6 @@ import {
 import { OpenBukStudioUseCase } from "./openbuk-studio.usecase";
 
 type Row = OpenBukImportResult["rows"][number];
-type ImportError = Extract<Row, { status: "ERROR" }>["error"];
 type Pending = {
   identity: string;
   hash: string;
@@ -191,7 +191,7 @@ export class OpenBukImportUseCase {
     const row = OpenBukImportRowSchema.safeParse(frame.raw);
     const index = frame.index;
     const sourceId = row.success ? row.data.sourceId : null;
-    const error = (code: ImportError): ReviewedRow => ({
+    const error = (code: OpenBukImportError): ReviewedRow => ({
       result: { index, sourceId, status: "ERROR", error: code },
     });
     if (!row.success) {

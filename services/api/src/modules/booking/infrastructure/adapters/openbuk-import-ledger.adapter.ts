@@ -26,7 +26,11 @@ export class OpenBukImportLedgerAdapter implements BookingImportLedger {
   }
   async get(scope: StudioScope, identity: string, tx: TransactionContext) {
     const entry = await this.kv.get(this.key(scope, identity), tx);
-    return entry ? receiptSchema.parse(entry.value) : null;
+    if (!entry) {
+      return null;
+    }
+    const { fingerprint, bookingId } = receiptSchema.parse(entry.value);
+    return { fingerprint, bookingId };
   }
   async save(
     scope: StudioScope,
