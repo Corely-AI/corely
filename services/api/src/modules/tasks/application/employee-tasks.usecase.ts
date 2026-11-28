@@ -17,6 +17,7 @@ import {
   ToggleChecklistStepSchema,
   ListEmployeeTasksSchema,
   type EmployeeTask,
+  type TaskSource,
   type EmployeeTaskList,
 } from "@corely/contracts";
 import {
@@ -40,6 +41,11 @@ import { transitionTask, type TaskRecord } from "@corely/tasks/task-rules";
 import { taskCreationRejection } from "@corely/tasks/extensions";
 import { taskCreationPolicies } from "../task-creation-extensions";
 
+type FollowUpCreation = {
+  source: TaskSource;
+  check(scope: TaskScope, tx: TransactionContext): Promise<void>;
+  attach(scope: TaskScope, taskId: string, tx: TransactionContext): Promise<void>;
+};
 type Command = "create" | "update" | "complete" | "reopen" | "checklist";
 @Injectable()
 export class EmployeeTasksUseCase {
@@ -131,10 +137,15 @@ export class EmployeeTasksUseCase {
       .map(({ id, displayName }) => ({ id, displayName }))
       .sort((a, b) => a.displayName.localeCompare(b.displayName) || a.id.localeCompare(b.id));
   }
-  async detail(id: string, ctx: UseCaseContext) {
-    const auth = await this.authorize(ctx);
-    const task = await this.record(auth.scope, id);
+  async authorizeVisibleTask(id: string, ctx: UseCaseContext, tx?: TransactionContext) {
+    const auth = await this.authorize(ctx, tx);
+    const task = await this.record(auth.scope, id, tx);
     this.visible(task, auth);
+    return { auth, task };
+  }
+
+  async detail(id: string, ctx: UseCaseContext) {
+    const { auth, task } = await this.authorizeVisibleTask(id, ctx);
     return this.projection(auth.scope, task);
   }
   async previewCompletion(id: string, ctx: UseCaseContext) {
@@ -151,7 +162,8 @@ export class EmployeeTasksUseCase {
     body: unknown,
     key: string | undefined,
     ctx: UseCaseContext,
-    stepId?: string
+    stepId?: string,
+    followUp?: FollowUpCreation
   ) {
     const initial = await this.authorize(ctx);
     if (!key || key.length > 160 || !/^[\w-]+$/.test(key)) {
@@ -166,7 +178,15 @@ export class EmployeeTasksUseCase {
             ? ToggleChecklistStepSchema.parse(body)
             : TransitionEmployeeTaskSchema.parse(body);
     const fingerprint = createHash("sha256")
-      .update(JSON.stringify(kind === "checklist" ? [kind, id, stepId, input] : [kind, id, input]))
+      .update(
+        JSON.stringify(
+          followUp
+            ? ["follow-up", followUp.source, input]
+            : kind === "checklist"
+              ? [kind, id, stepId, input]
+              : [kind, id, input]
+        )
+      )
       .digest("hex");
     const commandKey = createHash("sha256")
       .update(JSON.stringify([ctx.userId, key]))
@@ -179,6 +199,9 @@ export class EmployeeTasksUseCase {
         throw new ForbiddenException("Task management required");
       }
       this.assertCanTransition(auth);
+      if (followUp) {
+        await followUp.check(auth.scope, tx);
+      }
       const replay = await this.repo.replay(auth.scope, commandKey, tx);
       if (replay) {
         if (replay.fingerprint !== fingerprint) {
@@ -266,6 +289,9 @@ export class EmployeeTasksUseCase {
         ctx,
         tx
       );
+      if (followUp) {
+        await followUp.attach(auth.scope, next.id, tx);
+      }
       await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, taskId: next.id }, tx);
       return this.projection(auth.scope, next, tx);
     });

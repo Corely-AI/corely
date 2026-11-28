@@ -1,3 +1,5 @@
+import { TaskAttachmentsAdapter } from "./infrastructure/prisma/task-attachments.adapter";
+import { TASK_ATTACHMENTS } from "./application/ports/task-attachments.port";
 import { OperationalRequestDocumentsAdapter } from "./infrastructure/prisma/operational-request-documents.adapter";
 import { OperationalRequestDocuments } from "./public";
 import { PersonnelDocumentsAdapter } from "./infrastructure/prisma/personnel-documents.adapter";
@@ -63,6 +65,8 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     PersonnelDocumentsAdapter,
     VendorBillDocumentsAdapter,
     PrivateEmailOriginalsAdapter,
+    TaskAttachmentsAdapter,
+    { provide: TASK_ATTACHMENTS, useExisting: TaskAttachmentsAdapter },
     { provide: EXPENSE_RECEIPT_DOCUMENTS, useClass: ExpenseReceiptDocumentsAdapter },
     { provide: VENDOR_BILL_DOCUMENTS, useExisting: VendorBillDocumentsAdapter },
     { provide: PERSONNEL_DOCUMENTS, useExisting: PersonnelDocumentsAdapter },
@@ -371,6 +375,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     },
   ],
   exports: [
+    TASK_ATTACHMENTS,
     EXPENSE_RECEIPT_DOCUMENTS,
     VENDOR_BILL_DOCUMENTS,
     PERSONNEL_DOCUMENTS,

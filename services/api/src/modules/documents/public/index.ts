@@ -23,3 +23,8 @@ export {
   EXPENSE_RECEIPT_DOCUMENTS,
   type ExpenseReceiptDocumentsPort,
 } from "../application/ports/expense-receipt-documents.port";
+
+export {
+  TASK_ATTACHMENTS,
+  type TaskAttachmentsPort,
+} from "../application/ports/task-attachments.port";
