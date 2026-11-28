@@ -20,7 +20,14 @@ export function statusOf(error: unknown) {
 }
 
 export function statusLabel(status: OperationalRequest["status"], copy: RequestsCopy) {
-  return { DRAFT: copy.draft, SUBMITTED: copy.submitted, WITHDRAWN: copy.withdrawn }[status];
+  return {
+    DRAFT: copy.draft,
+    SUBMITTED: copy.submitted,
+    RETURNED: copy.returned,
+    REJECTED: copy.rejected,
+    APPROVED: copy.approved,
+    WITHDRAWN: copy.withdrawn,
+  }[status];
 }
 
 export function formatDate(timestamp: string, locale: string) {

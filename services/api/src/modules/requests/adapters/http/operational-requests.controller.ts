@@ -65,6 +65,21 @@ export class OperationalRequestsController {
     return this.command("submit", id, body, req);
   }
 
+  @Post(":id/decision")
+  decide(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
+    return this.requests.decide(id, body, resolveIdempotencyKey(req), toUseCaseContext(req));
+  }
+
+  @Post(":id/apply")
+  apply(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
+    return this.requests.applyApprovedAbsence(
+      id,
+      body,
+      resolveIdempotencyKey(req),
+      toUseCaseContext(req)
+    );
+  }
+
   @Post(":id/withdraw")
   withdraw(@Param("id") id: string, @Body() body: unknown, @Req() req: ContextAwareRequest) {
     return this.command("withdraw", id, body, req);
