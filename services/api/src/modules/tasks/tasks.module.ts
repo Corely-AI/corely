@@ -1,3 +1,4 @@
+import { BookingModule } from "../booking/booking.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { RecurringChecklistsController } from "./adapters/http/recurring-checklists.controller";
 import { RecurringChecklistsUseCase } from "./application/recurring-checklists.usecase";
@@ -15,7 +16,7 @@ import { EmployeeTasksUseCase } from "./application/employee-tasks.usecase";
 import { TASK_REPOSITORY } from "./application/ports/task-repository.port";
 import { ExtTaskRepositoryAdapter } from "./infrastructure/ext-task-repository.adapter";
 @Module({
-  imports: [KernelModule, DataModule, IdentityModule, PeopleModule, PlatformModule],
+  imports: [KernelModule, DataModule, IdentityModule, PeopleModule, PlatformModule, BookingModule],
   controllers: [RecurringChecklistsController, EmployeeTasksController],
   exports: [RecurringGenerationUseCase],
   providers: [

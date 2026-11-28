@@ -1,3 +1,5 @@
+import { OpenBukTimezone } from "../../booking/public";
+import { filterTaskList } from "../domain/task-list-filters";
 import { authorizeTasks } from "./task-access-policy";
 import { persistTaskMutation } from "./task-mutation";
 import {
@@ -7,6 +9,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from "@nestjs/common";
 import { createHash, randomUUID } from "node:crypto";
 import {
@@ -49,7 +52,8 @@ export class EmployeeTasksUseCase {
     private readonly staff: StaffOperationsLookup,
     private readonly entitlements: TenantEntitlementService,
     @Inject(AUDIT_PORT) private readonly audit: AuditPort,
-    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
+    @Optional() private readonly workspaceTimezone?: OpenBukTimezone
   ) {}
   async authorize(ctx: UseCaseContext, tx?: TransactionContext) {
     return authorizeTasks(
@@ -89,17 +93,25 @@ export class EmployeeTasksUseCase {
   async list(query: unknown, ctx: UseCaseContext): Promise<EmployeeTaskList> {
     const auth = await this.authorize(ctx);
     const input = ListEmployeeTasksSchema.parse(query);
-    const records = (await this.repo.list(auth.scope))
-      .filter(
-        (t) =>
-          (auth.manage || t.ownerStaffId === auth.self?.id) &&
-          (input.status === "all" || t.status === input.status)
-      )
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));
+    if (input.view === "team" && !auth.manage) {
+      throw new ForbiddenException("Team task access denied");
+    }
+    const teamView = input.view !== "mine" && auth.manage;
+    const timezone =
+      input.view || input.due !== "all"
+        ? ((await this.workspaceTimezone?.forWorkspace(auth.scope)) ?? "UTC")
+        : "UTC";
+    const visible = (await this.repo.list(auth.scope)).filter(
+      (task) => teamView || task.ownerStaffId === auth.self?.id
+    );
+    const records = filterTaskList(visible, input, timezone, new Date()).sort(
+      (a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id)
+    );
     return {
       page: input.page,
       pageSize: input.pageSize,
       total: records.length,
+      ...(input.view ? { timezone } : {}),
       items: await Promise.all(
         records
           .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
@@ -192,8 +204,9 @@ export class EmployeeTasksUseCase {
           const message = taskCreationRejection(taskCreationPolicies, auth.scope, {
             dueAt: fields.dueAt,
           });
-          if (message)
-            {throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });}
+          if (message) {
+            throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });
+          }
         }
         next = {
           ...fields,

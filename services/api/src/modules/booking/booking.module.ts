@@ -1,3 +1,4 @@
+import { OpenBukTimezone } from "./application/use-cases/openbuk-timezone.usecase";
 import { PeopleModule } from "../people/people.module";
 import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking-staff-constraint.adapter";
 import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
@@ -84,6 +85,7 @@ import { bookingPolicies } from "./booking-extensions";
     BookingStaffConstraintAdapter,
     OpenBukRateLimitGuard,
     OpenBukStudioUseCase,
+    OpenBukTimezone,
     { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },
@@ -277,6 +279,6 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [AVAILABILITY_RULE_REPOSITORY, BOOKING_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [],
+  exports: [OpenBukTimezone],
 })
 export class BookingModule {}
