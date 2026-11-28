@@ -204,7 +204,7 @@ export class OpenBukStudioUseCase {
       studio: OpenBukPublicStudioSchema.parse({ ...catalog.studio, services: catalog.services }),
     };
   }
-  private async slots(
+  async bookingSlots(
     scope: StudioScope,
     day: string,
     selection?: OpenBukSelection,
@@ -237,7 +237,7 @@ export class OpenBukStudioUseCase {
     return { studio, slots: openBukAvailability(studio, day, now, busy, staffWindows) };
   }
   async availability(day: string, ctx: UseCaseContext, selection?: OpenBukSelection) {
-    const result = await this.slots(this.publicScope(ctx), day, selection);
+    const result = await this.bookingSlots(this.publicScope(ctx), day, selection);
     return { slots: result.slots, timezone: result.studio.timezone };
   }
   async book(input: OpenBukBook, key: string, ctx: UseCaseContext) {
@@ -266,7 +266,7 @@ export class OpenBukStudioUseCase {
         });
       }
       await this.repo.lock(scope, initial.staffId, tx);
-      const { studio, slots } = await this.slots(
+      const { studio, slots } = await this.bookingSlots(
         scope,
         studioDate(new Date(input.startAt), initial.timezone),
         input,

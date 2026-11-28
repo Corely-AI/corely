@@ -7,3 +7,4 @@ export * from "./availability-rule.schema";
 export * from "./public-booking.schema";
 
 export * from "./openbuk.schema";
+export * from "./openbuk-import.schema";

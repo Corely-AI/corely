@@ -16,6 +16,18 @@ export class PrismaPilotSetupRepository implements PilotSetupRepositoryPort {
     await getPrismaClient(this.prisma, tx)
       .$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`pilot:${key}`}, 0))::text`;
   }
+  async lockBookingPublication(tenantId: string, workspaceId: string, tx: TransactionContext) {
+    const [workspace] = await getPrismaClient(this.prisma, tx).$queryRaw<
+      Array<{ publicEnabled: boolean; publicModules: unknown }>
+    >`SELECT "publicEnabled", "publicModules" FROM "platform"."Workspace"
+        WHERE "id" = ${workspaceId} AND "tenantId" = ${tenantId} AND "deletedAt" IS NULL
+        FOR UPDATE`;
+    if (!workspace) {
+      return "missing" as const;
+    }
+    const modules = WorkspacePublicModulesSchema.parse(workspace.publicModules ?? {});
+    return workspace.publicEnabled && modules.booking ? ("open" as const) : ("closed" as const);
+  }
   async publishBooking(tenantId: string, workspaceId: string, tx: TransactionContext) {
     const client = getPrismaClient(this.prisma, tx);
     const workspace = await client.workspace.findFirstOrThrow({
