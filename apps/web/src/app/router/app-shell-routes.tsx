@@ -1,3 +1,4 @@
+import { OperationalRequestsPage } from "../../modules/operational-requests/operational-requests-page";
 import { StaffProfilePage } from "../../modules/people/staff-profile-extensions";
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
 import { getTaskCreationGuidance } from "../../modules/tasks/task-creation-guidance";
@@ -184,6 +185,38 @@ export const appShellRoutes = (
         element={<DailyWorkPage getCreationGuidance={getTaskCreationGuidance} />}
       />
       <Route path="/tasks/templates" element={<DailyWorkPage templates />} />
+      <Route
+        path="/requests"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/requests/new"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="create" />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/requests/routing"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="routing" />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/requests/:id"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="detail" />
+          </RequireSurface>
+        }
+      />
       <Route path="/knowledge" element={<KnowledgePage />} />
       <Route path="/knowledge/manage" element={<KnowledgePage mode="list" />} />
       <Route path="/knowledge/published/:id" element={<KnowledgePage mode="published" />} />
