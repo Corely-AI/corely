@@ -19,6 +19,23 @@ Missing material visual or interaction evidence keeps the PR Draft. Backend-only
 or prose-only changes explain why UI/UX evidence is not applicable. Follow
 [CONTRIBUTING](CONTRIBUTING.md) for DCO sign-off; do not auto-merge or deploy.
 
+### Ready for review and CodeRabbit
+
+1. Mark the Draft PR **Ready for review** (`gh pr ready <number>`) once the
+   implementation meets the ticket's acceptance criteria, you have reviewed the
+   full diff, required checks available on the draft have passed, and applicable
+   UI/UX evidence is attached. Keep the PR Draft while any of these are incomplete.
+2. Check whether CodeRabbit has started reviewing the current PR head. If the
+   repository has CodeRabbit enabled and no review starts automatically, comment
+   `@coderabbitai full review` on the PR. Wait for the result and verify that it
+   covers the current head. Link the review in the PR and address actionable
+   findings or explain their disposition before the human review handoff. Refresh
+   the review after material changes.
+3. If CodeRabbit is unavailable or the review fails or is skipped, record the
+   specific reason in the PR. Check the result details even if the status appears
+   green. The existing human review and required checks still apply. See
+   [CodeRabbit status check](https://docs.coderabbit.ai/pr-reviews/status-check).
+
 ## Product identity and scope
 
 Corely is a collection of connected, AI-native apps for running a team’s
