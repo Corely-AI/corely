@@ -71,6 +71,10 @@ export class PrismaResourceRepoAdapter implements ResourceRepositoryPort {
   ): Promise<ResourcePage> {
     const where: Prisma.BookingResourceWhereInput = { tenantId };
 
+    if (filters.workspaceId) {
+      where.OR = [{ workspaceId: filters.workspaceId }, { workspaceId: null }];
+    }
+
     if (filters.q) {
       where.name = { contains: filters.q, mode: "insensitive" };
     }

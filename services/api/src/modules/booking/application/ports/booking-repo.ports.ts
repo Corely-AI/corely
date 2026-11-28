@@ -11,6 +11,7 @@ import type { TransactionContext } from "@corely/kernel";
 // ─── Resource Repository ──────────────────────────────────────────────────────
 
 export interface ResourceFilters {
+  workspaceId?: string;
   type?: string;
   isActive?: boolean;
   q?: string;
@@ -39,6 +40,7 @@ export const RESOURCE_REPOSITORY = "booking/resource-repository";
 // ─── Service Offering Repository ──────────────────────────────────────────────
 
 export interface ServiceFilters {
+  workspaceId?: string;
   q?: string;
   isActive?: boolean;
 }

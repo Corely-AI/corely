@@ -62,8 +62,8 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
     await this.kv.set({ ...settingsKey(scope, "openbuk-setup-draft"), value: input }, tx);
   }
 
-  async isRegistered(scope: StudioScope): Promise<boolean> {
-    return (await this.kv.get(settingsKey(scope))) !== null;
+  async isRegistered(scope: StudioScope, tx?: TransactionContext): Promise<boolean> {
+    return (await this.kv.get(settingsKey(scope), tx)) !== null;
   }
 
   private async roster(scope: StudioScope, tx?: TransactionContext) {

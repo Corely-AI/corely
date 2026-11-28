@@ -93,7 +93,7 @@ describe.skipIf(!enabled)("Reviewed appointment replacement", () => {
       outbox,
       clock,
       authorize,
-      { publish: async () => {} },
+      { publish: async () => {}, requirePublicBooking: async () => {} },
       staff
     );
     const bookings = new PrismaBookingRepoAdapter(

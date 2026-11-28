@@ -163,6 +163,69 @@ describe.skipIf(!enabled)("Pilot setup PostgreSQL boundaries", () => {
       setup.studioName
     );
   });
+
+  it("rechecks current publication before allowing a resolved checkout to write", async () => {
+    const { slug, serviceId, staffId, ...setup } = studioFixture();
+    const ownerContext = { ...ctx, workspaceId };
+    const { studio } = await booking.configure(setup, ownerContext);
+    const guestContext: UseCaseContext = {
+      tenantId,
+      workspaceId,
+      metadata: {
+        public: {
+          workspaceSlug: studio.slug,
+          resolutionMethod: "path",
+          publicEnabled: true,
+          publicModules: { booking: true },
+        },
+      },
+    };
+    try {
+      await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: { publicEnabled: true, publicModules: { booking: true } },
+      });
+      let acquired = () => {};
+      let release = () => {};
+      const rowLocked = new Promise<void>((resolve) => {
+        acquired = resolve;
+      });
+      const finishClose = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const closing = prisma.$transaction(async (tx) => {
+        await tx.workspace.update({
+          where: { id: workspaceId },
+          data: { publicModules: { booking: false } },
+        });
+        acquired();
+        await finishClose;
+      });
+      await rowLocked;
+      const rejected = expect(
+        booking.book(
+          {
+            serviceId: studio.serviceId,
+            staffId: studio.staffId,
+            startAt: "2026-11-09T08:00:00.000Z",
+            customer: { name: "Test guest", email: "checkout@example.test" },
+            consentAccepted: true,
+          },
+          randomUUID(),
+          guestContext
+        )
+      ).rejects.toThrow("Public booking is unavailable");
+      release();
+      await closing;
+      await rejected;
+      expect(await prisma.booking.count({ where: { tenantId, workspaceId } })).toBe(0);
+    } finally {
+      await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: { publicEnabled: false, publicModules: {} },
+      });
+    }
+  });
   it("commits availability and publication together, rolling both back when publication events fail", async () => {
     const { slug, serviceId, staffId, ...setup } = studioFixture();
     const repo = new PrismaOpenBukRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma));

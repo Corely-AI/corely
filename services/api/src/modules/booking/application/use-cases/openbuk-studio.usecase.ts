@@ -59,7 +59,8 @@ export class OpenBukStudioUseCase {
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
     @Inject(AuthorizeWorkspaceUseCase)
     private readonly authorize: Pick<AuthorizeWorkspaceUseCase, "execute">,
-    @Inject(PilotSetupUseCase) private readonly pilot: Pick<PilotSetupUseCase, "publish">,
+    @Inject(PilotSetupUseCase)
+    private readonly pilot: Pick<PilotSetupUseCase, "publish" | "requirePublicBooking">,
     @Inject(StaffAvailabilityConstraintService)
     private readonly staffAvailability: Pick<StaffAvailabilityConstraintService, "windows">,
     @Inject(BOOKING_POLICIES)
@@ -192,9 +193,17 @@ export class OpenBukStudioUseCase {
       return { studio };
     });
   }
-  async assertLegacyPublicBookingAllowed(ctx: UseCaseContext): Promise<void> {
+  async assertLegacyPublicBookingAllowed(
+    ctx: UseCaseContext,
+    tx?: TransactionContext
+  ): Promise<void> {
+    const scope = this.publicScope(ctx);
+    if (tx) {
+      await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
+      await this.pilot.requirePublicBooking(scope.tenantId, scope.workspaceId, tx);
+    }
     // Registration remains authoritative even when a service is disabled.
-    if (await this.repo.isRegistered(this.publicScope(ctx))) {
+    if (await this.repo.isRegistered(scope, tx)) {
       throw new NotFoundException("Use the OpenBuk booking page");
     }
   }
@@ -299,6 +308,9 @@ export class OpenBukStudioUseCase {
     const fingerprint = createHash("sha256").update(JSON.stringify(input)).digest("hex");
     return this.uow.withinTransaction(async (tx) => {
       await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
+      if (!manager) {
+        await this.pilot.requirePublicBooking(scope.tenantId, scope.workspaceId, tx);
+      }
       const userId = manager ? (await this.admin(manager, true, tx)).userId : undefined;
       const saved = await this.repo.receipt(scope, receiptKey, tx);
       if (saved) {

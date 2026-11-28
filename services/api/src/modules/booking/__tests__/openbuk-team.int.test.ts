@@ -45,7 +45,7 @@ describe.skipIf(!enabled)("OpenBuk team booking", () => {
       new PrismaOutboxAdapter(prisma),
       { now: () => new Date("2026-10-01T00:00:00.000Z") },
       { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-      { publish: async () => {} },
+      { publish: async () => {}, requirePublicBooking: async () => {} },
       { windows: async () => null }
     );
     const { serviceId: _serviceId, staffId: _staffId, slug: _slug, ...setup } = studioFixture();

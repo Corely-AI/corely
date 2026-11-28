@@ -28,6 +28,8 @@ import { BookingServiceController } from "./http/service.controller";
 import { BookingController } from "./http/booking.controller";
 import { BookingAvailabilityController } from "./http/availability.controller";
 import { PublicBookingController } from "./http/public-booking.controller";
+import { LegacyPublicBookingAvailabilityUseCase } from "./application/use-cases/legacy-public-booking-availability.usecase";
+import { LegacyPublicBookingPageReader } from "./infrastructure/adapters/legacy-public-booking-page-reader";
 
 import { PrismaResourceRepoAdapter } from "./infrastructure/adapters/prisma-resource-repo.adapter";
 import { PrismaServiceRepoAdapter } from "./infrastructure/adapters/prisma-service-repo.adapter";
@@ -94,6 +96,8 @@ import { bookingPolicies } from "./booking-extensions";
     { provide: BOOKING_POLICIES, useValue: bookingPolicies },
     BookingStaffConstraintAdapter,
     OpenBukRateLimitGuard,
+    LegacyPublicBookingAvailabilityUseCase,
+    LegacyPublicBookingPageReader,
     OpenBukStudioUseCase,
     OpenBukAppointmentChangeUseCase,
     OpenBukAgendaCommandsUseCase,
