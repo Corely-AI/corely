@@ -5,6 +5,7 @@ import {
   type OperationalRequestDraft,
   type OperationalRequestDecision,
   type OperationalRequestKind,
+  type OperationalRequestQueueStatus,
 } from "@corely/contracts";
 import { apiClient } from "@corely/web-shared/lib/api-client";
 import { z } from "zod";
@@ -48,8 +49,19 @@ export function createRequestsClient(workspaceId: string) {
   }
 
   return {
-    async list(page: number, signal?: AbortSignal) {
-      return OperationalRequestsPageSchema.parse(await get(`${root}?page=${page}`, signal));
+    async list(
+      page: number,
+      signal?: AbortSignal,
+      filter?: OperationalRequestQueueStatus,
+      inbox = false
+    ) {
+      const query = new URLSearchParams({ page: String(page) });
+      if (filter) {
+        query.set("status", filter);
+      }
+      return OperationalRequestsPageSchema.parse(
+        await get(`${root}${inbox ? "/inbox" : ""}?${query}`, signal)
+      );
     },
     async get(id: string, signal?: AbortSignal) {
       return OperationalRequestSchema.parse(await get(path(id), signal));

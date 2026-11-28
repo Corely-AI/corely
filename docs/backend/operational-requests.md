@@ -57,3 +57,28 @@ read permissions. Mismatched keys and stale versions are rejected. Audit entries
 submission or withdrawal events share the transaction and carry request IDs and
 versions without free-text reasons or attachment names. The browser keeps request
 queries out of the persisted offline cache.
+
+## Decision inbox and reminders
+
+The requester list and reviewer inbox expose request type, status, age and
+the relevant date. Counts cover the authorized queue before filtering and
+pagination. Pending, failed and applied absence handoffs have distinct
+statuses. Private reasons, requester names, notes and attachments stay
+behind the authorized request detail.
+
+The reviewer inbox at `/requests/inbox` contains current assigned reviews
+and approved absences awaiting application or retry. It checks current
+workspace permissions and the selected Approvals definition. Unavailable
+approval definitions are excluded from the counts and reported in the
+inbox. OpenBuk hands off to the Backoffice owner route when the operational
+shell recognizes the `decisions` experience and both Requests permissions
+are available.
+
+Submission schedules one reminder for its exact version after 24 hours
+through the existing outbox. The background handler rechecks that the
+request is still submitted and that the assigned reviewer still has access.
+It publishes a neutral in-app notification under the same lock as review
+decisions. Notifications deduplicate by tenant, workspace, request and
+submission version. A decision, withdrawal, revocation or replacement
+version cancels the queued delivery. A fresh resubmission can schedule a
+new reminder.

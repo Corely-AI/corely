@@ -12,6 +12,11 @@ export abstract class OperationalRequestRepository {
     work: (tx: TransactionContext) => Promise<T>
   ): Promise<T>;
   abstract list(scope: RequestScope, requesterUserId: string): Promise<OperationalRequestRecord[]>;
+  abstract listAssigned(
+    scope: RequestScope,
+    reviewerUserId: string,
+    tx: TransactionContext
+  ): Promise<OperationalRequestRecord[]>;
   abstract get(
     scope: RequestScope,
     id: string,

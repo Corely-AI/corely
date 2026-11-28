@@ -37,6 +37,9 @@ import {
   type ObjectStoragePort,
 } from "@corely/kernel";
 import { NotificationsModule } from "../notifications/notifications.module";
+import { NotificationsModule as ApplicationNotificationsModule } from "../../../../notifications/public";
+import { OperationalRequestsModule } from "../../../../requests/requests.module";
+import { OperationalRequestReminderHandler } from "./operational-request-reminder.handler";
 import { OutboxPollerService } from "./outbox-poller.service";
 
 import { CashEntryCreatedHandler } from "../accounting/handlers/cash-entry-created.handler";
@@ -84,6 +87,8 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     ClassesWorkerModule,
     DirectoryWorkerModule,
     NotificationsModule,
+    ApplicationNotificationsModule,
+    OperationalRequestsModule,
     CoachingEngagementsModule,
     PartyModule,
     DocumentsModule,
@@ -92,6 +97,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
     SignModule,
   ],
   providers: [
+    OperationalRequestReminderHandler,
     IssueClientUpdateHandler,
     SsoEmailCodeRequestedHandler,
     SignVerifiedHandler,
@@ -157,6 +163,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         platformEntityDeletedHandler: PlatformEntityDeletedHandler,
         directoryLeadCreatedHandler: DirectoryLeadCreatedHandler,
         notificationIntentHandler: NotificationIntentHandler,
+        requestReminderHandler: OperationalRequestReminderHandler,
         coachingBookingRequestedHandler: CoachingBookingRequestedHandler,
         coachingPaymentCapturedHandler: CoachingPaymentCapturedHandler,
         coachingContractSignedHandler: CoachingContractSignedHandler,
@@ -193,6 +200,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
           platformEntityDeletedHandler,
           directoryLeadCreatedHandler,
           notificationIntentHandler,
+          requestReminderHandler,
           coachingBookingRequestedHandler,
           coachingPaymentCapturedHandler,
           coachingContractSignedHandler,
@@ -217,6 +225,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
         PlatformEntityDeletedHandler,
         DirectoryLeadCreatedHandler,
         NotificationIntentHandler,
+        OperationalRequestReminderHandler,
         CoachingBookingRequestedHandler,
         CoachingPaymentCapturedHandler,
         CoachingContractSignedHandler,

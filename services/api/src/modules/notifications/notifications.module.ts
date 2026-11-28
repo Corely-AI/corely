@@ -8,6 +8,7 @@ import { ListNotificationsUseCase } from "./application/use-cases/list-notificat
 import { GetUnreadCountUseCase } from "./application/use-cases/get-unread-count.usecase";
 import { MarkReadUseCase } from "./application/use-cases/mark-read.usecase";
 import { MarkAllReadUseCase } from "./application/use-cases/mark-all-read.usecase";
+import { PublishNotificationUseCase } from "./application/use-cases/publish-notification.usecase";
 import { PrismaNotificationRepository } from "./infrastructure/prisma-notification.repository";
 import { NOTIFICATION_REPOSITORY } from "./application/ports/notification.repository.port";
 
@@ -15,6 +16,7 @@ import { NOTIFICATION_REPOSITORY } from "./application/ports/notification.reposi
   imports: [DataModule, IdentityModule, PlatformModule, WorkspacesModule],
   controllers: [NotificationsController],
   providers: [
+    PublishNotificationUseCase,
     ListNotificationsUseCase,
     GetUnreadCountUseCase,
     MarkReadUseCase,
@@ -24,6 +26,6 @@ import { NOTIFICATION_REPOSITORY } from "./application/ports/notification.reposi
       useClass: PrismaNotificationRepository,
     },
   ],
-  exports: [],
+  exports: [PublishNotificationUseCase],
 })
 export class NotificationsModule {}

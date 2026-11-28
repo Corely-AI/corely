@@ -2,6 +2,7 @@ import { PrismaExtKvAdapter, PrismaService } from "@corely/data";
 import type { TransactionContext } from "@corely/kernel";
 import { Injectable } from "@nestjs/common";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import {
   OperationalRequestRepository,
   type RequestReplay,
@@ -54,6 +55,36 @@ export class ExtOperationalRequestRepository extends OperationalRequestRepositor
         moduleId,
         scope: namespace,
         value: { path: ["requesterUserId"], equals: requesterUserId },
+      },
+      select: { value: true },
+    });
+    return rows.map(
+      ({ value }) => OperationalRequestRecordSchema.parse(value) as OperationalRequestRecord
+    );
+  }
+
+  async listAssigned(scope: RequestScope, reviewerUserId: string, tx: TransactionContext) {
+    const { tenantId, moduleId, scope: namespace } = keyFor(scope, "records", "");
+    const client = tx as unknown as Prisma.TransactionClient;
+    const rows = await client.extKv.findMany({
+      where: {
+        tenantId,
+        moduleId,
+        scope: namespace,
+        value: { path: ["approval", "reviewerUserId"], equals: reviewerUserId },
+        OR: [
+          { value: { path: ["status"], equals: "SUBMITTED" } },
+          {
+            AND: [
+              { value: { path: ["status"], equals: "APPROVED" } },
+              {
+                OR: ["PENDING", "FAILED"].map((status) => ({
+                  value: { path: ["application", "status"], equals: status },
+                })),
+              },
+            ],
+          },
+        ],
       },
       select: { value: true },
     });

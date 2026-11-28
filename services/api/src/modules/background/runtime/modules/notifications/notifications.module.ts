@@ -6,7 +6,10 @@ import { ResendEmailSenderAdapter } from "@corely/email";
 import { NotificationIntentHandler } from "./handlers/notification-intent.handler";
 import { NotificationEmitterService } from "./services/notification-emitter.service";
 
+import { NotificationsModule as ApplicationNotificationsModule } from "../../../../notifications/public";
+
 @Module({
+  imports: [ApplicationNotificationsModule],
   providers: [
     NotificationIntentHandler,
     NotificationEmitterService,

@@ -5510,6 +5510,7 @@
       "issue-created": "Problem erstellt"
     },
     "notifications-notification-item": {
+      "request-awaiting-review": "Ein Antrag wartet auf Prüfung",
       "view-details": "Details anzeigen",
       "mark-as-read": "Als gelesen markieren"
     },
