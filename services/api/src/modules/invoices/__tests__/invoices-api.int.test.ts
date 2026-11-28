@@ -190,7 +190,7 @@ describe("Invoices API (HTTP + Postgres)", () => {
       .expect(409);
   });
 
-  it("rejects unresolved archived stock IDs and preserves a live code match", async () => {
+  it("rejects archived stock references and preserves a live code match", async () => {
     const { tenantId, workspaceId } = tenantA;
     await db.client.accountingSettings.create({
       data: { tenantId, baseCurrency: "EUR", fiscalYearStartMonthDay: "01-01" },
@@ -209,6 +209,7 @@ describe("Invoices API (HTTP + Postgres)", () => {
       },
     });
     const rawId = await createDraft(archived.id);
+    const rawCode = await createDraft(archived.code);
     const explicitId = await createDraft(`Stock [product:${archived.id}]`);
     const headers = authHeaders(tenantA);
     const issue = (id: string) =>
@@ -220,7 +221,7 @@ describe("Invoices API (HTTP + Postgres)", () => {
       number: null,
     });
     const live = await db.client.catalogItem.create({
-      data: { ...item, code: archived.id, name: "Live product", requiresLotTracking: true },
+      data: { ...item, code: archived.id, name: archived.code, requiresLotTracking: true },
     });
     const lot = await db.client.inventoryLot.create({
       data: {
@@ -232,6 +233,11 @@ describe("Invoices API (HTTP + Postgres)", () => {
         qtyOnHand: 2,
         unitCostCents: 0,
       },
+    });
+    await issue(rawCode).expect(400);
+    expect(await db.client.invoice.findUnique({ where: { id: rawCode } })).toMatchObject({
+      status: "DRAFT",
+      number: null,
     });
     await issue(rawId).expect(201);
     expect(await db.client.inventoryLot.findUnique({ where: { id: lot.id } })).toMatchObject({

@@ -37,7 +37,7 @@ provider handoff with or without a PDF.
 
 The second review follow-up restores list deletion with a dedicated visibility
 flag and preserves existing notes and legacy hidden records. Issuance rejects
-unresolved archived product IDs and decrements zero-cost lots. Inventory
+unresolved archived product IDs and codes and decrements zero-cost lots. Inventory
 records consumption so cancellation and correction also block when there
 is no stock-cost journal entry.
 
@@ -51,8 +51,9 @@ is no stock-cost journal entry.
   passed, including fractional drafts, default payment details, concurrent issue
   and cancellation, and rollback of invoice and stock changes.
 - The invoice HTTP suite in `invoices-api.int.test.ts` passed eight cases with
-  local PostgreSQL and synthetic mail configuration. The three latest
-  regressions reproduced on the reviewed commit before the fixes.
+  local PostgreSQL and synthetic mail configuration. Review regressions
+  reproduced before their fixes, including an archived code shadowed by an
+  active product's name.
 - Invoice unit command
   `pnpm --dir services/api exec vitest run src/modules/invoices --exclude '**/*.int.test.ts'`.
   The run included Accounting, Catalog, Inventory, the Tax engine, the German

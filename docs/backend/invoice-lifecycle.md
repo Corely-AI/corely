@@ -25,10 +25,10 @@ retry. Tax comes from the owning pack and the snapshot retains its rounding
 method and computed totals. Accounting's existing stock-cost workflow applies
 when Accounting is configured and the invoice draws on recognized inventory.
 Issuance consumes the allocated lots even when their cost is zero or missing.
-Inventory records that consumption in the issuance transaction. An archived
-product ID blocks issuance. If a plain reference also matches an active
-product code, issuance uses that active product. An explicit `[product:ID]`
-reference always identifies the specified product.
+Inventory records that consumption in the issuance transaction. An exact
+archived product ID or code blocks issuance. A plain reference matching an
+archived ID can still resolve to an active product by code. An explicit
+`[product:ID]` reference always identifies the specified product.
 
 ## Correct an issued invoice
 

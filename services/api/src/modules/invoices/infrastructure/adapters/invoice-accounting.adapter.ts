@@ -133,10 +133,11 @@ export class InvoiceAccountingAdapter {
     let candidate = activeId ? idMatch : null;
     if (!candidate) {
       const codeMatch = await this.catalog.findItemByCode(scope, reference, tx);
-      candidate = codeMatch?.status === "ACTIVE" && !codeMatch.archivedAt ? codeMatch : null;
-    }
-    if (!candidate && idMatch) {
-      throw archivedProductReference(reference);
+      if (codeMatch?.status === "ACTIVE" && !codeMatch.archivedAt) {
+        candidate = codeMatch;
+      } else if (idMatch || codeMatch) {
+        throw archivedProductReference(reference);
+      }
     }
     if (!candidate) {
       const matches = await this.catalog.listItems(
