@@ -33,6 +33,7 @@ const appRoutes = {
   import: ["/import/*"],
   invoices: ["/audit"],
   issues: ["/issues/*"],
+  knowledge: ["/knowledge/*"],
   parties: ["/customers/*", "/suppliers/*"],
   people: ["/people/*"],
   portfolio: ["/portfolio/*"],

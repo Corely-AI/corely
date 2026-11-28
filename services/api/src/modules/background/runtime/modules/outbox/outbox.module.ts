@@ -8,6 +8,7 @@ import {
 import { createStaffLifecycleEventHandlers } from "../tasks/staff-lifecycle-recorded.handler";
 import { createChecklistEventHandlers } from "../tasks/recurring-checklist-recorded.handler";
 import { createEmployeeTaskEventHandlers } from "../tasks/employee-task-recorded.handler";
+import { createProcedurePublicationHandlers } from "../knowledge/procedure-publication.handler";
 import { SignModule } from "../../../../sign/public";
 import {
   SignVerifiedHandler,
@@ -186,6 +187,7 @@ import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
           openBukBookingCreatedHandler,
           ...createSsoRecordedEventHandlers(),
           ...createEmployeeTaskEventHandlers(),
+          ...createProcedurePublicationHandlers(),
           ...createChecklistEventHandlers(),
           ...createStaffLifecycleEventHandlers(),
           verified,
