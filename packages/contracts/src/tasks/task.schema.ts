@@ -58,9 +58,15 @@ export const EmployeeTaskSchema = z
     completedAt: z.string().datetime().nullable(),
   })
   .strict();
+export const TaskDueFilterSchema = z.enum(["all", "today", "overdue", "upcoming"]);
+export type TaskDueFilter = z.infer<typeof TaskDueFilterSchema>;
+export type EmployeeTasksQuery = z.infer<typeof ListEmployeeTasksSchema>;
 export const ListEmployeeTasksSchema = z
   .object({
     status: z.enum(["all", "OPEN", "COMPLETED"]).default("all"),
+    view: z.enum(["auto", "mine", "team"]).optional(),
+    q: z.string().trim().max(120).default(""),
+    due: TaskDueFilterSchema.default("all"),
     page: z.coerce.number().int().min(1).default(1),
     pageSize: z.coerce.number().int().min(1).max(100).default(30),
   })
@@ -72,6 +78,7 @@ export const EmployeeTaskListSchema = z
   .object({
     items: z.array(EmployeeTaskSchema),
     total: z.number().int(),
+    timezone: z.string().optional(),
     page: z.number().int(),
     pageSize: z.number().int(),
     capabilities: z.object({ manage: z.boolean(), completeOwn: z.boolean() }).strict(),
