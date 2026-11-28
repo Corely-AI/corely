@@ -1,3 +1,5 @@
+import type { TransactionContext } from "@corely/kernel";
+
 export interface WorkflowDefinition {
   id: string;
   tenantId: string;
@@ -14,25 +16,36 @@ export interface WorkflowDefinition {
 }
 
 export interface ApprovalPolicyRepositoryPort {
-  findLatestByKey(tenantId: string, key: string): Promise<{ version: number } | null>;
-  create(data: {
-    tenantId: string;
-    key: string;
-    version: number;
-    name: string;
-    description: string | null;
-    type: "APPROVAL";
-    status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
-    spec: string;
-    createdBy: string | null;
-  }): Promise<{ id: string }>;
+  findLatestByKey(
+    tenantId: string,
+    key: string,
+    tx?: TransactionContext
+  ): Promise<{ version: number } | null>;
+  create(
+    data: {
+      tenantId: string;
+      key: string;
+      version: number;
+      name: string;
+      description: string | null;
+      type: "APPROVAL";
+      status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+      spec: string;
+      createdBy: string | null;
+    },
+    tx?: TransactionContext
+  ): Promise<{ id: string }>;
   listByKeyPrefix(
     tenantId: string,
     prefix: string,
     status: "ACTIVE" | "INACTIVE" | "ARCHIVED" | undefined,
     type: "APPROVAL"
   ): Promise<WorkflowDefinition[]>;
-  findById(tenantId: string, id: string): Promise<WorkflowDefinition | null>;
+  findById(
+    tenantId: string,
+    id: string,
+    tx?: TransactionContext
+  ): Promise<WorkflowDefinition | null>;
   updateStatus(
     tenantId: string,
     id: string,
