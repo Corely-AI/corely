@@ -261,7 +261,7 @@ export class OpenBukStudioUseCase {
     tx?: TransactionContext,
     selection?: OpenBukSelection
   ) {
-    const { slots } = await this.slots(
+    const { slots } = await this.bookingSlots(
       scope,
       studioDate(startAt, timezone),
       selection,
@@ -280,7 +280,7 @@ export class OpenBukStudioUseCase {
     selection: OpenBukSelection,
     bookingId: string
   ) {
-    return this.slots(scope, day, selection, undefined, bookingId);
+    return this.bookingSlots(scope, day, selection, undefined, bookingId);
   }
   async availability(day: string, ctx: UseCaseContext, selection?: OpenBukSelection) {
     const result = await this.bookingSlots(this.publicScope(ctx), day, selection);
@@ -492,7 +492,7 @@ export class OpenBukStudioUseCase {
       return { day, appointments, slots: [] };
     }
     try {
-      return { day, appointments, slots: (await this.slots(scope, day, selection)).slots };
+      return { day, appointments, slots: (await this.bookingSlots(scope, day, selection)).slots };
     } catch (error) {
       if (error instanceof NotFoundException) {
         return { day, appointments, slots: [] };
