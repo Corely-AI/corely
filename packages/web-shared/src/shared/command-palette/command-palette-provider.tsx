@@ -1,11 +1,12 @@
 import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CommandRegistry } from "./command-registry";
 import { buildCommandSections, getRecentCommandIds, rankCommands } from "./match";
-import { CommandPaletteDialog } from "./command-palette-dialog";
+import { CommandPaletteDialog, type CommandPaletteLabels } from "./command-palette-dialog";
 import { loadRecents, recordUse } from "./recents-storage";
 import type { Command, CommandContext } from "./types";
 
 interface CommandPaletteProviderProps {
+  labels?: CommandPaletteLabels;
   children: React.ReactNode;
   commandContext: Omit<CommandContext, "closePalette">;
   initialCommands?: Command[];
@@ -38,6 +39,7 @@ export const CommandPaletteContext = createContext<CommandPaletteContextValue | 
 
 export const CommandPaletteProvider = ({
   children,
+  labels,
   commandContext,
   initialCommands = [],
   initialNamespace = DEFAULT_NAMESPACE,
@@ -227,6 +229,7 @@ export const CommandPaletteProvider = ({
     <CommandPaletteContext.Provider value={contextValue}>
       {children}
       <CommandPaletteDialog
+        {...(labels ? { labels } : {})}
         isOpen={isOpen}
         query={query}
         sections={dialogSections}

@@ -326,16 +326,8 @@
     "syncSnapshotTitle": "Sync snapshot",
     "unknownUser": "Unknown user",
     "workspaceBadge": "WS {{id}}",
-    "layoutMode": {
-      "auto": "Automatisch",
-      "phone": "Telefon",
-      "tablet": "Tablet"
-    },
-    "languages": {
-      "en": "English",
-      "de": "Deutsch",
-      "vi": "Tiếng Việt"
-    }
+    "layoutMode": { "auto": "Automatisch", "phone": "Telefon", "tablet": "Tablet" },
+    "languages": { "en": "English", "de": "Deutsch", "vi": "Tiếng Việt" }
   },
   "kiosk": {
     "brand": "Corely Check-In",
@@ -429,5 +421,70 @@
     "online": "Online",
     "queue": "Warteschlange {{count}}",
     "syncing": "Synchronisiert"
+  },
+  "ui": {
+    "main-restaurant": {
+      "select-a-register-first": "Wählen Sie zunächst ein Register aus",
+      "restaurant-pos-uses-the": "Restaurant POS verwendet denselben Register- und Schichtkontext wie der Kern-POS-Ablauf.",
+      "open-a-shift-first": "Öffnen Sie zuerst eine Schicht",
+      "restaurant-tables-can-only": "Restauranttische können nur geöffnet werden, solange eine Kassiererschicht aktiv ist.",
+      "restaurant-floor": "Restaurantetage",
+      "open-and-resume-table": "Öffnen Sie Tischsitzungen über die Speisesaalkarte und setzen Sie sie fort.",
+      "floor-plan-copilot": "Grundriss Copilot",
+      "summarize-occupied-dirty-or": "Fassen Sie besetzte, verschmutzte oder blockierte Tische zusammen, ohne die manuelle Bodennutzung zu unterbrechen.",
+      "loading-floor-plan": "Grundriss wird geladen…",
+      "seats": "· Sitze",
+      "tap-to-resume-check": "Tippen Sie, um die Prüfung fortzusetzen"
+    },
+    "main-settings": {
+      "workspace": "Arbeitsbereich",
+      "workspace-id": "Arbeitsbereichs-ID",
+      "user-id": "Benutzer-ID"
+    },
+    "receipt": { "message": "×" },
+    "restaurant-payment-orderid": {
+      "payment": "Zahlung",
+      "load-the-table-order": "Laden Sie die Tischbestellung auf, bevor Sie die Zahlung entgegennehmen.",
+      "payment-close": "Zahlung / Schließen",
+      "settle-table": "Tisch decken",
+      "send-all-draft-items": "Schicken Sie alle frisch zubereiteten Speisen vor der Bezahlung an die Küche.",
+      "this-order-has-already": "Diese Bestellung wurde bereits abgewickelt.",
+      "phase-1-keeps-settlement": "Phase 1 sorgt für eine einfache Abwicklung: Platzhalter für die exakte Bargelderfassung oder Einzelkartenerfassung.",
+      "send-items-to-kitchen": "Schicken Sie Gegenstände in die Küche",
+      "cash": "Bargeld",
+      "card": "Karte"
+    },
+    "restaurant-table-tableid": {
+      "table-order": "Tischbestellung",
+      "loading-table": "Ladetisch",
+      "opening-or-resuming-the": "Öffnen oder Fortsetzen der ausgewählten Tabelle.",
+      "search-menu-items": "Menüelemente durchsuchen",
+      "current-order": "Aktuelle Bestellung",
+      "add-menu-items-to": "Fügen Sie Menüpunkte hinzu, um die Prüfung zu starten.",
+      "no-modifiers": "Keine Modifikatoren",
+      "subtotal": "Zwischensumme",
+      "tax": "Steuer",
+      "total": "Insgesamt",
+      "send-to-kitchen": "In die Küche schicken",
+      "take-payment": "Nehmen Sie die Zahlung entgegen",
+      "order-copilot": "Copilot bestellen",
+      "parse-order-instructions-into": "Analysieren Sie Bestellanweisungen in explizite Angebotskarten. Apply verwendet weiterhin die normalen Restaurantbefehle.",
+      "try-2-margherita-1": "Probieren Sie: „2 Margherita, 1 Cola, extra Käse“",
+      "included": "Im Lieferumfang enthalten",
+      "add-item": "Artikel hinzufügen"
+    },
+    "shift-close": {
+      "shift-close-copilot": "Schalten Sie den Copiloten ein",
+      "summarize-open-tables-unpaid": "Fassen Sie offene Tische, unbezahlte Bestellungen, Genehmigungen und Bargeldabweichungen vor der endgültigen Bestätigung zusammen."
+    },
+    "errorbanner": { "trace-id": "Trace-ID:", "copied": "✓ Kopiert", "copy": "Kopieren" },
+    "restaurant-copilot-panel": {
+      "restaurant-copilot": "Restaurant-Copilot",
+      "missing-required-modifier": "Fehlender erforderlicher Modifikator:",
+      "apply-proposal": "Antrag anwenden",
+      "dismiss": "Entlassen",
+      "ticket": "Ticket",
+      "m": "m"
+    }
   }
 }

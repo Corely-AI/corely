@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
+  TableLoadingSkeleton,
   Badge,
   Card,
   CardContent,
@@ -34,7 +35,7 @@ export const CoachingSessionsPage = () => {
     [state.page, state.pageSize, state.q, state.sort]
   );
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: coachingSessionKeys.list(queryParams),
     queryFn: () => coachingApi.listSessions(queryParams),
     placeholderData: keepPreviousData,
@@ -70,6 +71,15 @@ export const CoachingSessionsPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {isLoading ? (
+                <TableLoadingSkeleton columns={4} label={t("common.loading")} />
+              ) : isError && !data ? (
+                <TableRow>
+                  <TableCell colSpan={4}>
+                    <p role="alert">{t("common.error")}</p>
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {(data?.items ?? []).map((session) => (
                 <TableRow key={session.id}>
                   <TableCell>{session.engagementId}</TableCell>
@@ -82,7 +92,7 @@ export const CoachingSessionsPage = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (data?.items?.length ?? 0) === 0 ? (
+              {!isLoading && (!isError || data) && (data?.items?.length ?? 0) === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4}>{t("coaching.empty.sessions")}</TableCell>
                 </TableRow>

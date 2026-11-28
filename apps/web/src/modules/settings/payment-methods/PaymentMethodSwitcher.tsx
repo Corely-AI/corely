@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Edit2, Plus, Printer } from "lucide-react";
@@ -22,6 +23,7 @@ export function PaymentMethodSwitcher({
   selectedId,
   onSelect,
 }: PaymentMethodSwitcherProps) {
+  const uiCopy = useUiCopy("ui.settings-payment-methods-paymentmethodswitcher");
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -89,15 +91,17 @@ export function PaymentMethodSwitcher({
             {selectedMethod ? (
               <div className="space-y-1.5 text-sm">
                 <div className="flex gap-2">
-                  <span className="text-muted-foreground min-w-[95px]">Method:</span>
+                  <span className="text-muted-foreground min-w-[95px]">{uiCopy("method")}</span>
                   <span className="text-foreground font-medium">{selectedMethod.label}</span>
                 </div>
                 {selectedMethod.type === "BANK_TRANSFER" ? (
                   <>
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[95px]">Account:</span>
+                      <span className="text-muted-foreground min-w-[95px]">
+                        {uiCopy("account")}
+                      </span>
                       <span className="text-foreground">
-                        {selectedBankAccount?.accountHolderName ?? "N/A"}
+                        {selectedBankAccount?.accountHolderName ?? uiCopy("n-a")}
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -105,13 +109,13 @@ export function PaymentMethodSwitcher({
                         {t("common.iban")}:
                       </span>
                       <span className="text-foreground font-mono">
-                        {selectedBankAccount?.iban ?? "N/A"}
+                        {selectedBankAccount?.iban ?? uiCopy("n-a")}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[95px]">BIC:</span>
+                      <span className="text-muted-foreground min-w-[95px]">{uiCopy("bic")}</span>
                       <span className="text-foreground font-mono">
-                        {selectedBankAccount?.bic ?? "N/A"}
+                        {selectedBankAccount?.bic ?? uiCopy("n-a")}
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -119,31 +123,39 @@ export function PaymentMethodSwitcher({
                         {t("common.bank")}:
                       </span>
                       <span className="text-foreground">
-                        {selectedBankAccount?.bankName ?? selectedBankAccount?.label ?? "N/A"}
+                        {selectedBankAccount?.bankName ??
+                          selectedBankAccount?.label ??
+                          uiCopy("n-a")}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[95px]">Reference:</span>
+                      <span className="text-muted-foreground min-w-[95px]">
+                        {uiCopy("reference")}
+                      </span>
                       <span className="text-foreground font-mono">
-                        {selectedMethod.referenceTemplate ?? "N/A"}
+                        {selectedMethod.referenceTemplate ?? uiCopy("n-a")}
                       </span>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[95px]">Type:</span>
+                      <span className="text-muted-foreground min-w-[95px]">{uiCopy("type")}</span>
                       <span className="text-foreground">{selectedMethod.type}</span>
                     </div>
                     {selectedMethod.instructions && (
                       <div className="flex gap-2">
-                        <span className="text-muted-foreground min-w-[95px]">Instructions:</span>
+                        <span className="text-muted-foreground min-w-[95px]">
+                          {uiCopy("instructions")}
+                        </span>
                         <span className="text-foreground">{selectedMethod.instructions}</span>
                       </div>
                     )}
                     {selectedMethod.payUrl && (
                       <div className="flex gap-2">
-                        <span className="text-muted-foreground min-w-[95px]">Pay link:</span>
+                        <span className="text-muted-foreground min-w-[95px]">
+                          {uiCopy("pay-link")}
+                        </span>
                         <a
                           href={selectedMethod.payUrl}
                           target="_blank"

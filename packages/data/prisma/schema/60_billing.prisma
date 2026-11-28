@@ -33,6 +33,9 @@ model Invoice {
   sentAt         DateTime? @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
+  revision       Int       @default(0)
+  // Null preserves the visibility rule for invoices canceled by older versions.
+  hiddenFromList Boolean?
 
   pdfStorageKey    String?
   pdfGeneratedAt   DateTime? @db.Timestamptz(6)
@@ -213,6 +216,7 @@ model InvoiceLine {
   invoiceId      String
   description    String
   qty            Int
+  draftQuantity  Float?
   unitPriceCents Int
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)

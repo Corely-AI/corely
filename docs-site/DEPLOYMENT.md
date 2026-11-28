@@ -9,11 +9,11 @@ This runbook configures docs hosting for `docs.corely.one` from this monorepo.
 3. Enable **Monorepo**.
 4. Set docs path to `/docs-site`.
 
-## 2) Enable GitHub auto-deployments
+## 2) Check Git integration
 
-1. Install the Mintlify GitHub App on the Corely repository.
-2. Confirm the Mintlify project is connected to the correct branch.
-3. Verify push-based preview/production deployments are active.
+Mintlify manages Git-triggered documentation deployments through its dashboard.
+Check **Git Settings** for an existing connection to the Corely repository when
+removing deployment automation.
 
 ## 3) Add the custom domain
 

@@ -15,3 +15,12 @@ CHANGELOG.md
 apps/pos/.expo/
 apps/pos/expo-env.d.ts
 .dotnet/
+
+# Generated artifacts are not source-formatting inputs
+**/bin/
+**/obj/
+**/TestResults/
+**/test-results/
+**/playwright-report/
+/output/
+/tmp/

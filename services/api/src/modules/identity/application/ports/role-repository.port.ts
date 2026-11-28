@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 /**
  * Role Repository Port (Interface)
  */
@@ -5,14 +6,17 @@ export interface RoleRepositoryPort {
   /**
    * Create a role
    */
-  create(data: {
-    id: string;
-    tenantId: string | null;
-    name: string;
-    description?: string | null;
-    isSystem?: boolean;
-    systemKey?: string;
-  }): Promise<void>;
+  create(
+    data: {
+      id: string;
+      tenantId: string | null;
+      name: string;
+      description?: string | null;
+      isSystem?: boolean;
+      systemKey?: string;
+    },
+    tx?: TransactionContext
+  ): Promise<void>;
 
   /**
    * Find role by ID
@@ -46,7 +50,8 @@ export interface RoleRepositoryPort {
    */
   findBySystemKey(
     tenantId: string,
-    systemKey: string
+    systemKey: string,
+    tx?: TransactionContext
   ): Promise<{
     id: string;
     tenantId: string;

@@ -1,4 +1,4 @@
-import type { LocalDate } from "@corely/kernel";
+import type { LocalDate, TransactionContext } from "@corely/kernel";
 import type { InventoryLotProps } from "../../domain/inventory-lot.entity";
 import type { InventoryLotStatus } from "../../domain/inventory.types";
 
@@ -42,3 +42,26 @@ export interface InventoryLotRepositoryPort {
     days: number
   ): Promise<{ expiringSoon: ExpiryItem[]; expired: ExpiryItem[] }>;
 }
+
+export type InvoiceLotAllocation = { lot: InventoryLot; quantityPicked: number };
+
+export type InvoiceInventoryLotPort = {
+  hasProductLots(tenantId: string, productId: string, tx: TransactionContext): Promise<boolean>;
+  hasInvoiceConsumption(
+    tenantId: string,
+    invoiceId: string,
+    tx?: TransactionContext
+  ): Promise<boolean>;
+  recordInvoiceConsumption(
+    tenantId: string,
+    invoiceId: string,
+    tx: TransactionContext
+  ): Promise<void>;
+  allocateInvoiceLots(
+    tenantId: string,
+    productId: string,
+    quantity: number,
+    tx: TransactionContext
+  ): Promise<InvoiceLotAllocation[]>;
+  consumeInvoiceLot(lot: InventoryLot, quantity: number, tx: TransactionContext): Promise<void>;
+};

@@ -53,11 +53,11 @@ describe("resolveActiveWorkspaceId", () => {
     await expect(resolveActiveWorkspaceId(client, "tenant-1")).resolves.toBe("workspace-a");
   });
 
-  it("returns the current workspace when no workspaces are available", async () => {
+  it("clears an unavailable workspace when discovery returns no memberships", async () => {
     const client = createClient({
       workspaces: [],
     });
 
-    await expect(resolveActiveWorkspaceId(client, "tenant-1")).resolves.toBe("tenant-1");
+    await expect(resolveActiveWorkspaceId(client, "tenant-1")).resolves.toBeNull();
   });
 });

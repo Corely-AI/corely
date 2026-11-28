@@ -1,6 +1,8 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  TableLoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -70,6 +72,7 @@ const statusVariant = (status: CustomerPackage["status"]): "outline" | "accent" 
 };
 
 export default function CustomerPackagesSection({ customerId }: Props) {
+  const uiCopy = useUiCopy("ui.customers-customerpackagessection");
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = React.useState(false);
   const [consumeTarget, setConsumeTarget] = React.useState<CustomerPackage | null>(null);
@@ -130,7 +133,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
       await queryClient.invalidateQueries({
         queryKey: workspaceQueryKeys.engagementPackages.all(),
       });
-      toast.success("Package created");
+      toast.success(uiCopy("package-created"));
       setCreateOpen(false);
       setPackageName("");
       setPackageTotalUnits("1");
@@ -164,7 +167,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
           queryKey: workspaceQueryKeys.engagementPackageUsage.all(),
         }),
       ]);
-      toast.success("Package usage recorded");
+      toast.success(uiCopy("package-usage-recorded"));
       setConsumeTarget(null);
       setConsumeUnits("1");
       setConsumeNotes("");
@@ -181,44 +184,42 @@ export default function CustomerPackagesSection({ customerId }: Props) {
     <Card>
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <CardTitle>Packages</CardTitle>
-          <p className="text-sm text-muted-foreground">Manage prepaid packages and usage units</p>
+          <CardTitle>{uiCopy("packages")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{uiCopy("manage-prepaid-packages-and")}</p>
         </div>
         <Button variant="accent" onClick={() => setCreateOpen(true)}>
-          Create package
+          {uiCopy("create-package")}
         </Button>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <h3 className="mb-2 text-sm font-medium text-foreground">Customer packages</h3>
+          <h3 className="mb-2 text-sm font-medium text-foreground">
+            {uiCopy("customer-packages")}
+          </h3>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Remaining</TableHead>
-                <TableHead>Expiry</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{uiCopy("name")}</TableHead>
+                <TableHead>{uiCopy("status")}</TableHead>
+                <TableHead>{uiCopy("total")}</TableHead>
+                <TableHead>{uiCopy("remaining")}</TableHead>
+                <TableHead>{uiCopy("expiry")}</TableHead>
+                <TableHead className="text-right">{uiCopy("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {packagesQuery.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    Loading packages...
-                  </TableCell>
-                </TableRow>
+                <TableLoadingSkeleton columns={6} label={uiCopy("loading-packages")} />
               ) : packagesQuery.isError ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-destructive">
-                    Failed to load packages.
+                    {uiCopy("failed-to-load-packages")}
                   </TableCell>
                 </TableRow>
               ) : packages.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    No packages yet.
+                    {uiCopy("no-packages-yet")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -242,7 +243,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
                           setConsumeNotes("");
                         }}
                       >
-                        Consume units
+                        {uiCopy("consume-units")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -253,39 +254,35 @@ export default function CustomerPackagesSection({ customerId }: Props) {
         </div>
 
         <div>
-          <h3 className="mb-2 text-sm font-medium text-foreground">Package usage</h3>
+          <h3 className="mb-2 text-sm font-medium text-foreground">{uiCopy("package-usage")}</h3>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Used at</TableHead>
-                <TableHead>Units</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Notes</TableHead>
+                <TableHead>{uiCopy("used-at")}</TableHead>
+                <TableHead>{uiCopy("units")}</TableHead>
+                <TableHead>{uiCopy("source")}</TableHead>
+                <TableHead>{uiCopy("notes")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {!selectedPackageId ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    Select or create a package to view usage history.
+                    {uiCopy("select-or-create-a")}
                   </TableCell>
                 </TableRow>
               ) : usageQuery.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    Loading usage history...
-                  </TableCell>
-                </TableRow>
+                <TableLoadingSkeleton columns={4} label={uiCopy("loading-usage-history")} />
               ) : usageQuery.isError ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-destructive">
-                    Failed to load usage history.
+                    {uiCopy("failed-to-load-usage")}
                   </TableCell>
                 </TableRow>
               ) : usageItems.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No usage records yet.
+                    {uiCopy("no-usage-records-yet")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -306,20 +303,20 @@ export default function CustomerPackagesSection({ customerId }: Props) {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create package</DialogTitle>
+            <DialogTitle>{uiCopy("create-package")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="package-name">Name</Label>
+              <Label htmlFor="package-name">{uiCopy("name")}</Label>
               <Input
                 id="package-name"
                 value={packageName}
                 onChange={(event) => setPackageName(event.target.value)}
-                placeholder="10-session package"
+                placeholder={uiCopy("10-session-package")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="package-total-units">Total units</Label>
+              <Label htmlFor="package-total-units">{uiCopy("total-units")}</Label>
               <Input
                 id="package-total-units"
                 type="number"
@@ -330,7 +327,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="package-expiry">Expiry date</Label>
+              <Label htmlFor="package-expiry">{uiCopy("expiry-date")}</Label>
               <Input
                 id="package-expiry"
                 type="date"
@@ -339,18 +336,18 @@ export default function CustomerPackagesSection({ customerId }: Props) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="package-notes">Notes</Label>
+              <Label htmlFor="package-notes">{uiCopy("notes")}</Label>
               <Textarea
                 id="package-notes"
                 value={packageNotes}
                 onChange={(event) => setPackageNotes(event.target.value)}
-                placeholder="Optional notes"
+                placeholder={uiCopy("optional-notes")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setCreateOpen(false)}>
-              Cancel
+              {uiCopy("cancel")}
             </Button>
             <Button
               variant="accent"
@@ -358,11 +355,11 @@ export default function CustomerPackagesSection({ customerId }: Props) {
               onClick={() => {
                 const totalUnits = Number.parseInt(packageTotalUnits, 10);
                 if (!packageName.trim()) {
-                  toast.error("Package name is required");
+                  toast.error(uiCopy("package-name-is-required"));
                   return;
                 }
                 if (!Number.isFinite(totalUnits) || totalUnits <= 0) {
-                  toast.error("Total units must be a positive whole number");
+                  toast.error(uiCopy("total-units-must-be"));
                   return;
                 }
                 createPackageMutation.mutate({
@@ -373,7 +370,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
                 });
               }}
             >
-              {createPackageMutation.isPending ? "Creating..." : "Create package"}
+              {createPackageMutation.isPending ? uiCopy("creating") : uiCopy("create-package")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -385,7 +382,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Consume package units</DialogTitle>
+            <DialogTitle>{uiCopy("consume-package-units")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="rounded-md border border-border p-3 text-sm text-muted-foreground">
@@ -393,13 +390,14 @@ export default function CustomerPackagesSection({ customerId }: Props) {
                 <>
                   <div className="font-medium text-foreground">{consumeTarget.name}</div>
                   <div>
-                    Remaining units: {consumeTarget.remainingUnits} / {consumeTarget.totalUnits}
+                    {uiCopy("remaining-units") + " "}
+                    {consumeTarget.remainingUnits} / {consumeTarget.totalUnits}
                   </div>
                 </>
               ) : null}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="consume-units">Units to consume</Label>
+              <Label htmlFor="consume-units">{uiCopy("units-to-consume")}</Label>
               <Input
                 id="consume-units"
                 type="number"
@@ -410,18 +408,18 @@ export default function CustomerPackagesSection({ customerId }: Props) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="consume-notes">Notes</Label>
+              <Label htmlFor="consume-notes">{uiCopy("notes")}</Label>
               <Textarea
                 id="consume-notes"
                 value={consumeNotes}
                 onChange={(event) => setConsumeNotes(event.target.value)}
-                placeholder="Optional notes"
+                placeholder={uiCopy("optional-notes")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setConsumeTarget(null)}>
-              Cancel
+              {uiCopy("cancel")}
             </Button>
             <Button
               variant="accent"
@@ -432,7 +430,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
                 }
                 const unitsUsed = Number.parseInt(consumeUnits, 10);
                 if (!Number.isFinite(unitsUsed) || unitsUsed <= 0) {
-                  toast.error("Units to consume must be a positive whole number");
+                  toast.error(uiCopy("units-to-consume-must"));
                   return;
                 }
                 consumeMutation.mutate({
@@ -442,7 +440,7 @@ export default function CustomerPackagesSection({ customerId }: Props) {
                 });
               }}
             >
-              {consumeMutation.isPending ? "Saving..." : "Consume"}
+              {consumeMutation.isPending ? uiCopy("saving") : uiCopy("consume")}
             </Button>
           </DialogFooter>
         </DialogContent>

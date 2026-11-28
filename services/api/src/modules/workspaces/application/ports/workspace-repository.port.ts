@@ -80,6 +80,7 @@ export interface WorkspaceRepositoryPort {
 
   // Workspace operations
   createWorkspace(input: CreateWorkspaceInput): Promise<Workspace>;
+  findActiveTenantForWorkspace(workspaceId: string): Promise<string | null>;
   getWorkspaceBySlug(slug: string): Promise<Workspace | null>;
   getWorkspaceById(
     tenantId: string,
@@ -87,7 +88,11 @@ export interface WorkspaceRepositoryPort {
     tx?: TransactionContext
   ): Promise<Workspace | null>;
   getWorkspaceByIdWithLegalEntity(tenantId: string, id: string): Promise<Workspace | null>;
-  listWorkspacesByTenant(tenantId: string, userId: string): Promise<Workspace[]>;
+  listWorkspacesByTenant(
+    tenantId: string,
+    userId: string,
+    tenantAdminRoleId?: string
+  ): Promise<Workspace[]>;
   updateWorkspace(tenantId: string, id: string, input: UpdateWorkspaceInput): Promise<Workspace>;
   softDeleteWorkspace(tenantId: string, id: string): Promise<void>;
 

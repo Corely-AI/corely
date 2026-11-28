@@ -1,4 +1,5 @@
 import { apiClient } from "./api-client";
+import type { UpdateTenantAppEnablement } from "@corely/contracts";
 // Removed unused import
 
 // Actually I defined types in Backend module. I should probably duplicate or share them.
@@ -36,12 +37,14 @@ export const platformEntitlementsApi = {
     tenantId: string,
     appId: string,
     enabled: boolean,
-    cascade: boolean = false
+    cascade: boolean = false,
+    expectedDependents?: UpdateTenantAppEnablement["expectedDependents"]
   ) => {
     return apiClient.patch<{ success: boolean }>(`/platform/tenants/${tenantId}/apps/${appId}`, {
       enabled,
       cascade,
-    });
+      ...(expectedDependents ? { expectedDependents } : {}),
+    } satisfies UpdateTenantAppEnablement);
   },
 
   updateFeatures: async (tenantId: string, updates: { key: string; value: any }[]) => {

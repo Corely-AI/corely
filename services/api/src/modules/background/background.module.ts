@@ -1,3 +1,8 @@
+import { TasksModule } from "../tasks/tasks.module";
+import {
+  RecurringTasksInternalController,
+  RecurringTasksInternalGuard,
+} from "./recurring-tasks-internal.controller";
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { StorageModule as BackgroundStorageModule } from "./runtime/modules/storage/storage.module";
@@ -11,6 +16,7 @@ import { BackgroundInternalGuard } from "./background-internal.guard";
 
 @Module({
   imports: [
+    TasksModule,
     DataModule,
     BackgroundStorageModule,
     BackgroundOutboxModule,
@@ -19,7 +25,7 @@ import { BackgroundInternalGuard } from "./background-internal.guard";
     BackgroundBillingModule,
     BackgroundCoachingModule,
   ],
-  controllers: [BackgroundInternalController],
-  providers: [BackgroundInternalGuard],
+  controllers: [BackgroundInternalController, RecurringTasksInternalController],
+  providers: [BackgroundInternalGuard, RecurringTasksInternalGuard],
 })
 export class BackgroundModule {}

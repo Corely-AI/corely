@@ -14,3 +14,4 @@ export const commandContributions = (): Command[] => [
     run: ({ navigate }) => navigate("/expenses"),
   },
 ];
+export { default as ReceiptInboxPage } from "./screens/ReceiptInboxPage";

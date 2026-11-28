@@ -1,8 +1,10 @@
+import { useTranslation } from "react-i18next";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, Plus, ChevronUp, ChevronDown, Trash2, Code2 } from "lucide-react";
-import { Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
 import { websiteApi } from "@/lib/website-api";
 import { websiteMenuKeys } from "../queries";
 import { toast } from "sonner";
@@ -41,6 +43,8 @@ const normalizeMenuItems = (itemsJson: unknown): MenuItem[] => {
 };
 
 export default function WebsiteMenusPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.website-websitemenuspage");
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,7 +57,7 @@ export default function WebsiteMenusPage() {
 
   const menuQueryKey = useMemo(() => websiteMenuKeys.list(siteId ?? ""), [siteId]);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: menuQueryKey,
     queryFn: () => (siteId ? websiteApi.listMenus(siteId) : Promise.resolve({ items: [] })),
     enabled: Boolean(siteId),
@@ -130,7 +134,7 @@ export default function WebsiteMenusPage() {
     try {
       parsed = itemsJson.trim() ? JSON.parse(itemsJson) : [];
     } catch {
-      toast.error("Menu JSON must be valid JSON");
+      toast.error(uiCopy("menu-json-must-be"));
       return;
     }
     const normalized = normalizeMenuItems(parsed);
@@ -159,7 +163,7 @@ export default function WebsiteMenusPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: menuQueryKey });
-      toast.success("Menu saved");
+      toast.success(uiCopy("menu-saved"));
     },
     onError: (err: any) => {
       toast.error(err?.message || "Failed to save menu");
@@ -172,16 +176,18 @@ export default function WebsiteMenusPage() {
         <div className="flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {uiCopy("back")}
           </Button>
           <div>
-            <div className="text-lg font-semibold">Menus</div>
-            <div className="text-sm text-muted-foreground">Configure navigation menus</div>
+            <div className="text-lg font-semibold">{uiCopy("menus")}</div>
+            <div className="text-sm text-muted-foreground">
+              {uiCopy("configure-navigation-menus")}
+            </div>
           </div>
         </div>
         <Button variant="accent" onClick={() => void mutation.mutate()}>
           <Save className="h-4 w-4" />
-          Save menu
+          {uiCopy("save-menu")}
         </Button>
       </div>
 
@@ -189,18 +195,18 @@ export default function WebsiteMenusPage() {
         <CardContent className="p-6 space-y-5">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Menu</Label>
+              <Label>{uiCopy("menu")}</Label>
               <select
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={menuName}
                 onChange={(event) => setMenuName(event.target.value)}
               >
-                <option value="header">Header</option>
-                <option value="footer">Footer</option>
+                <option value="header">{uiCopy("header")}</option>
+                <option value="footer">{uiCopy("footer")}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Locale</Label>
+              <Label>{uiCopy("locale")}</Label>
               <Input value={locale} onChange={(event) => setLocale(event.target.value)} />
             </div>
           </div>
@@ -208,20 +214,24 @@ export default function WebsiteMenusPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Menu items</Label>
-                <p className="text-sm text-muted-foreground">
-                  Add links in order. Use full URLs for external links.
-                </p>
+                <Label>{uiCopy("menu-items")}</Label>
+                <p className="text-sm text-muted-foreground">{uiCopy("add-links-in-order")}</p>
               </div>
               <Button variant="outline" size="sm" onClick={addItem}>
                 <Plus className="h-4 w-4" />
-                Add item
+                {uiCopy("add-item")}
               </Button>
             </div>
 
-            {items.length === 0 ? (
+            {isLoading ? (
+              <LoadingSkeleton label={t("common.loading")} variant="list" />
+            ) : isError && !data ? (
+              <p role="alert" className="text-destructive">
+                {t("common.error")}
+              </p>
+            ) : items.length === 0 ? (
               <div className="rounded-md border border-dashed border-border/60 px-4 py-6 text-center text-sm text-muted-foreground">
-                No menu items yet.
+                {uiCopy("no-menu-items-yet")}
               </div>
             ) : (
               <div className="space-y-2">
@@ -233,21 +243,21 @@ export default function WebsiteMenusPage() {
                       className="grid gap-3 rounded-md border border-border/60 p-3 md:grid-cols-[1.2fr_1.5fr_auto]"
                     >
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Label</Label>
+                        <Label className="text-xs text-muted-foreground">{uiCopy("label")}</Label>
                         <Input
                           value={item.label}
                           className={hasError && !item.label.trim() ? "border-destructive" : ""}
                           onChange={(event) => updateItem(item.id, { label: event.target.value })}
-                          placeholder="Home"
+                          placeholder={uiCopy("home")}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Link</Label>
+                        <Label className="text-xs text-muted-foreground">{uiCopy("link")}</Label>
                         <Input
                           value={item.href}
                           className={hasError && !item.href.trim() ? "border-destructive" : ""}
                           onChange={(event) => updateItem(item.id, { href: event.target.value })}
-                          placeholder="/about or https://example.com"
+                          placeholder={uiCopy("about-or-https-example")}
                         />
                       </div>
                       <div className="flex items-end gap-1 justify-end">
@@ -289,10 +299,10 @@ export default function WebsiteMenusPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Code2 className="h-4 w-4" />
-                Advanced JSON
+                {uiCopy("advanced-json")}
               </div>
               <Button variant="ghost" size="sm" onClick={() => setAdvancedMode((v) => !v)}>
-                {advancedMode ? "Hide" : "Edit JSON"}
+                {advancedMode ? uiCopy("hide") : uiCopy("edit-json")}
               </Button>
             </div>
             {advancedMode ? (
@@ -301,18 +311,16 @@ export default function WebsiteMenusPage() {
                   value={itemsJson}
                   onChange={(event) => setItemsJson(event.target.value)}
                   rows={8}
-                  placeholder='[{"label": "Home", "href": "/"}]'
+                  placeholder={uiCopy("label-home-href")}
                 />
                 <div className="flex justify-end">
                   <Button variant="outline" size="sm" onClick={applyJson}>
-                    Apply JSON
+                    {uiCopy("apply-json")}
                   </Button>
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">
-                Prefer raw JSON? Use advanced mode to paste or edit directly.
-              </p>
+              <p className="text-xs text-muted-foreground">{uiCopy("prefer-raw-json-use")}</p>
             )}
           </div>
         </CardContent>

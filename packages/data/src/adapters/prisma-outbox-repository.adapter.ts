@@ -182,6 +182,12 @@ export class OutboxRepository {
         return { outcome: "skipped" as const };
       }
 
+      const lease = {
+        id,
+        status: "PROCESSING" as const,
+        lockedBy: options.workerId,
+        attempts: current.attempts,
+      };
       const nextAttempts = current.attempts + 1;
       const maxAttempts = options.maxAttempts ?? this.defaultMaxAttempts;
       const retryable = options.retryable ?? true;
@@ -190,8 +196,8 @@ export class OutboxRepository {
       const shouldRetry = retryable && !exhausted;
 
       if (!shouldRetry) {
-        await tx.outboxEvent.update({
-          where: { id },
+        const result = await tx.outboxEvent.updateMany({
+          where: lease,
           data: {
             status: "FAILED",
             attempts: nextAttempts,
@@ -201,7 +207,9 @@ export class OutboxRepository {
             updatedAt: now,
           },
         });
-        return { outcome: "failed" as const, attempts: nextAttempts };
+        return result.count
+          ? { outcome: "failed" as const, attempts: nextAttempts }
+          : { outcome: "skipped" as const };
       }
 
       const retryBaseDelayMs = options.retryBaseDelayMs ?? this.defaultBaseDelayMs;
@@ -211,8 +219,8 @@ export class OutboxRepository {
       const delayMs = Math.min(retryMaxDelayMs, retryBaseDelayMs * Math.pow(2, nextAttempts - 1));
       const availableAt = new Date(now.getTime() + delayMs + jitterMs);
 
-      await tx.outboxEvent.update({
-        where: { id },
+      const result = await tx.outboxEvent.updateMany({
+        where: lease,
         data: {
           status: "PENDING",
           attempts: nextAttempts,
@@ -223,6 +231,9 @@ export class OutboxRepository {
           updatedAt: now,
         },
       });
+      if (!result.count) {
+        return { outcome: "skipped" as const };
+      }
       return {
         outcome: "retried" as const,
         attempts: nextAttempts,

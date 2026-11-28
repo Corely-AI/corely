@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import {
   Badge,
@@ -14,7 +16,7 @@ import {
   SelectValue,
   Textarea,
 } from "@corely/ui";
-import { sonnerToast } from "@corely/ui";
+import { LoadingSkeleton, sonnerToast } from "@corely/ui";
 import type { ModifierSelectionMode, UpsertRestaurantModifierGroupInput } from "@corely/contracts";
 import {
   useRestaurantModifierGroups,
@@ -37,6 +39,8 @@ function parseOptions(optionsText: string): UpsertRestaurantModifierGroupInput["
 }
 
 export default function RestaurantModifierGroupsPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.restaurant-restaurantmodifiergroupspage");
   const groupsQuery = useRestaurantModifierGroups();
   const saveGroup = useUpsertRestaurantModifierGroup();
 
@@ -78,26 +82,24 @@ export default function RestaurantModifierGroupsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-foreground">Modifier groups</h1>
-        <p className="text-sm text-muted-foreground">
-          Reuse shared catalog items and attach restaurant-specific modifiers.
-        </p>
+        <h1 className="text-3xl font-semibold text-foreground">{uiCopy("modifier-groups")}</h1>
+        <p className="text-sm text-muted-foreground">{uiCopy("reuse-shared-catalog-items")}</p>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[360px,1fr]">
         <Card>
           <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="modifier-name">Name</Label>
+              <Label htmlFor="modifier-name">{uiCopy("name")}</Label>
               <Input
                 id="modifier-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Burger add-ons"
+                placeholder={uiCopy("burger-add-ons")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Selection mode</Label>
+              <Label>{uiCopy("selection-mode")}</Label>
               <Select
                 value={selectionMode}
                 onValueChange={(value) => setSelectionMode(value as ModifierSelectionMode)}
@@ -107,7 +109,7 @@ export default function RestaurantModifierGroupsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="MULTI">MULTI</SelectItem>
-                  <SelectItem value="SINGLE">SINGLE</SelectItem>
+                  <SelectItem value="SINGLE">{uiCopy("single")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -116,19 +118,19 @@ export default function RestaurantModifierGroupsPage() {
                 checked={isRequired}
                 onCheckedChange={(checked) => setIsRequired(Boolean(checked))}
               />
-              Required selection
+              {uiCopy("required-selection")}
             </label>
             <div className="space-y-2">
-              <Label htmlFor="modifier-linked-items">Linked catalog item ids</Label>
+              <Label htmlFor="modifier-linked-items">{uiCopy("linked-catalog-item-ids")}</Label>
               <Input
                 id="modifier-linked-items"
                 value={linkedItemIds}
                 onChange={(event) => setLinkedItemIds(event.target.value)}
-                placeholder="item_1,item_2"
+                placeholder={uiCopy("item-1-item-2")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="modifier-options">Options</Label>
+              <Label htmlFor="modifier-options">{uiCopy("options")}</Label>
               <Textarea
                 id="modifier-options"
                 rows={8}
@@ -136,12 +138,10 @@ export default function RestaurantModifierGroupsPage() {
                 onChange={(event) => setOptionsText(event.target.value)}
                 placeholder={"Cheese|100\nBacon|250\nNo onion|0"}
               />
-              <p className="text-xs text-muted-foreground">
-                One line per option as `name|priceDeltaCents`.
-              </p>
+              <p className="text-xs text-muted-foreground">{uiCopy("one-line-per-option")}</p>
             </div>
             <Button onClick={() => void submit()} disabled={saveGroup.isPending}>
-              Save modifier group
+              {uiCopy("save-modifier-group")}
             </Button>
           </CardContent>
         </Card>
@@ -154,11 +154,13 @@ export default function RestaurantModifierGroupsPage() {
                   <div>
                     <h2 className="text-xl font-semibold text-foreground">{group.name}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {group.selectionMode} · {group.isRequired ? "required" : "optional"}
+                      {group.selectionMode} ·{" "}
+                      {group.isRequired ? uiCopy("required") : uiCopy("optional")}
                     </p>
                   </div>
                   <Badge variant="secondary">
-                    {group.linkedCatalogItemIds.length} linked items
+                    {group.linkedCatalogItemIds.length}
+                    {" " + uiCopy("linked-items")}
                   </Badge>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -171,10 +173,16 @@ export default function RestaurantModifierGroupsPage() {
               </CardContent>
             </Card>
           ))}
-          {!groupsQuery.isLoading && (groupsQuery.data?.items.length ?? 0) === 0 ? (
+          {groupsQuery.isLoading ? (
+            <LoadingSkeleton label={t("common.loading")} variant="list" />
+          ) : groupsQuery.isError && !groupsQuery.data ? (
+            <p role="alert" className="text-destructive">
+              {t("common.error")}
+            </p>
+          ) : (groupsQuery.data?.items.length ?? 0) === 0 ? (
             <Card>
               <CardContent className="p-6 text-sm text-muted-foreground">
-                No modifier groups configured yet.
+                {uiCopy("no-modifier-groups-configured")}
               </CardContent>
             </Card>
           ) : null}

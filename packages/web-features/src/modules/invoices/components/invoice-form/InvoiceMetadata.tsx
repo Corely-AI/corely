@@ -26,7 +26,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
   } = useFormContext<InvoiceFormData>();
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
       {/* Invoice date */}
       <div className="space-y-2">
         <Label className="text-xs text-muted-foreground uppercase">
@@ -45,6 +45,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
                     !field.value && "text-muted-foreground"
                   )}
                 >
+                  <span className="sr-only">{t("invoices.invoiceDate")}: </span>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value ? (
                     field.value.toLocaleDateString(i18n.language)
@@ -73,6 +74,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full justify-start text-left font-normal">
+              <span className="sr-only">{t("invoices.serviceDate")}: </span>
               <CalendarIcon className="mr-2 h-4 w-4" />
               {watch("serviceDateStart") && watch("serviceDateEnd") ? (
                 <>
@@ -108,8 +110,9 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
         <div className="flex gap-2">
           <Input
             {...register("invoiceNumber")}
+            aria-label={t("invoices.invoiceNumberLabel")}
             data-testid="invoice-number-input"
-            className="font-medium"
+            className="min-w-0 font-medium"
           />
           <Button
             type="button"
@@ -140,6 +143,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
                     field.value ? "" : "text-accent"
                   )}
                 >
+                  <span className="sr-only">{t("invoices.dueDate")}: </span>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value
                     ? field.value.toLocaleDateString(i18n.language)

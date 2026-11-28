@@ -1,0 +1,90 @@
+{
+  "portal": {
+    "title": "Portalu",
+    "dashboard": {
+      "title": "Pulpit nawigacyjny",
+      "welcome": "Witamy",
+      "students": {
+        "title": "Studenci",
+        "select": "Wybierz Ucznia",
+        "linked": "Połączeni studenci",
+        "viewing": "OGLĄDANIE",
+        "student": "STUDENT",
+        "none": "Brak powiązanych uczniów"
+      },
+      "sessions": {
+        "title": "Następne sesje",
+        "subtitle": "Zobacz nadchodzący harmonogram zajęć i linki umożliwiające dołączenie do sesji online.",
+        "open": "Otwórz harmonogram"
+      },
+      "materials": {
+        "title": "Materiały",
+        "subtitle": "Wszystkie dokumenty udostępnione Tobie i Twoim uczniom.",
+        "items_one": "{{count}} POZYCJA",
+        "items_other": "{{count}} POZYCJI",
+        "items": "ELEMENTY",
+        "added": "Dodano",
+        "download_failed": "Nie udało się uzyskać adresu URL pobierania",
+        "personal": "OSOBISTE",
+        "class_group": "GRUPA KLASY",
+        "getFile": "Pobierz plik",
+        "empty": {
+          "title": "Jeszcze nic tu nie ma",
+          "subtitle": "Twoje materiały edukacyjne pojawią się tutaj, gdy nauczyciel je prześle."
+        },
+        "items_few": "{{count}} POZYCJE",
+        "items_many": "{{count}} POZYCJI"
+      },
+      "invoices": {
+        "title": "Faktury",
+        "subtitle": "Pobierz faktury dla wybranego studenta.",
+        "items_one": "{{count}} FAKTURA",
+        "items_other": "{{count}} FAKTURY",
+        "items": "FAKTURY",
+        "invoice": "Faktura",
+        "issued": "Wydane",
+        "due": "Termin",
+        "amount_due": "Kwota należna",
+        "download": "Pobierz fakturę",
+        "download_failed": "Nie udało się pobrać linku do pobrania faktury",
+        "empty": {
+          "title": "Nie ma jeszcze faktur",
+          "subtitle": "Invoices for this student will appear here once they are issued."
+        },
+        "items_few": "{{count}} FAKTURY",
+        "items_many": "{{count}} FAKTUR"
+      }
+    },
+    "login": {
+      "title": "Portal studentów i opiekunów",
+      "email_prompt": "Wpisz swój adres e-mail, aby otrzymać kod do logowania",
+      "code_sent": "Wprowadź 6-cyfrowy kod wysłany do {{email}}",
+      "email_label": "E-mail",
+      "email_placeholder": "nazwa@przykład.com",
+      "send_code": "Wyślij kod logowania",
+      "code_label": "Kod logowania",
+      "code_placeholder": "000000",
+      "change_email": "Zmień e-mail",
+      "resend_code": "Wyślij kod ponownie",
+      "resend_in": "Wyślij ponownie w {{count}}",
+      "verify_sign_in": "Zweryfikuj i zaloguj się",
+      "errors": {
+        "send_failed": "Nie udało się wysłać kodu",
+        "verify_failed": "Nieprawidłowy lub wygasły kod"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "Nie znaleziono strony",
+    "returnHome": "Wróć do domu"
+  },
+  "common": {
+    "logout": "Wyloguj się",
+    "loading": "Ładowanie...",
+    "languages": {
+      "en": "PL",
+      "vi": "VI",
+      "de": "DE"
+    }
+  }
+}

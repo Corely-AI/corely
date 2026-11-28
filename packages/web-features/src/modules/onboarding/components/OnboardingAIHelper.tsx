@@ -7,12 +7,18 @@ import type { OnboardingStepConfig } from "@corely/contracts";
 import { useOnboardingAnalytics } from "../engine/use-onboarding-analytics";
 
 export interface OnboardingAIHelperProps {
+  assistantPath?: string;
   step: OnboardingStepConfig;
   locale: string;
   className?: string;
 }
 
-export const OnboardingAIHelper = ({ step, locale, className }: OnboardingAIHelperProps) => {
+export const OnboardingAIHelper = ({
+  step,
+  locale,
+  className,
+  assistantPath = "/assistant",
+}: OnboardingAIHelperProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const analytics = useOnboardingAnalytics();
@@ -23,7 +29,7 @@ export const OnboardingAIHelper = ({ step, locale, className }: OnboardingAIHelp
 
   const handleOpenHelp = () => {
     analytics.track("onboarding.ai_helper_opened", { stepId: step.id, type: step.type });
-    navigate("/assistant");
+    navigate(assistantPath);
   };
 
   return (

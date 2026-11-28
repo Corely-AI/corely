@@ -1,5 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
+import type { Prisma } from "@prisma/client";
 import { AuditPort } from "../../application/ports/audit.port";
 
 /**
@@ -9,16 +11,19 @@ import { AuditPort } from "../../application/ports/audit.port";
 export class PrismaAuditRepository implements AuditPort {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async write(data: {
-    tenantId: string | null;
-    actorUserId: string | null;
-    action: string;
-    targetType?: string;
-    targetId?: string;
-    ip?: string;
-    userAgent?: string;
-    metadataJson?: string;
-  }): Promise<void> {
+  async write(
+    data: {
+      tenantId: string | null;
+      actorUserId: string | null;
+      action: string;
+      targetType?: string;
+      targetId?: string;
+      ip?: string;
+      userAgent?: string;
+      metadataJson?: string;
+    },
+    tx?: TransactionContext
+  ): Promise<void> {
     const details: Record<string, unknown> = {};
     if (data.actorUserId) {
       details.actorUserId = data.actorUserId;
@@ -33,11 +38,12 @@ export class PrismaAuditRepository implements AuditPort {
       details.metadata = data.metadataJson;
     }
 
-    const createData: any = {
+    const createData: Prisma.AuditLogUncheckedCreateInput = {
       action: data.action,
       // Map target fields to the required Prisma columns
       entity: data.targetType || "Unknown",
       entityId: data.targetId || data.actorUserId || "unknown",
+      actorUserId: data.actorUserId,
     };
 
     if (data.tenantId) {
@@ -47,6 +53,7 @@ export class PrismaAuditRepository implements AuditPort {
       createData.details = JSON.stringify(details);
     }
 
-    await this.prisma.auditLog.create({ data: createData });
+    const client = tx ? (tx as unknown as Prisma.TransactionClient) : this.prisma;
+    await client.auditLog.create({ data: createData });
   }
 }

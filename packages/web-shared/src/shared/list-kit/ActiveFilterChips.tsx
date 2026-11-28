@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { X } from "lucide-react";
 import { Badge } from "@corely/ui"; // Ensure badge exists or use div
@@ -15,6 +16,7 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
   onRemove,
   onClearAll,
 }) => {
+  const uiCopy = useUiCopy("ui.shared-list-kit-activefilterchips");
   if (!filters.length) {
     return null;
   }
@@ -48,7 +50,7 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
         </Badge>
       ))}
       <Button variant="ghost" size="sm" onClick={onClearAll} className="h-6 px-2 text-xs">
-        Clear all
+        {uiCopy("clear-all")}
       </Button>
     </div>
   );

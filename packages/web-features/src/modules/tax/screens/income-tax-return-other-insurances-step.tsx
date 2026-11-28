@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import type { BinaryChoice, OtherInsurancesSectionPayload } from "@corely/contracts";
 import { AlertCircle } from "lucide-react";
@@ -38,6 +39,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
   onChange,
   onNext,
 }: IncomeTaxReturnOtherInsurancesStepProps) => {
+  const uiCopy = useUiCopy("ui.tax-income-tax-return-other-insurances-step");
   const taxYear = new Date().getFullYear() - 1;
   const payslipHref = `/income-statement/payslip/${taxYear}/main-partner`;
   const spousePayslipHref = `/income-statement/payslip/${taxYear}/spouse`;
@@ -120,18 +122,18 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
       {hasMissingRequiredDetails ? (
         <div className="flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <p>Required details are missing on this page</p>
+          <p>{uiCopy("required-details-are-missing")}</p>
         </div>
       ) : null}
 
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-4">
-            <h2 className="text-h3 text-foreground">Pension</h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("pension")}</h2>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Do you have a pension fund?
+                {uiCopy("do-you-have-a")}
               </Label>
               <SegmentedControl
                 ariaLabel="Pension fund"
@@ -150,12 +152,12 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                   id="pension-employee-contribution"
                   label={
                     <>
-                      Contributions to pension as an employee declared on your{" "}
+                      {uiCopy("contributions-to-pension-as")}{" "}
                       <a
                         href={payslipHref}
                         className="text-sky-500 transition-colors hover:text-sky-400"
                       >
-                        annual payslips
+                        {uiCopy("annual-payslips")}
                       </a>
                     </>
                   }
@@ -164,13 +166,13 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                 />
                 <MoneyField
                   id="pension-self-employed-contribution"
-                  label="Contributions to public pension insurance as a self employed (Optional)"
+                  label={uiCopy("contributions-to-public-pension")}
                   value={pensionSelfEmployedContribution}
                   onChange={setPensionSelfEmployedContribution}
                 />
                 <MoneyField
                   id="basic-pension-costs"
-                  label="Basic pension costs (Rürup-Contracts) (Optional)"
+                  label={uiCopy("basic-pension-costs-ru")}
                   value={basicPensionCosts}
                   onChange={setBasicPensionCosts}
                 />
@@ -179,7 +181,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Does your spouse have a pension fund?
+                {uiCopy("does-your-spouse-have")}
               </Label>
               <SegmentedControl
                 ariaLabel="Spouse pension fund"
@@ -198,12 +200,12 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                   id="spouse-pension-employee-contribution"
                   label={
                     <>
-                      Contributions to pension as an employee declared on your spouse{" "}
+                      {uiCopy("contributions-to-pension-as-2")}{" "}
                       <a
                         href={spousePayslipHref}
                         className="text-sky-500 transition-colors hover:text-sky-400"
                       >
-                        annual payslips
+                        {uiCopy("annual-payslips")}
                       </a>
                     </>
                   }
@@ -212,7 +214,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                 />
                 <MoneyField
                   id="spouse-basic-pension-costs"
-                  label="Basic pension costs (Rürup-Contracts) (Optional)"
+                  label={uiCopy("basic-pension-costs-ru")}
                   value={spouseBasicPensionCosts}
                   onChange={setSpouseBasicPensionCosts}
                 />
@@ -225,14 +227,11 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-4">
-            <h2 className="text-h3 text-foreground">
-              Accident, liability and life insurance costs
-            </h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("accident-liability-and-life")}</h2>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Do you have accident, liability or life insurances that are only applicable in case
-                of death?
+                {uiCopy("do-you-have-accident")}
               </Label>
               <SegmentedControl
                 ariaLabel="Accident liability life insurance"
@@ -248,7 +247,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
             {hasAccidentLifeInsurance === "yes" ? (
               <MoneyField
                 id="accident-life-insurance-costs"
-                label="Accident, liability and risk insurance costs"
+                label={uiCopy("accident-liability-and-risk")}
                 value={accidentLifeInsuranceCosts}
                 onChange={setAccidentLifeInsuranceCosts}
                 required
@@ -257,8 +256,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Does your spouse have accident, liability or life insurances that are only
-                applicable in case of death?
+                {uiCopy("does-your-spouse-have-2")}
               </Label>
               <SegmentedControl
                 ariaLabel="Spouse accident liability life insurance"
@@ -274,7 +272,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
             {spouseHasAccidentLifeInsurance === "yes" ? (
               <MoneyField
                 id="spouse-accident-life-insurance-costs"
-                label="Accident, liability and risk insurance costs"
+                label={uiCopy("accident-liability-and-risk")}
                 value={spouseAccidentLifeInsuranceCosts}
                 onChange={setSpouseAccidentLifeInsuranceCosts}
                 required
@@ -287,11 +285,11 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-4">
-            <h2 className="text-h3 text-foreground">Unemployment insurance</h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("unemployment-insurance")}</h2>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Do you have an unemployment insurance?
+                {uiCopy("do-you-have-an")}
               </Label>
               <SegmentedControl
                 ariaLabel="Unemployment insurance"
@@ -310,12 +308,12 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                   id="unemployment-employee-contribution"
                   label={
                     <>
-                      Contributions to unemployment insurance as an employee declared on your{" "}
+                      {uiCopy("contributions-to-unemployment-insurance")}{" "}
                       <a
                         href={payslipHref}
                         className="text-sky-500 transition-colors hover:text-sky-400"
                       >
-                        annual payslips
+                        {uiCopy("annual-payslips")}
                       </a>
                     </>
                   }
@@ -324,7 +322,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                 />
                 <MoneyField
                   id="unemployment-self-employed-contribution"
-                  label="Contributions to unemployment insurance as a self employed (Optional)"
+                  label={uiCopy("contributions-to-unemployment-insurance-2")}
                   value={unemploymentSelfEmployedContribution}
                   onChange={setUnemploymentSelfEmployedContribution}
                 />
@@ -333,7 +331,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Does your spouse have an unemployment insurance?
+                {uiCopy("does-your-spouse-have-3")}
               </Label>
               <SegmentedControl
                 ariaLabel="Spouse unemployment insurance"
@@ -353,12 +351,12 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                   id="spouse-unemployment-employee-contribution"
                   label={
                     <>
-                      Contributions to unemployment insurance as an employee declared on your spouse{" "}
+                      {uiCopy("contributions-to-unemployment-insurance-3")}{" "}
                       <a
                         href={spousePayslipHref}
                         className="text-sky-500 transition-colors hover:text-sky-400"
                       >
-                        annual payslips
+                        {uiCopy("annual-payslips")}
                       </a>
                     </>
                   }
@@ -367,7 +365,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
                 />
                 <MoneyField
                   id="spouse-unemployment-self-employed-contribution"
-                  label="Contributions to unemployment insurance as a self employed (Optional)"
+                  label={uiCopy("contributions-to-unemployment-insurance-2")}
                   value={spouseUnemploymentSelfEmployedContribution}
                   onChange={setSpouseUnemploymentSelfEmployedContribution}
                 />
@@ -380,11 +378,11 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
       <Card>
         <CardContent className="space-y-6 p-6">
           <div className="space-y-4">
-            <h2 className="text-h3 text-foreground">Work and disability insurances</h2>
+            <h2 className="text-h3 text-foreground">{uiCopy("work-and-disability-insurances")}</h2>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Do you have a voluntary work and disability insurance?
+                {uiCopy("do-you-have-a-2")}
               </Label>
               <SegmentedControl
                 ariaLabel="Work and disability insurance"
@@ -400,7 +398,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
             {hasWorkDisabilityInsurance === "yes" ? (
               <MoneyField
                 id="work-disability-insurance-costs"
-                label="Work and disability insurance costs"
+                label={uiCopy("work-and-disability-insurance")}
                 value={workDisabilityInsuranceCosts}
                 onChange={setWorkDisabilityInsuranceCosts}
                 required
@@ -409,7 +407,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                Does your spouse have a voluntary work and disability insurance?
+                {uiCopy("does-your-spouse-have-4")}
               </Label>
               <SegmentedControl
                 ariaLabel="Spouse work and disability insurance"
@@ -425,7 +423,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
             {spouseHasWorkDisabilityInsurance === "yes" ? (
               <MoneyField
                 id="spouse-work-disability-insurance-costs"
-                label="Work and disability insurance costs"
+                label={uiCopy("work-and-disability-insurance")}
                 value={spouseWorkDisabilityInsuranceCosts}
                 onChange={setSpouseWorkDisabilityInsuranceCosts}
                 required
@@ -438,7 +436,7 @@ export const IncomeTaxReturnOtherInsurancesStep = ({
       {onNext ? (
         <div className="flex justify-end">
           <Button type="button" onClick={onNext} className="rounded-full px-8">
-            Next: Additional expenses
+            {uiCopy("next-additional-expenses")}
           </Button>
         </div>
       ) : null}

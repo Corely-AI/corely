@@ -1,9 +1,11 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CalendarX2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -55,6 +57,7 @@ function buildDateRange(from: string, to: string): string[] {
 }
 
 export function CashRegisterDetailScreen() {
+  const uiCopy = useUiCopy("ui.cash-management-cashregisterdetailscreen");
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -97,7 +100,12 @@ export function CashRegisterDetailScreen() {
 
   if (registerQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+      <LoadingSkeleton
+        variant="detail"
+        label={t("cash.ui.common.loadingRegister")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 
@@ -159,7 +167,7 @@ export function CashRegisterDetailScreen() {
             {t("cash.ui.registerDetail.kassenbericht")}
           </Button>
           <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link to={`/cash/registers/${id}/kassenabrechnung`}>Kassenabrechnung</Link>
+            <Link to={`/cash/registers/${id}/kassenabrechnung`}>{uiCopy("kassenabrechnung")}</Link>
           </Button>
           {canExportCash ? (
             <Button variant="outline" asChild className="w-full sm:w-auto">
@@ -357,9 +365,7 @@ export function CashRegisterDetailScreen() {
             <Card>
               <CardContent className="pt-4 pb-2">
                 {closesQuery.isLoading ? (
-                  <p className="text-sm text-muted-foreground py-4">
-                    {t("cash.ui.common.loadingRegister")}
-                  </p>
+                  <LoadingSkeleton variant="list" label={t("cash.ui.common.loadingRegister")} />
                 ) : (
                   (() => {
                     const closedSet = new Set(

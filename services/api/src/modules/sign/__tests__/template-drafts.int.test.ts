@@ -123,8 +123,7 @@ describe.skipIf(!url || !/^postgresql:\/\/[^/]+\/sign_test_[a-z0-9_]+$/.test(url
         f.audit,
         { newId: randomUUID }
       );
-      settings = new TenantEntitlementsService(db, catalog);
-      await installer.execute({tenantId: f.tenantA, appId: "sign", actorUserId: f.manager});
+      settings = new TenantEntitlementsService(db, catalog, installer, f.audit);
       entitlements = new TenantEntitlementService(
         f.appInstalls,
         registry,

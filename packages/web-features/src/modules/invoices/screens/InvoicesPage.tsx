@@ -1,12 +1,20 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
+import {
+  useInvoicesApi,
+  useInvoiceCustomersApi,
+  useInvoiceKeys,
+  useInvoiceNavigate,
+} from "../invoice-runtime";
+import { useInvoiceRuntime } from "../invoice-runtime";
+import { useSendInvoice } from "../hooks/use-send-invoice";
+import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+
 import { Copy, Download, Edit, FileText, Mail, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
-import { customersApi } from "@corely/web-shared/lib/customers-api";
 import { formatMoney, formatDate } from "@corely/web-shared/shared/lib/formatters";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import { Badge } from "@corely/ui";
@@ -25,22 +33,20 @@ import {
   FilterPanel,
   type FilterFieldDef,
 } from "@corely/web-shared/shared/list-kit";
-import { invoiceQueryKeys } from "../queries";
-import { workspaceQueryKeys } from "@corely/web-shared/shared/workspaces/workspace-query-keys";
+
 import type { InvoiceStatus } from "@corely/web-shared/shared/types";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@corely/ui";
+import { TableLoadingSkeleton, Pagination, PaginationContent, PaginationItem } from "@corely/ui";
 
 export default function InvoicesPage() {
+  const uiCopy = useUiCopy("ui.invoices-invoicespage");
+  const runtime = useInvoiceRuntime();
+  const invoicesApi = useInvoicesApi();
+  const customersApi = useInvoiceCustomersApi();
+  const invoiceQueryKeys = useInvoiceKeys();
+  const customerKeys = useInvoiceKeys("customers");
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
-  const locale = i18n.language === "de" ? "de-DE" : "en-DE";
+  const navigate = useInvoiceNavigate();
+  const locale = i18n.language === "en" ? "en-DE" : t("common.locale");
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -51,27 +57,35 @@ export default function InvoicesPage() {
       pageSize: 20,
       sort: "createdAt:desc", // Default sort
     },
-    { storageKey: "invoices-list-v1" }
+    runtime ? undefined : { storageKey: "invoices-list-v1" }
   );
 
   // Queries
-  const { data: listData, isLoading } = useQuery({
+  const {
+    data: listData,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: [...invoiceQueryKeys.list(), state],
     queryFn: () => invoicesApi.listInvoices(state),
     placeholderData: keepPreviousData,
   });
 
   const { data: customersData } = useQuery({
-    queryKey: workspaceQueryKeys.customers.list(),
+    queryKey: customerKeys.list(),
     queryFn: () => customersApi.listCustomers(),
+    enabled: !runtime,
   });
 
   const invoices = listData?.items ?? [];
   const pageInfo = listData?.pageInfo;
   const customers = customersData?.customers ?? [];
 
-  const getCustomerName = (customerPartyId: string) =>
-    customers.find((c) => c.id === customerPartyId)?.displayName || "Unknown";
+  const getCustomerName = (customerPartyId: string, billToName?: string | null) =>
+    billToName ||
+    customers.find((c) => c.id === customerPartyId)?.displayName ||
+    t("customers.unknown");
 
   // Filter Fields
   const filterFields = React.useMemo<FilterFieldDef[]>(() => {
@@ -93,7 +107,7 @@ export default function InvoicesPage() {
     if (customers.length > 0) {
       fields.push({
         key: "customerPartyId",
-        label: t("invoices.client"),
+        label: t("invoices.customer"),
         type: "select",
         options: customers.map((c) => ({ label: c.displayName, value: c.id })),
       });
@@ -122,32 +136,25 @@ export default function InvoicesPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
-      toast.success("Invoice duplicated");
+      toast.success(uiCopy("invoice-duplicated"));
     },
     onError: (error) => {
       console.error("Duplicate invoice failed", error);
-      toast.error("Failed to duplicate invoice");
+      toast.error(uiCopy("failed-to-duplicate-invoice"));
     },
   });
 
-  const emailInvoice = useMutation({
-    mutationFn: (invoiceId: string) => invoicesApi.sendInvoice(invoiceId),
-    onSuccess: () => toast.success("Invoice email sent"),
-    onError: (error) => {
-      console.error("Send invoice failed", error);
-      toast.error("Failed to send invoice");
-    },
-  });
+  const send = useSendInvoice();
 
   const cancelInvoice = useMutation({
     mutationFn: (invoiceId: string) => invoicesApi.cancelInvoice(invoiceId, "Soft delete"),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
-      toast.success("Invoice deleted (soft)");
+      toast.success(uiCopy("invoice-deleted-soft"));
     },
     onError: (error) => {
       console.error("Delete invoice failed", error);
-      toast.error("Failed to delete invoice");
+      toast.error(uiCopy("failed-to-delete-invoice"));
     },
   });
 
@@ -167,13 +174,13 @@ export default function InvoicesPage() {
         window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
         return;
       }
-      toast.info("PDF is being prepared", {
+      toast.info(uiCopy("pdf-is-being-prepared"), {
         description: "We started generating the PDF. Please try again in a moment.",
       });
     },
     onError: (error) => {
       console.error("Download PDF failed", error);
-      toast.error("Failed to download invoice PDF");
+      toast.error(uiCopy("failed-to-download-invoice"));
     },
   });
 
@@ -183,10 +190,10 @@ export default function InvoicesPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
-      toast.success("Invoices deleted");
+      toast.success(uiCopy("invoices-deleted"));
       setSelectedIds(new Set());
     },
-    onError: () => toast.error("Failed to delete invoices"),
+    onError: () => toast.error(uiCopy("failed-to-delete-invoices")),
   });
 
   const toggleSelection = (id: string) => {
@@ -203,6 +210,20 @@ export default function InvoicesPage() {
 
   const allSelected = invoices.length > 0 && invoices.every((i) => selectedIds.has(i.id));
 
+  if (isError) {
+    return (
+      <section role="alert" className="space-y-4 p-6">
+        <p>{t("common.error")}</p>
+        <Button
+          onClick={() => {
+            void refetch();
+          }}
+        >
+          {t("common.retry", { defaultValue: "Try again" })}
+        </Button>
+      </section>
+    );
+  }
   // Renderers
   return (
     <CrudListPageLayout
@@ -258,7 +279,7 @@ export default function InvoicesPage() {
           description={t("invoices.noInvoicesDescription")}
           action={
             <Button variant="outline" onClick={() => setUrlState({ q: "", filters: [] })}>
-              Clear filters
+              {uiCopy("clear-filters")}
             </Button>
           }
         />
@@ -266,15 +287,17 @@ export default function InvoicesPage() {
         <div className="space-y-4">
           {selectedIds.size > 0 ? (
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40 rounded-t-md">
-              <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+              <div className="text-sm text-muted-foreground">
+                {t("common.selectedCount", { count: selectedIds.size })}
+              </div>
               <ConfirmDeleteDialog
                 trigger={
-                  <Button variant="destructive" size="sm" disabled={bulkDeleteMutation.isPending}>
-                    Delete selected
+                  <Button variant="outline" size="sm" disabled={bulkDeleteMutation.isPending}>
+                    {uiCopy("delete-selected")}
                   </Button>
                 }
-                title="Delete selected invoices"
-                description="This will cancel and soft-delete the selected invoices."
+                title={uiCopy("delete-selected-invoices")}
+                description={uiCopy("this-will-cancel-and")}
                 isLoading={bulkDeleteMutation.isPending}
                 onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
               />
@@ -294,14 +317,14 @@ export default function InvoicesPage() {
                           setSelectedIds(new Set());
                         }
                       }}
-                      aria-label="Select all"
+                      aria-label={uiCopy("select-all")}
                     />
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                     {t("invoices.invoiceNumber")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    {t("invoices.client")}
+                    {t("invoices.customer")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                     {t("invoices.date")}
@@ -317,89 +340,92 @@ export default function InvoicesPage() {
               </thead>
               <tbody>
                 {/* Loader or items */}
-                {isLoading
-                  ? Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i} className="border-b border-border">
-                        <td colSpan={7} className="h-16 animate-pulse bg-muted/20" />
-                      </tr>
-                    ))
-                  : invoices.map((invoice) => (
-                      <tr
-                        key={invoice.id}
-                        data-testid={`invoice-row-${invoice.id}`}
-                        className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <Checkbox
-                            checked={selectedIds.has(invoice.id)}
-                            onCheckedChange={() => toggleSelection(invoice.id)}
-                            aria-label={`Select invoice ${invoice.id}`}
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium">
-                          {invoice.number || "Draft"}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {getCustomerName(invoice.customerPartyId)}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {formatDate(invoice.issuedAt || invoice.createdAt, locale)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant={invoice.status.toLowerCase() as InvoiceStatus}
-                            data-testid={`invoice-status-${invoice.status}`}
-                          >
-                            {t(`invoices.statuses.${invoice.status.toLowerCase()}`)}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right font-medium">
-                          {formatMoney(invoice.totals.totalCents, locale)}
-                        </td>
-                        <td className="px-2 py-3">
-                          <CrudRowActions
-                            primaryAction={{
-                              label: "View",
-                              href: `/invoices/${invoice.id}`,
-                              "data-testid": `view-invoice-${invoice.id}`,
-                            }}
-                            secondaryActions={[
-                              {
-                                label: "Edit",
-                                href: `/invoices/${invoice.id}/edit`, // Assuming edit route
-                                icon: <Edit className="h-4 w-4" />,
-                              },
-                              {
-                                label: "Duplicate",
-                                onClick: () => duplicateInvoice.mutate(invoice.id),
-                                icon: <Copy className="h-4 w-4" />,
-                              },
-                              {
-                                label: "Email",
-                                onClick: () => emailInvoice.mutate(invoice.id),
-                                icon: <Mail className="h-4 w-4" />,
-                              },
-                              {
-                                label: "Download PDF",
-                                onClick: () =>
-                                  downloadPdf.mutate({
-                                    invoiceId: invoice.id,
-                                    status: invoice.status,
-                                  }),
-                                icon: <Download className="h-4 w-4" />,
-                                disabled: downloadPdf.isPending,
-                              },
-                              {
-                                label: "Delete",
-                                onClick: () => cancelInvoice.mutate(invoice.id),
-                                icon: <Trash2 className="h-4 w-4" />,
-                                destructive: true,
-                              },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                {isLoading ? (
+                  <TableLoadingSkeleton columns={7} label={t("common.loading")} />
+                ) : (
+                  invoices.map((invoice) => (
+                    <tr
+                      key={invoice.id}
+                      data-testid={`invoice-row-${invoice.id}`}
+                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <Checkbox
+                          checked={selectedIds.has(invoice.id)}
+                          onCheckedChange={() => toggleSelection(invoice.id)}
+                          aria-label={t("invoices.focused.selectInvoice", { id: invoice.id })}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        {invoice.number || t("invoices.statuses.draft")}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {getCustomerName(invoice.customerPartyId, invoice.billToName)}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {formatDate(invoice.issuedAt || invoice.createdAt, locale)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant={invoice.status.toLowerCase() as InvoiceStatus}
+                          data-testid={`invoice-status-${invoice.status}`}
+                        >
+                          {t(`invoices.statuses.${invoice.status.toLowerCase()}`)}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right font-medium">
+                        {formatMoney(invoice.totals.totalCents, locale, invoice.currency)}
+                      </td>
+                      <td className="px-2 py-3">
+                        <CrudRowActions
+                          primaryAction={{
+                            label: t("common.view"),
+                            href:
+                              runtime?.route(`/invoices/${invoice.id}`) ??
+                              `/invoices/${invoice.id}`,
+                            "data-testid": `view-invoice-${invoice.id}`,
+                          }}
+                          secondaryActions={[
+                            {
+                              label: t("common.edit"),
+                              href:
+                                runtime?.route(`/invoices/${invoice.id}/edit`) ??
+                                `/invoices/${invoice.id}/edit`,
+                              icon: <Edit className="h-4 w-4" />,
+                            },
+                            {
+                              label: t("invoices.focused.duplicate"),
+                              onClick: () => duplicateInvoice.mutate(invoice.id),
+                              icon: <Copy className="h-4 w-4" />,
+                            },
+                            {
+                              label: t("common.email"),
+                              onClick: () => void send.openSendDialog(invoice.id),
+                              disabled: send.isFetching || send.isSending,
+                              icon: <Mail className="h-4 w-4" />,
+                            },
+                            {
+                              label: t("invoices.focused.downloadPdf"),
+                              onClick: () =>
+                                downloadPdf.mutate({
+                                  invoiceId: invoice.id,
+                                  status: invoice.status,
+                                }),
+                              icon: <Download className="h-4 w-4" />,
+                              disabled: downloadPdf.isPending,
+                            },
+                            {
+                              label: t("common.delete"),
+                              onClick: () => cancelInvoice.mutate(invoice.id),
+                              icon: <Trash2 className="h-4 w-4" />,
+                              destructive: true,
+                            },
+                          ]}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -409,29 +435,43 @@ export default function InvoicesPage() {
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => state.page > 1 && setUrlState({ page: state.page - 1 })}
-                    // disabled={state.page <= 1} // Check standard component prop
-                    className={
-                      state.page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
-                    }
-                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={state.page <= 1}
+                    onClick={() => setUrlState({ page: state.page - 1 })}
+                  >
+                    {t("invoices.focused.previous")}
+                  </Button>
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationLink isActive>{state.page}</PaginationLink>
+                  <span aria-current="page" className="px-4">
+                    {state.page}
+                  </span>
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationNext
-                    onClick={() => pageInfo.hasNextPage && setUrlState({ page: state.page + 1 })}
-                    className={
-                      !pageInfo.hasNextPage ? "pointer-events-none opacity-50" : "cursor-pointer"
-                    }
-                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={!pageInfo.hasNextPage}
+                    onClick={() => setUrlState({ page: state.page + 1 })}
+                  >
+                    {t("common.next")}
+                  </Button>
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
           )}
         </div>
+      )}
+      {send.currentInvoice && (
+        <SendInvoiceDialog
+          open={send.isOpen}
+          onOpenChange={send.setIsOpen}
+          invoice={send.currentInvoice}
+          onSend={send.handleSend}
+          isSending={send.isSending}
+        />
       )}
       <FilterPanel
         open={isFilterOpen}

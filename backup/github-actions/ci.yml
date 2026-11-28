@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - development
+      - main
+  pull_request:
+
+jobs:
+  quality:
+    name: Quality Checks (Build, Typecheck, Lint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+  unit-tests:
+    name: Unit & Application Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+  cash-management-integration:
+    name: Cash Management Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Run integration/orchestration tests
+        run: pnpm test services/api/src/modules/cash-management/__tests__/cash-management-orchestration.e2e-spec.ts
+
+  e2e:
+    name: Browser E2E Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Install supported browser
+        run: pnpm --dir apps/e2e exec playwright install --with-deps chromium
+
+      - name: Run isolated workspace-session browser regressions
+        run: pnpm --dir apps/e2e exec playwright test --config playwright.workspace-session.config.ts
+
+      - name: Preserve existing full browser gate on main
+        if: github.ref == 'refs/heads/main'
+        run: pnpm run e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspace-session-browser
+          path: apps/e2e/test-results/workspace-session/
+          if-no-files-found: warn

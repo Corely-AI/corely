@@ -170,7 +170,11 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
       <div className="order-1 lg:col-span-4 lg:order-2">
         {resolvedStepConfig.aiHelpContext && (
           <div className="sticky top-24 pt-4 animate-in fade-in slide-in-from-right-8 duration-700 delay-150 ease-out fill-mode-both">
-            <OnboardingAIHelper step={resolvedStepConfig} locale={locale} />
+            <OnboardingAIHelper
+              assistantPath={config.moduleKey === "cash-management" ? "/cash/assistant" : undefined}
+              step={resolvedStepConfig}
+              locale={locale}
+            />
           </div>
         )}
       </div>

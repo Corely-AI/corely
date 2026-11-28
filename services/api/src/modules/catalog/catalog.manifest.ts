@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const catalogAppManifest: AppManifest = {
   appId: "catalog",
+  directory: {
+    menuId: "catalog-items",
+    logo: { iconKey: "Package", tone: "accent" },
+    displayName: { en: "Products", de: "Produkte", vi: "Sản phẩm" },
+    category: "operations",
+  },
   name: "Catalog",
   tier: 2,
   version: "1.0.0",

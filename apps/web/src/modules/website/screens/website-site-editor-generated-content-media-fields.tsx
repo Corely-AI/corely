@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useState } from "react";
 import { Button, Input, Label } from "@corely/ui";
 import { buildPublicFileUrl } from "@/lib/cms-api";
@@ -30,6 +31,7 @@ const buildInputId = (prefix: string, path: ExternalContentPath): string =>
   `${prefix}-${toPathStateKey(path).replace(/[^a-z0-9_-]/gi, "-")}`;
 
 export function GeneratedFileIdField(props: GeneratedFileIdFieldProps) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-generated-content-media-fields");
   const inputId = buildInputId("generated-file-upload", props.path);
   const publicUrl = props.fileId ? buildPublicFileUrl(props.fileId) : "";
 
@@ -66,7 +68,7 @@ export function GeneratedFileIdField(props: GeneratedFileIdFieldProps) {
             }
           }}
         >
-          {props.isUploading ? "Uploading..." : "Upload"}
+          {props.isUploading ? uiCopy("uploading") : uiCopy("upload")}
         </Button>
       </div>
 
@@ -94,6 +96,7 @@ export function GeneratedFileIdField(props: GeneratedFileIdFieldProps) {
 }
 
 export function GeneratedFileIdListField(props: GeneratedFileIdListFieldProps) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-generated-content-media-fields");
   const inputId = buildInputId("generated-file-list-upload", props.path);
   const [draftValue, setDraftValue] = useState("");
 
@@ -112,7 +115,7 @@ export function GeneratedFileIdListField(props: GeneratedFileIdListFieldProps) {
       <div className="flex gap-2">
         <Input
           value={draftValue}
-          placeholder="Add fileId"
+          placeholder={uiCopy("add-fileid")}
           onChange={(event) => setDraftValue(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -122,7 +125,7 @@ export function GeneratedFileIdListField(props: GeneratedFileIdListFieldProps) {
           }}
         />
         <Button type="button" variant="outline" onClick={addDraftValue}>
-          Add
+          {uiCopy("add")}
         </Button>
         <input
           id={inputId}
@@ -149,7 +152,7 @@ export function GeneratedFileIdListField(props: GeneratedFileIdListFieldProps) {
             }
           }}
         >
-          {props.isUploading ? "Uploading..." : "Upload"}
+          {props.isUploading ? uiCopy("uploading") : uiCopy("upload")}
         </Button>
       </div>
 
@@ -183,14 +186,14 @@ export function GeneratedFileIdListField(props: GeneratedFileIdListFieldProps) {
                   size="sm"
                   onClick={() => props.onUpdate(props.fileIds.filter((item) => item !== fileId))}
                 >
-                  Remove
+                  {uiCopy("remove")}
                 </Button>
               </div>
             );
           })}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground">No files yet.</p>
+        <p className="text-xs text-muted-foreground">{uiCopy("no-files-yet")}</p>
       )}
     </div>
   );

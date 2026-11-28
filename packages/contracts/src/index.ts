@@ -16,6 +16,8 @@ export * from "./crm";
 export * from "./directory";
 export * from "./directory-admin";
 export * from "./cms";
+export * from "./copilot/operations.schema";
+export * from "./knowledge/procedure.schema";
 export * from "./website";
 export * from "./sales";
 export * from "./rentals";
@@ -394,9 +396,19 @@ export const EVENT_NAMES = {
 
 export * from "./common/customization/custom-field";
 export * from "./common/customization/custom-attributes";
+export * from "./people/staff.schema";
+export * from "./people/staff-self-service.schema";
+export * from "./people/staff-availability.schema";
+export * from "./tasks";
+export * from "./requests/operational-request.schema";
+
+export * from "./people/staff-absence.schema";
 
 export * from "./sign/layout.schema";
 export * from "./sign/template.schema";
 export * from "./sign/request.schema";
 export * from "./sign/ceremony.schema";
 export * from "./sign/field-placement";
+export * from "./localization";
+
+export * from "./platform/operations-today.schema";

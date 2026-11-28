@@ -12,6 +12,11 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./identity/sso": {
+      "types": "./dist/identity/sso.d.mts",
+      "import": "./dist/identity/sso.mjs",
+      "require": "./dist/identity/sso.cjs"
     }
   },
   "files": [

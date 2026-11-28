@@ -1,6 +1,9 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  LoadingSkeleton,
+  TableLoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -56,6 +59,7 @@ const formatDateTime = (value: string): string => {
 const formatSignedPoints = (value: number): string => (value > 0 ? `+${value}` : `${value}`);
 
 export default function CustomerLoyaltySection({ customerId }: Props) {
+  const uiCopy = useUiCopy("ui.customers-customerloyaltysection");
   const queryClient = useQueryClient();
   const [adjustOpen, setAdjustOpen] = React.useState(false);
   const [redeemOpen, setRedeemOpen] = React.useState(false);
@@ -89,7 +93,7 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
       await queryClient.invalidateQueries({
         queryKey: workspaceQueryKeys.engagementLoyalty.all(),
       });
-      toast.success("Loyalty points adjusted");
+      toast.success(uiCopy("loyalty-points-adjusted"));
       setAdjustOpen(false);
       setAdjustPoints("0");
       setAdjustReason("");
@@ -115,7 +119,7 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
       await queryClient.invalidateQueries({
         queryKey: workspaceQueryKeys.engagementLoyalty.all(),
       });
-      toast.success("Loyalty points redeemed");
+      toast.success(uiCopy("loyalty-points-redeemed"));
       setRedeemOpen(false);
       setRedeemPoints("1");
       setRedeemReason("");
@@ -133,76 +137,78 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
     <Card>
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <CardTitle>Loyalty</CardTitle>
-          <p className="text-sm text-muted-foreground">Track points balance and redemptions</p>
+          <CardTitle>{uiCopy("loyalty")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{uiCopy("track-points-balance-and")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setAdjustOpen(true)}>
-            Adjust points
+            {uiCopy("adjust-points")}
           </Button>
           <Button variant="accent" onClick={() => setRedeemOpen(true)}>
-            Redeem points
+            {uiCopy("redeem-points")}
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {summaryQuery.isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading loyalty summary...</div>
+          <LoadingSkeleton variant="detail" label={uiCopy("loading-loyalty-summary")} />
         ) : summaryQuery.isError ? (
-          <div className="text-sm text-destructive">Failed to load loyalty summary.</div>
+          <div className="text-sm text-destructive">{uiCopy("failed-to-load-loyalty")}</div>
         ) : account ? (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="rounded-md border border-border p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Balance</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                {uiCopy("balance")}
+              </div>
               <div className="text-2xl font-semibold text-foreground">
                 {account.currentPointsBalance}
               </div>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Lifetime earned
+                {uiCopy("lifetime-earned")}
               </div>
               <div className="text-2xl font-semibold text-foreground">
                 {account.lifetimeEarnedPoints}
               </div>
             </div>
             <div className="rounded-md border border-border p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Tier</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                {uiCopy("tier")}
+              </div>
               <div className="text-lg font-medium text-foreground">
-                {account.tier ?? "Standard"}
+                {account.tier ?? uiCopy("standard")}
               </div>
             </div>
           </div>
         ) : null}
 
         <div>
-          <h3 className="mb-2 text-sm font-medium text-foreground">Recent transactions</h3>
+          <h3 className="mb-2 text-sm font-medium text-foreground">
+            {uiCopy("recent-transactions")}
+          </h3>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>When</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Delta</TableHead>
-                <TableHead>Reason</TableHead>
+                <TableHead>{uiCopy("when")}</TableHead>
+                <TableHead>{uiCopy("type")}</TableHead>
+                <TableHead>{uiCopy("delta")}</TableHead>
+                <TableHead>{uiCopy("reason")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {ledgerQuery.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    Loading transactions...
-                  </TableCell>
-                </TableRow>
+                <TableLoadingSkeleton columns={4} label={uiCopy("loading-transactions")} />
               ) : ledgerQuery.isError ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-destructive">
-                    Failed to load transactions.
+                    {uiCopy("failed-to-load-transactions")}
                   </TableCell>
                 </TableRow>
               ) : ledgerItems.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No loyalty transactions yet.
+                    {uiCopy("no-loyalty-transactions-yet")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -233,40 +239,40 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adjust loyalty points</DialogTitle>
+            <DialogTitle>{uiCopy("adjust-loyalty-points")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="adjust-points">Points delta</Label>
+              <Label htmlFor="adjust-points">{uiCopy("points-delta")}</Label>
               <Input
                 id="adjust-points"
                 type="number"
                 step={1}
                 value={adjustPoints}
                 onChange={(event) => setAdjustPoints(event.target.value)}
-                placeholder="Use negative number to deduct"
+                placeholder={uiCopy("use-negative-number-to")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="adjust-reason">Reason</Label>
+              <Label htmlFor="adjust-reason">{uiCopy("reason")}</Label>
               <Textarea
                 id="adjust-reason"
                 value={adjustReason}
                 onChange={(event) => setAdjustReason(event.target.value)}
-                placeholder="Optional reason"
+                placeholder={uiCopy("optional-reason")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setAdjustOpen(false)}>
-              Cancel
+              {uiCopy("cancel")}
             </Button>
             <Button
               variant="accent"
               onClick={() => {
                 const pointsDelta = Number.parseInt(adjustPoints, 10);
                 if (!Number.isFinite(pointsDelta) || pointsDelta === 0) {
-                  toast.error("Points delta must be a non-zero whole number");
+                  toast.error(uiCopy("points-delta-must-be"));
                   return;
                 }
                 adjustMutation.mutate({
@@ -276,7 +282,7 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
               }}
               disabled={adjustMutation.isPending}
             >
-              {adjustMutation.isPending ? "Saving..." : "Apply adjustment"}
+              {adjustMutation.isPending ? uiCopy("saving") : uiCopy("apply-adjustment")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -285,11 +291,11 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
       <Dialog open={redeemOpen} onOpenChange={setRedeemOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Redeem loyalty points</DialogTitle>
+            <DialogTitle>{uiCopy("redeem-loyalty-points")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="redeem-points">Points to redeem</Label>
+              <Label htmlFor="redeem-points">{uiCopy("points-to-redeem")}</Label>
               <Input
                 id="redeem-points"
                 type="number"
@@ -300,25 +306,25 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="redeem-reason">Reason</Label>
+              <Label htmlFor="redeem-reason">{uiCopy("reason")}</Label>
               <Textarea
                 id="redeem-reason"
                 value={redeemReason}
                 onChange={(event) => setRedeemReason(event.target.value)}
-                placeholder="Optional reason"
+                placeholder={uiCopy("optional-reason")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setRedeemOpen(false)}>
-              Cancel
+              {uiCopy("cancel")}
             </Button>
             <Button
               variant="accent"
               onClick={() => {
                 const pointsDelta = Number.parseInt(redeemPoints, 10);
                 if (!Number.isFinite(pointsDelta) || pointsDelta <= 0) {
-                  toast.error("Points to redeem must be a positive whole number");
+                  toast.error(uiCopy("points-to-redeem-must"));
                   return;
                 }
                 redeemMutation.mutate({
@@ -328,7 +334,7 @@ export default function CustomerLoyaltySection({ customerId }: Props) {
               }}
               disabled={redeemMutation.isPending}
             >
-              {redeemMutation.isPending ? "Redeeming..." : "Redeem"}
+              {redeemMutation.isPending ? uiCopy("redeeming") : uiCopy("redeem")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -16,6 +16,7 @@ type Deps = {
   documentRepo: DocumentRepoPort;
   fileRepo: FileRepoPort;
   objectStorage: ObjectStoragePort;
+  storageForFile?: (file: { storageProvider: string; bucket: string }) => ObjectStoragePort;
 };
 
 @RequireTenant()
@@ -24,7 +25,7 @@ export class ProxyDownloadUseCase extends BaseUseCase<
   { buffer: Buffer; filename: string; contentType: string }
 > {
   constructor(private readonly useCaseDeps: Deps) {
-    super({ logger: null as any });
+    super({});
   }
 
   protected async handle(
@@ -45,7 +46,8 @@ export class ProxyDownloadUseCase extends BaseUseCase<
       throw new NotFoundError("File not found");
     }
 
-    const buffer = await this.useCaseDeps.objectStorage.getObject({
+    const storage = this.useCaseDeps.storageForFile?.(file) ?? this.useCaseDeps.objectStorage;
+    const buffer = await storage.getObject({
       tenantId,
       objectKey: file.objectKey,
     });

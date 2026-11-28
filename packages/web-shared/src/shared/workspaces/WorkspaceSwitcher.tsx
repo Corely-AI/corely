@@ -1,6 +1,6 @@
 import React from "react";
-import { ChevronsUpDown, PlusCircle, Briefcase, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ChevronsUpDown, PlusCircle, Building2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useWorkspace } from "./workspace-provider";
 import {
@@ -26,6 +26,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
 }) => {
   const { workspaces, activeWorkspaceId, setWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -33,7 +34,9 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
   }
 
   if (!workspaces.length) {
-    if (!allowCreate) return null;
+    if (!allowCreate) {
+      return null;
+    }
     return (
       <Button
         variant="secondary"
@@ -62,11 +65,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
           data-testid="workspace-switcher-trigger"
         >
           <div className="flex items-center gap-2 text-left">
-            {active.kind === "COMPANY" ? (
-              <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
-            ) : (
-              <User className="h-4 w-4 text-muted-foreground shrink-0" />
-            )}
+            <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
             {!collapsed && (
               <div className="flex flex-col overflow-hidden">
                 <span className="text-sm font-medium leading-tight truncate">{active.name}</span>
@@ -84,16 +83,20 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
         {workspaces.map((ws) => (
           <DropdownMenuItem
             key={ws.id}
-            onClick={() => setWorkspace(ws.id)}
+            onClick={() => {
+              if (searchParams.has("workspaceId")) {
+                const next = new URLSearchParams(searchParams);
+                next.set("workspaceId", ws.id);
+                setSearchParams(next, { replace: true });
+                return;
+              }
+              setWorkspace(ws.id);
+            }}
             className={ws.id === active.id ? "font-medium" : ""}
             data-testid={`workspace-option-${ws.id}`}
           >
             <div className="flex items-center gap-2">
-              {ws.kind === "COMPANY" ? (
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <User className="h-4 w-4 text-muted-foreground" />
-              )}
+              <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="flex flex-col">
                 <span>{ws.name}</span>
                 <span className="text-xs text-muted-foreground">

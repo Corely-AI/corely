@@ -7,6 +7,7 @@ export interface GetWorkspaceCommand {
   tenantId: string;
   userId: string;
   workspaceId: string;
+  tenantAdminRoleId?: string;
 }
 
 @Injectable()
@@ -24,7 +25,7 @@ export class GetWorkspaceUseCase {
       command.userId
     );
 
-    if (!hasAccess) {
+    if (!hasAccess && !command.tenantAdminRoleId) {
       throw new ForbiddenException("You do not have access to this workspace");
     }
 

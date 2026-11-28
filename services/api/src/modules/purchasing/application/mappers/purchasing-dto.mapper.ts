@@ -62,6 +62,7 @@ export const toVendorBillDto = (bill: VendorBillAggregate): VendorBillDto => ({
   billNumber: bill.billNumber,
   internalBillRef: bill.internalBillRef ?? undefined,
   status: bill.status,
+  sourceFilename: bill.sourceFilename ?? undefined,
   supplierPartyId: bill.supplierPartyId,
   supplierContactPartyId: bill.supplierContactPartyId ?? undefined,
   billDate: bill.billDate,

@@ -18,6 +18,8 @@ import {
 } from "@corely/web-shared/shared/workspaces/navigation-labels";
 import { useTranslation } from "react-i18next";
 import { AppSidebar, type AppSidebarProps, type WorkspaceSwitcherMode } from "./app-sidebar";
+import { PageLoadingSkeleton } from "../shared/components/page-loading-skeleton";
+import { filterSidebarNavigation } from "./sidebar-navigation";
 
 interface QuickActionConfig {
   id: string;
@@ -143,10 +145,18 @@ export function AppShell({
   const resolvedConfig = config ?? workspaceConfig;
   const resolvedIsConfigLoading = isConfigLoading ?? workspaceConfigLoading;
   const resolvedConfigError = configError ?? workspaceConfigError;
-  const resolvedNavigationGroups = navigationGroups ?? workspaceNavigationGroups;
+  const resolvedNavigationGroups =
+    sidebarProps?.navigationGroups ?? navigationGroups ?? workspaceNavigationGroups;
+  const isHostScope = user?.activeTenantId === null;
+  const hiddenItemIds = sidebarProps?.hiddenItemIds;
 
   const commands = useMemo(() => {
-    const navigationCommands: Command[] = resolvedNavigationGroups.flatMap((group) =>
+    const visibleNavigationGroups = filterSidebarNavigation(
+      resolvedNavigationGroups,
+      isHostScope,
+      hiddenItemIds
+    );
+    const navigationCommands: Command[] = visibleNavigationGroups.flatMap((group) =>
       group.items
         .filter((item) => Boolean(item.route))
         .map((item) => {
@@ -180,7 +190,15 @@ export function AppShell({
     );
     const quickActions = parseQuickActionConfig(quickActionWidget?.config);
     const createCommands: Command[] = quickActions
-      .filter((action) => Boolean(action.route))
+      .filter(
+        ({ route }) =>
+          route &&
+          visibleNavigationGroups.some((group) =>
+            group.items.some(
+              (item) => item.route && (route === item.route || route.startsWith(`${item.route}/`))
+            )
+          )
+      )
       .map((action) => {
         const Icon = getIconByName(action.icon ?? "HelpCircle");
         const translatedLabel = action.labelKey ? t(action.labelKey) : "";
@@ -201,7 +219,14 @@ export function AppShell({
       });
 
     return [...navigationCommands, ...createCommands];
-  }, [resolvedNavigationGroups, resolvedConfig, includeWorkspaceQuickActions, t]);
+  }, [
+    resolvedNavigationGroups,
+    isHostScope,
+    hiddenItemIds,
+    resolvedConfig,
+    includeWorkspaceQuickActions,
+    t,
+  ]);
 
   const namespace = useMemo(
     () => `${user?.userId ?? "anon"}:${activeWorkspaceId ?? "default"}`,
@@ -318,9 +343,14 @@ export function AppShell({
             )}
           </header>
 
-          <div className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
+          <div
+            key={activeWorkspaceId ?? "no-workspace"}
+            className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
+          >
             {topContent}
-            <Outlet />
+            <React.Suspense fallback={<PageLoadingSkeleton />}>
+              <Outlet />
+            </React.Suspense>
           </div>
         </main>
       </div>

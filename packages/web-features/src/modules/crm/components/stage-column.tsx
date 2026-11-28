@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import type { FC } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -73,6 +74,7 @@ function getStageColor(stageId: string) {
 }
 
 export const StageColumn: FC<StageColumnProps> = ({ stage, deals }) => {
+  const uiCopy = useUiCopy("ui.crm-stage-column");
   const navigate = useNavigate();
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
   const colors = getStageColor(stage.id);
@@ -120,7 +122,7 @@ export const StageColumn: FC<StageColumnProps> = ({ stage, deals }) => {
         <SortableContext items={dealIds} strategy={verticalListSortingStrategy}>
           {deals.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-muted-foreground/50 text-xs gap-2">
-              <span>Drop deals here</span>
+              <span>{uiCopy("drop-deals-here")}</span>
             </div>
           ) : (
             deals.map((deal) => <DealKanbanCard key={deal.id} deal={deal} />)
@@ -135,7 +137,7 @@ export const StageColumn: FC<StageColumnProps> = ({ stage, deals }) => {
           aria-label={`Add deal in ${stage.name}`}
         >
           <Plus className="h-3 w-3 shrink-0" />
-          Add deal
+          {uiCopy("add-deal")}
         </button>
       </div>
     </div>

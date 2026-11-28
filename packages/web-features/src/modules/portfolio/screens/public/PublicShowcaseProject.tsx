@@ -1,15 +1,17 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { usePublicPortfolioContext } from "./PublicPortfolioLayout";
 import { portfolioPublicApi } from "@corely/web-shared/lib/portfolio-public-api";
-import { Badge } from "@corely/ui";
+import { LoadingSkeleton, Badge } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { ArrowLeft, ExternalLink, Github } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 // If you have a Markdown renderer, import it. simplified for now.
 
 export const PublicShowcaseProject = () => {
+  const uiCopy = useUiCopy("ui.portfolio-public-publicshowcaseproject");
   const { showcase } = usePublicPortfolioContext();
   const { slug, projectSlug } = useParams<{ slug?: string; projectSlug?: string }>();
   const isSlugMode = Boolean(slug);
@@ -30,11 +32,18 @@ export const PublicShowcaseProject = () => {
   };
 
   if (isLoading) {
-    return <div className="container py-10 animate-pulse">Loading project...</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-project")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (!data) {
-    return <div className="container py-10">Project not found</div>;
+    return <div className="container py-10">{uiCopy("project-not-found")}</div>;
   }
 
   const { project } = data;

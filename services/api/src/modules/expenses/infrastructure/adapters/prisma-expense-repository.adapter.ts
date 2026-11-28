@@ -6,6 +6,7 @@ import {
   type ExpenseListResult,
   type ExpenseRepositoryPort,
 } from "../../application/ports/expense-repository.port";
+import { EMAILED_EXPENSE_PREFIX } from "../../domain/emailed-expense";
 import { Expense } from "../../domain/expense.entity";
 
 @Injectable()
@@ -86,6 +87,9 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       tenantId,
       archivedAt: filters.includeArchived ? undefined : null,
     };
+    if (filters.includeEmailedReceipts === false) {
+      where.NOT = { id: { startsWith: EMAILED_EXPENSE_PREFIX } };
+    }
     if (filters.entityIds) {
       if (filters.entityIds.length === 0) {
         return { items: [], total: 0, nextCursor: null };

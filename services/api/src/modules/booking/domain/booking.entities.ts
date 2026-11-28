@@ -187,6 +187,13 @@ export class BookingAllocation {
 
 // ─── Booking Hold Entity ──────────────────────────────────────────────────────
 
+type HoldDateField = "startAt" | "endAt" | "expiresAt" | "createdAt";
+export type BookingHoldSnapshot = Omit<
+  BookingHold,
+  HoldDateField | "isExpired" | "effectiveStatus" | "confirm" | "expire"
+> &
+  Record<HoldDateField, string>;
+
 export class BookingHold {
   constructor(
     public readonly id: string,
@@ -207,8 +214,29 @@ export class BookingHold {
     public readonly createdAt: Date
   ) {}
 
+  static fromSnapshot(snapshot: BookingHoldSnapshot): BookingHold {
+    return new BookingHold(
+      snapshot.id,
+      snapshot.tenantId,
+      snapshot.workspaceId,
+      snapshot.status,
+      new Date(snapshot.startAt),
+      new Date(snapshot.endAt),
+      snapshot.serviceOfferingId,
+      snapshot.resourceIds,
+      new Date(snapshot.expiresAt),
+      snapshot.bookedByPartyId,
+      snapshot.bookedByName,
+      snapshot.bookedByEmail,
+      snapshot.notes,
+      snapshot.confirmedBookingId,
+      snapshot.createdByUserId,
+      new Date(snapshot.createdAt)
+    );
+  }
+
   get isExpired(): boolean {
-    return this.expiresAt < new Date();
+    return this.expiresAt <= new Date();
   }
 
   /** Effective status — treat as EXPIRED if past TTL */

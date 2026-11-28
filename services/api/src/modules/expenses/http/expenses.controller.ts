@@ -4,15 +4,19 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  UseGuards,
 } from "@nestjs/common";
 import type { Request } from "express";
 import { z } from "zod";
+import {
+  ExpenseReceiptAccessGuard,
+  type ReceiptAccessRequest,
+} from "./expense-receipt-access.guard";
 import {
   CreateExpenseWebInputSchema,
   ListExpensesInputSchema,
@@ -28,14 +32,10 @@ import { ListExpensesUseCase } from "../application/use-cases/list-expenses.usec
 import { GetExpenseUseCase } from "../application/use-cases/get-expense.usecase";
 import { UpdateExpenseUseCase } from "../application/use-cases/update-expense.usecase";
 import { TransitionExpenseUseCase } from "../application/use-cases/transition-expense.usecase";
+import { EXPENSE_RECEIPT_DOCUMENT_PREFIX } from "@corely/domain";
+import { isEmailedExpense } from "../domain/emailed-expense";
 import type { Expense } from "../domain/expense.entity";
 import { ExpenseCapabilitiesBuilder } from "../domain/expense-capabilities.builder";
-import {
-  WORKSPACE_REPOSITORY_PORT,
-  type WorkspaceRepositoryPort,
-} from "../../workspaces/application/ports/workspace-repository.port";
-import { WorkspaceTemplateService } from "../../platform/application/services/workspace-template.service";
-
 const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
   tenantId: z.string().optional(),
   merchant: z.string().optional(),
@@ -65,6 +65,7 @@ const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
 });
 
 @Controller("expenses")
+@UseGuards(ExpenseReceiptAccessGuard)
 export class ExpensesController {
   constructor(
     private readonly createExpenseUseCase: CreateExpenseUseCase,
@@ -73,10 +74,7 @@ export class ExpensesController {
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly getExpenseUseCase: GetExpenseUseCase,
     private readonly updateExpenseUseCase: UpdateExpenseUseCase,
-    private readonly transitionExpenseUseCase: TransitionExpenseUseCase,
-    @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort,
-    private readonly templateService: WorkspaceTemplateService
+    private readonly transitionExpenseUseCase: TransitionExpenseUseCase
   ) {}
 
   @Post()
@@ -138,7 +136,7 @@ export class ExpensesController {
   }
 
   @Get()
-  async list(@Query() query: Record<string, unknown>, @Req() req: Request) {
+  async list(@Query() query: Record<string, unknown>, @Req() req: ReceiptAccessRequest) {
     const listQuery = parseListQuery(query, { defaultPageSize: 20 });
     const ctx = buildUseCaseContext(req);
     const category = typeof query.category === "string" ? query.category : undefined;
@@ -160,6 +158,7 @@ export class ExpensesController {
         q: listQuery.q,
         cursor: typeof query.cursor === "string" ? query.cursor : undefined,
         includeArchived: listQuery.includeArchived,
+        includeEmailedReceipts: req.includeEmailedExpenses === true,
         category,
         status,
         merchantName: typeof query.merchantName === "string" ? query.merchantName : undefined,
@@ -176,17 +175,22 @@ export class ExpensesController {
   }
 
   @Get(":expenseId")
-  async getOne(@Param("expenseId") expenseId: string, @Req() req: Request) {
+  async getOne(@Param("expenseId") expenseId: string, @Req() req: ReceiptAccessRequest) {
     const ctx = buildUseCaseContext(req);
     const includeArchived =
       req.query?.includeArchived === "true" || req.query?.includeArchived === "1";
 
     const expense = await this.getExpenseUseCase.execute({ expenseId, includeArchived }, ctx);
     const dto = this.mapExpenseDto(expense);
+    if (
+      isEmailedExpense(expense.id) &&
+      (expense.createdByUserId === ctx.userId || req.canManageEmailedExpense) &&
+      expense.tenantId === ctx.workspaceId
+    ) {
+      dto.receipts = [{ documentId: `${EXPENSE_RECEIPT_DOCUMENT_PREFIX}${expense.id}` }];
+    }
 
-    // Determine if approvals are enabled for this workspace
-    const approvalsEnabled = await this.isApprovalsEnabled(ctx.tenantId, ctx.workspaceId);
-    const capabilities = new ExpenseCapabilitiesBuilder(dto, approvalsEnabled).build();
+    const capabilities = new ExpenseCapabilitiesBuilder(dto, req.canManageEmailedExpense).build();
 
     return { expense: dto, capabilities };
   }
@@ -286,32 +290,5 @@ export class ExpensesController {
       custom: expense.custom ?? undefined,
       deductibility: expense.toDeductibilityResult(),
     };
-  }
-
-  /**
-   * Check if approval workflow is enabled for the workspace
-   */
-  private async isApprovalsEnabled(tenantId: string, workspaceId?: string): Promise<boolean> {
-    if (!workspaceId) {
-      return true; // Default to approvals enabled for safety
-    }
-
-    try {
-      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
-        tenantId,
-        workspaceId
-      );
-
-      if (!workspace || !workspace.legalEntity) {
-        return true;
-      }
-
-      const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-      const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
-
-      return capabilities.approvals !== false;
-    } catch (error) {
-      return true; // Default to approvals enabled on error
-    }
   }
 }

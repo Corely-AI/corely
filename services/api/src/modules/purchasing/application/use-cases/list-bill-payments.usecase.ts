@@ -3,6 +3,8 @@ import {
   type Result,
   type UseCaseContext,
   type UseCaseError,
+  err,
+  NotFoundError,
   ok,
   RequireTenant,
 } from "@corely/kernel";
@@ -25,6 +27,14 @@ export class ListBillPaymentsUseCase extends BaseUseCase<
   ): Promise<Result<ListBillPaymentsOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
 
+    const bill = await this.services.billRepo.findById(
+      tenantId,
+      input.vendorBillId,
+      ctx.workspaceId
+    );
+    if (!bill) {
+      return err(new NotFoundError("Vendor bill not found"));
+    }
     const payments = await this.services.paymentRepo.listByBill(tenantId, input.vendorBillId);
 
     return ok({ payments: payments.map(toBillPaymentDto) });

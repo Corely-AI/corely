@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -13,7 +14,17 @@ import { bookingApi } from "@/lib/booking-api";
 import { bookingServiceKeys } from "../queries";
 import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-errors";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Checkbox, Input, Label, Textarea } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Input,
+  Label,
+  Textarea,
+} from "@corely/ui";
 
 const RESOURCE_TYPES: ResourceType[] = ["STAFF", "ROOM", "EQUIPMENT"];
 
@@ -118,6 +129,7 @@ const toPayload = (values: ServiceFormValues): CreateServiceOfferingInput => ({
 });
 
 export default function ServiceEditorPage() {
+  const uiCopy = useUiCopy("ui.booking-serviceeditorpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
@@ -200,7 +212,7 @@ export default function ServiceEditorPage() {
       await bookingApi.deleteService(id);
     },
     onSuccess: async () => {
-      toast.success("Service deleted");
+      toast.success(uiCopy("service-deleted"));
       await invalidateResourceQueries(queryClient, "booking/services");
       navigate("/booking/services");
     },
@@ -231,7 +243,7 @@ export default function ServiceEditorPage() {
           <div>
             <h1 className="text-h1 text-foreground">{pageTitle}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Configure duration, buffers, pricing, and required resources.
+              {uiCopy("configure-duration-buffers-pricing")}
             </p>
           </div>
         </div>
@@ -242,11 +254,11 @@ export default function ServiceEditorPage() {
               trigger={
                 <Button variant="destructive" size="sm" disabled={deleteMutation.isPending}>
                   <Trash2 className="h-4 w-4" />
-                  Delete
+                  {uiCopy("delete")}
                 </Button>
               }
-              title="Delete service"
-              description="This action cannot be undone."
+              title={uiCopy("delete-service")}
+              description={uiCopy("this-action-cannot-be")}
               isLoading={deleteMutation.isPending}
               onConfirm={async () => {
                 await deleteMutation.mutateAsync();
@@ -257,32 +269,32 @@ export default function ServiceEditorPage() {
             variant="outline"
             onClick={() => navigate(isEdit && id ? `/booking/services/${id}` : "/booking/services")}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit((values) => saveMutation.mutate(values))}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : isEdit ? "Save changes" : "Create"}
+            {saveMutation.isPending
+              ? uiCopy("saving")
+              : isEdit
+                ? uiCopy("save-changes")
+                : uiCopy("create")}
           </Button>
         </div>
       </div>
 
       {isEdit && serviceQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            Loading service...
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-service")} />
       ) : null}
 
       {isEdit && serviceQuery.isError ? (
         <Card>
           <CardContent className="p-6 flex items-center justify-between gap-3">
-            <div className="text-sm text-destructive">Failed to load service.</div>
+            <div className="text-sm text-destructive">{uiCopy("failed-to-load-service")}</div>
             <Button variant="outline" size="sm" onClick={() => void serviceQuery.refetch()}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </CardContent>
         </Card>
@@ -293,7 +305,7 @@ export default function ServiceEditorPage() {
           <Card>
             <CardContent className="p-6 space-y-5">
               <div>
-                <Label htmlFor="service-name">Name</Label>
+                <Label htmlFor="service-name">{uiCopy("name")}</Label>
                 <Input id="service-name" {...form.register("name")} />
                 {form.formState.errors.name ? (
                   <p className="text-sm text-destructive mt-1">
@@ -303,7 +315,7 @@ export default function ServiceEditorPage() {
               </div>
 
               <div>
-                <Label htmlFor="service-description">Description</Label>
+                <Label htmlFor="service-description">{uiCopy("description")}</Label>
                 <Textarea id="service-description" rows={3} {...form.register("description")} />
                 {form.formState.errors.description ? (
                   <p className="text-sm text-destructive mt-1">
@@ -314,7 +326,7 @@ export default function ServiceEditorPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="service-duration">Duration (minutes)</Label>
+                  <Label htmlFor="service-duration">{uiCopy("duration-minutes")}</Label>
                   <Input
                     id="service-duration"
                     type="number"
@@ -328,7 +340,7 @@ export default function ServiceEditorPage() {
                   ) : null}
                 </div>
                 <div>
-                  <Label htmlFor="service-buffer-before">Buffer before (minutes)</Label>
+                  <Label htmlFor="service-buffer-before">{uiCopy("buffer-before-minutes")}</Label>
                   <Input
                     id="service-buffer-before"
                     type="number"
@@ -342,7 +354,7 @@ export default function ServiceEditorPage() {
                   ) : null}
                 </div>
                 <div>
-                  <Label htmlFor="service-buffer-after">Buffer after (minutes)</Label>
+                  <Label htmlFor="service-buffer-after">{uiCopy("buffer-after-minutes")}</Label>
                   <Input
                     id="service-buffer-after"
                     type="number"
@@ -359,7 +371,7 @@ export default function ServiceEditorPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="service-price">Price (cents)</Label>
+                  <Label htmlFor="service-price">{uiCopy("price-cents")}</Label>
                   <Input
                     id="service-price"
                     type="number"
@@ -373,7 +385,7 @@ export default function ServiceEditorPage() {
                   ) : null}
                 </div>
                 <div>
-                  <Label htmlFor="service-deposit">Deposit (cents)</Label>
+                  <Label htmlFor="service-deposit">{uiCopy("deposit-cents")}</Label>
                   <Input
                     id="service-deposit"
                     type="number"
@@ -387,7 +399,7 @@ export default function ServiceEditorPage() {
                   ) : null}
                 </div>
                 <div>
-                  <Label htmlFor="service-currency">Currency</Label>
+                  <Label htmlFor="service-currency">{uiCopy("currency")}</Label>
                   <Input id="service-currency" placeholder="USD" {...form.register("currency")} />
                   {form.formState.errors.currency ? (
                     <p className="text-sm text-destructive mt-1">
@@ -398,7 +410,7 @@ export default function ServiceEditorPage() {
               </div>
 
               <div>
-                <Label>Required Resource Types</Label>
+                <Label>{uiCopy("required-resource-types")}</Label>
                 <div className="flex flex-wrap gap-3 mt-2">
                   {RESOURCE_TYPES.map((resourceType) => {
                     const checked = selectedResourceTypes.includes(resourceType);
@@ -430,10 +442,10 @@ export default function ServiceEditorPage() {
               </div>
 
               <div>
-                <Label htmlFor="service-tags">Required Tags (comma-separated)</Label>
+                <Label htmlFor="service-tags">{uiCopy("required-tags-comma-separated")}</Label>
                 <Input
                   id="service-tags"
-                  placeholder="vip, consultation"
+                  placeholder={uiCopy("vip-consultation")}
                   {...form.register("requiredTagsText")}
                 />
               </div>
@@ -445,7 +457,7 @@ export default function ServiceEditorPage() {
                     form.setValue("isActive", Boolean(checked), { shouldDirty: true })
                   }
                 />
-                <span className="text-sm">Service is active</span>
+                <span className="text-sm">{uiCopy("service-is-active")}</span>
               </label>
             </CardContent>
           </Card>

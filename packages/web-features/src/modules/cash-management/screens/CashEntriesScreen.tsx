@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import type { CashEntryAttachment, CashEntryType } from "@corely/contracts";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 import { apiClient } from "@corely/web-shared/lib/api-client";
@@ -371,7 +371,12 @@ export function CashEntriesScreen() {
 
   if (registerQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+      <LoadingSkeleton
+        variant="list"
+        label={t("cash.ui.common.loadingRegister")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 
@@ -467,7 +472,7 @@ export function CashEntriesScreen() {
         }
       >
         {entriesQuery.isLoading ? (
-          <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.entries.loading")}</div>
+          <LoadingSkeleton variant="list" label={t("cash.ui.entries.loading")} />
         ) : entriesQuery.isError ? (
           <div className="p-6 text-sm text-destructive">{t("cash.ui.entries.loadFailed")}</div>
         ) : entries.length === 0 ? (

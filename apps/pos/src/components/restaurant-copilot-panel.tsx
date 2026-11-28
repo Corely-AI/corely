@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import type {
@@ -46,6 +47,7 @@ export function RestaurantCopilotPanel({
   onApplyOrderProposal,
   testIdPrefix = "pos-restaurant-copilot",
 }: RestaurantCopilotPanelProps) {
+  const uiCopy = useUiCopy("ui.restaurant-copilot-panel");
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [card, setCard] = useState<RestaurantAiToolCard | null>(null);
@@ -121,7 +123,7 @@ export function RestaurantCopilotPanel({
         {card ? (
           <View testID={`${testIdPrefix}-card`} style={styles.result}>
             <Text testID={`${testIdPrefix}-title`} style={styles.cardTitle}>
-              {"title" in card ? card.title : "Restaurant copilot"} ·{" "}
+              {"title" in card ? card.title : uiCopy("restaurant-copilot")} ·{" "}
               {Math.round(card.confidence * 100)}%
             </Text>
             <Text testID={`${testIdPrefix}-summary`} style={styles.summary}>
@@ -148,15 +150,15 @@ export function RestaurantCopilotPanel({
                     testID={`${testIdPrefix}-missing-modifier-${index}`}
                     style={styles.resultText}
                   >
-                    Missing required modifier: {item.itemName || item.catalogItemId} ·{" "}
-                    {item.modifierGroupName}
+                    {uiCopy("missing-required-modifier") + " "}
+                    {item.itemName || item.catalogItemId} · {item.modifierGroupName}
                   </Text>
                 ))}
                 <View style={styles.resultActions}>
                   {onApplyOrderProposal ? (
                     <Button
                       testID={`${testIdPrefix}-apply`}
-                      label="Apply proposal"
+                      label={uiCopy("apply-proposal")}
                       disabled={isLoading || card.action.actionType === "NOOP"}
                       onPress={() => {
                         void onApplyOrderProposal(card);
@@ -165,7 +167,7 @@ export function RestaurantCopilotPanel({
                   ) : null}
                   <Button
                     testID={`${testIdPrefix}-dismiss`}
-                    label="Dismiss"
+                    label={uiCopy("dismiss")}
                     variant="ghost"
                     disabled={isLoading}
                     onPress={() => setCard(null)}
@@ -196,7 +198,9 @@ export function RestaurantCopilotPanel({
                     testID={`${testIdPrefix}-kitchen-item-${index}`}
                     style={styles.resultText}
                   >
-                    Ticket {item.ticketId.slice(0, 8)} · {item.status} · {item.ageMinutes}m
+                    {uiCopy("ticket") + " "}
+                    {item.ticketId.slice(0, 8)} · {item.status} · {item.ageMinutes}
+                    {uiCopy("m")}
                   </Text>
                 ))}
               </View>

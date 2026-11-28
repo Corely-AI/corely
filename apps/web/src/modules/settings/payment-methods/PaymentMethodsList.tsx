@@ -1,6 +1,7 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Plus, Trash2, Check, CreditCard, Banknote, DollarSign } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@corely/ui";
@@ -35,6 +36,7 @@ const PAYMENT_ICONS: Record<string, React.ReactNode> = {
 };
 
 export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
+  const uiCopy = useUiCopy("ui.settings-payment-methods-paymentmethodslist");
   const { data, isLoading } = usePaymentMethods(legalEntityId);
   const { data: accountsData } = useBankAccounts(legalEntityId);
   const methods = data?.paymentMethods ?? [];
@@ -49,7 +51,7 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
   const activeMethods = methods.filter((m) => m.isActive);
 
   if (isLoading) {
-    return <div className="text-muted-foreground">Loading payment methods...</div>;
+    return <LoadingSkeleton variant="list" label={uiCopy("loading-payment-methods")} />;
   }
 
   const getBankAccountLabel = (bankAccountId: string | null | undefined) => {
@@ -63,17 +65,17 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Payment Methods</h3>
+        <h3 className="font-semibold">{uiCopy("payment-methods")}</h3>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              Add Method
+              {uiCopy("add-method")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Payment Method</DialogTitle>
+              <DialogTitle>{uiCopy("add-payment-method")}</DialogTitle>
             </DialogHeader>
             <PaymentMethodForm
               legalEntityId={legalEntityId}
@@ -87,7 +89,7 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
       {activeMethods.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            No payment methods configured yet
+            {uiCopy("no-payment-methods-configured")}
           </CardContent>
         </Card>
       ) : (
@@ -106,7 +108,8 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
                     </div>
                     {method.referenceTemplate && (
                       <div className="text-xs text-muted-foreground mt-1">
-                        Reference: {method.referenceTemplate}
+                        {uiCopy("reference") + " "}
+                        {method.referenceTemplate}
                       </div>
                     )}
                   </div>
@@ -116,7 +119,7 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
                   {method.isDefaultForInvoicing && (
                     <Badge variant="secondary" className="gap-1">
                       <Check className="w-3 h-3" />
-                      Default
+                      {uiCopy("default")}
                     </Badge>
                   )}
 
@@ -127,7 +130,7 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
                       onClick={() => setDefaultMutation.mutate({ id: method.id, legalEntityId })}
                       disabled={setDefaultMutation.isPending}
                     >
-                      Set Default
+                      {uiCopy("set-default")}
                     </Button>
                   )}
 
@@ -143,13 +146,10 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
-          <AlertDialogTitle>Deactivate Payment Method</AlertDialogTitle>
-          <AlertDialogDescription>
-            This payment method will no longer be available for new invoices, but existing invoices
-            will retain the payment information.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{uiCopy("deactivate-payment-method")}</AlertDialogTitle>
+          <AlertDialogDescription>{uiCopy("this-payment-method-will")}</AlertDialogDescription>
           <div className="flex justify-end gap-2">
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{uiCopy("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (deleteId) {
@@ -160,7 +160,7 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
               disabled={deactivateMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Deactivate
+              {uiCopy("deactivate")}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

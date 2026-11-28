@@ -7,6 +7,7 @@ import { Button } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { type InvoiceFormData } from "../../schemas/invoice-form.schema";
 import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
+import { invoiceLineNetCents } from "@corely/contracts";
 
 const UNITS = ["h", "day", "piece", "service"];
 
@@ -63,7 +64,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
             {fields.map((field, index) => {
               const qty = watch(`lineItems.${index}.qty`);
               const unitPriceCents = watch(`lineItems.${index}.unitPriceCents`);
-              const total = qty * unitPriceCents;
+              const total = invoiceLineNetCents(qty, unitPriceCents);
               const lineItemError = errors.lineItems?.[index]?.description;
 
               return (
@@ -71,6 +72,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                   <td className="px-4 py-3">
                     <div className="space-y-1">
                       <Input
+                        aria-label={`${t("invoices.description")} ${index + 1}`}
                         data-testid={`invoice-line-description-${index}`}
                         {...register(`lineItems.${index}.description` as const)}
                         placeholder={t("invoices.description")}
@@ -85,19 +87,24 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Input
+                        aria-label={`${t("invoices.quantity")} ${index + 1}`}
                         data-testid={`invoice-line-qty-${index}`}
                         type="number"
                         {...register(`lineItems.${index}.qty` as const, { valueAsNumber: true })}
                         className="w-16 border-0 focus-visible:ring-0 px-0"
                         min="0"
-                        step="0.01"
+                        step="any"
+                        aria-invalid={Boolean(errors.lineItems?.[index]?.qty)}
                       />
                       <Controller
                         control={control}
                         name={`lineItems.${index}.unit` as const}
                         render={({ field: { value, onChange } }) => (
                           <Select value={value} onValueChange={onChange}>
-                            <SelectTrigger className="w-20 h-8 border-0">
+                            <SelectTrigger
+                              aria-label={`${t("invoices.focused.unit")} ${index + 1}`}
+                              className="w-20 h-8 border-0"
+                            >
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -111,6 +118,11 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         )}
                       />
                     </div>
+                    {errors.lineItems?.[index]?.qty && (
+                      <p role="alert" className="mt-1 text-xs text-destructive">
+                        {t("invoices.positiveQuantityRequired")}
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center">
@@ -119,6 +131,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         name={`lineItems.${index}.unitPriceCents` as const}
                         render={({ field: { value, onChange } }) => (
                           <Input
+                            aria-label={`${t("invoices.rate")} ${index + 1}`}
                             data-testid={`invoice-line-rate-${index}`}
                             type="text"
                             inputMode="decimal"
@@ -141,6 +154,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         type="button"
                         variant="ghost"
                         size="icon"
+                        aria-label={`${t("invoices.focused.removeLine")} ${index + 1}`}
                         onClick={() => remove(index)}
                         className="h-8 w-8"
                       >

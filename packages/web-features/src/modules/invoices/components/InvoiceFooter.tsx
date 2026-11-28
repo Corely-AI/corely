@@ -9,6 +9,7 @@ import {
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useInvoiceRuntime } from "../invoice-runtime";
 
 interface InvoiceFooterProps {
   legalEntityId?: string | null;
@@ -16,7 +17,15 @@ interface InvoiceFooterProps {
   onPaymentMethodSelect: (id: string) => void;
 }
 
-export function InvoiceFooter({
+export function InvoiceFooter({ ...props }: InvoiceFooterProps) {
+  const runtime = useInvoiceRuntime();
+  if (runtime) {
+    return <p className="text-sm text-muted-foreground">{runtime.workspace.name}</p>;
+  }
+  return <LegacyInvoiceFooter {...props} />;
+}
+
+function LegacyInvoiceFooter({
   legalEntityId,
   paymentMethodId,
   onPaymentMethodSelect,

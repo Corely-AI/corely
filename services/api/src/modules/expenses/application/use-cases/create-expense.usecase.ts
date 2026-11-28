@@ -1,5 +1,5 @@
 import { ValidationFailedError } from "@corely/domain";
-import type { OutboxPort, UseCaseContext } from "@corely/kernel";
+import type { OutboxPort, UseCaseContext, TransactionContext } from "@corely/kernel";
 import type { AuditPort } from "../../../../shared/ports/audit.port";
 import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
@@ -18,11 +18,6 @@ import type { GiftThresholdQueryPort } from "../ports/gift-threshold-query.port"
 import { GIFT_THRESHOLD_QUERY_PORT } from "../ports/gift-threshold-query.port";
 import { computeDeDeductibility } from "../../domain/de-deductibility.service";
 
-import {
-  WORKSPACE_REPOSITORY_PORT,
-  type WorkspaceRepositoryPort,
-} from "../../../workspaces/application/ports/workspace-repository.port";
-import { WorkspaceTemplateService } from "../../../platform/application/services/workspace-template.service";
 import { PrismaService } from "@corely/data";
 import type {
   CustomFieldsWritePort,
@@ -61,9 +56,6 @@ export class CreateExpenseUseCase {
     private readonly customFieldIndexes: CustomFieldIndexPort,
     private readonly dimensionsWritePort: DimensionsWritePort,
     private readonly customFieldsWritePort: CustomFieldsWritePort,
-    @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort,
-    private readonly templateService: WorkspaceTemplateService,
     private readonly prisma: PrismaService,
     @Inject(GIFT_THRESHOLD_QUERY_PORT)
     private readonly giftThresholdQuery: GiftThresholdQueryPort
@@ -98,9 +90,7 @@ export class CreateExpenseUseCase {
     }
 
     // Allow specific flows (e.g., copilot draft creation) to force initial status.
-    const initialStatus =
-      input.initialStatusOverride ??
-      (await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId));
+    const initialStatus = input.initialStatusOverride ?? "DRAFT";
 
     const definitions = await this.customFieldDefinitions.listActiveByEntityType(
       input.tenantId,
@@ -152,28 +142,7 @@ export class CreateExpenseUseCase {
     });
     expense.applyDeductibility(deductResult);
 
-    await this.expenseRepo.create(expense);
-    await this.audit.log({
-      tenantId: input.tenantId,
-      userId: input.createdByUserId ?? ctx.userId ?? "system",
-      action: "expense.created",
-      entityType: "Expense",
-      entityId: expense.id,
-      metadata: {},
-    });
-
-    await this.outbox.enqueue({
-      tenantId: input.tenantId,
-      eventType: "expense.created",
-      payload: {
-        expenseId: expense.id,
-        tenantId: expense.tenantId,
-        totalCents: expense.totalCents,
-        taxAmountCents: expense.taxAmountCents,
-        currency: expense.currency,
-        issuedAt: expense.issuedAt.toISOString(),
-      },
-    });
+    await this.persistCreated(expense, input.tenantId);
 
     const indexRows = buildCustomFieldIndexes({
       tenantId: input.tenantId,
@@ -248,6 +217,87 @@ export class CreateExpenseUseCase {
     return expense;
   }
 
+  async createFromReceipt(
+    input: {
+      id: string;
+      merchant: string;
+      issuedAt: Date;
+      amountCents: number;
+      currency: string;
+      category: string;
+    },
+    ctx: { tenantId: string; workspaceId: string; userId: string },
+    tx: TransactionContext
+  ) {
+    const definitions = await this.customFieldDefinitions.listActiveByEntityType(
+      ctx.workspaceId,
+      "expense"
+    );
+    const custom = validateAndNormalizeCustomValues(definitions, {});
+    const expense = new Expense(
+      input.id,
+      ctx.workspaceId,
+      "DRAFT",
+      input.merchant,
+      input.amountCents,
+      null,
+      input.currency,
+      input.category,
+      input.issuedAt,
+      ctx.userId,
+      this.clock.now(),
+      null,
+      null,
+      Object.keys(custom).length ? custom : null
+    );
+    expense.applyDeductibility(
+      computeDeDeductibility({
+        category: expense.category,
+        totalAmountCents: expense.totalCents,
+        meta: null,
+      })
+    );
+    await this.persistCreated(expense, ctx.tenantId, tx, ctx.workspaceId);
+    return expense;
+  }
+
+  private async persistCreated(
+    expense: Expense,
+    tenantId: string,
+    tx?: TransactionContext,
+    workspaceId?: string
+  ) {
+    const txArgs: [] | [TransactionContext] = tx ? [tx] : [];
+    await this.expenseRepo.create(expense, ...txArgs);
+    await this.audit.log(
+      {
+        tenantId,
+        userId: expense.createdByUserId,
+        action: "expense.created",
+        entityType: "Expense",
+        entityId: expense.id,
+        metadata: workspaceId ? { workspaceId, source: "email-receipt" } : {},
+      },
+      ...txArgs
+    );
+    await this.outbox.enqueue(
+      {
+        tenantId: expense.tenantId,
+        eventType: "expense.created",
+        payload: {
+          expenseId: expense.id,
+          tenantId: expense.tenantId,
+          totalCents: expense.totalCents,
+          taxAmountCents: expense.taxAmountCents,
+          currency: expense.currency,
+          issuedAt: expense.issuedAt.toISOString(),
+          ...(workspaceId ? { workspaceId } : {}),
+        },
+      },
+      ...txArgs
+    );
+  }
+
   private toJSON(expense: Expense) {
     return {
       id: expense.id,
@@ -265,43 +315,5 @@ export class CreateExpenseUseCase {
       createdAt: expense.createdAt.toISOString(),
       custom: expense.custom,
     };
-  }
-
-  /**
-   * Determine initial expense status based on workspace type
-   * - Freelancer mode (PERSONAL): No approval workflow needed -> APPROVED
-   * - Company mode: Requires approval workflow -> DRAFT
-   */
-  private async determineInitialStatus(
-    tenantId: string,
-    workspaceId?: string
-  ): Promise<"DRAFT" | "APPROVED"> {
-    if (!workspaceId) {
-      // Fallback to DRAFT if no workspace context
-      return "DRAFT";
-    }
-
-    try {
-      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
-        tenantId,
-        workspaceId
-      );
-
-      if (!workspace || !workspace.legalEntity) {
-        return "DRAFT";
-      }
-
-      // Determine workspace kind based on legal entity
-      const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-
-      // Get capabilities for this workspace type
-      const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
-
-      // If approvals are disabled (freelancer mode), auto-approve
-      return capabilities.approvals === false ? "APPROVED" : "DRAFT";
-    } catch (error) {
-      // On error, default to DRAFT (safer)
-      return "DRAFT";
-    }
   }
 }

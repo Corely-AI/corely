@@ -8,7 +8,7 @@ export interface MembershipRepositoryPort {
   /**
    * Create a new membership
    */
-  create(membership: Membership): Promise<Membership>;
+  create(membership: Membership, tx?: TransactionContext): Promise<Membership>;
 
   /**
    * Find membership by ID

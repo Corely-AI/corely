@@ -217,6 +217,25 @@ const createService = (repo: InMemoryBillingRepo) =>
   new BillingAccessService(repo, repo, repo, repo, repo, provider, audit, outbox, unitOfWork);
 
 describe("BillingAccessService trial support", () => {
+  it("keeps first-account plan resolution on the supplied authorization transaction", async () => {
+    const repo = new InMemoryBillingRepo();
+    const profile = vi.spyOn(repo as BillingAccountRepoPort, "getTenantProfile");
+    const account = vi.spyOn(repo as BillingAccountRepoPort, "findAccountByTenantId");
+    const subscription = vi.spyOn(
+      repo as BillingSubscriptionRepoPort,
+      "findSubscriptionByTenantId"
+    );
+    const trial = vi.spyOn(repo as BillingTrialRepoPort, "findTrialByTenantId");
+    const tx = {} as TransactionContext;
+    await createService(repo).getAllPlanFeatureValues("tenant-1", tx);
+    expect(profile).toHaveBeenCalledWith("tenant-1", tx);
+    expect(account).toHaveBeenCalledWith("tenant-1", tx);
+    expect(subscription).toHaveBeenCalled();
+    expect(trial).toHaveBeenCalled();
+    expect(subscription.mock.calls.every((args) => args.at(-1) === tx)).toBe(true);
+    expect(trial.mock.calls.every((args) => args.at(-1) === tx)).toBe(true);
+  });
+
   it("starts a full-access trial and resolves trial entitlements", async () => {
     const repo = new InMemoryBillingRepo();
     const service = createService(repo);

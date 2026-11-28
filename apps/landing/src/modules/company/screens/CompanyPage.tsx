@@ -10,7 +10,7 @@ export function CompanyPage() {
     <>
       <Seo
         title="Corely for companies - roles, approvals, audit"
-        description="Corely company mode adds roles, approvals, audit logs, and multi-entity readiness. Scale from freelancer workflows to teams, departments, and modular packs without rewriting."
+        description="Corely gives teams a shared workspace with roles, permissions, connected apps, and approval workflows."
         canonicalPath="/company"
       />
 
@@ -18,13 +18,12 @@ export function CompanyPage() {
         <Container>
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="space-y-6">
-              <Badge variant="accent">Company mode</Badge>
+              <Badge variant="accent">For teams</Badge>
               <div className="space-y-4">
                 <h1 className="text-display">Company workflows with clear governance.</h1>
                 <p className="text-body text-muted-foreground">
-                  Corely adds roles, approvals, and audit trails without forcing a rewrite. Start
-                  with the same freelancer workflows, then unlock team controls, multi-entity
-                  readiness, and modular packs.
+                  Corely brings your team into a shared workspace. Invite teammates, assign
+                  permissions, and choose the apps that support your operations.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -62,8 +61,8 @@ export function CompanyPage() {
       <section className="py-16">
         <Container>
           <SectionHeading
-            eyebrow="Upgrade path"
-            title="Scale from freelancer to departments without disruption."
+            eyebrow="Connected apps"
+            title="Build your workspace around your work."
             description="Corely grows with your organization, adding capabilities in clear steps."
           />
           <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">

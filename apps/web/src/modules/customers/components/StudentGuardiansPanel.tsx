@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -7,6 +8,7 @@ import { Plus, ShieldCheck, UserMinus, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -42,6 +44,7 @@ type StudentGuardiansPanelProps = {
 const guardiansKey = (studentId: string) => withWorkspace(["students", studentId, "guardians"]);
 
 export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPanelProps) {
+  const uiCopy = useUiCopy("ui.customers-studentguardianspanel");
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [linkOpen, setLinkOpen] = React.useState(false);
@@ -157,7 +160,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
 
   const inviteMutation = useMutation({
     mutationFn: (data: any) => apiClient.post("/portal/invitations", data),
-    onSuccess: () => toast.success("Invitation sent to portal"),
+    onSuccess: () => toast.success(uiCopy("invitation-sent-to-portal")),
     onError: (err: any) => toast.error("Failed to send invitation: " + err.message),
   });
 
@@ -200,12 +203,12 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
 
         {!guardiansLoading && guardians.length > 0 && !hasPrimaryPayer && (
           <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
-            Primary payer missing — billing will be blocked.
+            {uiCopy("primary-payer-missing-billing")}
           </div>
         )}
 
         {guardiansLoading ? (
-          <div className="text-sm text-muted-foreground">Loading guardians...</div>
+          <LoadingSkeleton variant="list" label={uiCopy("loading-guardians")} />
         ) : guardians.length === 0 ? (
           <div className="text-sm text-muted-foreground">
             {t("classes.students.guardians.empty")}
@@ -220,11 +223,13 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                 <div className="space-y-1">
                   <div className="font-medium">{entry.guardian.displayName}</div>
                   <div className="text-xs text-muted-foreground">
-                    {entry.guardian.email || entry.guardian.phone || "No contact details"}
+                    {entry.guardian.email || entry.guardian.phone || uiCopy("no-contact-details")}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {entry.isPrimaryPayer && <Badge>Primary payer</Badge>}
-                    {entry.isPrimaryContact && <Badge variant="outline">Primary contact</Badge>}
+                    {entry.isPrimaryPayer && <Badge>{uiCopy("primary-payer")}</Badge>}
+                    {entry.isPrimaryContact && (
+                      <Badge variant="outline">{uiCopy("primary-contact")}</Badge>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -235,7 +240,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                     disabled={entry.isPrimaryPayer || setPrimaryPayerMutation.isPending}
                   >
                     <ShieldCheck className="h-4 w-4" />
-                    Set primary payer
+                    {uiCopy("set-primary-payer")}
                   </Button>
                   <Button
                     variant="outline"
@@ -251,7 +256,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                     title={!entry.guardian.email ? "Email required for invitation" : ""}
                   >
                     <Mail className="h-4 w-4" />
-                    Invite
+                    {uiCopy("invite")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -259,7 +264,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                     onClick={() => setDeleteTarget(entry.guardian.id)}
                   >
                     <UserMinus className="h-4 w-4" />
-                    Unlink
+                    {uiCopy("unlink")}
                   </Button>
                 </div>
               </div>
@@ -275,8 +280,8 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
             }
           }}
           trigger={null}
-          title="Unlink guardian"
-          description="This will remove the guardian from the student."
+          title={uiCopy("unlink-guardian")}
+          description={uiCopy("this-will-remove-the")}
           isLoading={unlinkGuardianMutation.isPending}
           onConfirm={() => {
             if (!deleteTarget) {
@@ -289,12 +294,12 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
         <Dialog open={linkOpen} onOpenChange={setLinkOpen}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Link guardian</DialogTitle>
+              <DialogTitle>{uiCopy("link-guardian")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <Label>Guardian</Label>
+                  <Label>{uiCopy("guardian")}</Label>
                   <Button
                     type="button"
                     variant="ghost"
@@ -306,12 +311,12 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                     }}
                   >
                     <Plus className="h-3 w-3" />
-                    Add new
+                    {uiCopy("add-new")}
                   </Button>
                 </div>
                 <Select value={selectedGuardianId} onValueChange={setSelectedGuardianId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select guardian" />
+                    <SelectValue placeholder={uiCopy("select-guardian")} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableGuardians.map((guardian) => (
@@ -322,7 +327,9 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                   </SelectContent>
                 </Select>
                 {availableGuardians.length === 0 && (
-                  <div className="text-xs text-muted-foreground">No available clients to link.</div>
+                  <div className="text-xs text-muted-foreground">
+                    {uiCopy("no-available-clients-to")}
+                  </div>
                 )}
               </div>
               <div className="space-y-3">
@@ -332,7 +339,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                     checked={isPrimaryPayer}
                     onCheckedChange={(checked) => setIsPrimaryPayer(Boolean(checked))}
                   />
-                  <Label htmlFor="guardian-primary-payer">Primary payer</Label>
+                  <Label htmlFor="guardian-primary-payer">{uiCopy("primary-payer")}</Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -340,7 +347,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                     checked={isPrimaryContact}
                     onCheckedChange={(checked) => setIsPrimaryContact(Boolean(checked))}
                   />
-                  <Label htmlFor="guardian-primary-contact">Primary contact</Label>
+                  <Label htmlFor="guardian-primary-contact">{uiCopy("primary-contact")}</Label>
                 </div>
               </div>
             </div>
@@ -353,7 +360,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                 onClick={() => linkGuardian.mutate()}
                 disabled={!selectedGuardianId || linkGuardian.isPending}
               >
-                {linkGuardian.isPending ? "Linking..." : t("classes.students.guardians.link")}
+                {linkGuardian.isPending ? uiCopy("linking") : t("classes.students.guardians.link")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -370,17 +377,18 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
         >
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Add guardian</DialogTitle>
+              <DialogTitle>{uiCopy("add-guardian")}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateGuardian} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="guardian-displayName">
-                  Full name <span className="text-destructive">*</span>
+                  {uiCopy("full-name") + " "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="guardian-displayName"
                   {...createGuardianForm.register("displayName")}
-                  placeholder="Guardian name"
+                  placeholder={uiCopy("guardian-name")}
                 />
                 {createGuardianForm.formState.errors.displayName && (
                   <p className="text-sm text-destructive">
@@ -406,7 +414,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="guardian-email">Email</Label>
+                  <Label htmlFor="guardian-email">{uiCopy("email")}</Label>
                   <Input
                     id="guardian-email"
                     type="email"
@@ -420,7 +428,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="guardian-phone">Phone</Label>
+                  <Label htmlFor="guardian-phone">{uiCopy("phone")}</Label>
                   <Input
                     id="guardian-phone"
                     type="tel"
@@ -442,7 +450,9 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                   {t("common.cancel")}
                 </Button>
                 <Button type="submit" variant="accent" disabled={createGuardianMutation.isPending}>
-                  {createGuardianMutation.isPending ? "Creating..." : "Create guardian"}
+                  {createGuardianMutation.isPending
+                    ? uiCopy("creating")
+                    : uiCopy("create-guardian")}
                 </Button>
               </DialogFooter>
             </form>

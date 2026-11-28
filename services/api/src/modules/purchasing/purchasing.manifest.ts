@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const purchasingAppManifest: AppManifest = {
   appId: "purchasing",
+  directory: {
+    menuId: "purchase-orders",
+    logo: { iconKey: "ShoppingCart", tone: "accent" },
+    displayName: { en: "Purchasing", de: "Einkauf", vi: "Mua hàng" },
+    category: "operations",
+  },
   name: "Purchasing",
   tier: 3,
   version: "1.0.0",
@@ -20,6 +26,17 @@ export const purchasingAppManifest: AppManifest = {
       route: "/purchasing/purchase-orders",
       icon: "ShoppingBag",
       order: 21,
+    },
+    {
+      id: "vendor-bills",
+      scope: "web",
+      section: "purchase-orders",
+      labelKey: "nav.vendorBills",
+      defaultLabel: "Vendor Bills",
+      route: "/purchasing/vendor-bills",
+      icon: "FileText",
+      order: 22,
+      requiresPermissions: ["purchasing.read"],
     },
     {
       id: "purchasing-settings",

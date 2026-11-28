@@ -1,6 +1,10 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
+import { useTranslation } from "react-i18next";
+import { useInvoicesApi } from "../invoice-runtime";
 import React, { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { normalizeError } from "@corely/api-client";
+import { SessionRequestError } from "@corely/web-shared/session/session-client";
 import type {
   DraftInvoiceIssueEmailOutput,
   DraftInvoiceReminderEmailOutput,
@@ -28,7 +32,6 @@ import {
   Textarea,
 } from "@corely/ui";
 import { toast } from "sonner";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
 
 type DraftPayload = DraftInvoiceIssueEmailOutput | DraftInvoiceReminderEmailOutput;
 
@@ -49,6 +52,9 @@ export function InvoiceCopilotPanel({
   amountDueCents,
   defaultLanguage,
 }: Props) {
+  const uiCopy = useUiCopy("ui.invoices-invoicecopilotpanel");
+  const { t } = useTranslation();
+  const invoicesApi = useInvoicesApi();
   const [language, setLanguage] = useState<InvoiceEmailDraftLanguage>(defaultLanguage);
   const [reminderTone, setReminderTone] = useState<InvoiceReminderEmailDraftTone>("normal");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -70,8 +76,9 @@ export function InvoiceCopilotPanel({
     },
     onError: (error) => {
       const apiError = normalizeError(error);
-      setErrorMessage(apiError.detail);
-      toast.error(apiError.detail);
+      const detail = error instanceof SessionRequestError ? error.message : apiError.detail;
+      setErrorMessage(detail);
+      toast.error(detail);
     },
   });
 
@@ -89,8 +96,9 @@ export function InvoiceCopilotPanel({
     },
     onError: (error) => {
       const apiError = normalizeError(error);
-      setErrorMessage(apiError.detail);
-      toast.error(apiError.detail);
+      const detail = error instanceof SessionRequestError ? error.message : apiError.detail;
+      setErrorMessage(detail);
+      toast.error(detail);
     },
   });
 
@@ -99,8 +107,10 @@ export function InvoiceCopilotPanel({
   const canDraftReminder = canDraftIssue && amountDueCents > 0;
 
   const modalTitle = useMemo(() => {
-    return draftType === "issue" ? "Draft invoice email" : "Draft reminder";
-  }, [draftType]);
+    return draftType === "issue"
+      ? t("invoices.focused.copilot.issue")
+      : t("invoices.focused.copilot.reminder");
+  }, [draftType, t]);
 
   const updateDraft = (patch: Partial<DraftPayload>) => {
     setDraft((prev) => (prev ? { ...prev, ...patch } : prev));
@@ -111,7 +121,7 @@ export function InvoiceCopilotPanel({
       await navigator.clipboard.writeText(value);
       toast.success(successMessage);
     } catch {
-      toast.error("Unable to copy to clipboard");
+      toast.error(t("invoices.focused.copilot.copyError"));
     }
   };
 
@@ -121,44 +131,42 @@ export function InvoiceCopilotPanel({
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-semibold">Copilot</h3>
-              <p className="text-sm text-muted-foreground">
-                Generate a draft email for review. Copilot does not send emails automatically.
-              </p>
+              <h3 className="text-lg font-semibold">{uiCopy("copilot")}</h3>
+              <p className="text-sm text-muted-foreground">{t("invoices.focused.copilot.intro")}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Language</Label>
+              <Label>{t("invoices.focused.copilot.language")}</Label>
               <Select
                 value={language}
                 onValueChange={(value) => setLanguage(value as InvoiceEmailDraftLanguage)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label={t("invoices.focused.copilot.language")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="de">German (de)</SelectItem>
-                  <SelectItem value="vi">Vietnamese (vi)</SelectItem>
-                  <SelectItem value="en">English (en)</SelectItem>
+                  <SelectItem value="de">{t("invoices.focused.copilot.de")}</SelectItem>
+                  <SelectItem value="vi">{t("invoices.focused.copilot.vi")}</SelectItem>
+                  <SelectItem value="en">{t("invoices.focused.copilot.en")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Reminder tone</Label>
+              <Label>{t("invoices.focused.copilot.tone")}</Label>
               <Select
                 value={reminderTone}
                 onValueChange={(value) => setReminderTone(value as InvoiceReminderEmailDraftTone)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label={t("invoices.focused.copilot.tone")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="polite">Polite</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="firm">Firm</SelectItem>
+                  <SelectItem value="polite">{t("invoices.focused.copilot.polite")}</SelectItem>
+                  <SelectItem value="normal">{t("invoices.focused.copilot.normal")}</SelectItem>
+                  <SelectItem value="firm">{t("invoices.focused.copilot.firm")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -173,7 +181,9 @@ export function InvoiceCopilotPanel({
               }}
               disabled={isDrafting || !canDraftIssue}
             >
-              {draftIssueMutation.isPending ? "Drafting..." : "Draft invoice email"}
+              {draftIssueMutation.isPending
+                ? t("invoices.focused.copilot.drafting")
+                : t("invoices.focused.copilot.issue")}
             </Button>
             <Button
               variant="outline"
@@ -183,19 +193,21 @@ export function InvoiceCopilotPanel({
               }}
               disabled={isDrafting || !canDraftReminder}
             >
-              {draftReminderMutation.isPending ? "Drafting..." : "Draft reminder"}
+              {draftReminderMutation.isPending
+                ? t("invoices.focused.copilot.drafting")
+                : t("invoices.focused.copilot.reminder")}
             </Button>
           </div>
 
           {!canDraftIssue ? (
             <p className="text-sm text-muted-foreground">
-              Invoice must be ISSUED or SENT before drafting email copy.
+              {t("invoices.focused.copilot.issueDisabled")}
             </p>
           ) : null}
 
           {canDraftIssue && !canDraftReminder ? (
             <p className="text-sm text-muted-foreground">
-              Reminder draft is available only when amount due is greater than zero.
+              {t("invoices.focused.copilot.reminderDisabled")}
             </p>
           ) : null}
 
@@ -207,14 +219,12 @@ export function InvoiceCopilotPanel({
         <DialogContent className="sm:max-w-[720px]">
           <DialogHeader>
             <DialogTitle>{modalTitle}</DialogTitle>
-            <DialogDescription>
-              Review and edit the draft before copy/pasting it into your send flow.
-            </DialogDescription>
+            <DialogDescription>{t("invoices.focused.copilot.review")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="copilot-draft-subject">Subject</Label>
+              <Label htmlFor="copilot-draft-subject">{t("invoices.focused.copilot.subject")}</Label>
               <Input
                 id="copilot-draft-subject"
                 value={draft?.subject ?? ""}
@@ -224,14 +234,16 @@ export function InvoiceCopilotPanel({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => copyText(draft?.subject ?? "", "Subject copied")}
+                onClick={() =>
+                  copyText(draft?.subject ?? "", t("invoices.focused.copilot.subjectCopied"))
+                }
               >
-                Copy subject
+                {t("invoices.focused.copilot.copySubject")}
               </Button>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="copilot-draft-body">Body</Label>
+              <Label htmlFor="copilot-draft-body">{t("invoices.focused.copilot.body")}</Label>
               <Textarea
                 id="copilot-draft-body"
                 rows={12}
@@ -242,16 +254,18 @@ export function InvoiceCopilotPanel({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => copyText(draft?.body ?? "", "Body copied")}
+                onClick={() =>
+                  copyText(draft?.body ?? "", t("invoices.focused.copilot.bodyCopied"))
+                }
               >
-                Copy body
+                {t("invoices.focused.copilot.copyBody")}
               </Button>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Close
+              {t("invoices.focused.copilot.close")}
             </Button>
           </DialogFooter>
         </DialogContent>

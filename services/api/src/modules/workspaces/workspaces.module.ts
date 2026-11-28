@@ -1,3 +1,8 @@
+import { WorkspacePublicationGuard } from "./adapters/http/workspace-publication.guard";
+import { PilotSetupController } from "./adapters/http/pilot-setup.controller";
+import { PilotSetupUseCase } from "./application/use-cases/pilot-setup.usecase";
+import { PILOT_SETUP_REPOSITORY } from "./application/ports/pilot-setup-repository.port";
+import { PrismaPilotSetupRepository } from "./infrastructure/adapters/prisma-pilot-setup-repository.adapter";
 import { AuthorizeWorkspaceUseCase } from "./application/use-cases/authorize-workspace.usecase";
 import { Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
@@ -20,8 +25,11 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
 
 @Module({
   imports: [DataModule, forwardRef(() => IdentityModule), KernelModule],
-  controllers: [WorkspacesController],
+  controllers: [PilotSetupController, WorkspacesController],
   providers: [
+    WorkspacePublicationGuard,
+    PilotSetupUseCase,
+    { provide: PILOT_SETUP_REPOSITORY, useClass: PrismaPilotSetupRepository },
     AuthorizeWorkspaceUseCase,
     // Repository
     PrismaWorkspaceRepository,
@@ -42,6 +50,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     DeleteWorkspaceUseCase,
   ],
   exports: [
+    PilotSetupUseCase,
     AuthorizeWorkspaceUseCase,
     // Expose repository + token so external modules (e.g., TestHarness) can inject it
     PrismaWorkspaceRepository,

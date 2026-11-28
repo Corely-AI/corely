@@ -1,0 +1,101 @@
+@scope (.openbuk-surface) {
+  .studio-agenda {
+    display: grid;
+    gap: 18px;
+  }
+  .agenda-toolbar,
+  .agenda-range,
+  .agenda-toolbar .actions,
+  .agenda-notice {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .agenda-toolbar {
+    justify-content: space-between;
+  }
+  .agenda-toolbar .field,
+  .agenda-filters .field {
+    margin: 0;
+  }
+  .agenda-range .button,
+  .agenda-toolbar .actions .button {
+    min-height: 47px;
+  }
+  .agenda-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .agenda-day .schedule-header {
+    flex-wrap: wrap;
+  }
+  .agenda-empty,
+  .agenda-availability {
+    margin: 0;
+    padding: 14px 20px;
+  }
+  .agenda-availability {
+    background: #f5f7f0;
+    border-top: 1px solid var(--line);
+  }
+  .agenda-availability summary {
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+  .agenda-availability p {
+    margin: 12px 0 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .agenda-appointment {
+    flex-wrap: wrap;
+  }
+  .agenda-row-actions {
+    margin-left: auto;
+  }
+  .agenda-editor {
+    display: grid;
+    gap: 14px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .agenda-editor > p,
+  .agenda-editor > h2,
+  .agenda-review {
+    margin: 0;
+  }
+  .agenda-guest {
+    min-width: 0;
+    margin: 0;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .agenda-guest p {
+    margin: 0 0 12px;
+  }
+  .agenda-review {
+    display: grid;
+    grid-template-columns: minmax(5rem, 1fr) 3fr;
+    gap: 8px;
+  }
+  .agenda-review dd {
+    margin: 0;
+  }
+  @media (max-width: 540px) {
+    .agenda-filters {
+      grid-template-columns: 1fr;
+    }
+    .agenda-row-actions {
+      width: 100%;
+      margin-left: 0;
+    }
+    .agenda-range .field input {
+      min-width: 9.5rem;
+    }
+  }
+}

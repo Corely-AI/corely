@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import {
   createDefaultAdditionalExpensesSectionPayload,
@@ -68,6 +69,7 @@ const computeEstimatedTax = (
 };
 
 export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageProps) => {
+  const uiCopy = useUiCopy("ui.tax-income-tax-return-page");
   const [activeStep, setActiveStep] = React.useState<WizardStepKey>("income");
   const personalDetailsSection = useTaxReportSection({
     filingId,
@@ -180,7 +182,7 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <header className="border-b border-border pb-4">
-          <h1 className="text-h1 text-foreground">Income tax return</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("income-tax-return")}</h1>
         </header>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,25%)_1fr]">
@@ -206,12 +208,12 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
                       variant="outline"
                       onClick={() => activeSectionState?.retrySave()}
                     >
-                      Retry
+                      {uiCopy("retry")}
                     </Button>
                   ) : null}
                 </div>
 
-                <ul className="space-y-2" aria-label="Tax return steps">
+                <ul className="space-y-2" aria-label={uiCopy("tax-return-steps")}>
                   {steps.map((step) => (
                     <li key={step.step} className="flex items-center gap-3">
                       <button
@@ -246,11 +248,12 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
             <Card>
               <CardContent className="space-y-3 p-5">
                 <div>
-                  <p className="text-sm text-muted-foreground">Estimated income tax</p>
+                  <p className="text-sm text-muted-foreground">{uiCopy("estimated-income-tax")}</p>
                   <p className="text-h2 text-foreground">{formatCurrency(estimatedTax)}</p>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Report status: {latestReport?.status ?? "draft"}
+                  {uiCopy("report-status") + " "}
+                  {latestReport?.status ?? uiCopy("draft")}
                 </div>
               </CardContent>
             </Card>
@@ -260,9 +263,9 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
             {activeSectionState?.isError && !activeSectionState.isInitialized ? (
               <Card>
                 <CardContent className="space-y-3 p-6">
-                  <p className="text-sm text-rose-600">Failed to load this section.</p>
+                  <p className="text-sm text-rose-600">{uiCopy("failed-to-load-this")}</p>
                   <Button variant="outline" onClick={() => activeSectionState.refetch()}>
-                    Retry
+                    {uiCopy("retry")}
                   </Button>
                 </CardContent>
               </Card>

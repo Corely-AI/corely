@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,17 +9,21 @@ import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { purchasingApi } from "@/lib/purchasing-api";
 
 export default function RecordBillPaymentPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.purchasing-recordbillpaymentpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { activeWorkspaceId } = useWorkspace();
 
-  const { data } = useQuery({
-    queryKey: ["vendorBills", id],
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["vendorBills", activeWorkspaceId, id],
     queryFn: () => purchasingApi.getVendorBill(id || ""),
-    enabled: Boolean(id),
+    enabled: Boolean(id && activeWorkspaceId),
   });
 
   const [amountCents, setAmountCents] = useState(0);
@@ -41,7 +48,7 @@ export default function RecordBillPaymentPage() {
         reference: reference || undefined,
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["vendorBills", id] });
+      void queryClient.invalidateQueries({ queryKey: ["vendorBills", activeWorkspaceId, id] });
       void queryClient.invalidateQueries({ queryKey: ["vendorBills"] });
       navigate(`/purchasing/vendor-bills/${id}`);
     },
@@ -49,6 +56,18 @@ export default function RecordBillPaymentPage() {
 
   if (!data) {
     return null;
+  }
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
   }
 
   return (
@@ -61,14 +80,14 @@ export default function RecordBillPaymentPage() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-h1 text-foreground">Record Payment</h1>
+        <h1 className="text-h1 text-foreground">{uiCopy("record-payment")}</h1>
       </div>
 
       <Card className="max-w-2xl">
         <CardContent className="p-6 space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
-              <Label>Amount (cents)</Label>
+              <Label>{uiCopy("amount-cents")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -77,7 +96,7 @@ export default function RecordBillPaymentPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Payment Date</Label>
+              <Label>{uiCopy("payment-date")}</Label>
               <Input
                 type="date"
                 value={paymentDate}
@@ -85,20 +104,20 @@ export default function RecordBillPaymentPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Method</Label>
+              <Label>{uiCopy("method")}</Label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={method}
                 onChange={(event) => setMethod(event.target.value)}
               >
-                <option value="BANK_TRANSFER">Bank Transfer</option>
-                <option value="CASH">Cash</option>
-                <option value="CARD">Card</option>
-                <option value="OTHER">Other</option>
+                <option value="BANK_TRANSFER">{uiCopy("bank-transfer")}</option>
+                <option value="CASH">{uiCopy("cash")}</option>
+                <option value="CARD">{uiCopy("card")}</option>
+                <option value="OTHER">{uiCopy("other")}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Reference</Label>
+              <Label>{uiCopy("reference")}</Label>
               <Input value={reference} onChange={(event) => setReference(event.target.value)} />
             </div>
           </div>
@@ -108,7 +127,7 @@ export default function RecordBillPaymentPage() {
             onClick={() => recordPayment.mutate()}
             disabled={recordPayment.isPending}
           >
-            {recordPayment.isPending ? "Recording..." : "Record Payment"}
+            {recordPayment.isPending ? uiCopy("recording") : uiCopy("record-payment")}
           </Button>
         </CardContent>
       </Card>

@@ -1,11 +1,13 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent } from "@corely/ui";
 import { CrudListPageLayout } from "@/shared/crud";
 import { catalogApi } from "@/lib/catalog-api";
 import { catalogCategoryKeys } from "../queries";
 
 export default function CatalogCategoriesPage() {
+  const uiCopy = useUiCopy("ui.catalog-catalogcategoriespage");
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
 
@@ -23,22 +25,25 @@ export default function CatalogCategoriesPage() {
   });
 
   return (
-    <CrudListPageLayout title="Categories" subtitle="Organize catalog items into hierarchies">
+    <CrudListPageLayout
+      title={uiCopy("categories")}
+      subtitle="Organize catalog items into hierarchies"
+    >
       <Card>
         <CardContent className="space-y-4 p-4">
           <div className="grid gap-2 md:grid-cols-3">
             <input
               className="rounded-md border border-input bg-background px-3 py-2"
-              placeholder="Category name"
+              placeholder={uiCopy("category-name")}
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
             <Button variant="outline" onClick={() => upsert.mutate()} disabled={!name}>
-              Save Category
+              {uiCopy("save-category")}
             </Button>
           </div>
           {isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading...</div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading")} />
           ) : (
             <div className="space-y-2">
               {(data?.items ?? []).map((category) => (

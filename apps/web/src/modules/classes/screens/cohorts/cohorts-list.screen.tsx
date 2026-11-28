@@ -1,7 +1,8 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { Badge, Button } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
 import {
@@ -25,6 +26,7 @@ const lifecycleOptions: ClassGroupLifecycle[] = [
 const kindOptions: ClassGroupKind[] = ["COHORT", "DROP_IN", "OFFICE_HOURS", "WORKSHOP"];
 
 export default function CohortsListScreen() {
+  const uiCopy = useUiCopy("ui.classes-cohorts-cohorts-list-screen");
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [state, setState] = useListUrlState(
@@ -95,7 +97,7 @@ export default function CohortsListScreen() {
   return (
     <>
       <CrudListPageLayout
-        title="Cohorts"
+        title={uiCopy("cohorts")}
         subtitle="Manage active and upcoming language cohorts"
         primaryAction={
           <Button
@@ -104,7 +106,7 @@ export default function CohortsListScreen() {
             onClick={() => navigate("/classes/cohorts/new")}
           >
             <Plus className="h-4 w-4" />
-            New cohort
+            {uiCopy("new-cohort")}
           </Button>
         }
         toolbar={
@@ -123,7 +125,7 @@ export default function CohortsListScreen() {
           >
             {isError ? (
               <span className="text-sm text-destructive">
-                {error instanceof Error ? error.message : "Failed to load cohorts"}
+                {error instanceof Error ? error.message : uiCopy("failed-to-load-cohorts")}
               </span>
             ) : null}
           </ListToolbar>
@@ -143,16 +145,14 @@ export default function CohortsListScreen() {
       >
         <div data-testid="classes-cohorts-list">
           {isLoading ? (
-            <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
-              Loading cohorts...
-            </div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-cohorts")} />
           ) : items.length === 0 ? (
             <EmptyState
-              title="No cohorts found"
-              description="Create a cohort or adjust filters."
+              title={uiCopy("no-cohorts-found")}
+              description={uiCopy("create-a-cohort-or")}
               action={
                 <Button asChild variant="accent">
-                  <Link to="/classes/cohorts/new">Create cohort</Link>
+                  <Link to="/classes/cohorts/new">{uiCopy("create-cohort")}</Link>
                 </Button>
               }
             />
@@ -162,22 +162,22 @@ export default function CohortsListScreen() {
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Name
+                      {uiCopy("name")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Lifecycle
+                      {uiCopy("lifecycle")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Program
+                      {uiCopy("program")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Start / End
+                      {uiCopy("start-end")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Delivery
+                      {uiCopy("delivery")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Capacity
+                      {uiCopy("capacity")}
                     </th>
                     <th />
                   </tr>

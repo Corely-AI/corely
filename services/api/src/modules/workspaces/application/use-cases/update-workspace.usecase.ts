@@ -29,18 +29,6 @@ export class UpdateWorkspaceUseCase {
   ) {}
 
   async execute(command: UpdateWorkspaceCommand): Promise<UpdateWorkspaceOutput> {
-    // Check idempotency
-    if (command.idempotencyKey) {
-      const cached = await this.idempotency.get(
-        "update-workspace",
-        command.tenantId,
-        command.idempotencyKey
-      );
-      if (cached) {
-        return cached.body as UpdateWorkspaceOutput;
-      }
-    }
-
     // Check user has access
     const hasAccess = await this.workspaceRepo.checkUserHasWorkspaceAccess(
       command.tenantId,
@@ -50,6 +38,28 @@ export class UpdateWorkspaceUseCase {
 
     if (!hasAccess) {
       throw new ForbiddenException("You do not have access to this workspace");
+    }
+
+    if (command.publicEnabled !== undefined || command.publicModules !== undefined) {
+      const member = await this.workspaceRepo.getMembershipByUserAndWorkspace(
+        command.workspaceId,
+        command.userId
+      );
+      if (!member || member.status !== "ACTIVE" || !["OWNER", "ADMIN"].includes(member.role)) {
+        throw new ForbiddenException("Only workspace owners/admins may change publication");
+      }
+    }
+
+    // Check idempotency
+    if (command.idempotencyKey) {
+      const cached = await this.idempotency.get(
+        `update-workspace:${command.workspaceId}:${command.userId}`,
+        command.tenantId,
+        command.idempotencyKey
+      );
+      if (cached) {
+        return cached.body as UpdateWorkspaceOutput;
+      }
     }
 
     // Get workspace to access legalEntityId
@@ -178,10 +188,15 @@ export class UpdateWorkspaceUseCase {
 
     // Cache result
     if (command.idempotencyKey) {
-      await this.idempotency.store("update-workspace", command.tenantId, command.idempotencyKey, {
-        statusCode: 200,
-        body: result,
-      });
+      await this.idempotency.store(
+        `update-workspace:${command.workspaceId}:${command.userId}`,
+        command.tenantId,
+        command.idempotencyKey,
+        {
+          statusCode: 200,
+          body: result,
+        }
+      );
     }
 
     return result;

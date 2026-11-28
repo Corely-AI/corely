@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import type { FC } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@corely/ui";
 import type { ActivityDto } from "@corely/contracts";
@@ -17,6 +18,7 @@ const stripHtml = (value: string) =>
     .trim();
 
 export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
+  const uiCopy = useUiCopy("ui.crm-activitycard");
   const { t, i18n } = useTranslation();
   const bodyPreview = activity.body ? stripHtml(activity.body) : "";
   const statusColor =
@@ -59,12 +61,14 @@ export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {activity.outcome && (
               <span className="bg-slate-100 px-2 py-1 rounded-md font-medium text-slate-700">
-                Outcome: {activity.outcome}
+                {uiCopy("outcome") + " "}
+                {activity.outcome}
               </span>
             )}
             {activity.durationSeconds && (
               <span className="flex items-center gap-1">
-                ⏱ {Math.round(activity.durationSeconds / 60)} min
+                ⏱ {Math.round(activity.durationSeconds / 60)}
+                {" " + uiCopy("min")}
               </span>
             )}
             {activity.location && (

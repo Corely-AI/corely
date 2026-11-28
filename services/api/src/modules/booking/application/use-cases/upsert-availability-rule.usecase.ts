@@ -1,4 +1,4 @@
-import type { UseCaseContext } from "@corely/kernel";
+import type { UnitOfWorkPort, UseCaseContext } from "@corely/kernel";
 import type {
   AvailabilityRuleRepositoryPort,
   ResourceRepositoryPort,
@@ -28,30 +28,26 @@ export class UpsertAvailabilityRuleUseCase {
     private readonly resourceRepo: ResourceRepositoryPort,
     private readonly audit: AuditPort,
     private readonly clock: ClockPort,
-    private readonly idGenerator: IdGeneratorPort
+    private readonly idGenerator: IdGeneratorPort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {}
 
   async execute(input: UpsertAvailabilityRuleInput, ctx: UseCaseContext) {
     const tenantId = ctx.tenantId!;
-    const now = this.clock.now();
+    return this.unitOfWork.withinTransaction(async (tx) => {
+      await this.ruleRepo.lockResource(tenantId, input.resourceId, tx);
+      const resource = await this.resourceRepo.findById(input.resourceId, tenantId, tx);
+      if (
+        !resource ||
+        (resource.workspaceId !== null && resource.workspaceId !== ctx.workspaceId)
+      ) {
+        throw new NotFoundException(`Resource ${input.resourceId} not found`);
+      }
 
-    const resource = await this.resourceRepo.findById(input.resourceId, tenantId);
-    if (!resource) {
-      throw new NotFoundException(`Resource ${input.resourceId} not found`);
-    }
-
-    let rule = await this.ruleRepo.findByResourceId(input.resourceId, tenantId);
-
-    if (rule) {
-      rule.timezone = input.timezone;
-      rule.weeklySlots = input.weeklySlots;
-      rule.blackouts = input.blackouts;
-      rule.effectiveFrom = input.effectiveFrom ?? null;
-      rule.effectiveTo = input.effectiveTo ?? null;
-      rule.updatedAt = now;
-    } else {
-      rule = new AvailabilityRule(
-        this.idGenerator.newId(),
+      const current = await this.ruleRepo.findByResourceId(input.resourceId, tenantId, tx);
+      const now = this.clock.now();
+      const rule = new AvailabilityRule(
+        current?.id ?? this.idGenerator.newId(),
         tenantId,
         input.resourceId,
         input.timezone,
@@ -59,22 +55,22 @@ export class UpsertAvailabilityRuleUseCase {
         input.blackouts,
         input.effectiveFrom ?? null,
         input.effectiveTo ?? null,
-        now,
+        current?.createdAt ?? now,
         now
       );
-    }
-
-    rule = await this.ruleRepo.upsert(rule);
-
-    await this.audit.log({
-      tenantId,
-      userId: ctx.userId ?? "system",
-      action: "booking.availability.upserted",
-      entityType: "BookingResource", // Logged against resource
-      entityId: input.resourceId,
-      metadata: { timezone: input.timezone, slotsCount: input.weeklySlots.length },
+      const saved = await this.ruleRepo.upsert(rule, tx);
+      await this.audit.log(
+        {
+          tenantId,
+          userId: ctx.userId ?? "system",
+          action: "booking.availability.upserted",
+          entityType: "BookingResource",
+          entityId: input.resourceId,
+          metadata: { timezone: input.timezone, slotsCount: input.weeklySlots.length },
+        },
+        tx
+      );
+      return saved;
     });
-
-    return rule;
   }
 }

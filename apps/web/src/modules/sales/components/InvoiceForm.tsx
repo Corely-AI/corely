@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import type { SalesInvoiceDto, PaymentMethodConfig } from "@corely/contracts";
 import { Button } from "@corely/ui";
@@ -47,6 +48,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   disabled,
   onSubmit,
 }) => {
+  const uiCopy = useUiCopy("ui.sales-invoiceform");
   const [customerPartyId, setCustomerPartyId] = useState(initial?.customerPartyId ?? "");
   const [currency, setCurrency] = useState(initial?.currency ?? "EUR");
   const [issueDate, setIssueDate] = useState(initial?.issueDate ?? "");
@@ -144,10 +146,10 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Customer</Label>
+          <Label>{uiCopy("customer")}</Label>
           <Select value={customerPartyId} onValueChange={setCustomerPartyId} disabled={disabled}>
             <SelectTrigger>
-              <SelectValue placeholder="Select customer" />
+              <SelectValue placeholder={uiCopy("select-customer")} />
             </SelectTrigger>
             <SelectContent>
               {customers.map((customer) => (
@@ -159,7 +161,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Currency</Label>
+          <Label>{uiCopy("currency")}</Label>
           <Input
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
@@ -167,7 +169,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label>Issue Date</Label>
+          <Label>{uiCopy("issue-date")}</Label>
           <Input
             type="date"
             value={issueDate}
@@ -176,7 +178,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label>Due Date</Label>
+          <Label>{uiCopy("due-date")}</Label>
           <Input
             type="date"
             value={dueDate}
@@ -185,7 +187,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label>Payment Terms</Label>
+          <Label>{uiCopy("payment-terms")}</Label>
           <Input
             value={paymentTerms}
             onChange={(e) => setPaymentTerms(e.target.value)}
@@ -193,13 +195,13 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label>Payment Method (Optional)</Label>
+          <Label>{uiCopy("payment-method-optional")}</Label>
           <Select value={paymentMethodId} onValueChange={setPaymentMethodId} disabled={disabled}>
             <SelectTrigger>
-              <SelectValue placeholder="Select payment method" />
+              <SelectValue placeholder={uiCopy("select-payment-method")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="">{uiCopy("none")}</SelectItem>
               {paymentMethods
                 .filter((m) => m.isActive)
                 .map((method) => (
@@ -214,16 +216,16 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Line Items</Label>
+          <Label>{uiCopy("line-items")}</Label>
           <Button type="button" variant="secondary" onClick={addLineItem} disabled={disabled}>
-            Add Line
+            {uiCopy("add-line")}
           </Button>
         </div>
         <div className="space-y-3">
           {lineItems.map((item, index) => (
             <div key={index} className="grid gap-3 md:grid-cols-6 items-end">
               <div className="md:col-span-2">
-                <Label>Description</Label>
+                <Label>{uiCopy("description")}</Label>
                 <Input
                   value={item.description}
                   onChange={(e) => updateLineItem(index, "description", e.target.value)}
@@ -231,7 +233,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 />
               </div>
               <div>
-                <Label>Qty</Label>
+                <Label>{uiCopy("qty")}</Label>
                 <Input
                   type="number"
                   value={item.quantity}
@@ -240,7 +242,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 />
               </div>
               <div>
-                <Label>Unit Price (cents)</Label>
+                <Label>{uiCopy("unit-price-cents")}</Label>
                 <Input
                   type="number"
                   value={item.unitPriceCents}
@@ -249,7 +251,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 />
               </div>
               <div>
-                <Label>Discount (cents)</Label>
+                <Label>{uiCopy("discount-cents")}</Label>
                 <Input
                   type="number"
                   value={item.discountCents ?? 0}
@@ -264,7 +266,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   onClick={() => removeLineItem(index)}
                   disabled={disabled}
                 >
-                  Remove
+                  {uiCopy("remove")}
                 </Button>
               </div>
             </div>
@@ -273,22 +275,24 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       </div>
 
       <div className="space-y-2">
-        <Label>Notes</Label>
+        <Label>{uiCopy("notes")}</Label>
         <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} disabled={disabled} />
       </div>
 
       <div className="border-t pt-4 flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Subtotal: {formatMoney(totals.subtotalCents, "en-US", currency)} | Discount:{" "}
-          {formatMoney(totals.discountCents, "en-US", currency)}
+          {uiCopy("subtotal") + " "}
+          {formatMoney(totals.subtotalCents, "en-US", currency)}
+          {" " + uiCopy("discount")} {formatMoney(totals.discountCents, "en-US", currency)}
         </div>
         <div className="text-lg font-semibold">
-          Total: {formatMoney(totals.totalCents, "en-US", currency)}
+          {uiCopy("total") + " "}
+          {formatMoney(totals.totalCents, "en-US", currency)}
         </div>
       </div>
 
       <Button type="submit" variant="accent" disabled={disabled || !customerPartyId}>
-        Save Invoice
+        {uiCopy("save-invoice")}
       </Button>
     </form>
   );

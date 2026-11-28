@@ -1,14 +1,24 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@corely/ui";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { coachingApi } from "@/lib/coaching-api";
 import { coachingKeys } from "../queries";
 
 export const CoachingEngagementDetailPage = () => {
+  const uiCopy = useUiCopy("ui.coaching-engagements-coachingengagementdetailpage");
   const { t } = useTranslation();
   const { navigationGroups } = useWorkspaceConfig();
   const canPrepareAgreement = navigationGroups.some((group) =>
@@ -40,8 +50,23 @@ export const CoachingEngagementDetailPage = () => {
     onError: () => toast.error(t("coaching.detail.exportError")),
   });
 
-  if (isLoading || !data) {
-    return <div>{t("common.loading")}</div>;
+  if (isLoading) {
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={t("common.loading")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
+  }
+
+  if (!data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
   }
 
   const { engagement, sessions, artifacts, timeline, aiSummary } = data;
@@ -86,12 +111,22 @@ export const CoachingEngagementDetailPage = () => {
             <CardTitle>{t("coaching.detail.sections.overview")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div>Client: {engagement.clientPartyId}</div>
-            <div>Coach user: {engagement.coachUserId}</div>
             <div>
-              Offer price: {engagement.offer.priceCents / 100} {engagement.offer.currency}
+              {uiCopy("client") + " "}
+              {engagement.clientPartyId}
             </div>
-            <div>Invoice: {engagement.invoiceId ?? t("common.notSet")}</div>
+            <div>
+              {uiCopy("coach-user") + " "}
+              {engagement.coachUserId}
+            </div>
+            <div>
+              {uiCopy("offer-price") + " "}
+              {engagement.offer.priceCents / 100} {engagement.offer.currency}
+            </div>
+            <div>
+              {uiCopy("invoice") + " "}
+              {engagement.invoiceId ?? t("common.notSet")}
+            </div>
           </CardContent>
         </Card>
 
@@ -108,11 +143,21 @@ export const CoachingEngagementDetailPage = () => {
                 {t("sign.coachingAgreement")}
               </Link>
             )}
-            <div>Status: {engagement.status}</div>
-            <div>Payment: {engagement.paymentStatus}</div>
-            <div>Contract: {engagement.contractStatus}</div>
             <div>
-              Signed contract doc: {engagement.signedContractDocumentId ?? t("common.notSet")}
+              {uiCopy("status") + " "}
+              {engagement.status}
+            </div>
+            <div>
+              {uiCopy("payment") + " "}
+              {engagement.paymentStatus}
+            </div>
+            <div>
+              {uiCopy("contract") + " "}
+              {engagement.contractStatus}
+            </div>
+            <div>
+              {uiCopy("signed-contract-doc") + " "}
+              {engagement.signedContractDocumentId ?? t("common.notSet")}
             </div>
           </CardContent>
         </Card>
@@ -127,8 +172,14 @@ export const CoachingEngagementDetailPage = () => {
                 <div>{new Date(session.startAt).toLocaleString()}</div>
                 <div>{session.status}</div>
                 <div>{session.meetingLink ?? t("coaching.sessions.pendingMeeting")}</div>
-                <div>Prep: {session.prepSubmittedAt ?? t("common.notSet")}</div>
-                <div>Debrief: {session.debriefSubmittedAt ?? t("common.notSet")}</div>
+                <div>
+                  {uiCopy("prep") + " "}
+                  {session.prepSubmittedAt ?? t("common.notSet")}
+                </div>
+                <div>
+                  {uiCopy("debrief") + " "}
+                  {session.debriefSubmittedAt ?? t("common.notSet")}
+                </div>
               </div>
             ))}
           </CardContent>

@@ -1,3 +1,19 @@
+import { TaskAttachmentsAdapter } from "./infrastructure/prisma/task-attachments.adapter";
+import { TASK_ATTACHMENTS } from "./application/ports/task-attachments.port";
+import { OperationalRequestDocumentsAdapter } from "./infrastructure/prisma/operational-request-documents.adapter";
+import { OperationalRequestDocuments } from "./public";
+import { PersonnelDocumentsAdapter } from "./infrastructure/prisma/personnel-documents.adapter";
+import {
+  EXPENSE_RECEIPT_DOCUMENTS,
+  PERSONNEL_DOCUMENTS,
+  PROCEDURE_DOCUMENTS,
+  VENDOR_BILL_DOCUMENTS,
+} from "./public";
+import { ProcedureDocumentsAdapter } from "./infrastructure/prisma/procedure-documents.adapter";
+import { ExpenseReceiptDocumentsAdapter } from "./infrastructure/prisma/expense-receipt-documents.adapter";
+import { PrivateEmailOriginalsAdapter } from "./infrastructure/prisma/private-email-originals.adapter";
+import { VendorBillDocumentsAdapter } from "./infrastructure/prisma/vendor-bill-documents.adapter";
+import { DataModule } from "@corely/data";
 import { PrismaTemplateDocuments } from "./infrastructure/prisma/prisma-template-documents";
 import { TemplateDocuments } from "./public";
 import { Module, forwardRef } from "@nestjs/common";
@@ -15,8 +31,13 @@ import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port"
 import { OUTBOX_PORT } from "@corely/kernel";
 import type { OutboxPort } from "@corely/kernel";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
+import { PlatformModule } from "../platform/platform.module";
 import { IdentityModule } from "../identity/identity.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
+import {
+  InvoicePdfStorage,
+  InvoicePdfStorageModule,
+} from "@/shared/infrastructure/invoice-pdf-storage.module";
 
 import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/complete-upload.usecase";
 import { CreateUploadIntentUseCase } from "./application/use-cases/create-upload-intent/create-upload-intent.usecase";
@@ -32,9 +53,25 @@ import { UploadFileUseCase } from "./application/use-cases/upload-file/upload-fi
 import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/proxy-download.usecase";
 
 @Module({
-  imports: [forwardRef(() => IdentityModule), KernelModule],
+  imports: [
+    forwardRef(() => IdentityModule),
+    forwardRef(() => PlatformModule),
+    KernelModule,
+    InvoicePdfStorageModule,
+    DataModule,
+  ],
   controllers: [DocumentsController, InvoicePdfController, PublicDocumentsController],
   providers: [
+    PersonnelDocumentsAdapter,
+    VendorBillDocumentsAdapter,
+    PrivateEmailOriginalsAdapter,
+    TaskAttachmentsAdapter,
+    { provide: TASK_ATTACHMENTS, useExisting: TaskAttachmentsAdapter },
+    { provide: EXPENSE_RECEIPT_DOCUMENTS, useClass: ExpenseReceiptDocumentsAdapter },
+    { provide: VENDOR_BILL_DOCUMENTS, useExisting: VendorBillDocumentsAdapter },
+    { provide: PERSONNEL_DOCUMENTS, useExisting: PersonnelDocumentsAdapter },
+    { provide: OperationalRequestDocuments, useClass: OperationalRequestDocumentsAdapter },
+    { provide: PROCEDURE_DOCUMENTS, useClass: ProcedureDocumentsAdapter },
     { provide: TemplateDocuments, useClass: PrismaTemplateDocuments },
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
@@ -107,22 +144,18 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       useFactory: (
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter,
+        storage: InvoicePdfStorage,
         env: EnvService
       ) =>
         new GetDownloadUrlUseCase({
           logger: new NestLoggerAdapter(),
           documentRepo,
           fileRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
           downloadTtlSeconds: env.SIGNED_URL_DOWNLOAD_TTL_SECONDS,
         }),
-      inject: [
-        PrismaDocumentRepoAdapter,
-        PrismaFileRepoAdapter,
-        GcsObjectStorageAdapter,
-        EnvService,
-      ],
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, InvoicePdfStorage, EnvService],
     },
     {
       provide: GetDocumentUseCase,
@@ -180,7 +213,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
         linkRepo: PrismaDocumentLinkAdapter,
-        storage: GcsObjectStorageAdapter,
+        storage: InvoicePdfStorage,
         outbox: OutboxPort,
         idGen: IdGeneratorPort,
         clock: ClockPort,
@@ -191,7 +224,8 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
           documentRepo,
           fileRepo,
           linkRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
           outbox,
           idGenerator: idGen,
           clock,
@@ -202,7 +236,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         PrismaDocumentRepoAdapter,
         PrismaFileRepoAdapter,
         PrismaDocumentLinkAdapter,
-        GcsObjectStorageAdapter,
+        InvoicePdfStorage,
         OUTBOX_PORT,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
@@ -215,7 +249,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         requestInvoicePdf: RequestInvoicePdfUseCase,
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter,
+        storage: InvoicePdfStorage,
         env: EnvService
       ) =>
         new GetInvoicePdfUseCase({
@@ -223,7 +257,8 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
           requestInvoicePdf,
           documentRepo,
           fileRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
           downloadTtlSeconds: env.SIGNED_URL_DOWNLOAD_TTL_SECONDS,
           defaultWaitMs: 15000,
           maxWaitMs: 30000,
@@ -236,7 +271,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         RequestInvoicePdfUseCase,
         PrismaDocumentRepoAdapter,
         PrismaFileRepoAdapter,
-        GcsObjectStorageAdapter,
+        InvoicePdfStorage,
         EnvService,
       ],
     },
@@ -283,14 +318,15 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       useFactory: (
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter
+        storage: InvoicePdfStorage
       ) =>
         new ProxyDownloadUseCase({
           documentRepo,
           fileRepo,
-          objectStorage: storage,
+          objectStorage: storage.writer,
+          storageForFile: storage.forFile,
         }),
-      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, GcsObjectStorageAdapter],
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, InvoicePdfStorage],
     },
     {
       provide: DocumentsApplication,
@@ -339,7 +375,13 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     },
   ],
   exports: [
+    TASK_ATTACHMENTS,
+    EXPENSE_RECEIPT_DOCUMENTS,
+    VENDOR_BILL_DOCUMENTS,
+    PERSONNEL_DOCUMENTS,
+    PROCEDURE_DOCUMENTS,
     TemplateDocuments,
+    OperationalRequestDocuments,
     DocumentsApplication,
     GcsObjectStorageAdapter,
     ListLinkedDocumentsUseCase,

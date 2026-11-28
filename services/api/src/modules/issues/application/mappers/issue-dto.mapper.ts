@@ -60,6 +60,10 @@ export const toIssueActivityDto = (activity: IssueActivity): IssueActivityDto =>
 
 export const toIssueDto = (issue: Issue, attachments?: IssueAttachment[]): IssueDto => ({
   id: issue.id,
+  requestKind: issue.requestKind ?? undefined,
+  clientEmail: issue.clientEmail ?? undefined,
+  clientUpdateStatus: issue.clientUpdateStatus ?? undefined,
+  clientUpdateSummary: issue.clientUpdateSummary ?? undefined,
   tenantId: issue.tenantId,
   title: issue.title,
   description: issue.description ?? null,
@@ -77,4 +81,17 @@ export const toIssueDto = (issue: Issue, attachments?: IssueAttachment[]): Issue
   createdAt: issue.createdAt.toISOString(),
   updatedAt: issue.updatedAt.toISOString(),
   attachments: attachments ? attachments.map(toIssueAttachmentDto) : undefined,
+});
+
+export const toRequesterIssueDto = (issue: Issue): IssueDto => ({
+  id: issue.id,
+  tenantId: issue.tenantId,
+  title: issue.title,
+  description: issue.description ?? null,
+  status: issue.status,
+  priority: issue.priority,
+  siteType: issue.siteType,
+  requestKind: issue.requestKind,
+  createdAt: issue.createdAt.toISOString(),
+  updatedAt: issue.updatedAt.toISOString(),
 });

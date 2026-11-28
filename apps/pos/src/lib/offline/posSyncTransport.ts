@@ -119,6 +119,8 @@ export class PosSyncTransport implements SyncTransport {
               payload.reason ??
               (payload.eventType === "PAID_IN" ? "POS shift paid-in" : "POS shift paid-out"),
             paymentMethod: "CASH",
+            dailyZReport: false,
+            allowPossibleDuplicate: false,
             currency: "EUR",
             referenceId: payload.eventId,
             businessDate: payload.occurredAt.slice(0, 10),

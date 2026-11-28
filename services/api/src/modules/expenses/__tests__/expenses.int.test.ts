@@ -56,16 +56,8 @@ describe("Expenses integration (Postgres)", () => {
         setEntityValues: async () => ({}),
         deleteEntityValues: async () => {},
       } as any,
-      {
-        getWorkspaceByIdWithLegalEntity: async () => ({
-          id: "ws-1",
-          legalEntity: { kind: "PERSONAL" },
-        }),
-      } as any,
-      {
-        getDefaultCapabilities: () => ({ approvals: false }),
-      } as any,
-      prisma
+      prisma,
+      { sumGiftsByRecipientForYear: async () => 0 }
     );
   });
 

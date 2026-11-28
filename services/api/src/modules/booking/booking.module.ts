@@ -1,3 +1,28 @@
+import { OpenBukTimezone } from "./application/use-cases/openbuk-timezone.usecase";
+import { BookingSourceAccess } from "./application/use-cases/booking-source-access.usecase";
+import { PlatformModule } from "../platform/platform.module";
+import { PeopleModule } from "../people/people.module";
+import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking-staff-constraint.adapter";
+import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
+import { WorkspacesModule } from "../workspaces";
+import { OPENBUK_IMPORT_LEDGER } from "./application/ports/openbuk-import-ledger.port";
+import { OpenBukImportUseCase } from "./application/use-cases/openbuk-import.usecase";
+import { OpenBukImportController } from "./http/openbuk-import.controller";
+import { OpenBukImportLedgerAdapter } from "./infrastructure/adapters/openbuk-import-ledger.adapter";
+import { OpenBukStudioUseCase } from "./application/use-cases/openbuk-studio.usecase";
+import { OpenBukAppointmentChangeUseCase } from "./application/use-cases/openbuk-appointment-change.usecase";
+import { OpenBukAgendaCommandsUseCase } from "./application/use-cases/openbuk-agenda-commands.usecase";
+import { OpenBukGuestCredentials } from "./application/use-cases/openbuk-guest-credentials";
+import { OpenBukGuestManagementUseCase } from "./application/use-cases/openbuk-guest-management.usecase";
+import { OpenBukManagementController } from "./http/openbuk-management.controller";
+import {
+  OPENBUK_GUEST_ACCESS_STORE,
+  OPENBUK_GUEST_SIGNING_SECRET,
+} from "./application/ports/openbuk-guest-access.port";
+import { OpenBukGuestAccessAdapter } from "./infrastructure/adapters/openbuk-guest-access.adapter";
+import { OpenBukAdminController, OpenBukPublicController } from "./http/openbuk.controller";
+import { OPENBUK_REPOSITORY } from "./application/ports/openbuk-repository.port";
+import { PrismaOpenBukRepositoryAdapter } from "./infrastructure/adapters/prisma-openbuk-repository.adapter";
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { EnvService } from "@corely/config";
@@ -10,6 +35,8 @@ import { BookingServiceController } from "./http/service.controller";
 import { BookingController } from "./http/booking.controller";
 import { BookingAvailabilityController } from "./http/availability.controller";
 import { PublicBookingController } from "./http/public-booking.controller";
+import { LegacyPublicBookingAvailabilityUseCase } from "./application/use-cases/legacy-public-booking-availability.usecase";
+import { LegacyPublicBookingPageReader } from "./infrastructure/adapters/legacy-public-booking-page-reader";
 
 import { PrismaResourceRepoAdapter } from "./infrastructure/adapters/prisma-resource-repo.adapter";
 import { PrismaServiceRepoAdapter } from "./infrastructure/adapters/prisma-service-repo.adapter";
@@ -32,6 +59,7 @@ import {
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
   ID_GENERATOR_TOKEN,
   CLOCK_PORT_TOKEN,
+  UNIT_OF_WORK,
 } from "@corely/kernel";
 
 import { CreateResourceUseCase } from "./application/use-cases/create-resource.usecase";
@@ -56,9 +84,24 @@ import { CancelBookingUseCase } from "./application/use-cases/cancel-booking.use
 import { UpsertAvailabilityRuleUseCase } from "./application/use-cases/upsert-availability-rule.usecase";
 import { GetAvailabilityUseCase } from "./application/use-cases/get-availability.usecase";
 
+import { BOOKING_POLICIES } from "./application/booking-policy";
+import { bookingPolicies } from "./booking-extensions";
+
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, CrmModule],
+  imports: [
+    PeopleModule,
+    WorkspacesModule,
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    CrmModule,
+    PlatformModule,
+  ],
   controllers: [
+    OpenBukAdminController,
+    OpenBukImportController,
+    OpenBukPublicController,
+    OpenBukManagementController,
     BookingResourceController,
     BookingServiceController,
     BookingController,
@@ -66,6 +109,27 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     PublicBookingController,
   ],
   providers: [
+    BookingSourceAccess,
+    { provide: BOOKING_POLICIES, useValue: bookingPolicies },
+    BookingStaffConstraintAdapter,
+    OpenBukRateLimitGuard,
+    LegacyPublicBookingAvailabilityUseCase,
+    LegacyPublicBookingPageReader,
+    OpenBukStudioUseCase,
+    OpenBukAppointmentChangeUseCase,
+    OpenBukAgendaCommandsUseCase,
+    OpenBukGuestCredentials,
+    OpenBukGuestManagementUseCase,
+    { provide: OPENBUK_GUEST_ACCESS_STORE, useClass: OpenBukGuestAccessAdapter },
+    {
+      provide: OPENBUK_GUEST_SIGNING_SECRET,
+      useFactory: (env: EnvService) => env.JWT_SECRET ?? "",
+      inject: [EnvService],
+    },
+    OpenBukTimezone,
+    OpenBukImportUseCase,
+    { provide: OPENBUK_IMPORT_LEDGER, useClass: OpenBukImportLedgerAdapter },
+    { provide: OPENBUK_REPOSITORY, useClass: PrismaOpenBukRepositoryAdapter },
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
     { provide: SERVICE_REPOSITORY, useClass: PrismaServiceRepoAdapter },
     { provide: BOOKING_REPOSITORY, useClass: PrismaBookingRepoAdapter },
@@ -160,52 +224,72 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     // Booking Use Cases
     {
       provide: CreateHoldUseCase,
-      useFactory: (holdRepo, bookingRepo, resourceRepo, idempotency, idgen, clock) =>
-        new CreateHoldUseCase(holdRepo, bookingRepo, resourceRepo, idempotency, idgen, clock),
+      useFactory: (holdRepo, bookingRepo, idempotency, idgen, clock, uow) =>
+        new CreateHoldUseCase(holdRepo, bookingRepo, idempotency, idgen, clock, uow),
       inject: [
         HOLD_REPOSITORY,
         BOOKING_REPOSITORY,
-        RESOURCE_REPOSITORY,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
       ],
     },
     {
       provide: CreateBookingUseCase,
-      useFactory: (bookingRepo, holdRepo, resourceRepo, audit, outbox, idempotency, idgen, clock) =>
+      useFactory: (
+        bookingRepo,
+        holdRepo,
+        audit,
+        outbox,
+        idempotency,
+        idgen,
+        clock,
+        uow,
+        policies
+      ) =>
         new CreateBookingUseCase(
           bookingRepo,
           holdRepo,
-          resourceRepo,
           audit,
           outbox,
           idempotency,
           idgen,
-          clock
+          clock,
+          uow,
+          policies
         ),
       inject: [
         BOOKING_REPOSITORY,
         HOLD_REPOSITORY,
-        RESOURCE_REPOSITORY,
         AUDIT_PORT,
         OUTBOX_PORT,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
+        BOOKING_POLICIES,
       ],
     },
     {
       provide: RescheduleBookingUseCase,
-      useFactory: (bookingRepo, audit, outbox, idgen, clock) =>
-        new RescheduleBookingUseCase(bookingRepo, audit, outbox, idgen, clock),
-      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+      useFactory: (bookingRepo, audit, outbox, idgen, clock, uow, policies) =>
+        new RescheduleBookingUseCase(bookingRepo, audit, outbox, idgen, clock, uow, policies),
+      inject: [
+        BOOKING_REPOSITORY,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
+        BOOKING_POLICIES,
+      ],
     },
     {
       provide: CancelBookingUseCase,
-      useFactory: (bookingRepo, audit, outbox) =>
-        new CancelBookingUseCase(bookingRepo, audit, outbox),
-      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT],
+      useFactory: (bookingRepo, audit, outbox, uow) =>
+        new CancelBookingUseCase(bookingRepo, audit, outbox, uow),
+      inject: [BOOKING_REPOSITORY, AUDIT_PORT, OUTBOX_PORT, UNIT_OF_WORK],
     },
     {
       provide: ListBookingsUseCase,
@@ -221,23 +305,28 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     // Availability Use Cases
     {
       provide: UpsertAvailabilityRuleUseCase,
-      useFactory: (ruleRepo, resourceRepo, audit, clock, idgen) =>
-        new UpsertAvailabilityRuleUseCase(ruleRepo, resourceRepo, audit, clock, idgen),
+      useFactory: (ruleRepo, resourceRepo, audit, clock, idgen, uow) =>
+        new UpsertAvailabilityRuleUseCase(ruleRepo, resourceRepo, audit, clock, idgen, uow),
       inject: [
         AVAILABILITY_RULE_REPOSITORY,
         RESOURCE_REPOSITORY,
         AUDIT_PORT,
         CLOCK_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
+        UNIT_OF_WORK,
       ],
     },
     {
       provide: GetAvailabilityUseCase,
-      useFactory: (ruleRepo, bookingRepo, resourceRepo) =>
-        new GetAvailabilityUseCase(ruleRepo, bookingRepo, resourceRepo),
-      inject: [AVAILABILITY_RULE_REPOSITORY, BOOKING_REPOSITORY, RESOURCE_REPOSITORY],
+      useFactory: (ruleRepo, resourceRepo) => new GetAvailabilityUseCase(ruleRepo, resourceRepo),
+      inject: [AVAILABILITY_RULE_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [],
+  exports: [
+    OpenBukAppointmentChangeUseCase,
+    OpenBukTimezone,
+    BookingSourceAccess,
+    OpenBukStudioUseCase,
+  ],
 })
 export class BookingModule {}

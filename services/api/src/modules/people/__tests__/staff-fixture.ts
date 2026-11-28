@@ -1,0 +1,406 @@
+import type { INestApplication, Provider } from "@nestjs/common";
+import { StaffTasksAdapter } from "../../tasks/public";
+import { tasksAppManifest } from "../../tasks/tasks.manifest";
+import { StaffOperationsLookup } from "../application/staff-operations-lookup";
+import { StaffAbsenceController } from "../adapters/http/staff-absence.controller";
+import { StaffAbsenceUseCase } from "../application/staff-absence.usecase";
+import { ExtStaffAbsenceAdapter } from "../infrastructure/ext-staff-absence.adapter";
+import { PersonnelDocumentsAdapter } from "../../documents/infrastructure/prisma/personnel-documents.adapter";
+import { FakeObjectStoragePort } from "../../documents/testkit/fakes/fake-object-storage";
+import { DocumentsController } from "../../documents/adapters/http/documents.controller";
+import { PublicDocumentsController } from "../../documents/adapters/http/public-documents.controller";
+import { DocumentsApplication } from "../../documents/application/documents.application";
+import { ProxyDownloadUseCase } from "../../documents/application/use-cases/proxy-download/proxy-download.usecase";
+import { GetDownloadUrlUseCase } from "../../documents/application/use-cases/get-download-url/get-download-url.usecase";
+import { GetPublicFileUrlUseCase } from "../../documents/application/use-cases/get-public-file-url/get-public-file-url.usecase";
+import { CompleteUploadUseCase } from "../../documents/application/use-cases/complete-upload/complete-upload.usecase";
+import { GetDocumentUseCase } from "../../documents/application/use-cases/get-document/get-document.usecase";
+import { LinkDocumentUseCase } from "../../documents/application/use-cases/link-document/link-document.usecase";
+import { ListLinkedDocumentsUseCase } from "../../documents/application/use-cases/list-linked-documents/list-linked-documents.usecase";
+import { UnlinkDocumentUseCase } from "../../documents/application/use-cases/unlink-document/unlink-document.usecase";
+import { PrismaDocumentRepoAdapter } from "../../documents/infrastructure/prisma/prisma-document-repo.adapter";
+import { PrismaFileRepoAdapter } from "../../documents/infrastructure/prisma/prisma-file-repo.adapter";
+import { PrismaDocumentLinkAdapter } from "../../documents/infrastructure/prisma/prisma-document-link.adapter";
+import { NoopLogger } from "@corely/kernel";
+import { Reflector } from "@nestjs/core";
+import { RbacGuard } from "../../identity/adapters/http/rbac.guard";
+import type { ObjectStoragePort } from "@corely/kernel";
+import { StaffAvailabilityUseCase } from "../application/staff-availability.usecase";
+import { ExtStaffAvailabilityAdapter } from "../infrastructure/ext-staff-availability.adapter";
+import { StaffAvailabilityConstraintService } from "../application/staff-availability-constraint.service";
+import { StaffBookingAdapter } from "../../booking/public";
+import type { ClockPort } from "@corely/kernel";
+import { ProblemDetailsExceptionFilter } from "../../../shared/exceptions/problem-details.filter";
+import { EnableAppUseCase } from "../../platform/application/use-cases/enable-app.usecase";
+import { DisableAppUseCase } from "../../platform/application/use-cases/disable-app.usecase";
+import { DependencyResolverService } from "../../platform/application/services/dependency-resolver.service";
+import { PrismaTenantAppInstallRepositoryAdapter } from "../../platform/infrastructure/adapters/prisma-tenant-app-install-repository.adapter";
+import { TenantEntitlementService } from "../../platform/application/services/tenant-entitlement.service";
+import type { AppRegistryPort } from "../../platform/application/ports/app-registry.port";
+import { FeatureCatalogService } from "../../platform-entitlements/application/feature-catalog.service";
+import { TenantEntitlementsService } from "../../platform-entitlements/application/tenant-entitlements.service";
+import { TenantEntitlementsReadAdapter } from "../../platform-entitlements/adapters/tenant-entitlements-read.adapter";
+import { peopleAppManifest } from "../people.manifest";
+import { randomUUID } from "node:crypto";
+import { Test } from "@nestjs/testing";
+import {
+  type PrismaService,
+  PrismaExtKvAdapter,
+  PrismaAuditAdapter,
+  PrismaOutboxAdapter,
+} from "@corely/data";
+import { StaffDirectoryUseCase } from "../application/staff-directory.usecase";
+import { StaffController } from "../adapters/http/staff.controller";
+import { ExtStaffRepositoryAdapter } from "../infrastructure/ext-staff-repository.adapter";
+import { AuthGuard } from "../../identity/adapters/http/auth.guard";
+import { AuthorizeRequestContextUseCase } from "../../identity/application/use-cases/authorize-request-context.usecase";
+import { GetEffectivePermissionsUseCase } from "../../identity/public";
+import { StaffAccountLookupAdapter } from "../../identity/public";
+import { StaffPartyLookupAdapter } from "../../party/public";
+import { StaffResourceLookupAdapter } from "../../booking/public";
+import { PrismaMembershipRepository } from "../../identity/infrastructure/adapters/prisma-membership-repository.adapter";
+import { PrismaRolePermissionGrantRepository } from "../../identity/infrastructure/adapters/prisma-role-permission-grant-repository.adapter";
+import { PrismaWorkspaceRepository } from "../../workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
+import { AuthorizeWorkspaceUseCase } from "../../workspaces/public";
+import type { UseCaseContext } from "@corely/kernel";
+
+export async function staffFixture(
+  prisma: PrismaService,
+  clock: ClockPort = { now: () => new Date() },
+  storage?: ObjectStoragePort,
+  transport?: { providers: Provider[]; configure: (app: INestApplication) => void },
+  includeTasks = false
+) {
+  const uid = () => randomUUID();
+  const tenantA = uid(),
+    tenantB = uid(),
+    workspaceA = uid(),
+    workspaceA2 = uid(),
+    workspaceB = uid();
+  const manager = uid(),
+    staff = uid(),
+    outsider = uid();
+  const managerRole = uid(),
+    staffRole = uid(),
+    otherRole = uid();
+  const managerKeys = [
+    "people.directory.read",
+    "people.profile.manage",
+    "people.private.read",
+    "people.private.manage",
+    "people.documents.read",
+    ...(includeTasks ? ["tasks.read", "tasks.manage"] : []),
+  ];
+  for (const [tenantId, workspaces, users] of [
+    [
+      tenantA,
+      [workspaceA, workspaceA2],
+      [
+        [manager, managerRole, "Manager"],
+        [staff, staffRole, "Staff"],
+      ],
+    ],
+    [tenantB, [workspaceB], [[outsider, otherRole, "Manager"]]],
+  ] as const) {
+    await prisma.tenant.create({ data: { id: tenantId, name: "People test", slug: tenantId } });
+    const legal = await prisma.legalEntity.create({
+      data: {
+        tenantId,
+        kind: "COMPANY",
+        legalName: "Test company",
+        countryCode: "DE",
+        currency: "EUR",
+      },
+    });
+    for (const id of workspaces) {
+      await prisma.workspace.create({ data: { id, tenantId, legalEntityId: legal.id, name: id } });
+    }
+    for (const [id, roleId, name] of users) {
+      await prisma.user.create({
+        data: { id, email: `${id}@example.invalid`, name, passwordHash: "unused" },
+      });
+      await prisma.role.create({ data: { id: roleId, tenantId, name } });
+      await prisma.membership.create({ data: { tenantId, userId: id, roleId } });
+      const keys = name === "Staff" ? ["people.directory.read"] : managerKeys;
+      await prisma.rolePermissionGrant.createMany({
+        data: keys.map((permissionKey) => ({ tenantId, roleId, permissionKey, effect: "ALLOW" })),
+      });
+      for (const workspaceId of name === "Staff" ? [workspaceA] : workspaces) {
+        await prisma.workspaceMembership.create({
+          data: { workspaceId, userId: id, role: "MEMBER", status: "ACTIVE" },
+        });
+      }
+    }
+  }
+  const resource = await prisma.bookingResource.create({
+    data: {
+      tenantId: tenantA,
+      workspaceId: workspaceA,
+      name: "Anna's bookable time",
+      type: "STAFF",
+      tags: [],
+    },
+  });
+  const foreignResource = await prisma.bookingResource.create({
+    data: {
+      tenantId: tenantA,
+      workspaceId: workspaceA2,
+      name: "Other workspace",
+      type: "STAFF",
+      tags: [],
+    },
+  });
+  const party = await prisma.party.create({
+    data: {
+      tenantId: tenantA,
+      displayName: "Existing party",
+      kind: "INDIVIDUAL",
+      notes: "party-secret",
+      contactPoints: {
+        create: { tenantId: tenantA, type: "EMAIL", value: "party-private@example.invalid" },
+      },
+    },
+  });
+  const foreignParty = await prisma.party.create({
+    data: { tenantId: tenantB, displayName: "Other tenant", kind: "INDIVIDUAL" },
+  });
+  const memberships = new PrismaMembershipRepository(prisma);
+  const authorizeWorkspace = new AuthorizeWorkspaceUseCase(new PrismaWorkspaceRepository(prisma));
+  const permissions = new GetEffectivePermissionsUseCase(
+    new PrismaRolePermissionGrantRepository(prisma),
+    memberships,
+    authorizeWorkspace
+  );
+  const repo = new ExtStaffRepositoryAdapter(prisma, new PrismaExtKvAdapter(prisma));
+  const accountLookup = new StaffAccountLookupAdapter(prisma, authorizeWorkspace);
+  const partyLookup = new StaffPartyLookupAdapter(prisma);
+  const resourceLookup = new StaffResourceLookupAdapter(prisma);
+  const audit = new PrismaAuditAdapter(prisma),
+    outbox = new PrismaOutboxAdapter(prisma);
+  const manifests = includeTasks ? [peopleAppManifest, tasksAppManifest] : [peopleAppManifest];
+  const registry: AppRegistryPort = {
+    get: (id) => manifests.find((manifest) => manifest.appId === id),
+    list: () => manifests,
+    findByCapability: (key) => manifests.filter((manifest) => manifest.capabilities?.includes(key)),
+    has: (id) => manifests.some((manifest) => manifest.appId === id),
+  };
+  const catalog = new FeatureCatalogService(registry);
+  catalog.compileCatalog();
+  const appInstalls = new PrismaTenantAppInstallRepositoryAdapter(prisma);
+  const resolver = new DependencyResolverService();
+  const enableApp = new EnableAppUseCase(registry, appInstalls, resolver, audit, { newId: uid });
+  const entitlementService = new TenantEntitlementsService(prisma, catalog, enableApp, audit);
+  const entitlements = new TenantEntitlementsReadAdapter(entitlementService);
+  const disableApp = new DisableAppUseCase(registry, appInstalls, resolver, audit);
+  const platformEntitlements = new TenantEntitlementService(appInstalls, registry, entitlements);
+  for (const [tenantId, actorUserId] of [
+    [tenantA, manager],
+    [tenantB, outsider],
+  ]) {
+    await enableApp.execute({ tenantId, actorUserId, appId: "people" });
+    if (includeTasks) {
+      await enableApp.execute({ tenantId, actorUserId, appId: "tasks" });
+    }
+  }
+  const booking = new StaffBookingAdapter(prisma);
+  const schedules = new ExtStaffAvailabilityAdapter(new PrismaExtKvAdapter(prisma));
+  const absences = new ExtStaffAbsenceAdapter(prisma, new PrismaExtKvAdapter(prisma));
+  const constraint = new StaffAvailabilityConstraintService(repo, schedules, absences);
+  const usecase = new StaffDirectoryUseCase(
+    repo,
+    permissions,
+    accountLookup,
+    partyLookup,
+    resourceLookup,
+    audit,
+    outbox,
+    platformEntitlements,
+    booking
+  );
+  const staffLookup = new StaffOperationsLookup(repo);
+  const taskReading = includeTasks
+    ? new StaffTasksAdapter(
+        prisma,
+        new PrismaExtKvAdapter(prisma),
+        permissions,
+        platformEntitlements,
+        staffLookup,
+        audit,
+        outbox,
+        clock
+      )
+    : undefined;
+  const availability = new StaffAvailabilityUseCase(
+    usecase,
+    repo,
+    schedules,
+    booking,
+    audit,
+    outbox,
+    clock,
+    absences,
+    taskReading
+  );
+  const objectStorage = storage ?? new FakeObjectStoragePort();
+  const documents = new PersonnelDocumentsAdapter(
+    prisma,
+    new PrismaExtKvAdapter(prisma),
+    objectStorage,
+    { STORAGE_KEY_PREFIX: process.env.STORAGE_KEY_PREFIX }
+  );
+  const absenceUseCase = new StaffAbsenceUseCase(
+    repo,
+    absences,
+    permissions,
+    platformEntitlements,
+    booking,
+    documents,
+    audit,
+    outbox,
+    clock
+  );
+  const docRepo = new PrismaDocumentRepoAdapter(prisma),
+    fileRepo = new PrismaFileRepoAdapter(prisma),
+    linkRepo = new PrismaDocumentLinkAdapter(prisma);
+  const deps = {
+    documentRepo: docRepo,
+    fileRepo,
+    objectStorage,
+    logger: new NoopLogger(),
+    clock,
+    linkRepo,
+    downloadTtlSeconds: 60,
+  };
+  const genericDocuments = {
+    proxyDownload: new ProxyDownloadUseCase(deps),
+    getDownloadUrl: new GetDownloadUrlUseCase(deps),
+    getPublicFileUrl: new GetPublicFileUrlUseCase(deps),
+    getDocument: new GetDocumentUseCase(deps),
+    completeUpload: new CompleteUploadUseCase(deps),
+    linkDocument: new LinkDocumentUseCase(deps),
+    listLinkedDocuments: new ListLinkedDocumentsUseCase(deps),
+    unlinkDocument: new UnlinkDocumentUseCase(deps),
+  };
+  const rbac = new RbacGuard(new Reflector(), permissions);
+  const tokens = {
+    manager: { userId: manager, tenantId: tenantA },
+    staff: { userId: staff, tenantId: tenantA },
+    outsider: { userId: outsider, tenantId: tenantB },
+  };
+  const auth = new AuthGuard(
+    {
+      verifyAccessToken: async (token) =>
+        token in tokens
+          ? {
+              ...tokens[token as keyof typeof tokens],
+              roleIds: ["stale-admin"],
+              email: "test@example.invalid",
+              iat: 0,
+              exp: 9999999999,
+            }
+          : null,
+      generateAccessToken: () => "unused",
+      generateRefreshToken: () => "unused",
+      getExpirationTimes: () => ({ accessTokenExpiresIn: "1h", refreshTokenExpiresInMs: 3600000 }),
+    },
+    new AuthorizeRequestContextUseCase(memberships, authorizeWorkspace)
+  );
+  const module = await Test.createTestingModule({
+    controllers: [
+      StaffController,
+      StaffAbsenceController,
+      DocumentsController,
+      PublicDocumentsController,
+    ],
+    providers: [
+      ...(transport?.providers ?? []),
+      { provide: DocumentsApplication, useValue: genericDocuments },
+      { provide: RbacGuard, useValue: rbac },
+      { provide: StaffAbsenceUseCase, useValue: absenceUseCase },
+      { provide: StaffDirectoryUseCase, useValue: usecase },
+      { provide: StaffAvailabilityUseCase, useValue: availability },
+      { provide: AuthGuard, useValue: auth },
+    ],
+  })
+    .overrideGuard(RbacGuard)
+    .useValue(rbac)
+    .overrideGuard(AuthGuard)
+    .useValue(auth)
+    .compile();
+  const app = module.createNestApplication();
+  app.useGlobalFilters(new ProblemDetailsExceptionFilter());
+  transport?.configure(app);
+  await app.init();
+  const ctx: UseCaseContext = { tenantId: tenantA, workspaceId: workspaceA, userId: manager };
+  async function cleanup() {
+    await app.close();
+    for (const tenantId of [tenantA, tenantB]) {
+      await prisma.extKv.deleteMany({
+        where: { tenantId, moduleId: { in: ["people", "documents"] } },
+      });
+      await prisma.documentLink.deleteMany({ where: { tenantId } });
+      await prisma.file.deleteMany({ where: { tenantId } });
+      await prisma.document.deleteMany({ where: { tenantId } });
+      await prisma.auditLog.deleteMany({ where: { tenantId } });
+      await prisma.outboxEvent.deleteMany({ where: { tenantId } });
+      await prisma.bookingAllocation.deleteMany({ where: { tenantId } });
+      await prisma.booking.deleteMany({ where: { tenantId } });
+      await prisma.bookingHold.deleteMany({ where: { tenantId } });
+      await prisma.bookingServiceOffering.deleteMany({ where: { tenantId } });
+      await prisma.bookingAvailabilityRule.deleteMany({ where: { tenantId } });
+      await prisma.extKv.deleteMany({ where: { tenantId, moduleId: "booking" } });
+      await prisma.bookingResource.deleteMany({ where: { tenantId } });
+      await prisma.party.deleteMany({ where: { tenantId } });
+      await prisma.workspace.deleteMany({ where: { tenantId } });
+      await prisma.legalEntity.deleteMany({ where: { tenantId } });
+      await prisma.tenant.delete({ where: { id: tenantId } });
+    }
+    await prisma.user.deleteMany({ where: { id: { in: [manager, staff, outsider] } } });
+  }
+  return {
+    app,
+    absences,
+    absenceUseCase,
+    genericDocuments,
+    docRepo,
+    fileRepo,
+    linkRepo,
+    documents,
+    booking,
+    schedules,
+    constraint,
+    availability,
+    prisma,
+    repo,
+    entitlements,
+    platformEntitlements,
+    staffLookup,
+    appInstalls,
+    enableApp,
+    disableApp,
+    entitlementService,
+    usecase,
+    permissions,
+    accountLookup,
+    partyLookup,
+    resourceLookup,
+    audit,
+    outbox,
+    tenantA,
+    tenantB,
+    workspaceA,
+    workspaceA2,
+    workspaceB,
+    manager,
+    staff,
+    outsider,
+    managerRole,
+    staffRole,
+    resource,
+    foreignResource,
+    party,
+    foreignParty,
+    ctx,
+    cleanup,
+  };
+}

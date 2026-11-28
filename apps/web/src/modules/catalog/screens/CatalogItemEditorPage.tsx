@@ -1,8 +1,9 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
 import { toast } from "sonner";
 import type { CreateCatalogItemInput, UpdateCatalogItemInput } from "@corely/contracts";
 
@@ -14,39 +15,10 @@ import {
   catalogUomKeys,
 } from "../queries";
 
-type FormState = {
-  code: string;
-  name: string;
-  description: string;
-  type: "PRODUCT" | "SERVICE";
-  defaultUomId: string;
-  taxProfileId: string;
-  requiresLotTracking: boolean;
-  requiresExpiryDate: boolean;
-  shelfLifeDays: string;
-  hsCode: string;
-};
-
-type FormErrors = {
-  code?: string;
-  name?: string;
-  defaultUomId?: string;
-};
-
-const defaultState: FormState = {
-  code: "",
-  name: "",
-  description: "",
-  type: "PRODUCT",
-  defaultUomId: "",
-  taxProfileId: "",
-  requiresLotTracking: false,
-  requiresExpiryDate: false,
-  shelfLifeDays: "",
-  hsCode: "",
-};
+import { defaultState, type FormState, type FormErrors } from "./catalog-item-editor-state";
 
 export default function CatalogItemEditorPage() {
+  const uiCopy = useUiCopy("ui.catalog-catalogitemeditorpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams();
@@ -143,7 +115,7 @@ export default function CatalogItemEditorPage() {
       navigate(`/catalog/items/${result.item.id}`);
     },
     onError: () => {
-      toast.error("Failed to save catalog item");
+      toast.error(uiCopy("failed-to-save-catalog"));
     },
   });
 
@@ -167,10 +139,10 @@ export default function CatalogItemEditorPage() {
     onSuccess: async () => {
       setVariantDraft({ sku: "", name: "", barcodes: "" });
       await queryClient.invalidateQueries({ queryKey: catalogItemKeys.detail(existingItemId) });
-      toast.success("Variant added");
+      toast.success(uiCopy("variant-added"));
     },
     onError: () => {
-      toast.error("Failed to add variant");
+      toast.error(uiCopy("failed-to-add-variant"));
     },
   });
 
@@ -178,15 +150,15 @@ export default function CatalogItemEditorPage() {
     const nextErrors: FormErrors = {};
 
     if (!form.code.trim()) {
-      nextErrors.code = "Code is required";
+      nextErrors.code = uiCopy("code-required");
     }
 
     if (!form.name.trim()) {
-      nextErrors.name = "Name is required";
+      nextErrors.name = uiCopy("name-required");
     }
 
     if (!form.defaultUomId) {
-      nextErrors.defaultUomId = "Default UOM is required";
+      nextErrors.defaultUomId = uiCopy("default-uom-required");
     }
 
     setFormErrors(nextErrors);
@@ -196,7 +168,7 @@ export default function CatalogItemEditorPage() {
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validate()) {
-      toast.error("Please fill in all required fields");
+      toast.error(uiCopy("please-fill-in-all"));
       return;
     }
 
@@ -214,12 +186,10 @@ export default function CatalogItemEditorPage() {
           </Button>
           <div>
             <h1 className="text-h1 text-foreground">
-              {isNew ? "Create Catalog Item" : "Edit Catalog Item"}
+              {isNew ? uiCopy("create-catalog-item") : uiCopy("edit-catalog-item")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {isNew
-                ? "Add a product or service to your catalog"
-                : "Update item attributes used across operations"}
+              {isNew ? uiCopy("add-a-product-or") : uiCopy("update-item-attributes-used")}
             </p>
           </div>
         </div>
@@ -234,7 +204,7 @@ export default function CatalogItemEditorPage() {
             }
             disabled={saveMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
@@ -242,23 +212,23 @@ export default function CatalogItemEditorPage() {
             form="catalog-item-form"
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : isNew ? "Create Item" : "Save Changes"}
+            {saveMutation.isPending
+              ? uiCopy("saving")
+              : isNew
+                ? uiCopy("create-item")
+                : uiCopy("save-changes")}
           </Button>
         </div>
       </div>
 
       {!isNew && itemQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            Loading catalog item...
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-catalog-item")} />
       ) : null}
 
       {!isNew && itemQuery.isError ? (
         <Card>
           <CardContent className="p-6 flex items-center justify-between gap-4">
-            <div className="text-sm text-destructive">Catalog item could not be loaded.</div>
+            <div className="text-sm text-destructive">{uiCopy("catalog-item-could-not")}</div>
             <Button
               variant="outline"
               size="sm"
@@ -266,7 +236,7 @@ export default function CatalogItemEditorPage() {
                 void queryClient.invalidateQueries({ queryKey: catalogItemKeys.detail(id) })
               }
             >
-              Retry
+              {uiCopy("retry")}
             </Button>
           </CardContent>
         </Card>
@@ -278,7 +248,8 @@ export default function CatalogItemEditorPage() {
             <CardContent className="grid gap-5 p-6 md:grid-cols-2">
               <div>
                 <Label htmlFor="catalog-item-code">
-                  Code <span className="text-destructive">*</span>
+                  {uiCopy("code") + " "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="catalog-item-code"
@@ -287,7 +258,7 @@ export default function CatalogItemEditorPage() {
                     setFormErrors((prev) => ({ ...prev, code: undefined }));
                     setForm((prev) => ({ ...prev, code: event.target.value }));
                   }}
-                  placeholder="SKU or internal code"
+                  placeholder={uiCopy("sku-or-internal-code")}
                 />
                 {formErrors.code ? (
                   <p className="text-sm text-destructive mt-1">{formErrors.code}</p>
@@ -296,7 +267,8 @@ export default function CatalogItemEditorPage() {
 
               <div>
                 <Label htmlFor="catalog-item-name">
-                  Name <span className="text-destructive">*</span>
+                  {uiCopy("name") + " "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="catalog-item-name"
@@ -305,7 +277,7 @@ export default function CatalogItemEditorPage() {
                     setFormErrors((prev) => ({ ...prev, name: undefined }));
                     setForm((prev) => ({ ...prev, name: event.target.value }));
                   }}
-                  placeholder="Business name"
+                  placeholder={uiCopy("business-name")}
                 />
                 {formErrors.name ? (
                   <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
@@ -313,7 +285,7 @@ export default function CatalogItemEditorPage() {
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="catalog-item-description">Description</Label>
+                <Label htmlFor="catalog-item-description">{uiCopy("description")}</Label>
                 <Textarea
                   id="catalog-item-description"
                   rows={3}
@@ -321,12 +293,12 @@ export default function CatalogItemEditorPage() {
                   onChange={(event) =>
                     setForm((prev) => ({ ...prev, description: event.target.value }))
                   }
-                  placeholder="Optional internal description"
+                  placeholder={uiCopy("optional-internal-description")}
                 />
               </div>
 
               <div>
-                <Label htmlFor="catalog-item-type">Type</Label>
+                <Label htmlFor="catalog-item-type">{uiCopy("type")}</Label>
                 <select
                   id="catalog-item-type"
                   className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3"
@@ -338,14 +310,15 @@ export default function CatalogItemEditorPage() {
                     }))
                   }
                 >
-                  <option value="PRODUCT">Product</option>
-                  <option value="SERVICE">Service</option>
+                  <option value="PRODUCT">{uiCopy("product")}</option>
+                  <option value="SERVICE">{uiCopy("service")}</option>
                 </select>
               </div>
 
               <div>
                 <Label htmlFor="catalog-item-uom">
-                  Default UOM <span className="text-destructive">*</span>
+                  {uiCopy("default-uom") + " "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <select
                   id="catalog-item-uom"
@@ -356,7 +329,7 @@ export default function CatalogItemEditorPage() {
                     setForm((prev) => ({ ...prev, defaultUomId: event.target.value }));
                   }}
                 >
-                  <option value="">Select UOM</option>
+                  <option value="">{uiCopy("select-uom")}</option>
                   {(uoms?.items ?? []).map((uom) => (
                     <option key={uom.id} value={uom.id}>
                       {uom.code} - {uom.name}
@@ -369,7 +342,7 @@ export default function CatalogItemEditorPage() {
               </div>
 
               <div>
-                <Label htmlFor="catalog-item-tax-profile">Tax profile</Label>
+                <Label htmlFor="catalog-item-tax-profile">{uiCopy("tax-profile")}</Label>
                 <select
                   id="catalog-item-tax-profile"
                   className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3"
@@ -378,7 +351,7 @@ export default function CatalogItemEditorPage() {
                     setForm((prev) => ({ ...prev, taxProfileId: event.target.value }))
                   }
                 >
-                  <option value="">None</option>
+                  <option value="">{uiCopy("none")}</option>
                   {(taxProfiles?.items ?? []).map((taxProfile) => (
                     <option key={taxProfile.id} value={taxProfile.id}>
                       {taxProfile.name}
@@ -388,7 +361,7 @@ export default function CatalogItemEditorPage() {
               </div>
 
               <div>
-                <Label htmlFor="catalog-item-shelf-life">Shelf life (days)</Label>
+                <Label htmlFor="catalog-item-shelf-life">{uiCopy("shelf-life-days")}</Label>
                 <Input
                   id="catalog-item-shelf-life"
                   type="number"
@@ -397,17 +370,17 @@ export default function CatalogItemEditorPage() {
                   onChange={(event) =>
                     setForm((prev) => ({ ...prev, shelfLifeDays: event.target.value }))
                   }
-                  placeholder="Optional"
+                  placeholder={uiCopy("optional")}
                 />
               </div>
 
               <div>
-                <Label htmlFor="catalog-item-hs-code">HS code</Label>
+                <Label htmlFor="catalog-item-hs-code">{uiCopy("hs-code")}</Label>
                 <Input
                   id="catalog-item-hs-code"
                   value={form.hsCode}
                   onChange={(event) => setForm((prev) => ({ ...prev, hsCode: event.target.value }))}
-                  placeholder="Optional"
+                  placeholder={uiCopy("optional")}
                 />
               </div>
 
@@ -419,7 +392,7 @@ export default function CatalogItemEditorPage() {
                     setForm((prev) => ({ ...prev, requiresLotTracking: event.target.checked }))
                   }
                 />
-                Requires lot tracking
+                {uiCopy("requires-lot-tracking")}
               </label>
 
               <label className="flex items-center gap-2 text-sm">
@@ -430,12 +403,13 @@ export default function CatalogItemEditorPage() {
                     setForm((prev) => ({ ...prev, requiresExpiryDate: event.target.checked }))
                   }
                 />
-                Requires expiry date
+                {uiCopy("requires-expiry-date")}
               </label>
 
               <div className="md:col-span-2 text-sm text-muted-foreground">
-                Categories available:{" "}
-                {(categories?.items ?? []).map((category) => category.name).join(", ") || "None"}
+                {uiCopy("categories-available")}{" "}
+                {(categories?.items ?? []).map((category) => category.name).join(", ") ||
+                  uiCopy("none")}
               </div>
             </CardContent>
           </Card>
@@ -445,32 +419,32 @@ export default function CatalogItemEditorPage() {
       {!isNew && item ? (
         <Card>
           <CardContent className="space-y-3 p-6">
-            <h2 className="text-lg font-semibold">Variants</h2>
+            <h2 className="text-lg font-semibold">{uiCopy("variants")}</h2>
 
             {(item.variants ?? []).map((variant) => (
               <div key={variant.id} className="rounded-md border border-border p-3 text-sm">
                 <div className="font-mono">{variant.sku}</div>
-                <div>{variant.name || "Unnamed variant"}</div>
+                <div>{variant.name || uiCopy("unnamed-variant")}</div>
               </div>
             ))}
 
             <div className="grid gap-2 md:grid-cols-3">
               <Input
-                placeholder="Variant SKU"
+                placeholder={uiCopy("variant-sku")}
                 value={variantDraft.sku}
                 onChange={(event) =>
                   setVariantDraft((prev) => ({ ...prev, sku: event.target.value }))
                 }
               />
               <Input
-                placeholder="Variant name"
+                placeholder={uiCopy("variant-name")}
                 value={variantDraft.name}
                 onChange={(event) =>
                   setVariantDraft((prev) => ({ ...prev, name: event.target.value }))
                 }
               />
               <Input
-                placeholder="Barcodes (comma separated)"
+                placeholder={uiCopy("barcodes-comma-separated")}
                 value={variantDraft.barcodes}
                 onChange={(event) =>
                   setVariantDraft((prev) => ({ ...prev, barcodes: event.target.value }))
@@ -483,7 +457,7 @@ export default function CatalogItemEditorPage() {
               onClick={() => variantMutation.mutate()}
               disabled={variantMutation.isPending || !variantDraft.sku.trim()}
             >
-              {variantMutation.isPending ? "Adding..." : "Add variant"}
+              {variantMutation.isPending ? uiCopy("adding") : uiCopy("add-variant")}
             </Button>
           </CardContent>
         </Card>

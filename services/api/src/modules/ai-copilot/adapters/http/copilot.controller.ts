@@ -9,6 +9,7 @@ import {
   Req,
   Res,
   UseGuards,
+  UseInterceptors,
   BadRequestException,
   ForbiddenException,
   Logger,
@@ -44,10 +45,12 @@ import { SearchCopilotMessagesUseCase } from "../../application/use-cases/search
 import { CreateCopilotThreadUseCase } from "../../application/use-cases/create-copilot-thread.usecase";
 import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
 import { WorkspaceExperienceResolverService } from "../../../platform/application/services/workspace-experience-resolver.service";
+import { PrivateResponseInterceptor } from "../../../../shared/http/private-response.interceptor";
 
 type AuthedRequest = Request & { tenantId?: string; user?: { userId?: string }; traceId?: string };
 
 @Controller(["copilot", "ai-copilot"])
+@UseInterceptors(PrivateResponseInterceptor)
 export class CopilotController {
   private readonly logger = new Logger(CopilotController.name);
 
@@ -205,6 +208,7 @@ export class CopilotController {
       modelProvider: this.env.AI_MODEL_PROVIDER,
       trigger: body.trigger,
       toolTenantId: context.toolTenantId,
+      explicitWorkspace: context.explicitWorkspace,
     });
   }
 
@@ -239,7 +243,11 @@ export class CopilotController {
   @UseGuards(IdentityAuthGuard, TenantGuard)
   async get(@Param("id") id: string, @Req() req: AuthedRequest) {
     const context = this.resolveContext(req);
-    const run = await this.getRun.execute({ tenantId: context.tenantId, runId: id });
+    const run = await this.getRun.execute({
+      tenantId: context.tenantId,
+      userId: context.userId,
+      runId: id,
+    });
     return { run };
   }
 
@@ -249,6 +257,7 @@ export class CopilotController {
     const context = this.resolveContext(req);
     const messages = await this.listMessagesUseCase.execute({
       tenantId: context.tenantId,
+      userId: context.userId,
       runId: id,
     });
     return { items: messages };
@@ -258,6 +267,7 @@ export class CopilotController {
   @UseGuards(IdentityAuthGuard, TenantGuard)
   async resume(@Param("id") id: string, @Req() req: AuthedRequest, @Res() res: Response) {
     const context = this.resolveContext(req);
+    await this.getRun.execute({ tenantId: context.tenantId, userId: context.userId, runId: id });
     res.status(204).json({
       status: "NO_ACTIVE_STREAM",
       runId: id,
@@ -271,6 +281,7 @@ export class CopilotController {
     const context = this.resolveContext(req);
     const messages = await this.listMessagesUseCase.execute({
       tenantId: context.tenantId,
+      userId: context.userId,
       runId: id,
     });
     return {
@@ -326,6 +337,7 @@ export class CopilotController {
       modelProvider: this.env.AI_MODEL_PROVIDER,
       trigger: body.trigger,
       toolTenantId: context.toolTenantId,
+      explicitWorkspace: context.explicitWorkspace,
     });
   }
 
@@ -335,6 +347,7 @@ export class CopilotController {
     userId: string;
     requestId: string;
     workspaceId: string;
+    explicitWorkspace: boolean;
     activeAppId?: string;
     surfaceId?: SurfaceId;
     verticalId?: PosVerticalId | null;
@@ -352,6 +365,7 @@ export class CopilotController {
       userId,
       requestId,
       workspaceId,
+      explicitWorkspace: Boolean(ctx.workspaceId && ctx.tenantId && ctx.userId),
       activeAppId: ctx.activeAppId,
       surfaceId: ctx.surfaceId as SurfaceId | undefined,
     };

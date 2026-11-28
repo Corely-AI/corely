@@ -1,3 +1,5 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -14,6 +16,7 @@ import {
 } from "../hooks/useTemplates";
 
 export function TemplatesPage() {
+  const uiCopy = useUiCopy("ui.platform-templatespage");
   const { data: templates, isLoading, error } = useTemplates();
   const planTemplate = usePlanTemplate();
   const applyTemplate = useApplyTemplate();
@@ -56,18 +59,14 @@ export function TemplatesPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="list" />;
   }
 
   if (error) {
     return (
       <Alert variant="destructive">
         <XCircle className="h-4 w-4" />
-        <AlertDescription>Failed to load templates. Please try again.</AlertDescription>
+        <AlertDescription>{uiCopy("failed-to-load-templates")}</AlertDescription>
       </Alert>
     );
   }
@@ -96,18 +95,13 @@ export function TemplatesPage() {
     <>
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-7xl">
         <div>
-          <h1 className="text-h1 text-foreground">Templates</h1>
-          <p className="text-muted-foreground mt-2">
-            Apply configuration templates to quickly set up common business needs.
-          </p>
+          <h1 className="text-h1 text-foreground">{uiCopy("templates")}</h1>
+          <p className="text-muted-foreground mt-2">{uiCopy("apply-configuration-templates-to")}</p>
         </div>
 
         <Alert>
           <FileText className="h-4 w-4" />
-          <AlertDescription>
-            Templates use a plan/apply workflow. Preview what will be created before applying to
-            ensure it matches your needs.
-          </AlertDescription>
+          <AlertDescription>{uiCopy("templates-use-a-plan")}</AlertDescription>
         </Alert>
 
         <div className="space-y-8">
@@ -121,7 +115,10 @@ export function TemplatesPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <CardTitle className="text-lg">{template.name}</CardTitle>
-                          <CardDescription className="mt-1">v{template.version}</CardDescription>
+                          <CardDescription className="mt-1">
+                            {uiCopy("v")}
+                            {template.version}
+                          </CardDescription>
                         </div>
                         <Badge variant="outline" className="ml-2">
                           {category}
@@ -135,7 +132,7 @@ export function TemplatesPage() {
 
                       {template.requiresApps.length > 0 && (
                         <div>
-                          <p className="text-xs font-medium mb-1">Requires apps:</p>
+                          <p className="text-xs font-medium mb-1">{uiCopy("requires-apps")}</p>
                           <div className="flex flex-wrap gap-1">
                             {template.requiresApps.map((app) => (
                               <Badge key={app} variant="secondary" className="text-xs">
@@ -161,12 +158,12 @@ export function TemplatesPage() {
                           selectedTemplate?.templateId === template.templateId ? (
                             <>
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Planning...
+                              {uiCopy("planning")}
                             </>
                           ) : (
                             <>
                               <Eye className="h-4 w-4 mr-2" />
-                              Preview
+                              {uiCopy("preview")}
                             </>
                           )}
                         </Button>
@@ -183,7 +180,10 @@ export function TemplatesPage() {
       <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Template Preview: {selectedTemplate?.name}</DialogTitle>
+            <DialogTitle>
+              {uiCopy("template-preview") + " "}
+              {selectedTemplate?.name}
+            </DialogTitle>
             <DialogDescription>{plan?.summary}</DialogDescription>
           </DialogHeader>
 
@@ -192,7 +192,7 @@ export function TemplatesPage() {
               <div className="grid grid-cols-3 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Will Create</CardTitle>
+                    <CardTitle className="text-sm font-medium">{uiCopy("will-create")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-green-600">
@@ -202,7 +202,7 @@ export function TemplatesPage() {
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Will Update</CardTitle>
+                    <CardTitle className="text-sm font-medium">{uiCopy("will-update")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-blue-600">
@@ -212,7 +212,7 @@ export function TemplatesPage() {
                 </Card>
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Will Skip</CardTitle>
+                    <CardTitle className="text-sm font-medium">{uiCopy("will-skip")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-gray-600">
@@ -223,7 +223,10 @@ export function TemplatesPage() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-semibold">Actions ({plan.actions.length})</h3>
+                <h3 className="font-semibold">
+                  {uiCopy("actions")}
+                  {plan.actions.length})
+                </h3>
                 <div className="space-y-1 max-h-96 overflow-y-auto">
                   {plan.actions.map((action, index) => (
                     <div key={index} className="flex items-start gap-2 p-2 rounded border text-sm">
@@ -251,7 +254,7 @@ export function TemplatesPage() {
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setShowPlanDialog(false)}>
-                  Cancel
+                  {uiCopy("cancel")}
                 </Button>
                 <Button
                   variant="default"
@@ -261,12 +264,12 @@ export function TemplatesPage() {
                   {applyTemplate.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Applying...
+                      {uiCopy("applying")}
                     </>
                   ) : (
                     <>
                       <Play className="h-4 w-4 mr-2" />
-                      Apply Template
+                      {uiCopy("apply-template")}
                     </>
                   )}
                 </Button>

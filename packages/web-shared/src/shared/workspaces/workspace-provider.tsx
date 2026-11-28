@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { WorkspaceDto } from "@corely/contracts";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type Query } from "@tanstack/react-query";
 import { workspacesApi } from "./workspaces-api";
 import { getActiveWorkspaceId, setActiveWorkspaceId, subscribeWorkspace } from "./workspace-store";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
@@ -10,8 +18,9 @@ interface WorkspaceContextValue {
   activeWorkspace: WorkspaceDto | null;
   activeWorkspaceId: string | null;
   isLoading: boolean;
+  isInitialLoading: boolean;
   isHostScope: boolean;
-  setWorkspace: (workspaceId: string) => void;
+  setWorkspace: (workspaceId: string, savedWorkspace?: WorkspaceDto) => void;
   refresh: () => Promise<void>;
 }
 
@@ -19,10 +28,11 @@ const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefi
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId());
+  const activeIdRef = useRef(activeId);
   const isHostScope = user?.activeTenantId === null;
-  const shouldLoadWorkspaces = isAuthenticated && !isHostScope;
+  const shouldLoadWorkspaces = isAuthenticated && !isAuthLoading && !isHostScope;
 
   console.debug("[WorkspaceProvider] init", {
     isAuthenticated,
@@ -32,18 +42,39 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const {
     data: workspaces = [],
     isFetching,
+    isLoading: isInitialLoading,
+    isSuccess,
     refetch,
   } = useQuery<WorkspaceDto[]>({
-    queryKey: ["workspaces"],
+    queryKey: ["workspaces", user?.activeTenantId],
     queryFn: () => workspacesApi.listWorkspaces(),
     enabled: shouldLoadWorkspaces,
     staleTime: 30_000,
   });
 
-  // keep local and persisted workspace id in sync
+  const adoptWorkspace = useCallback(
+    (id: string | null) => {
+      if (activeIdRef.current === id) {
+        return;
+      }
+      activeIdRef.current = id;
+      // Invalidation retains old payloads while fetching. Discard them at the scope boundary.
+      const oldPayloads = {
+        predicate: (query: Query) =>
+          !(query.queryKey[0] === "workspaces" && query.queryKey[1] === user?.activeTenantId),
+      };
+      void queryClient.cancelQueries(oldPayloads);
+      queryClient.removeQueries(oldPayloads);
+      queryClient.getMutationCache().clear();
+      setActiveId(id);
+    },
+    [queryClient, user?.activeTenantId]
+  );
+
+  // Also cover bootstrap repairs and external changes through the shared store.
   useEffect(() => {
-    return subscribeWorkspace((id) => setActiveId(id));
-  }, []);
+    return subscribeWorkspace(adoptWorkspace);
+  }, [adoptWorkspace]);
 
   // Log when workspaces are fetched
   useEffect(() => {
@@ -56,60 +87,45 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [workspaces, isAuthenticated, activeId]);
 
-  // Set default workspace once we have list
+  // Only an authoritative completed discovery can replace or clear a saved selection.
   useEffect(() => {
-    console.debug("[WorkspaceProvider] evaluate default workspace", {
-      activeId,
-      workspaces: workspaces.length,
-      isFetching,
-    });
-
-    if (!activeId && workspaces.length > 0 && !isHostScope) {
-      console.debug("[WorkspaceProvider] setting default workspace", {
-        id: workspaces[0].id,
-        name: workspaces[0].name,
-      });
-      const defaultId = workspaces[0].id;
-      setActiveWorkspaceId(defaultId);
-      setActiveId(defaultId);
+    if (!shouldLoadWorkspaces || isFetching || !isSuccess) {
+      return;
     }
-  }, [activeId, workspaces, isHostScope]);
-
-  // If stored activeId does not exist in fetched workspaces, fall back to first
-  useEffect(() => {
-    if (activeId && workspaces.length > 0 && !isHostScope) {
-      const exists = workspaces.some((w) => w.id === activeId);
-      if (!exists) {
-        const fallbackId = workspaces[0].id;
-        console.debug("[WorkspaceProvider] activeId not found, resetting to first workspace", {
-          staleActiveId: activeId,
-          fallbackId,
-        });
+    if (!workspaces.some((workspace) => workspace.id === activeId)) {
+      const fallbackId = workspaces[0]?.id ?? null;
+      if (fallbackId !== activeId) {
         setActiveWorkspaceId(fallbackId);
-        setActiveId(fallbackId);
+        adoptWorkspace(fallbackId);
       }
     }
-  }, [activeId, workspaces, isHostScope]);
+  }, [activeId, workspaces, shouldLoadWorkspaces, isFetching, isSuccess, adoptWorkspace]);
 
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === activeId) ?? null,
     [activeId, workspaces]
   );
 
-  const setWorkspace = (workspaceId: string) => {
+  const setWorkspace = (workspaceId: string, savedWorkspace?: WorkspaceDto) => {
+    if (savedWorkspace?.id === workspaceId && user?.activeTenantId) {
+      const listKey = ["workspaces", user.activeTenantId];
+      void queryClient.cancelQueries({ queryKey: listKey, exact: true });
+      queryClient.setQueryData<WorkspaceDto[]>(listKey, (current = []) => {
+        if (current.some((workspace) => workspace.id === savedWorkspace.id)) {
+          return current.map((workspace) =>
+            workspace.id === savedWorkspace.id ? savedWorkspace : workspace
+          );
+        }
+        return [...current, savedWorkspace];
+      });
+    }
     const previousWorkspaceId = activeId;
     setActiveWorkspaceId(workspaceId);
-    setActiveId(workspaceId);
+    adoptWorkspace(workspaceId);
     console.debug("[WorkspaceProvider] workspace switched", {
       from: previousWorkspaceId,
       to: workspaceId,
     });
-
-    // CRITICAL: Invalidate ALL queries when switching workspaces
-    // This prevents data from the previous workspace from appearing
-    // in the new workspace context. The queries will refetch with
-    // the new workspaceId header.
-    void queryClient.invalidateQueries();
   };
 
   const value: WorkspaceContextValue = {
@@ -117,6 +133,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     activeWorkspace,
     activeWorkspaceId: activeId,
     isLoading: isFetching,
+    isInitialLoading,
     isHostScope,
     setWorkspace,
     refresh: async () => {
@@ -127,6 +144,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 };
 
+export const useOptionalWorkspace = () => useContext(WorkspaceContext);
 export const useWorkspace = (): WorkspaceContextValue => {
   const ctx = useContext(WorkspaceContext);
   if (!ctx) {

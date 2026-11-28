@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertIssueStatusTransition, canTransitionIssueStatus } from "../domain/issue.rules";
+import { assertIssueStatusTransition, canTransitionIssueStatus } from "@corely/issues/rules";
 
 describe("issue status transitions", () => {
   it("allows valid transitions", () => {

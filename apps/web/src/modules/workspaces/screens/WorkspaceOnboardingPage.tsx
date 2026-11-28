@@ -1,6 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Building2, CheckCircle2, User, ArrowRight } from "lucide-react";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
+import { getReturnPath } from "@/app/router/return-path";
+import React, { useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { CheckCircle2, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { WorkspaceKindSchema, type WorkspaceKind } from "@corely/contracts";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -13,15 +17,18 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 const steps = ["Workspace", "Legal & Address", "Tax & Bank"];
 
 export const WorkspaceOnboardingPage: React.FC = () => {
+  const uiCopy = useUiCopy("ui.workspaces-workspaceonboardingpage");
   const navigate = useNavigate();
+  const { state } = useLocation();
   const { setWorkspace, refresh } = useWorkspace();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [legalEntityKind, setLegalEntityKind] = useState<WorkspaceKind>("PERSONAL");
   const [form, setForm] = useState({
     name: "",
-    kind: "PERSONAL",
     legalName: "",
     countryCode: "DE",
     currency: "EUR",
@@ -85,7 +92,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
     try {
       const payload = {
         name: form.name.trim(),
-        kind: form.kind as "PERSONAL" | "COMPANY",
+        kind: legalEntityKind,
         legalName: form.legalName.trim(),
         countryCode: form.countryCode,
         currency: form.currency,
@@ -109,7 +116,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
       setWorkspace(createdId);
       await refresh();
       toast({ title: "Workspace created", description: `${result.workspace.name} is now active.` });
-      navigate("/dashboard");
+      navigate(getReturnPath(state, "/dashboard"), { replace: true });
     } catch (error) {
       toast({
         title: "Workspace creation failed",
@@ -125,12 +132,8 @@ export const WorkspaceOnboardingPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40">
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground uppercase tracking-wide">Workspace Setup</p>
-          <h1 className="text-3xl font-bold">Create your workspace</h1>
-          <p className="text-muted-foreground">
-            Workspaces are the home for your company data. You can create more later or join
-            invitations from teammates.
-          </p>
+          <h1 className="text-3xl font-bold">{uiCopy("create-your-workspace")}</h1>
+          <p className="text-muted-foreground">{t("workspace.setupDescription")}</p>
         </div>
 
         <Card>
@@ -148,50 +151,25 @@ export const WorkspaceOnboardingPage: React.FC = () => {
               </span>
               <span className="text-base text-muted-foreground">{steps[currentStep]}</span>
             </CardTitle>
-            <CardDescription>
-              Tell us about your business so we can tailor invoices and taxes.
-            </CardDescription>
+            <CardDescription>{uiCopy("tell-us-about-your")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {currentStep === 0 && (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>
-                    Workspace name <span className="text-destructive">*</span>
+                    {uiCopy("workspace-name") + " "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    placeholder="e.g. Corely GmbH"
+                    placeholder={uiCopy("e-g-corely-gmbh")}
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     data-testid="onboarding-name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Kind</Label>
-                  <Select
-                    value={form.kind}
-                    onValueChange={(v) => setForm((f) => ({ ...f, kind: v }))}
-                    data-testid="onboarding-kind"
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PERSONAL">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" /> Personal / freelancer
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="COMPANY">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4" /> Company
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Display currency</Label>
+                  <Label>{uiCopy("display-currency")}</Label>
                   <Input
                     value={form.currency}
                     onChange={(e) =>
@@ -202,7 +180,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Country</Label>
+                  <Label>{uiCopy("country")}</Label>
                   <Input
                     value={form.countryCode}
                     onChange={(e) =>
@@ -217,28 +195,52 @@ export const WorkspaceOnboardingPage: React.FC = () => {
 
             {currentStep === 1 && (
               <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="onboarding-entity-type">{t("workspace.legalEntityType")}</Label>
+                  <Select
+                    value={legalEntityKind}
+                    onValueChange={(value) => setLegalEntityKind(WorkspaceKindSchema.parse(value))}
+                  >
+                    <SelectTrigger
+                      id="onboarding-entity-type"
+                      aria-describedby="onboarding-entity-type-help"
+                      data-testid="onboarding-kind"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PERSONAL">{t("workspace.legalEntityPersonal")}</SelectItem>
+                      <SelectItem value="COMPANY">{t("workspace.legalEntityCompany")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p id="onboarding-entity-type-help" className="text-sm text-muted-foreground">
+                    {t("workspace.legalEntityHelp")}
+                  </p>
+                </div>
                 <div className="space-y-2">
                   <Label>
-                    Legal name <span className="text-destructive">*</span>
+                    {uiCopy("legal-name") + " "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     value={form.legalName}
                     onChange={(e) => setForm((f) => ({ ...f, legalName: e.target.value }))}
                     data-testid="onboarding-legal-name"
-                    placeholder="Registered legal entity"
+                    placeholder={uiCopy("registered-legal-entity")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Tax ID / VAT</Label>
+                  <Label>{uiCopy("tax-id-vat")}</Label>
                   <Input
                     value={form.taxId}
                     onChange={(e) => setForm((f) => ({ ...f, taxId: e.target.value }))}
-                    placeholder="Optional"
+                    placeholder={uiCopy("optional")}
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>
-                    Address line <span className="text-destructive">*</span>
+                    {uiCopy("address-line") + " "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     value={form.address.line1}
@@ -246,12 +248,13 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                       setForm((f) => ({ ...f, address: { ...f.address, line1: e.target.value } }))
                     }
                     data-testid="onboarding-address-line1"
-                    placeholder="Street and number"
+                    placeholder={uiCopy("street-and-number")}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>
-                    City <span className="text-destructive">*</span>
+                    {uiCopy("city") + " "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     value={form.address.city}
@@ -259,12 +262,13 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                       setForm((f) => ({ ...f, address: { ...f.address, city: e.target.value } }))
                     }
                     data-testid="onboarding-city"
-                    placeholder="City"
+                    placeholder={uiCopy("city")}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>
-                    Postal code <span className="text-destructive">*</span>
+                    {uiCopy("postal-code") + " "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     value={form.address.postalCode}
@@ -275,7 +279,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                       }))
                     }
                     data-testid="onboarding-postal"
-                    placeholder="Postal code"
+                    placeholder={uiCopy("postal-code")}
                   />
                 </div>
               </div>
@@ -294,7 +298,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                       }))
                     }
                     data-testid="onboarding-iban"
-                    placeholder="Optional"
+                    placeholder={uiCopy("optional")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -308,7 +312,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                       }))
                     }
                     data-testid="onboarding-bic"
-                    placeholder="Optional"
+                    placeholder={uiCopy("optional")}
                   />
                 </div>
               </div>
@@ -321,7 +325,7 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                 disabled={currentStep === 0 || isSubmitting}
                 data-testid="onboarding-back"
               >
-                Back
+                {uiCopy("back")}
               </Button>
               {currentStep < steps.length - 1 ? (
                 <Button
@@ -329,7 +333,8 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                   disabled={!canGoToNextStep || isSubmitting}
                   data-testid="onboarding-next"
                 >
-                  Continue <ArrowRight className="h-4 w-4 ml-2" />
+                  {uiCopy("continue") + " "}
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
                 <Button
@@ -337,7 +342,8 @@ export const WorkspaceOnboardingPage: React.FC = () => {
                   disabled={!canSubmit || isSubmitting}
                   data-testid="onboarding-submit"
                 >
-                  Finish <CheckCircle2 className="h-4 w-4 ml-2" />
+                  {uiCopy("finish") + " "}
+                  <CheckCircle2 className="h-4 w-4 ml-2" />
                 </Button>
               )}
             </div>

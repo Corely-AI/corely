@@ -9,6 +9,8 @@
 
 import { type InvoiceAggregate } from "./invoice.aggregate";
 import { type InvoiceStatus } from "./invoice.types";
+import { buildInvoiceActions } from "./invoice-actions";
+import { fractionalQuantityIssueReason } from "./invoice-money";
 
 // -----------------------------------------------------------------------------
 // Types (mirroring contracts, but domain-local for computation)
@@ -113,7 +115,7 @@ export class InvoiceCapabilitiesBuilder {
       status: this.buildStatusCapability(),
       badges: this.buildBadges(),
       transitions: this.buildTransitions(),
-      actions: this.buildActions(),
+      actions: buildInvoiceActions(this.invoice),
       editability: this.buildEditability(),
       audit: this.buildAuditInfo(),
     };
@@ -179,18 +181,19 @@ export class InvoiceCapabilitiesBuilder {
         {
           const hasCustomer = Boolean(customerPartyId);
           const hasLineItems = lineItems.length > 0;
-          const enabled = hasCustomer && hasLineItems;
           let reason: string | undefined;
           if (!hasCustomer) {
             reason = "Customer is required";
           } else if (!hasLineItems) {
             reason = "At least one line item is required";
+          } else if (lineItems.some(({ qty }) => !Number.isInteger(qty))) {
+            reason = fractionalQuantityIssueReason;
           }
 
           transitions.push({
             to: "ISSUED",
             label: "Issue Invoice",
-            enabled,
+            enabled: !reason,
             reason,
             dangerous: false,
           });
@@ -266,233 +269,6 @@ export class InvoiceCapabilitiesBuilder {
     return transitions;
   }
 
-  private buildActions(): InvoiceAction[] {
-    const actions: InvoiceAction[] = [];
-    const { status, totals, id } = this.invoice;
-    const hasDue = totals.dueCents > 0;
-
-    switch (status) {
-      case "DRAFT":
-        // Primary: Issue Invoice (via transition, but also as action button)
-        actions.push({
-          key: "issue",
-          label: "Issue Invoice",
-          icon: "FileCheck",
-          placement: "primary",
-          enabled: this.invoice.lineItems.length > 0 && Boolean(this.invoice.customerPartyId),
-          reason: this.invoice.lineItems.length === 0 ? "Add at least one line item" : undefined,
-          dangerous: false,
-          endpoint: { method: "POST", path: `/invoices/${id}/finalize` },
-        });
-
-        // Overflow: Duplicate, Cancel
-        actions.push({
-          key: "duplicate",
-          label: "Duplicate",
-          icon: "Copy",
-          placement: "overflow",
-          enabled: true,
-          dangerous: false,
-        });
-        break;
-
-      case "ISSUED":
-        // Primary: Record Payment (if has balance due)
-        actions.push({
-          key: "record_payment",
-          label: "Record Payment",
-          icon: "CreditCard",
-          placement: "primary",
-          enabled: hasDue,
-          reason: hasDue ? undefined : "No outstanding balance",
-          dangerous: false,
-        });
-
-        // Secondary: Send Email
-        actions.push({
-          key: "send",
-          label: "Send",
-          icon: "Mail",
-          placement: "secondary",
-          enabled: true,
-          dangerous: false,
-          endpoint: { method: "POST", path: `/invoices/${id}/send` },
-        });
-
-        // Secondary: Download PDF
-        actions.push({
-          key: "download_pdf",
-          label: "Download PDF",
-          icon: "Download",
-          placement: "secondary",
-          enabled: true,
-          dangerous: false,
-          endpoint: { method: "GET", path: `/invoices/${id}/pdf` },
-        });
-
-        // Overflow actions
-        this.addCommonOverflowActions(actions, id);
-        break;
-
-      case "SENT":
-        // Primary: Record Payment (if has balance due)
-        actions.push({
-          key: "record_payment",
-          label: "Record Payment",
-          icon: "CreditCard",
-          placement: "primary",
-          enabled: hasDue,
-          reason: hasDue ? undefined : "No outstanding balance",
-          dangerous: false,
-        });
-
-        // Secondary: Resend Email
-        actions.push({
-          key: "resend",
-          label: "Resend",
-          icon: "Mail",
-          placement: "secondary",
-          enabled: true,
-          dangerous: false,
-          endpoint: { method: "POST", path: `/invoices/${id}/send` },
-        });
-
-        // Secondary: Download PDF
-        actions.push({
-          key: "download_pdf",
-          label: "Download PDF",
-          icon: "Download",
-          placement: "secondary",
-          enabled: true,
-          dangerous: false,
-          endpoint: { method: "GET", path: `/invoices/${id}/pdf` },
-        });
-
-        // Secondary: Send Reminder
-        actions.push({
-          key: "send_reminder",
-          label: "Send Reminder",
-          icon: "Bell",
-          placement: "overflow",
-          enabled: Boolean(this.invoice.billToEmail),
-          reason: this.invoice.billToEmail ? undefined : "Customer email required",
-          dangerous: false,
-        });
-
-        // Overflow actions
-        this.addCommonOverflowActions(actions, id);
-        break;
-
-      case "PAID":
-        // Secondary: Download PDF
-        actions.push({
-          key: "download_pdf",
-          label: "Download PDF",
-          icon: "Download",
-          placement: "secondary",
-          enabled: true,
-          dangerous: false,
-          endpoint: { method: "GET", path: `/invoices/${id}/pdf` },
-        });
-
-        // Overflow actions (no cancel for paid)
-        actions.push({
-          key: "duplicate",
-          label: "Duplicate",
-          icon: "Copy",
-          placement: "overflow",
-          enabled: true,
-          dangerous: false,
-        });
-        actions.push({
-          key: "view_audit",
-          label: "View Audit Log",
-          icon: "History",
-          placement: "overflow",
-          enabled: true,
-          dangerous: false,
-          href: `/audit?entity=invoice&id=${id}`,
-        });
-        break;
-
-      case "CANCELED":
-        // Secondary: Download PDF (for records)
-        actions.push({
-          key: "download_pdf",
-          label: "Download PDF",
-          icon: "Download",
-          placement: "secondary",
-          enabled: true,
-          dangerous: false,
-          endpoint: { method: "GET", path: `/invoices/${id}/pdf` },
-        });
-
-        // View Audit only
-        actions.push({
-          key: "view_audit",
-          label: "View Audit Log",
-          icon: "History",
-          placement: "overflow",
-          enabled: true,
-          dangerous: false,
-          href: `/audit?entity=invoice&id=${id}`,
-        });
-        break;
-    }
-
-    return actions;
-  }
-
-  private addCommonOverflowActions(actions: InvoiceAction[], id: string): void {
-    actions.push({
-      key: "duplicate",
-      label: "Duplicate",
-      icon: "Copy",
-      placement: "overflow",
-      enabled: true,
-      dangerous: false,
-    });
-
-    actions.push({
-      key: "export",
-      label: "Export",
-      icon: "FileSpreadsheet",
-      placement: "overflow",
-      enabled: true,
-      dangerous: false,
-    });
-
-    actions.push({
-      key: "view_audit",
-      label: "View Audit Log",
-      icon: "History",
-      placement: "overflow",
-      enabled: true,
-      dangerous: false,
-      href: `/audit?entity=invoice&id=${id}`,
-    });
-
-    // Danger: Cancel (added via transitions, but can also be in actions for overflow menu)
-    const canCancel = this.invoice.status !== "PAID" && this.invoice.status !== "CANCELED";
-    const hasPayments = this.invoice.payments.length > 0;
-
-    if (canCancel) {
-      actions.push({
-        key: "cancel",
-        label: "Cancel Invoice",
-        icon: "XCircle",
-        placement: "danger",
-        enabled: !hasPayments,
-        reason: hasPayments ? "Cannot cancel invoice with recorded payments" : undefined,
-        dangerous: true,
-        confirmTitle: `Cancel Invoice ${this.invoice.number}?`,
-        confirmMessage: "This will void the invoice. This action cannot be undone.",
-        requiresInput: "reason",
-        endpoint: { method: "POST", path: `/invoices/${id}/cancel` },
-      });
-    }
-  }
-
   private buildEditability(): InvoiceEditability {
     const { status } = this.invoice;
 
@@ -507,10 +283,10 @@ export class InvoiceCapabilitiesBuilder {
       case "ISSUED":
       case "SENT":
         return {
-          canEditHeader: false, // Only notes/terms
+          canEditHeader: false,
           canEditDates: false,
           canEditLineItems: false,
-          reason: "Invoice has been issued. Only notes and terms can be modified.",
+          reason: "Invoice has been issued. No edits allowed.",
         };
 
       case "PAID":

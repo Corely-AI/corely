@@ -16,8 +16,6 @@ let outbox: MockOutboxPort;
 let idempotency: MockIdempotencyStoragePort;
 let customDefs: CustomFieldDefinitionPort;
 let customIndexes: CustomFieldIndexPort;
-let workspaceRepo: any;
-let templateService: any;
 let prisma: any;
 let dimensionsWritePort: any;
 let customFieldsWritePort: any;
@@ -37,23 +35,6 @@ beforeEach(() => {
   customIndexes = {
     upsertIndexesForEntity: async () => {},
     deleteIndexesForEntity: async () => {},
-  };
-
-  // Mock workspace repository
-  workspaceRepo = {
-    getWorkspaceByIdWithLegalEntity: async () => ({
-      id: "ws-1",
-      legalEntity: {
-        kind: "PERSONAL", // Freelancer mode
-      },
-    }),
-  };
-
-  // Mock template service
-  templateService = {
-    getDefaultCapabilities: (kind: string) => ({
-      approvals: false, // Freelancer mode: no approvals
-    }),
   };
 
   // Mock prisma
@@ -86,8 +67,6 @@ beforeEach(() => {
     customIndexes,
     dimensionsWritePort,
     customFieldsWritePort,
-    workspaceRepo,
-    templateService,
     prisma,
     giftThresholdQuery
   );
@@ -105,7 +84,7 @@ describe("CreateExpenseUseCase", () => {
     expect(audit.entries).toHaveLength(1);
     expect(outbox.events).toHaveLength(1);
     expect(expense.totalCents).toBe(500);
-    expect(expense.status).toBe("APPROVED"); // Freelancer mode auto-approves
+    expect(expense.status).toBe("DRAFT");
   });
 
   it("is idempotent for same key", async () => {
@@ -120,11 +99,11 @@ describe("CreateExpenseUseCase", () => {
     expect(outbox.events).toHaveLength(1);
   });
 
-  it("supports forcing DRAFT status for copilot draft flows", async () => {
+  it("keeps the explicit status override supported", async () => {
     const expense = await useCase.execute(
       buildCreateExpenseInput({
-        idempotencyKey: "force-draft",
-        initialStatusOverride: "DRAFT",
+        idempotencyKey: "explicit-status",
+        initialStatusOverride: "APPROVED",
       }),
       {
         tenantId: "tenant-1",
@@ -133,6 +112,6 @@ describe("CreateExpenseUseCase", () => {
       }
     );
 
-    expect(expense.status).toBe("DRAFT");
+    expect(expense.status).toBe("APPROVED");
   });
 });

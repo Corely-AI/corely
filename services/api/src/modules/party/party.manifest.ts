@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const partyAppManifest: AppManifest = {
   appId: "parties",
+  directory: {
+    menuId: "clients",
+    logo: { iconKey: "UsersRound", tone: "primary" },
+    displayName: { en: "Customers", de: "Kunden", vi: "Khách hàng" },
+    category: "sales",
+  },
   name: "Clients & Customers",
   tier: 1,
   version: "1.0.0",

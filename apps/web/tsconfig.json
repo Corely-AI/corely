@@ -25,6 +25,8 @@
       "@/offline/*": ["../packages/web-shared/src/offline/*"],
       "@corely/auth-client": ["../packages/auth-client/src/index.ts"],
       "@corely/api-client": ["../packages/api-client/src/index.ts"],
+      "@corely/contracts/identity/sso": ["../packages/contracts/src/identity/sso.schema.ts"],
+      "@corely/ui/auth-primitives": ["../packages/ui/src/auth-primitives.ts"],
       "@corely/contracts": ["../packages/contracts/src/index.ts"],
       "@corely/domain": ["../packages/domain/src/index.ts"],
       "@corely/offline-core": ["../packages/offline-core/src/index.ts"],

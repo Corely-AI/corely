@@ -7,6 +7,7 @@ import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import {
+  LoadingSkeleton,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -23,7 +24,7 @@ export default function PurchaseOrdersPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["purchaseOrders"],
     queryFn: () => purchasingApi.listPurchaseOrders(),
   });
@@ -72,7 +73,13 @@ export default function PurchaseOrdersPage() {
 
       <Card>
         <CardContent className="p-0">
-          {orders.length === 0 ? (
+          {isLoading ? (
+            <LoadingSkeleton variant="list" label={t("common.loading")} />
+          ) : isError && !data ? (
+            <p className="p-4 text-sm text-destructive" role="alert">
+              {t("common.error")}
+            </p>
+          ) : orders.length === 0 ? (
             <EmptyState
               title={t("purchasing.purchaseOrders.emptyTitle")}
               description={t("purchasing.purchaseOrders.emptyDescription")}

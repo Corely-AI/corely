@@ -1,4 +1,3 @@
-// Field and role provenance is recorded in docs/devops/sign-notices/NOTICE.md.
 import { z } from "zod";
 
 const identifier = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
@@ -52,7 +51,7 @@ const templateV1 = z
 // the offending row even when two rows have the same user-supplied identifier.
 export const SignLayoutSchema = templateV1.superRefine(({ roles, fields, document }, ctx) => {
   const roleIds = new Set<string>();
-  for (const [index, role] of roles.entries()) {
+  roles.forEach((role, index) => {
     if (roleIds.has(role.id)) {
       ctx.addIssue({
         code: "custom",
@@ -61,11 +60,13 @@ export const SignLayoutSchema = templateV1.superRefine(({ roles, fields, documen
       });
     }
     roleIds.add(role.id);
-  }
+  });
   const fieldIds = new Set<string>();
   fields.forEach((field, index) => {
     const check = (valid: boolean, property: keyof typeof field, message: string) => {
-      if (!valid) ctx.addIssue({ code: "custom", path: ["fields", index, property], message });
+      if (!valid) {
+        ctx.addIssue({ code: "custom", path: ["fields", index, property], message });
+      }
     };
     check(!fieldIds.has(field.id), "id", "Field IDs must be unique.");
     check(roleIds.has(field.roleId), "roleId", "Assign the field to a role in this template.");

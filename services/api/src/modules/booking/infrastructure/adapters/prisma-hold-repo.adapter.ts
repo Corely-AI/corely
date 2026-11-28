@@ -1,12 +1,18 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
+import { BookingStaffConstraintAdapter } from "./booking-staff-constraint.adapter";
+import { Injectable, ConflictException } from "@nestjs/common";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import type { HoldRepositoryPort } from "../../application/ports/booking-repo.ports";
 import { BookingHold, type BookingHoldStatus } from "../../domain/booking.entities";
 import { Prisma } from "@prisma/client";
+import { assertBookingServiceAvailable } from "./booking-service-availability";
 
 @Injectable()
 export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly staff: BookingStaffConstraintAdapter
+  ) {}
 
   private mapToDomain(row: any): BookingHold {
     return new BookingHold(
@@ -29,27 +35,75 @@ export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
     );
   }
 
-  async create(hold: BookingHold): Promise<BookingHold> {
-    const created = await this.prisma.bookingHold.create({
-      data: {
-        id: hold.id,
-        tenantId: hold.tenantId,
-        workspaceId: hold.workspaceId,
-        status: hold.status as BookingHoldStatus,
-        startAt: hold.startAt,
-        endAt: hold.endAt,
-        serviceOfferingId: hold.serviceOfferingId,
-        resourceIds: hold.resourceIds,
-        expiresAt: hold.expiresAt,
-        bookedByPartyId: hold.bookedByPartyId,
-        bookedByName: hold.bookedByName,
-        bookedByEmail: hold.bookedByEmail,
-        notes: hold.notes,
-        confirmedBookingId: hold.confirmedBookingId,
-        createdByUserId: hold.createdByUserId,
-        createdAt: hold.createdAt,
-      },
-    });
+  async create(hold: BookingHold, transaction?: TransactionContext): Promise<BookingHold> {
+    const write = async (tx: Prisma.TransactionClient) => {
+      for (const resourceId of [...new Set(hold.resourceIds)].sort()) {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${hold.tenantId}:${resourceId}`}, 0))::text`;
+        await this.staff.assertAvailable(
+          hold.tenantId,
+          hold.workspaceId,
+          resourceId,
+          hold.startAt,
+          hold.endAt,
+          tx as unknown as TransactionContext
+        );
+        const [booking, activeHold] = await Promise.all([
+          tx.bookingAllocation.findFirst({
+            where: {
+              tenantId: hold.tenantId,
+              resourceId,
+              startAt: { lt: hold.endAt },
+              endAt: { gt: hold.startAt },
+              booking: { status: { in: ["CONFIRMED", "HOLD"] } },
+            },
+          }),
+          tx.bookingHold.findFirst({
+            where: {
+              tenantId: hold.tenantId,
+              resourceIds: { has: resourceId },
+              status: "ACTIVE",
+              expiresAt: { gt: new Date() },
+              startAt: { lt: hold.endAt },
+              endAt: { gt: hold.startAt },
+            },
+          }),
+        ]);
+        if (booking || activeHold) {
+          throw new ConflictException("Booking:SlotUnavailable");
+        }
+      }
+      await assertBookingServiceAvailable(
+        tx,
+        hold.tenantId,
+        hold.workspaceId,
+        hold.serviceOfferingId
+      );
+      return tx.bookingHold.create({
+        data: {
+          id: hold.id,
+          tenantId: hold.tenantId,
+          workspaceId: hold.workspaceId,
+          status: hold.status as BookingHoldStatus,
+          startAt: hold.startAt,
+          endAt: hold.endAt,
+          serviceOfferingId: hold.serviceOfferingId,
+          resourceIds: hold.resourceIds,
+          expiresAt: hold.expiresAt,
+          bookedByPartyId: hold.bookedByPartyId,
+          bookedByName: hold.bookedByName,
+          bookedByEmail: hold.bookedByEmail,
+          notes: hold.notes,
+          confirmedBookingId: hold.confirmedBookingId,
+          createdByUserId: hold.createdByUserId,
+          createdAt: hold.createdAt,
+        },
+      });
+    };
+    const created = await (transaction
+      ? write(getPrismaClient(this.prisma, transaction))
+      : this.prisma.$transaction(write, {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        }));
     return this.mapToDomain(created);
   }
 

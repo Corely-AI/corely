@@ -80,13 +80,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }
         }
         const resolvedWorkspaceId = await resolveActiveWorkspaceId(apiClient, user.workspaceId);
-        const nextResolvedUser =
-          resolvedWorkspaceId && resolvedWorkspaceId !== nextUser.workspaceId
-            ? { ...nextUser, workspaceId: resolvedWorkspaceId }
-            : nextUser;
+        const nextResolvedUser = { ...nextUser, workspaceId: resolvedWorkspaceId ?? "" };
 
-        if (resolvedWorkspaceId !== user.workspaceId || nextUser.partyId !== user.partyId) {
-          await storage.setActiveWorkspaceId(resolvedWorkspaceId);
+        await storage.setActiveWorkspaceId(resolvedWorkspaceId);
+        if (
+          nextResolvedUser.workspaceId !== user.workspaceId ||
+          nextUser.partyId !== user.partyId
+        ) {
           await secureSetItem("user", JSON.stringify(nextResolvedUser));
         }
 
@@ -136,15 +136,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const data = await authClient.signin({ email, password });
       const apiClient = get().apiClient;
-      const fallbackWorkspaceId = data.workspaceId || data.tenantId || "";
+      const fallbackWorkspaceId = data.workspaceId ?? null;
       const workspaceId = apiClient
-        ? ((await resolveActiveWorkspaceId(apiClient, fallbackWorkspaceId)) ?? fallbackWorkspaceId)
+        ? await resolveActiveWorkspaceId(apiClient, fallbackWorkspaceId)
         : fallbackWorkspaceId;
 
       const user: User = {
         userId: data.userId,
         partyId: data.partyId ?? null,
-        workspaceId,
+        workspaceId: workspaceId ?? "",
         email: data.email,
       };
 

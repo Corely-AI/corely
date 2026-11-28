@@ -1,3 +1,5 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -14,6 +16,7 @@ import { formsApi } from "@/lib/forms-api";
 import type { PublicFormFieldDto } from "@corely/contracts";
 
 export default function PublicFormPage() {
+  const uiCopy = useUiCopy("ui.forms-publicformpage");
   const { publicId } = useParams<{ publicId: string }>();
   const [token, setToken] = useState("");
   const [values, setValues] = useState<Record<string, any>>({});
@@ -33,10 +36,10 @@ export default function PublicFormPage() {
     mutationFn: (payload: Record<string, any>) =>
       formsApi.submitPublicForm(publicId as string, { token, payload }),
     onSuccess: () => {
-      toast.success("Submission received");
+      toast.success(uiCopy("submission-received"));
       setSubmitted(true);
     },
-    onError: () => toast.error("Failed to submit form"),
+    onError: () => toast.error(uiCopy("failed-to-submit-form")),
   });
 
   const orderedFields = useMemo(() => {
@@ -71,11 +74,7 @@ export default function PublicFormPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="h-12 w-12 animate-pulse rounded-full bg-muted/20" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="form" />;
   }
 
   if (isError || !form) {
@@ -83,7 +82,7 @@ export default function PublicFormPage() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <Card className="max-w-lg w-full">
           <CardContent className="p-6 text-center text-muted-foreground">
-            Form not found.
+            {uiCopy("form-not-found")}
           </CardContent>
         </Card>
       </div>
@@ -95,10 +94,10 @@ export default function PublicFormPage() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <Card className="max-w-lg w-full">
           <CardHeader>
-            <CardTitle>Thank you!</CardTitle>
+            <CardTitle>{uiCopy("thank-you")}</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground">
-            Your submission has been received.
+            {uiCopy("your-submission-has-been")}
           </CardContent>
         </Card>
       </div>
@@ -116,7 +115,7 @@ export default function PublicFormPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <Label>Access token</Label>
+            <Label>{uiCopy("access-token")}</Label>
             <Input value={token} onChange={(event) => setToken(event.target.value)} />
           </div>
 
@@ -139,7 +138,7 @@ export default function PublicFormPage() {
                       setValues({ ...values, [field.key]: Boolean(checked) })
                     }
                   />
-                  <span className="text-sm text-muted-foreground">Yes</span>
+                  <span className="text-sm text-muted-foreground">{uiCopy("yes")}</span>
                 </div>
               ) : field.type === "SINGLE_SELECT" ? (
                 <Select
@@ -147,7 +146,7 @@ export default function PublicFormPage() {
                   onValueChange={(value) => setValues({ ...values, [field.key]: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder={uiCopy("select")} />
                   </SelectTrigger>
                   <SelectContent>
                     {(field.configJson?.options as string[] | undefined)?.map((option) => (
@@ -199,7 +198,7 @@ export default function PublicFormPage() {
             onClick={() => submitMutation.mutate(buildPayload())}
             disabled={submitMutation.isPending || !token}
           >
-            {submitMutation.isPending ? "Submitting..." : "Submit"}
+            {submitMutation.isPending ? uiCopy("submitting") : uiCopy("submit")}
           </Button>
         </CardContent>
       </Card>

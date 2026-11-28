@@ -8,13 +8,28 @@
   },
   "include": [
     "playwright.config.ts",
+    "playwright.api.config.ts",
+    "playwright.sso.config.ts",
+    "playwright.workspace-session.config.ts",
+    "playwright.invoice.config.ts",
+    "playwright.hr.config.ts",
+    "playwright.invoice-links.config.ts",
+    "playwright.requests.config.ts",
+    "playwright.pilot-accessibility.config.ts",
+    "playwright.operations-today.config.ts",
+    "playwright.focused-ux.config.ts",
+    "playwright.openbuk.config.ts",
     "playwright.sign.config.ts",
     "playwright.sign-recipient.config.ts",
     "playwright.cash.config.ts",
     "playwright.pos.config.ts",
     "tax/**/*.ts",
     "tests/**/*.ts",
+    "scripts/**/*.ts",
     "utils/**/*.ts",
-    "helpers/**/*.ts"
+    "helpers/**/*.ts",
+    "playwright.app-center.config.ts",
+    "playwright.observability.config.ts",
+    "playwright.multi-origin.config.ts"
   ]
 }

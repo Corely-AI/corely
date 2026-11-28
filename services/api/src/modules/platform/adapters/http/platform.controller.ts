@@ -7,6 +7,8 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
+  BadRequestException,
 } from "@nestjs/common";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
@@ -16,16 +18,8 @@ import {
 } from "../../../identity/adapters/http/current-user.decorator";
 import { EnableAppUseCase } from "../../application/use-cases/enable-app.usecase";
 import { DisableAppUseCase } from "../../application/use-cases/disable-app.usecase";
-import {
-  TENANT_APP_INSTALL_REPOSITORY_TOKEN,
-  type TenantAppInstallRepositoryPort,
-} from "../../application/ports/tenant-app-install-repository.port";
-import {
-  APP_REGISTRY_TOKEN,
-  type AppRegistryPort,
-} from "../../application/ports/app-registry.port";
-import { Inject } from "@nestjs/common";
-import type { AppCatalogItem } from "@corely/contracts";
+import { ListAppCatalogUseCase } from "../../application/use-cases/list-app-catalog.usecase";
+import { AppCatalogQuerySchema, type AppCatalogItem } from "@corely/contracts";
 
 @Controller("platform/apps")
 @UseGuards(AuthGuard, RbacGuard)
@@ -33,43 +27,21 @@ export class PlatformController {
   constructor(
     private readonly enableAppUseCase: EnableAppUseCase,
     private readonly disableAppUseCase: DisableAppUseCase,
-    @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
-    private readonly appInstallRepo: TenantAppInstallRepositoryPort,
-    @Inject(APP_REGISTRY_TOKEN)
-    private readonly appRegistry: AppRegistryPort
+    private readonly listAppCatalogUseCase: ListAppCatalogUseCase
   ) {}
 
   @Get()
   @RequirePermission("platform.apps.manage")
-  async listTenantApps(@CurrentTenantId() tenantId: string | null): Promise<AppCatalogItem[]> {
-    // Get all apps from registry
-    const allApps = this.appRegistry.list();
-
-    // If no tenant context, return all apps as disabled
-    if (!tenantId) {
-      return allApps.map((app) => ({
-        ...app,
-        enabled: false,
-      }));
+  async listTenantApps(
+    @CurrentTenantId() tenantId: string | null,
+    @Query("forTenantId") forTenantId?: unknown
+  ): Promise<AppCatalogItem[]> {
+    const parsed = AppCatalogQuerySchema.safeParse({ forTenantId });
+    if (!parsed.success) {
+      throw new BadRequestException("Invalid catalog tenant selection");
     }
-
-    // Get tenant install states
-    const installs = await this.appInstallRepo.listByTenant(tenantId);
-    const installsMap = new Map(installs.map((i) => [i.appId, i]));
-
-    // Combine
-    return allApps.map((app) => {
-      const install = installsMap.get(app.appId);
-      return {
-        appId: app.appId,
-        name: app.name,
-        tier: app.tier,
-        version: app.version,
-        description: app.description,
-        dependencies: app.dependencies,
-        enabled: install?.enabled ?? false,
-      };
-    });
+    // RbacGuard still requires host scope. This target is not a tenant authority selector.
+    return this.listAppCatalogUseCase.execute(parsed.data.forTenantId ?? tenantId);
   }
 
   @Post(":appId/enable")

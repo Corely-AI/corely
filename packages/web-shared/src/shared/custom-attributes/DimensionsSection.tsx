@@ -1,6 +1,7 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useQueries } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle, LoadingSkeleton } from "@corely/ui";
 import { Checkbox } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
@@ -38,6 +39,7 @@ export function DimensionsSection({
   value,
   onChange,
 }: DimensionsSectionProps) {
+  const uiCopy = useUiCopy("ui.shared-custom-attributes-dimensionssection");
   const { data: types = [], isLoading: isTypesLoading } = useDimensionTypes(entityType);
   const { data: entityDimensions, isLoading: isEntityDimensionsLoading } = useEntityDimensions(
     entityId ? { entityType, entityId } : undefined
@@ -108,10 +110,10 @@ export function DimensionsSection({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Dimensions</CardTitle>
+          <CardTitle>{uiCopy("dimensions")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">Loading dimensions...</div>
+          <LoadingSkeleton label={uiCopy("loading-dimensions")} variant="form" />
         </CardContent>
       </Card>
     );
@@ -125,7 +127,7 @@ export function DimensionsSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dimensions</CardTitle>
+        <CardTitle>{uiCopy("dimensions")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {activeTypes.map((type) => {
@@ -170,7 +172,7 @@ export function DimensionsSection({
                   onValueChange={(valueId) => setSingleValue(type.id, valueId)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select value" />
+                    <SelectValue placeholder={uiCopy("select-value")} />
                   </SelectTrigger>
                   <SelectContent>
                     {values.map((item) => (

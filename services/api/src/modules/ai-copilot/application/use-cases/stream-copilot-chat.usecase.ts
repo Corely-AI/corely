@@ -6,7 +6,7 @@ import { type Response } from "express";
 
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
 import { type AgentRunRepositoryPort } from "../ports/agent-run-repository.port";
-import { type ChatStorePort } from "../ports/chat-store.port";
+import { type ChatStorePort, type CopilotChatMetadata } from "../ports/chat-store.port";
 import { type ToolExecutionRepositoryPort } from "../ports/tool-execution-repository.port";
 import { type ToolRegistryPort } from "../ports/tool-registry.port";
 import { type LanguageModelPort } from "../ports/language-model.port";
@@ -19,6 +19,11 @@ import { type CopilotContextBuilder } from "../services/copilot-context.builder"
 import { type CopilotTaskStateTracker } from "../services/copilot-task-state.service";
 import { type WorkspaceKind } from "@corely/prompts";
 import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
+import { requireRunOwner } from "../policies/require-run-owner";
+import {
+  isOperationalToolName,
+  prepareOperationalContinuations,
+} from "../policies/operational-approvals";
 import {
   extractAssistantText,
   extractLatestUserInput,
@@ -56,6 +61,7 @@ export class StreamCopilotChatUseCase {
     response: Response;
     requestId: string;
     workspaceId?: string;
+    explicitWorkspace?: boolean;
     workspaceKind?: WorkspaceKind;
     intent?: string;
     surfaceId?: SurfaceId;
@@ -67,6 +73,21 @@ export class StreamCopilotChatUseCase {
     toolTenantId?: string;
   }): Promise<void> {
     const { tenantId, userId, idempotencyKey } = params;
+    const existingRun = params.runId
+      ? await this.agentRuns.findById({ tenantId, runId: params.runId })
+      : null;
+    if (existingRun) {
+      requireRunOwner(existingRun, userId);
+    }
+    const operationalTurn = params.intent === "tasks";
+    const runMetadata = readRunMetadata(existingRun?.metadataJson);
+    if (existingRun && operationalTurn !== (runMetadata?.operationalTasks === true)) {
+      params.response.status(403).json({
+        code: "COPILOT_RUN_SCOPE_MISMATCH",
+        message: "Start a new conversation in this assistant.",
+      });
+      return;
+    }
     const incomingMessages = this.ensureMessageIds(
       params.messages?.length ? params.messages : params.message ? [params.message] : []
     );
@@ -118,12 +139,28 @@ export class StreamCopilotChatUseCase {
 
     let runId = params.runId || nanoid();
     const turnId = nanoid();
-    const tools = await this.toolRegistry.listForTenant(
+    const availableTools = await this.toolRegistry.listForTenant(
       params.toolTenantId ?? tenantId,
       params.intent,
       params.surfaceId,
       params.verticalId
     );
+    const tools = availableTools.filter((tool) => !tool.operational || params.explicitWorkspace);
+    if (operationalTurn && !tools.some((tool) => tool.operational)) {
+      const errorBody = {
+        code: "TASK_ASSISTANT_UNAVAILABLE",
+        message: "Task assistant unavailable",
+      };
+      await this.idempotency.markFailed({
+        actionKey: ACTION_KEY,
+        tenantId,
+        idempotencyKey,
+        responseStatus: 403,
+        responseBody: errorBody,
+      });
+      params.response.status(403).json(errorBody);
+      return;
+    }
 
     const turnSpan = this.observability.startTurnTrace({
       traceName: `copilot.turn:${params.intent ?? "general"}`,
@@ -153,33 +190,38 @@ export class StreamCopilotChatUseCase {
 
     const normalizedMessages = normalizeMessages(incomingMessages);
     this.observability.recordTurnInput(turnSpan, {
-      history: normalizedMessages,
-      userInput: extractLatestUserInput(normalizedMessages),
+      history: operationalTurn ? [] : normalizedMessages,
+      userInput: operationalTurn ? undefined : extractLatestUserInput(normalizedMessages),
       toolsRequested: tools.map((tool) => tool.name),
     });
 
-    const existingRun = await this.agentRuns.findById({ tenantId, runId });
     if (!existingRun) {
       try {
-        await this.agentRuns.create({
+        const created = await this.agentRuns.create({
           id: runId,
           tenantId,
           createdByUserId: userId,
           status: "running",
           lastMessageAt: this.clock.now(),
           traceId: turnSpan.traceId,
+          ...(operationalTurn ? { metadataJson: JSON.stringify({ operationalTasks: true }) } : {}),
         });
+        requireRunOwner(created, userId);
       } catch (error) {
         if (isUniqueConstraintError(error)) {
           runId = nanoid();
-          await this.agentRuns.create({
+          const created = await this.agentRuns.create({
             id: runId,
             tenantId,
             createdByUserId: userId,
             status: "running",
             lastMessageAt: this.clock.now(),
             traceId: turnSpan.traceId,
+            ...(operationalTurn
+              ? { metadataJson: JSON.stringify({ operationalTasks: true }) }
+              : {}),
           });
+          requireRunOwner(created, userId);
         } else {
           throw error;
         }
@@ -188,8 +230,9 @@ export class StreamCopilotChatUseCase {
 
     const stored = await this.chatStore.load({ chatId: runId, tenantId });
     const historyMessages = stored.messages;
+    const continuation = prepareOperationalContinuations(historyMessages, incomingMessages);
 
-    const conversation = this.mergeMessages(historyMessages, incomingMessages).map((msg) => ({
+    const conversation = this.mergeMessages(historyMessages, continuation.messages).map((msg) => ({
       ...msg,
       parts: Array.isArray(msg.parts) ? msg.parts : [],
     }));
@@ -197,7 +240,7 @@ export class StreamCopilotChatUseCase {
     await this.chatStore.save({
       chatId: runId,
       tenantId,
-      messages: incomingMessages,
+      messages: continuation.messages,
       metadata: {
         workspaceId: params.workspaceId ?? stored.metadata?.workspaceId,
         userId: params.userId ?? stored.metadata?.userId,
@@ -211,7 +254,12 @@ export class StreamCopilotChatUseCase {
     try {
       const stream = createUIMessageStream({
         originalMessages: conversation,
-        onError: (error) => (error instanceof Error ? error.message : String(error)),
+        onError: (error) =>
+          operationalTurn
+            ? "Task assistant unavailable"
+            : error instanceof Error
+              ? error.message
+              : String(error),
         onFinish: async ({ responseMessage, isContinuation, finishReason }) => {
           try {
             await this.persistAssistantMessage({
@@ -241,12 +289,16 @@ export class StreamCopilotChatUseCase {
             });
 
             this.observability.recordTurnOutput(turnSpan, {
-              text: extractAssistantText(responseMessage),
+              text: operationalTurn ? undefined : extractAssistantText(responseMessage),
               partsSummary: `parts:${responseMessage.parts?.length ?? 0}`,
             });
           } catch (error) {
             if (error instanceof Error) {
-              this.observability.recordError(turnSpan, error, { "copilot.run.id": runId });
+              this.observability.recordError(
+                turnSpan,
+                operationalTurn ? new Error("Task assistant stream failed") : error,
+                { "copilot.run.id": runId }
+              );
             }
           } finally {
             closeTurn();
@@ -273,6 +325,8 @@ export class StreamCopilotChatUseCase {
               tenantId,
               toolTenantId: params.toolTenantId,
               workspaceId: params.workspaceId,
+              explicitWorkspace: params.explicitWorkspace,
+              operationalApprovals: continuation.approved,
               userId,
               workspaceKind: params.workspaceKind,
               environment: params.environment,
@@ -316,13 +370,18 @@ export class StreamCopilotChatUseCase {
         },
       });
 
-      pipeUIMessageStreamToResponse({
+      await pipeUIMessageStreamToResponse({
         response: params.response,
         stream,
+        headers: { "Cache-Control": "private, no-store" },
       });
     } catch (error) {
       if (error instanceof Error) {
-        this.observability.recordError(turnSpan, error, { "copilot.run.id": runId });
+        this.observability.recordError(
+          turnSpan,
+          operationalTurn ? new Error("Task assistant stream failed") : error,
+          { "copilot.run.id": runId }
+        );
       }
       await this.idempotency.markFailed({
         actionKey: ACTION_KEY,
@@ -418,6 +477,10 @@ export class StreamCopilotChatUseCase {
         continue;
       }
       const toolName = (part as any).toolName ?? toolNameFromType(String(part.type));
+      if (toolName && isOperationalToolName(toolName)) {
+        // Operational execution records come from the factory. Chat storage retains review parts.
+        continue;
+      }
       const state = (part as any).state as string | undefined;
 
       if (state === "approval-requested") {
@@ -468,5 +531,16 @@ export class StreamCopilotChatUseCase {
         }
       }
     }
+  }
+}
+
+function readRunMetadata(metadata: string | undefined): CopilotChatMetadata | undefined {
+  if (!metadata) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(metadata) as CopilotChatMetadata;
+  } catch {
+    return undefined;
   }
 }

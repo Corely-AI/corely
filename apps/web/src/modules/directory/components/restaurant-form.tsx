@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { Badge, Button, Input, Label, Textarea } from "@corely/ui";
@@ -67,6 +68,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const uiCopy = useUiCopy("ui.directory-restaurant-form");
   const initial = useMemo(() => toInitialValues(initialValues), [initialValues]);
   const [values, setValues] = useState<RestaurantFormValues>(initial);
   const [slugTouched, setSlugTouched] = useState(Boolean(initial.slug));
@@ -112,7 +114,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="restaurant-name">Name</Label>
+          <Label htmlFor="restaurant-name">{uiCopy("name")}</Label>
           <Input
             id="restaurant-name"
             value={values.name}
@@ -123,7 +125,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
                 updateField("slug", slugify(nextName));
               }
             }}
-            placeholder="Pho Bar Neukolln"
+            placeholder={uiCopy("pho-bar-neukolln")}
             required
           />
           {fieldErrors?.name ? (
@@ -132,7 +134,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="restaurant-slug">Slug</Label>
+          <Label htmlFor="restaurant-slug">{uiCopy("slug")}</Label>
           <Input
             id="restaurant-slug"
             value={values.slug}
@@ -149,7 +151,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="restaurant-status">Status</Label>
+          <Label htmlFor="restaurant-status">{uiCopy("status")}</Label>
           <select
             id="restaurant-status"
             className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -158,18 +160,18 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
               updateField("status", event.target.value as DirectoryRestaurantStatus)
             }
           >
-            <option value="HIDDEN">HIDDEN</option>
-            <option value="ACTIVE">ACTIVE</option>
+            <option value="HIDDEN">{uiCopy("hidden")}</option>
+            <option value="ACTIVE">{uiCopy("active")}</option>
           </select>
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="restaurant-short-description">Short description</Label>
+          <Label htmlFor="restaurant-short-description">{uiCopy("short-description")}</Label>
           <Textarea
             id="restaurant-short-description"
             value={values.shortDescription}
             onChange={(event) => updateField("shortDescription", event.target.value)}
-            placeholder="Small family-run Vietnamese kitchen in Neukolln"
+            placeholder={uiCopy("small-family-run-vietnamese")}
             rows={3}
           />
         </div>
@@ -177,12 +179,12 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="restaurant-address">Address line</Label>
+          <Label htmlFor="restaurant-address">{uiCopy("address-line")}</Label>
           <Input
             id="restaurant-address"
             value={values.addressLine}
             onChange={(event) => updateField("addressLine", event.target.value)}
-            placeholder="Sonnenallee 105"
+            placeholder={uiCopy("sonnenallee-105")}
             required
           />
           {fieldErrors?.addressLine ? (
@@ -191,7 +193,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="restaurant-postal-code">Postal code</Label>
+          <Label htmlFor="restaurant-postal-code">{uiCopy("postal-code")}</Label>
           <Input
             id="restaurant-postal-code"
             value={values.postalCode}
@@ -205,29 +207,29 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="restaurant-city">City</Label>
+          <Label htmlFor="restaurant-city">{uiCopy("city")}</Label>
           <Input
             id="restaurant-city"
             value={values.city}
             onChange={(event) => updateField("city", event.target.value)}
-            placeholder="Berlin"
+            placeholder={uiCopy("berlin")}
             required
           />
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="restaurant-neighborhood">Neighborhood slug</Label>
+          <Label htmlFor="restaurant-neighborhood">{uiCopy("neighborhood-slug")}</Label>
           <Input
             id="restaurant-neighborhood"
             value={values.neighborhoodSlug}
             onChange={(event) => updateField("neighborhoodSlug", slugify(event.target.value))}
-            placeholder="neukoelln"
+            placeholder={uiCopy("neukoelln")}
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Dish tags</Label>
+        <Label>{uiCopy("dish-tags")}</Label>
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-input bg-background p-2">
           {values.dishTags.map((tag) => (
             <Badge key={tag} variant="outline" className="flex items-center gap-1">
@@ -252,10 +254,10 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
                   addDishTag();
                 }
               }}
-              placeholder="Type and press Enter"
+              placeholder={uiCopy("type-and-press-enter")}
             />
             <Button type="button" variant="outline" onClick={addDishTag}>
-              Add
+              {uiCopy("add")}
             </Button>
           </div>
         </div>
@@ -266,7 +268,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="restaurant-phone">Phone</Label>
+          <Label htmlFor="restaurant-phone">{uiCopy("phone")}</Label>
           <Input
             id="restaurant-phone"
             value={values.phone}
@@ -276,7 +278,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="restaurant-website">Website</Label>
+          <Label htmlFor="restaurant-website">{uiCopy("website")}</Label>
           <Input
             id="restaurant-website"
             value={values.website}
@@ -290,11 +292,13 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
       </div>
 
       <details className="rounded-md border border-border p-4">
-        <summary className="cursor-pointer text-sm font-medium">Advanced fields</summary>
+        <summary className="cursor-pointer text-sm font-medium">
+          {uiCopy("advanced-fields")}
+        </summary>
         <div className="mt-4 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="restaurant-lat">Latitude</Label>
+              <Label htmlFor="restaurant-lat">{uiCopy("latitude")}</Label>
               <Input
                 id="restaurant-lat"
                 value={values.lat}
@@ -303,7 +307,7 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="restaurant-lng">Longitude</Label>
+              <Label htmlFor="restaurant-lng">{uiCopy("longitude")}</Label>
               <Input
                 id="restaurant-lng"
                 value={values.lng}
@@ -314,13 +318,13 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="restaurant-opening-hours">Opening hours JSON</Label>
+            <Label htmlFor="restaurant-opening-hours">{uiCopy("opening-hours-json")}</Label>
             <Textarea
               id="restaurant-opening-hours"
               value={values.openingHoursJson}
               onChange={(event) => updateField("openingHoursJson", event.target.value)}
               rows={8}
-              placeholder='{"mon":["11:00-22:00"]}'
+              placeholder={uiCopy("mon-11-00-22")}
             />
             {fieldErrors?.openingHoursJson ? (
               <p className="text-xs text-destructive">{fieldErrors.openingHoursJson}</p>
@@ -331,10 +335,10 @@ export const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
       <div className="flex items-center gap-2">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : (submitLabel ?? "Save")}
+          {isSubmitting ? uiCopy("saving") : (submitLabel ?? "Save")}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {uiCopy("cancel")}
         </Button>
       </div>
     </form>

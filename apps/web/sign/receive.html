@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Review and sign | Corely</title>
+    <link rel="stylesheet" href="/src/modules/sign-recipient/styles.css" />
+  </head>
+  <body class="min-h-screen bg-background text-foreground">
+    <div id="root">
+      <main class="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
+        <span role="status" class="sr-only">Loading signing page…</span>
+        <div aria-hidden="true" class="space-y-5">
+          <div class="h-5 w-24 animate-pulse rounded bg-muted motion-reduce:animate-none"></div>
+          <div
+            class="h-9 w-64 max-w-full animate-pulse rounded bg-muted motion-reduce:animate-none"
+          ></div>
+          <div class="max-w-lg space-y-4 rounded-xl border bg-card p-5">
+            <div class="h-5 w-full animate-pulse rounded bg-muted motion-reduce:animate-none"></div>
+            <div
+              class="h-11 w-52 max-w-full animate-pulse rounded bg-muted motion-reduce:animate-none"
+            ></div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/modules/sign-recipient/main.tsx"></script>
+  </body>
+</html>

@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { type LeadDto } from "@corely/contracts";
 import { Card, CardContent } from "@corely/ui";
 import { User, RefreshCcw, CheckCircle, XCircle } from "lucide-react";
@@ -15,6 +16,7 @@ const statusColors: Record<string, string> = {
 };
 
 export function LeadCard({ lead, onClick }: LeadCardProps) {
+  const uiCopy = useUiCopy("ui.crm-leadcard");
   const statusColor = statusColors[lead.status] || "bg-gray-100 text-gray-700";
 
   return (
@@ -29,7 +31,7 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
             <h3 className="font-semibold text-lg text-foreground">
               {lead.companyName ||
                 `${lead.firstName || ""} ${lead.lastName || ""}` ||
-                "Unnamed Lead"}
+                uiCopy("unnamed-lead")}
             </h3>
             {lead.companyName && (lead.firstName || lead.lastName) && (
               <p className="text-sm text-muted-foreground">
@@ -56,7 +58,10 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
         </div>
 
         <div className="text-xs text-muted-foreground pt-2 border-t">
-          Source: {lead.source} • Created {new Date(lead.createdAt).toLocaleDateString()}
+          {uiCopy("source") + " "}
+          {lead.source}
+          {" " + uiCopy("created") + " "}
+          {new Date(lead.createdAt).toLocaleDateString()}
         </div>
       </CardContent>
     </Card>

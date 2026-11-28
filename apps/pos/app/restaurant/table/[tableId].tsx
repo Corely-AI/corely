@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,6 +26,7 @@ type PendingModifierSelection = {
 };
 
 export default function RestaurantTableOrderScreen() {
+  const uiCopy = useUiCopy("ui.restaurant-table-tableid");
   const router = useRouter();
   const goBack = usePosBackNavigation("/(main)/restaurant");
   const { tableId } = useLocalSearchParams<{ tableId: string }>();
@@ -204,9 +206,12 @@ export default function RestaurantTableOrderScreen() {
 
   if (!activeOrder) {
     return (
-      <AppShell title="Table order" subtitle="Loading active check..." onBack={goBack}>
+      <AppShell title={uiCopy("table-order")} subtitle="Loading active check..." onBack={goBack}>
         <View style={styles.emptyWrap}>
-          <EmptyState title="Loading table" description="Opening or resuming the selected table." />
+          <EmptyState
+            title={uiCopy("loading-table")}
+            description={uiCopy("opening-or-resuming-the")}
+          />
         </View>
       </AppShell>
     );
@@ -244,7 +249,7 @@ export default function RestaurantTableOrderScreen() {
                 testID="pos-restaurant-menu-search"
                 value={query}
                 onChangeText={onSearch}
-                placeholder="Search menu items"
+                placeholder={uiCopy("search-menu-items")}
               />
             </Card>
             <FlatList
@@ -273,11 +278,11 @@ export default function RestaurantTableOrderScreen() {
           <View style={styles.orderPane}>
             <Card>
               <Text testID="pos-restaurant-order-title" style={styles.sectionTitle}>
-                Current order
+                {uiCopy("current-order")}
               </Text>
               {activeOrder.items.length === 0 ? (
                 <Text testID="pos-restaurant-order-empty" style={styles.emptyHint}>
-                  Add menu items to start the check.
+                  {uiCopy("add-menu-items-to")}
                 </Text>
               ) : (
                 <ScrollView
@@ -304,7 +309,7 @@ export default function RestaurantTableOrderScreen() {
                           style={styles.orderMeta}
                         >
                           {item.modifiers.map((modifier) => modifier.optionName).join(", ") ||
-                            "No modifiers"}
+                            uiCopy("no-modifiers")}
                         </Text>
                       </View>
                       <View style={styles.qtyCluster}>
@@ -334,23 +339,29 @@ export default function RestaurantTableOrderScreen() {
               )}
               <View testID="pos-restaurant-order-summary" style={styles.summaryBlock}>
                 <SummaryRow
-                  label="Subtotal"
+                  label={uiCopy("subtotal")}
                   value={formatCurrencyFromCents(activeOrder.subtotalCents)}
                 />
-                <SummaryRow label="Tax" value={formatCurrencyFromCents(activeOrder.taxCents)} />
-                <SummaryRow label="Total" value={formatCurrencyFromCents(activeOrder.totalCents)} />
+                <SummaryRow
+                  label={uiCopy("tax")}
+                  value={formatCurrencyFromCents(activeOrder.taxCents)}
+                />
+                <SummaryRow
+                  label={uiCopy("total")}
+                  value={formatCurrencyFromCents(activeOrder.totalCents)}
+                />
               </View>
               <View style={styles.actionRow}>
                 <Button
                   testID="pos-restaurant-send-to-kitchen"
-                  label="Send to kitchen"
+                  label={uiCopy("send-to-kitchen")}
                   variant="secondary"
                   onPress={() => void sendToKitchen()}
                   disabled={activeOrder.items.length === 0 || isMutating}
                 />
                 <Button
                   testID="pos-restaurant-take-payment"
-                  label="Take payment"
+                  label={uiCopy("take-payment")}
                   onPress={() => router.push(`/restaurant/payment/${activeOrder.id}` as never)}
                   disabled={!canTakePayment || isMutating}
                 />
@@ -360,9 +371,9 @@ export default function RestaurantTableOrderScreen() {
               ) : null}
             </Card>
             <RestaurantCopilotPanel
-              title="Order copilot"
-              helperText="Parse order instructions into explicit proposal cards. Apply still uses the normal restaurant commands."
-              placeholder='Try: "2 margherita, 1 coke, extra cheese"'
+              title={uiCopy("order-copilot")}
+              helperText={uiCopy("parse-order-instructions-into")}
+              placeholder={uiCopy("try-2-margherita-1")}
               runPrompt={runOrderCopilot}
               onApplyOrderProposal={applyOrderProposal}
               testIdPrefix="pos-restaurant-order-copilot"
@@ -420,7 +431,7 @@ export default function RestaurantTableOrderScreen() {
                       <Text style={styles.orderName}>{option.name}</Text>
                       <Text style={styles.orderMeta}>
                         {option.priceDeltaCents === 0
-                          ? "Included"
+                          ? uiCopy("included")
                           : formatCurrencyFromCents(option.priceDeltaCents)}
                       </Text>
                     </Pressable>
@@ -429,7 +440,7 @@ export default function RestaurantTableOrderScreen() {
               </View>
             ))}
             <Button
-              label="Add item"
+              label={uiCopy("add-item")}
               onPress={async () => {
                 try {
                   await addProduct(

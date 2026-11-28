@@ -3,8 +3,10 @@
  * Web platform wrapper around @corely/auth-client
  */
 
+import { ApiError } from "@corely/api-client";
 import { AuthClient } from "@corely/auth-client";
 import { setActiveWorkspaceId } from "@corely/web-shared/shared/workspaces/workspace-store";
+import { endTenantAdminSession, getTenantAdminSession } from "./tenant-admin-session";
 import { WebStorageAdapter } from "./storage-adapter";
 import { defaultApiBaseUrl } from "./api-base-url";
 
@@ -47,21 +49,33 @@ class WebAuthClient {
 
   async signup(data: Parameters<AuthClient["signup"]>[0]) {
     const result = await this.client.signup(data);
-    const workspaceId = result.workspaceId ?? result.tenantId ?? null;
+    const workspaceId = result.workspaceId ?? null;
     setActiveWorkspaceId(workspaceId);
     return result;
   }
 
   async signin(data: Parameters<AuthClient["signin"]>[0]) {
     const result = await this.client.signin(data);
-    const workspaceId =
-      result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId ?? null;
+    const workspaceId = result.workspaceId ?? data.workspaceId ?? null;
     setActiveWorkspaceId(workspaceId);
     return result;
   }
 
   async getCurrentUser() {
-    return this.client.getCurrentUser();
+    try {
+      return await this.client.getCurrentUser();
+    } catch (error) {
+      // Older web sessions could store a tenant ID in the workspace slot.
+      if (
+        !(error instanceof ApiError) ||
+        error.status !== 403 ||
+        !(await storage.getActiveWorkspaceId())
+      ) {
+        throw error;
+      }
+      setActiveWorkspaceId(null);
+      return this.client.getCurrentUser();
+    }
   }
 
   async refreshAccessToken(): Promise<void> {
@@ -69,13 +83,18 @@ class WebAuthClient {
   }
 
   async signout(): Promise<void> {
+    const session = getTenantAdminSession();
+    if (session) {
+      await endTenantAdminSession(session);
+      await this.client.loadStoredTokens();
+    }
     await this.client.signout();
     setActiveWorkspaceId(null);
   }
 
   async switchTenant(tenantId: string | null) {
     const result = await this.client.switchTenant(tenantId);
-    setActiveWorkspaceId(result.workspaceId ?? result.tenantId ?? tenantId ?? null);
+    setActiveWorkspaceId(result.workspaceId ?? null);
     return result;
   }
 }

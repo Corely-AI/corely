@@ -45,6 +45,7 @@ const nextConfig = {
   },
   transpilePackages: [
     "@corely/ui",
+    "@corely/web-features",
     "@corely/web-shared",
     "@corely/contracts",
     "@corely/api-client",

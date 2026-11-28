@@ -1,3 +1,4 @@
+import type { TransactionContext } from "@corely/kernel";
 import { type Tenant } from "../../domain/entities/tenant.entity";
 import type { TenantStatus } from "@corely/contracts";
 
@@ -21,7 +22,7 @@ export interface TenantRepositoryPort {
   /**
    * Create a new tenant
    */
-  create(tenant: Tenant): Promise<Tenant>;
+  create(tenant: Tenant, tx?: TransactionContext): Promise<Tenant>;
 
   /**
    * Find tenant by ID

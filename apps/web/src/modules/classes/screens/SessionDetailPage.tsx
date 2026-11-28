@@ -1,8 +1,10 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -34,6 +36,7 @@ const defaultBillable = (status: AttendanceDraft["status"]) =>
   status === "PRESENT" || status === "MAKEUP";
 
 export default function SessionDetailPage() {
+  const uiCopy = useUiCopy("ui.classes-sessiondetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const sessionId = id ?? "";
@@ -108,7 +111,7 @@ export default function SessionDetailPage() {
         })),
       }),
     onSuccess: async () => {
-      toast.success("Attendance saved");
+      toast.success(uiCopy("attendance-saved"));
       await queryClient.invalidateQueries({ queryKey: classAttendanceKeys.session(sessionId) });
     },
     onError: (err: any) => toast.error(err?.message || "Failed to save attendance"),
@@ -141,16 +144,19 @@ export default function SessionDetailPage() {
 
   if (isSessionLoading || isAttendanceLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-muted-foreground">Loading session...</div>
-      </div>
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-session")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 
   if (!session) {
     return (
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        <div className="text-muted-foreground">Session not found.</div>
+        <div className="text-muted-foreground">{uiCopy("session-not-found")}</div>
       </div>
     );
   }
@@ -163,7 +169,7 @@ export default function SessionDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Session</h1>
+            <h1 className="text-h1 text-foreground">{uiCopy("session")}</h1>
             <div className="text-sm text-muted-foreground">
               {formatDateTime(session.startsAt, "de-DE")} • {session.status}
             </div>
@@ -174,7 +180,7 @@ export default function SessionDetailPage() {
           onClick={() => mutation.mutate()}
           disabled={locked || mutation.isPending}
         >
-          Save attendance
+          {uiCopy("save-attendance")}
         </Button>
       </div>
 
@@ -182,7 +188,7 @@ export default function SessionDetailPage() {
         <Card>
           <CardContent className="p-4 flex items-center gap-3 text-sm text-muted-foreground">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
-            This month is locked. Attendance is read-only.
+            {uiCopy("this-month-is-locked")}
           </CardContent>
         </Card>
       ) : null}
@@ -192,11 +198,11 @@ export default function SessionDetailPage() {
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={() => markAll("PRESENT")} disabled={locked}>
               <CheckCircle2 className="h-4 w-4" />
-              Mark all present
+              {uiCopy("mark-all-present")}
             </Button>
             <Button variant="outline" onClick={() => markAll("ABSENT")} disabled={locked}>
               <XCircle className="h-4 w-4" />
-              Mark all absent
+              {uiCopy("mark-all-absent")}
             </Button>
           </div>
 
@@ -205,16 +211,16 @@ export default function SessionDetailPage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
-                    Student
+                    {uiCopy("student")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
-                    Status
+                    {uiCopy("status")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
-                    Billable
+                    {uiCopy("billable")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
-                    Note
+                    {uiCopy("note")}
                   </th>
                 </tr>
               </thead>
@@ -269,7 +275,7 @@ export default function SessionDetailPage() {
                 {rows.length === 0 ? (
                   <tr>
                     <td className="px-3 py-4 text-sm text-muted-foreground" colSpan={4}>
-                      No enrollments found for this session.
+                      {uiCopy("no-enrollments-found-for")}
                     </td>
                   </tr>
                 ) : null}

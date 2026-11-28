@@ -1,8 +1,10 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import type { ComponentProps, ComponentType, ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Alert,
   AlertDescription,
   AlertTitle,
@@ -1169,7 +1171,7 @@ export function ClosingWorkflowCard({
         />
         {!dailyClosingEnabled ? (
           <Button variant="accent" asChild data-testid="cash-dashboard-close-day-button">
-            <Link to="/billing">{upgradeCopy.upgradeToStarter}</Link>
+            <Link to="/cash/billing">{upgradeCopy.upgradeToStarter}</Link>
           </Button>
         ) : (
           <Button
@@ -1255,7 +1257,7 @@ export function ExportStatusCard({
         />
         {!exportEnabled ? (
           <Button variant="accent" asChild data-testid="cash-dashboard-export-button">
-            <Link to="/billing">{upgradeCopy.upgradeToStarter}</Link>
+            <Link to="/cash/billing">{upgradeCopy.upgradeToStarter}</Link>
           </Button>
         ) : (
           <Button
@@ -1287,6 +1289,7 @@ export function TrendOverviewCard({
   copy: DashboardCopy;
   locale: string;
 }) {
+  const uiCopy = useUiCopy("ui.cash-management-cashdashboardscreen");
   const monthDelta =
     data.trend.lastMonthCashTotalCents === 0
       ? 0
@@ -1336,7 +1339,9 @@ export function TrendOverviewCard({
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Previous</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {uiCopy("previous")}
+                </p>
                 <p className="mt-1 text-xl font-semibold text-foreground">
                   {formatMoney(data.trend.lastMonthCashTotalCents, locale, data.currency)}
                 </p>
@@ -1371,6 +1376,7 @@ export function AssistantHelpWidget({
   aiAssistantEnabled: boolean;
   upgradeCopy: DashboardUpgradeCopy;
 }) {
+  const uiCopy = useUiCopy("ui.cash-management-cashdashboardscreen");
   if (!aiAssistantEnabled) {
     return (
       <Card className="border-border/70 bg-[linear-gradient(180deg,rgba(255,247,237,0.92),rgba(255,255,255,0.98))] shadow-sm shadow-foreground/5 dark:border-border/35 dark:bg-[linear-gradient(180deg,rgba(58,37,16,0.78),rgba(17,17,18,0.92))] dark:shadow-black/20">
@@ -1388,10 +1394,10 @@ export function AssistantHelpWidget({
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Badge variant="warning">{upgradeCopy.assistantLockedBadge}</Badge>
-            <Badge variant="outline">Pro+</Badge>
+            <Badge variant="outline">{uiCopy("pro")}</Badge>
           </div>
           <Button variant="accent" asChild>
-            <Link to="/billing">{upgradeCopy.upgradeToPro}</Link>
+            <Link to="/cash/billing">{upgradeCopy.upgradeToPro}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -1414,7 +1420,7 @@ export function AssistantHelpWidget({
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
           <Badge variant="accent">{copy.assistant.languages}</Badge>
-          <Badge variant="outline">AI helper</Badge>
+          <Badge variant="outline">{uiCopy("ai-helper")}</Badge>
         </div>
         <div className="grid gap-2">
           {copy.assistant.prompts.map((prompt) => (
@@ -1434,39 +1440,39 @@ export function AssistantHelpWidget({
 
 function CashDashboardLoadingState({ copy }: { copy: DashboardCopy }) {
   return (
-    <div className="space-y-6">
-      <div className={cn(sectionCardClass, "rounded-3xl p-6")}>
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="mt-4 h-10 w-80" />
-        <Skeleton className="mt-4 h-4 w-full max-w-2xl" />
-      </div>
-      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Card key={index} className={cn(sectionCardClass, "p-5")}>
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="mt-4 h-8 w-28" />
-            <Skeleton className="mt-4 h-4 w-full" />
-          </Card>
-        ))}
-      </div>
-      <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-        <Card className={cn(sectionCardClass, "p-6")}>
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="mt-6 h-44 w-full" />
-        </Card>
-        <Card className={cn(sectionCardClass, "p-6")}>
+    <LoadingSkeleton label={copy.helpers.loadingTitle}>
+      <div className="space-y-6">
+        <div className={cn(sectionCardClass, "rounded-3xl p-6")}>
           <Skeleton className="h-5 w-40" />
-          <Skeleton className="mt-6 h-44 w-full" />
-        </Card>
+          <Skeleton className="mt-4 h-10 w-80 max-w-full" />
+          <Skeleton className="mt-4 h-4 w-full max-w-2xl" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className={cn(sectionCardClass, "p-5")}>
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="mt-4 h-8 w-28" />
+              <Skeleton className="mt-4 h-4 w-full" />
+            </Card>
+          ))}
+        </div>
+        <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+          <Card className={cn(sectionCardClass, "p-6")}>
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="mt-6 h-44 w-full" />
+          </Card>
+          <Card className={cn(sectionCardClass, "p-6")}>
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="mt-6 h-44 w-full" />
+          </Card>
+        </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        {copy.helpers.loadingTitle}. {copy.helpers.loadingDescription}
-      </p>
-    </div>
+    </LoadingSkeleton>
   );
 }
 
 export function CashDashboardScreen() {
+  const uiCopy = useUiCopy("ui.cash-management-cashdashboardscreen");
   const { i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const localeKey = resolveLocaleKey(i18n.resolvedLanguage ?? i18n.language);
@@ -1544,9 +1550,7 @@ export function CashDashboardScreen() {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>{copy.headerTitle}</AlertTitle>
-          <AlertDescription>
-            The dashboard could not be loaded from the latest cash data.
-          </AlertDescription>
+          <AlertDescription>{uiCopy("the-dashboard-could-not")}</AlertDescription>
         </Alert>
       </DashboardPageFrame>
     );

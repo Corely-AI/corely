@@ -9,6 +9,9 @@ import {
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
   type IdempotencyStoragePort,
 } from "@/shared/ports/idempotency-storage.port";
+import { WorkspacesModule } from "../workspaces";
+import { ServiceRequestsUseCase } from "./application/use-cases/service-requests.usecase";
+import { DeliverClientUpdateUseCase } from "./application/use-cases/deliver-client-update.usecase";
 import { IssuesController } from "./http/issues.controller";
 import { DocumentsModule } from "../documents/documents.module";
 import { IdentityModule } from "../identity/identity.module";
@@ -53,9 +56,18 @@ import {
 } from "./application/ports/speech-to-text.port";
 
 @Module({
-  imports: [DataModule, KernelModule, DocumentsModule, IdentityModule, PlatformModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    DocumentsModule,
+    IdentityModule,
+    PlatformModule,
+    WorkspacesModule,
+  ],
   controllers: [IssuesController],
   providers: [
+    ServiceRequestsUseCase,
+    DeliverClientUpdateUseCase,
     PrismaIssueRepositoryAdapter,
     { provide: ISSUE_REPOSITORY_PORT, useExisting: PrismaIssueRepositoryAdapter },
     PrismaIssueCommentRepositoryAdapter,
@@ -321,6 +333,6 @@ import {
       ],
     },
   ],
-  exports: [CreateIssueUseCase],
+  exports: [CreateIssueUseCase, DeliverClientUpdateUseCase],
 })
 export class IssuesModule {}

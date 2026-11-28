@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const salesAppManifest: AppManifest = {
   appId: "sales",
+  directory: {
+    menuId: "quotes",
+    logo: { iconKey: "Briefcase", tone: "primary" },
+    displayName: { en: "Sales", de: "Vertrieb", vi: "Bán hàng" },
+    category: "sales",
+  },
   name: "Sales",
   tier: 3,
   version: "1.0.0",
@@ -21,17 +27,6 @@ export const salesAppManifest: AppManifest = {
       icon: "FileCheck",
       order: 12,
       requiresCapabilities: ["sales.quotes"],
-    },
-    {
-      id: "projects",
-      scope: "web",
-      section: "projects",
-      labelKey: "nav.projects",
-      defaultLabel: "Projects",
-      route: "/projects",
-      icon: "Briefcase",
-      order: 13,
-      requiresCapabilities: ["sales.projects"],
     },
     {
       id: "sales-settings",

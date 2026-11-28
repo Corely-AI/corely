@@ -1,9 +1,11 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
+import { useInvoiceCustomersApi, useInvoiceKeys } from "../../invoice-runtime";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useFormContext, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@corely/ui";
@@ -25,8 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@corely/ui";
-import { customersApi } from "@corely/web-shared/lib/customers-api";
-import { workspaceQueryKeys } from "@corely/web-shared/shared/workspaces/workspace-query-keys";
+
 import {
   customerFormSchema,
   getDefaultCustomerFormValues,
@@ -52,6 +53,9 @@ interface CustomerSelectionProps {
 }
 
 export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionProps) {
+  const uiCopy = useUiCopy("ui.invoices-invoice-form-customerselection");
+  const customersApi = useInvoiceCustomersApi();
+  const customerKeys = useInvoiceKeys("customers");
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const {
@@ -63,28 +67,23 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
 
-  const { data: customersData } = useQuery({
-    queryKey: workspaceQueryKeys.customers.list(),
-    queryFn: () => customersApi.listCustomers(),
+  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
+  const [chosenCustomer, setChosenCustomer] = useState<CustomerOption>();
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), 250);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const lookup = useInfiniteQuery({
+    queryKey: customerKeys.list({ q: query, role: "CUSTOMER" }),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      customersApi.searchCustomers({ q: query, cursor: pageParam, role: "CUSTOMER" }),
+    getNextPageParam: (page) => page.nextCursor,
+    enabled: customerDialogOpen,
+    retry: false,
   });
-
-  const customers = React.useMemo(() => {
-    const list = customersData?.customers ?? [];
-    const combined = [...additionalOptions, ...list];
-    // Deduplicate by ID
-    const unique = new Map<string, CustomerOption>();
-    combined.forEach((c) => {
-      // Map properties to ensure compatibility if types slightly differ
-      unique.set(c.id, {
-        id: c.id,
-        displayName: c.displayName,
-        billingAddress: c.billingAddress,
-        email: c.email,
-        vatId: c.vatId,
-      });
-    });
-    return Array.from(unique.values());
-  }, [customersData, additionalOptions]);
+  const customers = lookup.data?.pages.flatMap((page) => page.customers) ?? [];
 
   const customerForm = useForm<CustomerFormData>({
     resolver: zodResolver(customerFormSchema),
@@ -104,7 +103,8 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
     },
     onSuccess: (customer) => {
       if (customer?.id) {
-        void queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.customers.all() });
+        void queryClient.invalidateQueries({ queryKey: customerKeys.all() });
+        setChosenCustomer({ ...customer, id: customer.id, displayName: customer.displayName });
         setValue("customerPartyId", customer.id, { shouldValidate: true, shouldDirty: true });
         toast.success(t("common.success"));
         setNewCustomerDialogOpen(false);
@@ -120,7 +120,9 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
   });
 
   const selectedCustomerId = watch("customerPartyId");
-  const selectedCustomer = customers.find((c) => c.id === selectedCustomerId);
+  const selectedCustomer = [chosenCustomer, ...additionalOptions, ...customers].find(
+    (customer) => customer?.id === selectedCustomerId
+  );
   const selectedCustomerAddress = [
     selectedCustomer?.billingAddress?.line1,
     selectedCustomer?.billingAddress?.city,
@@ -153,11 +155,14 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
         <Button
           type="button"
           variant="outline"
-          className="w-full justify-between text-left"
-          onClick={() => setCustomerDialogOpen(true)}
+          className="h-auto min-h-11 w-full justify-between whitespace-normal text-left"
+          onClick={() => {
+            setSearch("");
+            setCustomerDialogOpen(true);
+          }}
           data-testid="invoice-customer-select"
         >
-          <div className="flex flex-col items-start">
+          <div className="min-w-0 flex flex-col items-start break-words">
             <span className="text-sm font-medium">
               {selectedCustomer ? selectedCustomer.displayName : t("customers.selectCustomer")}
             </span>
@@ -165,7 +170,7 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
               {selectedCustomerAddress || selectedCustomer?.email || t("customers.searchOrAdd")}
             </span>
           </div>
-          <span className="text-xs text-muted-foreground">{t("common.search")}</span>
+          <span className="shrink-0 text-xs text-muted-foreground">{t("common.search")}</span>
         </Button>
         {errors.customerPartyId && (
           <p className="text-sm text-destructive">{errors.customerPartyId.message}</p>
@@ -190,52 +195,91 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
       )}
 
       {/* Select Customer Dialog */}
-      <CommandDialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
+      <CommandDialog
+        open={customerDialogOpen}
+        onOpenChange={setCustomerDialogOpen}
+        shouldFilter={false}
+      >
         <DialogHeader className="sr-only">
-          <DialogTitle>{t("customers.wizard.selectCustomer")}</DialogTitle>
+          <DialogTitle>{t("customers.selectCustomer")}</DialogTitle>
         </DialogHeader>
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div>
-            <div className="text-base font-semibold">{t("customers.wizard.selectCustomer")}</div>
+            <div className="text-base font-semibold">{t("customers.selectCustomer")}</div>
             <p className="text-sm text-muted-foreground">{t("customers.selectExisting")}</p>
           </div>
         </div>
-        <CommandInput placeholder={t("customers.searchCustomers")} />
+        <CommandInput
+          aria-label={t("customers.searchCustomers")}
+          value={search}
+          onValueChange={setSearch}
+          placeholder={t("customers.searchCustomers")}
+        />
         <CommandList>
-          <CommandEmpty>{t("customers.noCustomersFound")}</CommandEmpty>
+          {lookup.isFetching || search.trim() !== query ? (
+            <p role="status" className="p-4 text-sm">
+              {t("common.loading")}
+            </p>
+          ) : lookup.isError ? (
+            <div role="alert" className="space-y-2 p-4 text-sm">
+              <p>{t("customers.lookupFailed")}</p>
+              <Button type="button" variant="outline" onClick={() => void lookup.refetch()}>
+                {t("common.retry")}
+              </Button>
+            </div>
+          ) : customers.length === 0 ? (
+            <CommandEmpty>{t("customers.noCustomersFound")}</CommandEmpty>
+          ) : null}
           <CommandGroup heading={t("customers.title")}>
-            {customers.map((customer) => {
-              const address = [
-                customer.billingAddress?.line1,
-                customer.billingAddress?.city,
-                customer.billingAddress?.country,
-              ]
-                .filter(Boolean)
-                .join(", ");
+            {!lookup.isError &&
+              search.trim() === query &&
+              customers.map((customer) => {
+                const address = [
+                  customer.billingAddress?.line1,
+                  customer.billingAddress?.city,
+                  customer.billingAddress?.country,
+                ]
+                  .filter(Boolean)
+                  .join(", ");
 
-              return (
-                <CommandItem
-                  key={customer.id}
-                  value={customer.id}
-                  data-testid={`invoice-customer-option-${customer.id}`}
-                  onSelect={() => {
-                    setValue("customerPartyId", customer.id, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                    setCustomerDialogOpen(false);
-                  }}
-                >
-                  <div className="flex flex-col gap-1 py-1">
-                    <span className="font-medium">{customer.displayName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {address || customer.email || "No contact details"}
-                    </span>
-                  </div>
-                </CommandItem>
-              );
-            })}
+                return (
+                  <CommandItem
+                    key={customer.id}
+                    value={customer.id}
+                    data-testid={`invoice-customer-option-${customer.id}`}
+                    onSelect={() => {
+                      setChosenCustomer({
+                        ...customer,
+                        id: customer.id,
+                        displayName: customer.displayName,
+                      });
+                      setValue("customerPartyId", customer.id, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                      setCustomerDialogOpen(false);
+                    }}
+                  >
+                    <div className="flex flex-col gap-1 py-1">
+                      <span className="font-medium">{customer.displayName}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {address || customer.email || uiCopy("no-contact-details")}
+                      </span>
+                    </div>
+                  </CommandItem>
+                );
+              })}
           </CommandGroup>
+          {lookup.hasNextPage && !lookup.isError && search.trim() === query && (
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={lookup.isFetchingNextPage}
+              onClick={() => void lookup.fetchNextPage()}
+            >
+              {t("common.loadMore")}
+            </Button>
+          )}
         </CommandList>
         <div className="flex justify-end border-t px-4 py-3">
           <Button
@@ -262,7 +306,10 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
             <DialogDescription>{t("customers.createDescription")}</DialogDescription>
           </DialogHeader>
           <form
-            onSubmit={customerForm.handleSubmit((data) => createCustomerMutation.mutate(data))}
+            onSubmit={(event) => {
+              event.stopPropagation();
+              void customerForm.handleSubmit((data) => createCustomerMutation.mutate(data))(event);
+            }}
             className="space-y-6"
           >
             <div className="space-y-4">

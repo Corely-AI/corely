@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -12,7 +13,17 @@ import { bookingApi } from "@/lib/booking-api";
 import { bookingKeys } from "../queries";
 import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-errors";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Checkbox, Input, Label, Textarea } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Input,
+  Label,
+  Textarea,
+} from "@corely/ui";
 
 const bookingFormSchema = z
   .object({
@@ -97,6 +108,7 @@ const toDateTimeLocal = (isoValue: string | null | undefined) => {
 const toIsoFromLocal = (value: string) => new Date(value).toISOString();
 
 export default function BookingEditorPage() {
+  const uiCopy = useUiCopy("ui.booking-bookingeditorpage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
@@ -214,7 +226,7 @@ export default function BookingEditorPage() {
       });
     },
     onSuccess: async () => {
-      toast.success("Booking cancelled");
+      toast.success(uiCopy("booking-cancelled"));
       await invalidateResourceQueries(queryClient, "booking/bookings", id ? { id } : undefined);
       if (id) {
         navigate(`/booking/bookings/${id}`);
@@ -255,9 +267,7 @@ export default function BookingEditorPage() {
           <div>
             <h1 className="text-h1 text-foreground">{pageTitle}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {isEdit
-                ? "Reschedule the booking time or cancel the booking."
-                : "Create a booking by choosing service, resources, and customer info."}
+              {isEdit ? uiCopy("reschedule-the-booking-time") : uiCopy("create-a-booking-by")}
             </p>
           </div>
         </div>
@@ -271,11 +281,11 @@ export default function BookingEditorPage() {
                   size="sm"
                   disabled={cancelMutation.isPending || bookingQuery.data?.status === "CANCELLED"}
                 >
-                  Cancel booking
+                  {uiCopy("cancel-booking")}
                 </Button>
               }
-              title="Cancel booking"
-              description="This action will mark the booking as cancelled."
+              title={uiCopy("cancel-booking")}
+              description={uiCopy("this-action-will-mark")}
               confirmLabel="Cancel booking"
               isLoading={cancelMutation.isPending}
               onConfirm={async () => {
@@ -287,32 +297,32 @@ export default function BookingEditorPage() {
             variant="outline"
             onClick={() => navigate(isEdit && id ? `/booking/bookings/${id}` : "/booking/bookings")}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : isEdit ? "Save changes" : "Create"}
+            {saveMutation.isPending
+              ? uiCopy("saving")
+              : isEdit
+                ? uiCopy("save-changes")
+                : uiCopy("create")}
           </Button>
         </div>
       </div>
 
       {isEdit && bookingQuery.isLoading ? (
-        <Card>
-          <CardContent className="p-6 text-sm text-muted-foreground">
-            Loading booking...
-          </CardContent>
-        </Card>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-booking")} />
       ) : null}
 
       {isEdit && bookingQuery.isError ? (
         <Card>
           <CardContent className="p-6 flex items-center justify-between gap-3">
-            <div className="text-sm text-destructive">Failed to load booking.</div>
+            <div className="text-sm text-destructive">{uiCopy("failed-to-load-booking")}</div>
             <Button variant="outline" size="sm" onClick={() => void bookingQuery.refetch()}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </CardContent>
         </Card>
@@ -324,16 +334,20 @@ export default function BookingEditorPage() {
             <CardContent className="p-6 space-y-5">
               {isEdit && bookingQuery.data ? (
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">Status: {bookingQuery.data.status}</Badge>
+                  <Badge variant="secondary">
+                    {uiCopy("status") + " "}
+                    {bookingQuery.data.status}
+                  </Badge>
                   <Badge variant="outline">
-                    Reference: {bookingQuery.data.referenceNumber ?? "-"}
+                    {uiCopy("reference") + " "}
+                    {bookingQuery.data.referenceNumber ?? "-"}
                   </Badge>
                 </div>
               ) : null}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="booking-start">Start time</Label>
+                  <Label htmlFor="booking-start">{uiCopy("start-time")}</Label>
                   <Input
                     id="booking-start"
                     type="datetime-local"
@@ -346,7 +360,7 @@ export default function BookingEditorPage() {
                   ) : null}
                 </div>
                 <div>
-                  <Label htmlFor="booking-end">End time</Label>
+                  <Label htmlFor="booking-end">{uiCopy("end-time")}</Label>
                   <Input id="booking-end" type="datetime-local" {...form.register("endAtLocal")} />
                   {form.formState.errors.endAtLocal ? (
                     <p className="text-sm text-destructive mt-1">
@@ -359,7 +373,7 @@ export default function BookingEditorPage() {
               {!isEdit ? (
                 <>
                   <div>
-                    <Label htmlFor="booking-service">Service</Label>
+                    <Label htmlFor="booking-service">{uiCopy("service")}</Label>
                     <select
                       id="booking-service"
                       className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -370,7 +384,7 @@ export default function BookingEditorPage() {
                         })
                       }
                     >
-                      <option value="">No linked service</option>
+                      <option value="">{uiCopy("no-linked-service")}</option>
                       {(servicesQuery.data?.items ?? []).map((service) => (
                         <option key={service.id} value={service.id}>
                           {service.name}
@@ -380,7 +394,7 @@ export default function BookingEditorPage() {
                   </div>
 
                   <div>
-                    <Label>Resources</Label>
+                    <Label>{uiCopy("resources")}</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                       {(resourcesQuery.data?.items ?? []).map((resource) => {
                         const checked = selectedResourceIds.includes(resource.id);
@@ -414,15 +428,15 @@ export default function BookingEditorPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="booking-party-id">Booked by party id</Label>
+                      <Label htmlFor="booking-party-id">{uiCopy("booked-by-party-id")}</Label>
                       <Input id="booking-party-id" {...form.register("bookedByPartyId")} />
                     </div>
                     <div>
-                      <Label htmlFor="booking-booked-by-name">Booked by name</Label>
+                      <Label htmlFor="booking-booked-by-name">{uiCopy("booked-by-name")}</Label>
                       <Input id="booking-booked-by-name" {...form.register("bookedByName")} />
                     </div>
                     <div>
-                      <Label htmlFor="booking-booked-by-email">Booked by email</Label>
+                      <Label htmlFor="booking-booked-by-email">{uiCopy("booked-by-email")}</Label>
                       <Input
                         id="booking-booked-by-email"
                         type="email"
@@ -439,11 +453,11 @@ export default function BookingEditorPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Service offering</Label>
+                    <Label>{uiCopy("service-offering")}</Label>
                     <p className="text-sm mt-1">{bookingQuery.data?.serviceOfferingId || "-"}</p>
                   </div>
                   <div>
-                    <Label>Allocated resources</Label>
+                    <Label>{uiCopy("allocated-resources")}</Label>
                     <p className="text-sm mt-1">
                       {(bookingQuery.data?.allocations ?? []).length
                         ? bookingQuery.data?.allocations
@@ -456,13 +470,13 @@ export default function BookingEditorPage() {
               )}
 
               <div>
-                <Label htmlFor="booking-notes">Notes</Label>
+                <Label htmlFor="booking-notes">{uiCopy("notes")}</Label>
                 <Textarea id="booking-notes" rows={4} {...form.register("notes")} />
               </div>
 
               {isEdit ? (
                 <div>
-                  <Label htmlFor="booking-cancel-reason">Cancel reason (optional)</Label>
+                  <Label htmlFor="booking-cancel-reason">{uiCopy("cancel-reason-optional")}</Label>
                   <Input id="booking-cancel-reason" {...form.register("cancelReason")} />
                 </div>
               ) : null}

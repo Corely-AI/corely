@@ -1,7 +1,9 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -45,6 +47,7 @@ type FormState = {
 };
 
 export default function CustomFieldsSettingsPage() {
+  const uiCopy = useUiCopy("ui.settings-customfieldssettingspage");
   const queryClient = useQueryClient();
   const [entityType, setEntityType] = React.useState<SupportedEntityType>("expense");
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -125,44 +128,44 @@ export default function CustomFieldsSettingsPage() {
   return (
     <>
       <CrudListPageLayout
-        title="Custom Fields"
+        title={uiCopy("custom-fields")}
         subtitle="Manage custom field definitions and indexing"
         primaryAction={
           <Button onClick={openCreateDialog}>
             <Plus className="h-4 w-4 mr-2" />
-            New field
+            {uiCopy("new-field")}
           </Button>
         }
       >
         <Card>
           <CardContent className="p-4 space-y-4">
             <div className="flex items-center gap-3">
-              <Label>Entity type</Label>
+              <Label>{uiCopy("entity-type")}</Label>
               <Select value={entityType} onValueChange={onEntityTypeChange}>
                 <SelectTrigger className="w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="expense">Expense</SelectItem>
-                  <SelectItem value="party">Party</SelectItem>
+                  <SelectItem value="expense">{uiCopy("expense")}</SelectItem>
+                  <SelectItem value="party">{uiCopy("party")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {isLoading ? (
-              <div className="text-sm text-muted-foreground">Loading custom fields...</div>
+              <LoadingSkeleton variant="list" label={uiCopy("loading-custom-fields")} />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="py-2 text-left">Label</th>
-                      <th className="py-2 text-left">Key</th>
-                      <th className="py-2 text-left">Type</th>
-                      <th className="py-2 text-left">Required</th>
-                      <th className="py-2 text-left">Indexed</th>
-                      <th className="py-2 text-left">Status</th>
-                      <th className="py-2 text-right">Actions</th>
+                      <th className="py-2 text-left">{uiCopy("label")}</th>
+                      <th className="py-2 text-left">{uiCopy("key")}</th>
+                      <th className="py-2 text-left">{uiCopy("type")}</th>
+                      <th className="py-2 text-left">{uiCopy("required")}</th>
+                      <th className="py-2 text-left">{uiCopy("indexed")}</th>
+                      <th className="py-2 text-left">{uiCopy("status")}</th>
+                      <th className="py-2 text-right">{uiCopy("actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -171,9 +174,15 @@ export default function CustomFieldsSettingsPage() {
                         <td className="py-2">{definition.label}</td>
                         <td className="py-2 font-mono text-xs">{definition.key}</td>
                         <td className="py-2">{definition.type}</td>
-                        <td className="py-2">{definition.required ? "Yes" : "No"}</td>
-                        <td className="py-2">{definition.isIndexed ? "Yes" : "No"}</td>
-                        <td className="py-2">{definition.isActive ? "Active" : "Archived"}</td>
+                        <td className="py-2">
+                          {definition.required ? uiCopy("yes") : uiCopy("no")}
+                        </td>
+                        <td className="py-2">
+                          {definition.isIndexed ? uiCopy("yes") : uiCopy("no")}
+                        </td>
+                        <td className="py-2">
+                          {definition.isActive ? uiCopy("active") : uiCopy("archived")}
+                        </td>
                         <td className="py-2">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -199,11 +208,11 @@ export default function CustomFieldsSettingsPage() {
                             <ConfirmDeleteDialog
                               trigger={
                                 <Button size="sm" variant="destructive">
-                                  Archive
+                                  {uiCopy("archive")}
                                 </Button>
                               }
-                              title="Archive custom field"
-                              description="This field will be hidden from forms."
+                              title={uiCopy("archive-custom-field")}
+                              description={uiCopy("this-field-will-be")}
                               onConfirm={() => archiveMutation.mutate(definition.id)}
                               isLoading={archiveMutation.isPending}
                             />
@@ -222,12 +231,14 @@ export default function CustomFieldsSettingsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{formState?.id ? "Edit custom field" : "Create custom field"}</DialogTitle>
+            <DialogTitle>
+              {formState?.id ? uiCopy("edit-custom-field") : uiCopy("create-custom-field")}
+            </DialogTitle>
           </DialogHeader>
           {formState ? (
             <div className="space-y-3">
               <div>
-                <Label>Key</Label>
+                <Label>{uiCopy("key")}</Label>
                 <Input
                   value={formState.key}
                   onChange={(event) => setFormState({ ...formState, key: event.target.value })}
@@ -235,14 +246,14 @@ export default function CustomFieldsSettingsPage() {
                 />
               </div>
               <div>
-                <Label>Label</Label>
+                <Label>{uiCopy("label")}</Label>
                 <Input
                   value={formState.label}
                   onChange={(event) => setFormState({ ...formState, label: event.target.value })}
                 />
               </div>
               <div>
-                <Label>Type</Label>
+                <Label>{uiCopy("type")}</Label>
                 <Select
                   value={formState.type}
                   onValueChange={onFieldTypeChange}
@@ -253,17 +264,17 @@ export default function CustomFieldsSettingsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="TEXT">TEXT</SelectItem>
-                    <SelectItem value="NUMBER">NUMBER</SelectItem>
+                    <SelectItem value="NUMBER">{uiCopy("number")}</SelectItem>
                     <SelectItem value="DATE">DATE</SelectItem>
-                    <SelectItem value="BOOLEAN">BOOLEAN</SelectItem>
-                    <SelectItem value="SELECT">SELECT</SelectItem>
-                    <SelectItem value="MULTI_SELECT">MULTI_SELECT</SelectItem>
+                    <SelectItem value="BOOLEAN">{uiCopy("boolean")}</SelectItem>
+                    <SelectItem value="SELECT">{uiCopy("select")}</SelectItem>
+                    <SelectItem value="MULTI_SELECT">{uiCopy("multi-select")}</SelectItem>
                     <SelectItem value="MONEY">MONEY</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Options (comma-separated, for select types)</Label>
+                <Label>{uiCopy("options-comma-separated-for")}</Label>
                 <Input
                   value={formState.optionsRaw}
                   onChange={(event) =>
@@ -286,7 +297,7 @@ export default function CustomFieldsSettingsPage() {
                     })
                   }
                 />
-                <Label htmlFor="required">Required</Label>
+                <Label htmlFor="required">{uiCopy("required")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -300,14 +311,14 @@ export default function CustomFieldsSettingsPage() {
                     })
                   }
                 />
-                <Label htmlFor="indexed">Indexed for filtering</Label>
+                <Label htmlFor="indexed">{uiCopy("indexed-for-filtering")}</Label>
               </div>
               <Button
                 className="w-full"
                 onClick={() => saveMutation.mutate(formState)}
                 disabled={saveMutation.isPending}
               >
-                {saveMutation.isPending ? "Saving..." : "Save"}
+                {saveMutation.isPending ? uiCopy("saving") : uiCopy("save")}
               </Button>
             </div>
           ) : null}

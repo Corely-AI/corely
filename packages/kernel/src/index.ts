@@ -37,3 +37,5 @@ export * from "./time/ports/tenant-timezone.port";
 export * from "./time/time.service";
 export * from "./time/time-zone";
 export * from "./tokens";
+
+export * from "./time/civil-minute";

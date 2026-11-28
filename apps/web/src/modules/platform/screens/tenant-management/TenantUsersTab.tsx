@@ -1,3 +1,5 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +32,7 @@ interface TenantUsersTabProps {
 }
 
 export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
+  const uiCopy = useUiCopy("ui.platform-tenant-management-tenantuserstab");
   const showErrorToast = useApiErrorToast();
   const { data, isLoading } = useTenantUsers(tenantId);
   const createUser = useCreateTenantUser(tenantId);
@@ -57,7 +60,7 @@ export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
   const onSubmit = (values: TenantUserFormValues) => {
     createUser.mutate(values, {
       onSuccess: () => {
-        toast.success("User added to tenant.");
+        toast.success(uiCopy("user-added-to-tenant"));
         form.reset({ email: "", name: "", password: "", roleId: roles[0]?.id ?? "" });
       },
       onError: (error) => {
@@ -78,7 +81,7 @@ export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
       { membershipId: user.membershipId, roleId },
       {
         onSuccess: () => {
-          toast.success("Role updated.");
+          toast.success(uiCopy("role-updated"));
         },
         onError: (error) => {
           showErrorToast(error, { title: "Failed to update role" });
@@ -88,22 +91,18 @@ export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-48 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="list" />;
   }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Add user</CardTitle>
+          <CardTitle>{uiCopy("add-user")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label>{uiCopy("email")}</Label>
             <Input
               placeholder="user@company.com"
               {...form.register("email")}
@@ -114,17 +113,17 @@ export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
             )}
           </div>
           <div className="space-y-2">
-            <Label>Name</Label>
-            <Input placeholder="Full name" {...form.register("name")} />
+            <Label>{uiCopy("name")}</Label>
+            <Input placeholder={uiCopy("full-name")} {...form.register("name")} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label>Password</Label>
+            <Label>{uiCopy("password")}</Label>
             <Input
               type="password"
-              placeholder="Temporary password"
+              placeholder={uiCopy("temporary-password")}
               {...form.register("password")}
             />
             {form.formState.errors.password && (
@@ -132,13 +131,13 @@ export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
             )}
           </div>
           <div className="space-y-2">
-            <Label>Role</Label>
+            <Label>{uiCopy("role")}</Label>
             <Select
               value={form.watch("roleId")}
               onValueChange={(value) => form.setValue("roleId", value, { shouldValidate: true })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder={uiCopy("select-role")} />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role: RoleDto) => (
@@ -157,30 +156,34 @@ export function TenantUsersTab({ tenantId }: TenantUsersTabProps) {
             onClick={form.handleSubmit(onSubmit)}
             disabled={createUser.isPending}
           >
-            {createUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add user"}
+            {createUser.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              uiCopy("add-user")
+            )}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Users</CardTitle>
+          <CardTitle>{uiCopy("users")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>{uiCopy("name")}</TableHead>
+                <TableHead>{uiCopy("email")}</TableHead>
+                <TableHead>{uiCopy("status")}</TableHead>
+                <TableHead>{uiCopy("role")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No users found.
+                    {uiCopy("no-users-found")}
                   </TableCell>
                 </TableRow>
               ) : (

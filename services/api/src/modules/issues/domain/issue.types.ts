@@ -22,6 +22,12 @@ export type IssueTranscriptionSegment = {
 };
 
 export type Issue = {
+  workspaceId?: string | null;
+  requestKind?: "PROBLEM" | "SERVICE" | null;
+  clientEmail?: string | null;
+  clientUpdateStatus?: "QUEUED" | "SENT" | "FAILED" | "NEEDS_REVIEW" | null;
+  clientUpdateSummary?: string | null;
+  clientUpdateQueuedAt?: Date | null;
   id: string;
   tenantId: string;
   title: string;

@@ -1,11 +1,12 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { Link, createSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { type ToolRendererProps } from "@corely/web-shared/shared/components/chat/ChatParts";
-import { type ViewKassenberichtOutput } from "@corely/contracts/cash-management";
+import { viewKassenberichtOutputSchema } from "@corely/contracts";
 import { Button, Card, CardContent, Alert, AlertTitle, AlertDescription } from "@corely/ui";
 import { FileText, ExternalLink, AlertCircle } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, type Locale } from "date-fns";
 import { vi, de, enUS } from "date-fns/locale";
 
 const locales: Record<string, Locale> = {
@@ -15,28 +16,29 @@ const locales: Record<string, Locale> = {
 };
 
 export const ViewKassenberichtRenderer: React.FC<ToolRendererProps> = ({ state, output }) => {
+  const uiCopy = useUiCopy("ui.cash-management-assistant-viewkassenberichtrenderer");
   const { t, i18n } = useTranslation();
 
   if (state !== "output-available" || !output) {
     return null;
   }
 
-  const out = output as any;
-
-  if (out.ok !== true || !out.result || out.result.type !== "cash.view-kassenbericht") {
+  const out = output as { ok?: boolean; result?: unknown; error?: { message?: string } };
+  const result = viewKassenberichtOutputSchema.safeParse(out.result);
+  if (out.ok !== true || !result.success) {
     const errorMsg =
-      out?.error?.message ||
+      out.error?.message ||
       t("cashAssistant.kassenbericht.invalidLink", "The Kassenbericht link could not be created.");
     return (
       <Alert variant="destructive" className="my-2">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
+        <AlertTitle>{uiCopy("error")}</AlertTitle>
         <AlertDescription>{errorMsg}</AlertDescription>
       </Alert>
     );
   }
 
-  const { registerId, day } = out.result as ViewKassenberichtOutput;
+  const { registerId, day } = result.data;
 
   const locale = locales[i18n.language.slice(0, 2)] || enUS;
   let formattedDate = day;

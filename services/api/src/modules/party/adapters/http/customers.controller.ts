@@ -30,13 +30,15 @@ import {
   mapResultToHttp,
   resolveIdempotencyKey,
 } from "../../../../shared/http/usecase-mappers";
+import { EntitlementGuard, RequireApp } from "../../../platform/public";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 import { PARTY_QUERY_PORT, type PartyQueryPort } from "../../application/ports/party-query.port";
 import { Inject } from "@nestjs/common";
 
 @Controller("customers")
-@UseGuards(AuthGuard, RbacGuard)
+@UseGuards(AuthGuard, RbacGuard, EntitlementGuard)
+@RequireApp("parties")
 export class CustomersHttpController {
   constructor(
     private readonly app: PartyApplication,

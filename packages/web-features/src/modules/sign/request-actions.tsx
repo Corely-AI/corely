@@ -1,8 +1,22 @@
-import { Input, Textarea, Button } from "@corely/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+  Input,
+  Textarea,
+  buttonVariants,
+} from "@corely/ui";
 import { useTranslation } from "react-i18next";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SignCeremonyViewSchema, type SignRequestDraft } from "@corely/contracts";
 import { apiClient } from "@corely/web-shared/lib/api-client";
+import { RequestProgressSkeleton } from "./request-loading";
 
 export function RequestActions({
   workspace,
@@ -16,14 +30,19 @@ export function RequestActions({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [reload, setReload] = useState(0);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true);
   const [expiry, setExpiry] = useState(() =>
       new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
     ),
     [consent, setConsent] = useState(""),
     [invitation, setInvitation] = useState("");
+  const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
+  const reviewSendButton = useRef<HTMLButtonElement>(null);
+  const progressHeading = useRef<HTMLHeadingElement>(null);
   const prefix = "/sign/requests/" + draft.requestId;
   useEffect(() => {
     const controller = new AbortController();
+    setIsLoadingProgress(true);
     setError("");
     void apiClient
       .request(
@@ -32,10 +51,19 @@ export function RequestActions({
         { workspaceScope: "none", signal: controller.signal }
       )
       .then((v) => {
-        if (!controller.signal.aborted) setState(SignCeremonyViewSchema.parse(v));
+        if (!controller.signal.aborted) {
+          setState(SignCeremonyViewSchema.parse(v));
+        }
       })
       .catch((e) => {
-        if (!controller.signal.aborted) setError(String(e));
+        if (!controller.signal.aborted) {
+          setError(String(e));
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingProgress(false);
+        }
       });
     return () => controller.abort();
   }, [prefix, workspace, reload]);
@@ -61,7 +89,9 @@ export function RequestActions({
   }
   return (
     <section className="grid max-w-4xl gap-4 rounded-lg border bg-card p-5 shadow-sm">
-      <h2 className="text-xl font-semibold">{t("sign.progressTitle")}</h2>
+      <h2 ref={progressHeading} tabIndex={-1} className="text-xl font-semibold">
+        {t("sign.progressTitle")}
+      </h2>
       <Button
         className="justify-self-start"
         variant="outline"
@@ -95,6 +125,7 @@ export function RequestActions({
           {error}
         </p>
       )}
+      {!state && isLoadingProgress && <RequestProgressSkeleton />}
       {state && (
         <>
           <p>
@@ -118,14 +149,7 @@ export function RequestActions({
               className="grid gap-4"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (window.confirm(t("sign.confirmSend")))
-                  void act("send", {
-                    confirm: true,
-                    expiresAt: new Date(expiry + "T23:59:59Z").toISOString(),
-                    consent,
-                    invitation,
-                    canonicalSha256: draft.canonicalSha256,
-                  });
+                setSendConfirmationOpen(true);
               }}
             >
               <label className="grid gap-1 text-sm font-medium">
@@ -155,9 +179,48 @@ export function RequestActions({
                   onChange={(e) => setInvitation(e.target.value)}
                 />
               </label>
-              <Button className="justify-self-start" variant="accent" type="submit" disabled={busy}>
+              <Button
+                ref={reviewSendButton}
+                className="justify-self-start"
+                variant="accent"
+                type="submit"
+                disabled={busy}
+              >
                 {t("sign.reviewSend")}
               </Button>
+              <AlertDialog open={sendConfirmationOpen} onOpenChange={setSendConfirmationOpen}>
+                <AlertDialogContent
+                  className="w-[calc(100%-2rem)] max-w-md rounded-lg"
+                  onCloseAutoFocus={(event) => {
+                    event.preventDefault();
+                    const button = reviewSendButton.current;
+                    (button && !button.disabled ? button : progressHeading.current)?.focus();
+                  }}
+                >
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t("sign.sendConfirmationTitle")}</AlertDialogTitle>
+                    <AlertDialogDescription>{t("sign.confirmSend")}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                    <AlertDialogAction
+                      className={buttonVariants({ variant: "accent" })}
+                      disabled={busy}
+                      onClick={() =>
+                        void act("send", {
+                          confirm: true,
+                          expiresAt: new Date(expiry + "T23:59:59Z").toISOString(),
+                          consent,
+                          invitation,
+                          canonicalSha256: draft.canonicalSha256,
+                        })
+                      }
+                    >
+                      {t("sign.sendInvitations")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </form>
           ) : (
             <>
@@ -270,10 +333,15 @@ export function RequestActions({
         </>
       )}
       <Button
-        className="justify-self-start"
+        className="justify-self-start aria-disabled:opacity-50"
         variant="outline"
         disabled={busy}
-        onClick={() => setReload((n) => n + 1)}
+        aria-disabled={isLoadingProgress}
+        onClick={() => {
+          if (!isLoadingProgress) {
+            setReload((n) => n + 1);
+          }
+        }}
       >
         {t("sign.refresh")}
       </Button>

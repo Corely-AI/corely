@@ -4,8 +4,6 @@ import { publicApi } from "@/lib/public-api";
 import { resolveCanonicalUrl, resolveWorkspacePath } from "@/lib/urls";
 import { resolvePublicError } from "@/lib/public-errors";
 
-export const BOOKING_REVALIDATE = 60;
-
 type RequestContext = {
   host: string | null;
   protocol: string | null;

@@ -5,6 +5,7 @@ import { DataModule } from "@corely/data";
 import { AppController } from "./app.controller";
 import { IdentityModule } from "./modules/identity";
 import { ExpensesModule } from "./modules/expenses";
+import { ExpenseReceiptEmailModule } from "./modules/expenses/expense-receipt-email.module";
 import { InvoicesModule } from "./modules/invoices";
 import { WorkflowModule } from "./modules/workflow";
 import { AutomationModule } from "./modules/automation";
@@ -18,7 +19,7 @@ import { WorkspacesModule } from "./modules/workspaces";
 import { AccountingModule } from "./modules/accounting";
 import { SalesModule } from "./modules/sales";
 import { PaymentMethodsModule } from "./modules/payment-methods/payment-methods.module";
-import { PurchasingModule } from "./modules/purchasing";
+import { PurchasingModule, InvoiceEmailModule } from "./modules/purchasing";
 import { InventoryModule } from "./modules/inventory";
 import { ImportModule } from "./modules/import";
 import { CatalogModule } from "./modules/catalog";
@@ -37,6 +38,11 @@ import { AiRichTextModule } from "./modules/ai-richtext";
 import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
 import { BookingModule } from "./modules/booking";
+import { OperationsTodayModule } from "./modules/operations-today/operations-today.module";
+import { TasksModule } from "./modules/tasks/tasks.module";
+import { KnowledgeModule } from "./modules/knowledge/knowledge.module";
+import { PeopleModule } from "./modules/people/people.module";
+import { OperationalRequestsModule } from "./modules/requests/requests.module";
 import { PortalModule } from "./modules/portal/portal.module";
 import { CashManagementModule } from "./modules/cash-management/cash-management.module";
 import { BillingModule } from "./modules/billing/billing.module";
@@ -84,6 +90,7 @@ import { SignModule } from "./modules/sign/sign.module";
     CrmModule,
     WorkspacesModule,
     ExpensesModule,
+    ExpenseReceiptEmailModule,
     InvoicesModule,
     DocumentsModule,
     TaxModule,
@@ -91,6 +98,7 @@ import { SignModule } from "./modules/sign/sign.module";
     SalesModule,
     PaymentMethodsModule,
     PurchasingModule,
+    InvoiceEmailModule,
     CatalogModule,
     InventoryModule,
     ImportModule,
@@ -108,6 +116,11 @@ import { SignModule } from "./modules/sign/sign.module";
     CrmMailModule,
     ClassesModule,
     BookingModule,
+    PeopleModule,
+    TasksModule,
+    OperationsTodayModule,
+    OperationalRequestsModule,
+    KnowledgeModule,
     CoachingEngagementsModule,
     RestaurantModule,
     PortalModule,

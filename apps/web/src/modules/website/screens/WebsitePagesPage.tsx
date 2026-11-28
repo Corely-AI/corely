@@ -1,8 +1,10 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, FileText, Search } from "lucide-react";
-import { Button, Card, CardContent, Input, Badge } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Badge } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, useCrudUrlState } from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
@@ -19,6 +21,7 @@ const statusVariant = (status: string) => {
 };
 
 export default function WebsitePagesPage() {
+  const uiCopy = useUiCopy("ui.website-websitepagespage");
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
@@ -61,7 +64,7 @@ export default function WebsitePagesPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search pages"
+          placeholder={uiCopy("search-pages")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -80,13 +83,13 @@ export default function WebsitePagesPage() {
           })
         }
       >
-        <option value="">All statuses</option>
-        <option value="DRAFT">Draft</option>
-        <option value="PUBLISHED">Published</option>
+        <option value="">{uiCopy("all-statuses")}</option>
+        <option value="DRAFT">{uiCopy("draft")}</option>
+        <option value="PUBLISHED">{uiCopy("published")}</option>
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load pages"}
+          {(error as Error)?.message || uiCopy("failed-to-load-pages")}
         </div>
       ) : null}
     </div>
@@ -95,13 +98,13 @@ export default function WebsitePagesPage() {
   const primaryAction = (
     <Button variant="accent" onClick={() => navigate(`/website/sites/${siteId}/pages/new`)}>
       <Plus className="h-4 w-4" />
-      New page
+      {uiCopy("new-page")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Pages"
+      title={uiCopy("pages")}
       subtitle="Routes and templates for this site"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -109,12 +112,12 @@ export default function WebsitePagesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading pages...</div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-pages")} />
           ) : pages.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="No pages yet"
-              description="Create your first page to start building the site."
+              title={uiCopy("no-pages-yet")}
+              description={uiCopy("create-your-first-page")}
               action={primaryAction}
             />
           ) : (
@@ -124,19 +127,19 @@ export default function WebsitePagesPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Path
+                        {uiCopy("path")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Locale
+                        {uiCopy("locale")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Template
+                        {uiCopy("template")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {uiCopy("status")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th />
                     </tr>
@@ -172,7 +175,7 @@ export default function WebsitePagesPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -181,7 +184,7 @@ export default function WebsitePagesPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -189,7 +192,7 @@ export default function WebsitePagesPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>

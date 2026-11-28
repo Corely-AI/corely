@@ -2,6 +2,11 @@
 
 This document describes the **repo hierarchy** for Corely (pnpm monorepo) and shows file trees using a **true hierarchy format** (folders nested, files indented).
 
+The retained detailed trees below are illustrative conventions, not a complete
+current file inventory. For inspected runtime ownership see [repository alignment](../products/corely/repository-alignment.md).
+Product apps, modules, surfaces and customer packages differ; see [connected apps](connected-apps.md).
+The 32-app map does not authorize new services or frontends.
+
 ---
 
 ## Top-level layout
@@ -10,19 +15,27 @@ This document describes the **repo hierarchy** for Corely (pnpm monorepo) and sh
 corely/
   apps/
     web/                               # Admin web (Vite + React + TS)
-    public-web/                        # Public web (Vite + React + TS)
+    public-web/                        # Public web (Next.js App Router)
     landing/                           # Marketing site (Vite + React + TS)
+    openbuk-web/                       # Focused Vite booking product
+    freelancer/, crm/, cash-management/ # Focused Vite clients
+    portal/, restaurant-listing/       # Other Vite clients
+    website-runtime/                   # Next.js website runtime
+    pos/                               # Expo + React Native
+    eric-wategay/                      # .NET ERiC gateway
+    e2e/                               # Playwright test workspace
 
   services/
     api/                               # Backend API (NestJS)
-    background/                        # API-hosted background runtime
-    mock-server/                       # Dedicated mock backend (for demo/dev)
+    # Background lives under api/src/modules/background, not a sibling service.
 
   packages/
     contracts/                         # Shared FE/BE: schemas + types + enums
     domain/                            # Shared pure domain rules (optional)
     data/                              # Backend-only DB layer (optional)
     ui/                                # Frontend-only design system (shared UI)
+    web-shared/                        # Shared providers/clients/layout
+    web-features/                      # Public reusable feature exports
 
   docs/
   assets/
@@ -125,48 +138,16 @@ apps/web/
 
 ## Frontend hierarchy (apps/public-web)
 
+Selected current Next.js paths (not the historical Vite shell):
+
 ```text
 apps/public-web/
-  assets/
   src/
-    app/
-      AppShell.tsx
-      router/
-        index.tsx
-      providers/
-        index.tsx
-
-    modules/
-      home/
-        screens/
-        index.ts
-      portfolio/
-        screens/
-        index.ts
-      rentals/
-        screens/
-        index.ts
-      blog/
-        screens/
-        index.ts
-      pages/
-        screens/
-        index.ts
-
-    shared/
-      api/
-        public-api.ts
-      lib/
-        site.ts
-        workspace.ts
-      seo/
-        Seo.tsx
-
-    main.tsx
-    index.css
-
-  vite.config.ts
-  tsconfig.json
+    app/                              # Next.js App Router
+      (booking)/book/[slug]/           # Public booking and checkout
+      w/[workspaceSlug]/               # Workspace-scoped public journeys
+    components/pages/                 # Public booking clients and other pages
+    lib/
   package.json
 ```
 
@@ -181,9 +162,12 @@ services/api/
     app.module.ts
 
     modules/
-      auth/
-      tenants/
-      clients/
+      identity/
+      workspaces/
+      party/
+      crm/
+      booking/
+      background/
       expenses/
       invoices/
       tools/
@@ -220,7 +204,10 @@ services/api/src/modules/background/
 
 ---
 
-## Mock server hierarchy (services/mock-server)
+## Historical mock server hierarchy (services/mock-server)
+
+No tracked mock-server source/package exists in the inspected commit. The tree
+below preserves the earlier design, not an available runtime or setup command.
 
 ```text
 services/mock-server/
@@ -320,7 +307,7 @@ packages/ui/
 
 Allowed:
 
-- `apps/webs` → `packages/contracts`, `packages/domain`, `packages/ui`
+- `apps/*` → `packages/contracts`, `packages/domain`, `packages/ui`
 - `services/api` → `packages/contracts`, `packages/domain`, `packages/data`
 - `services/api` background runtime → `packages/contracts`, `packages/domain`, `packages/data`
 - `packages/domain` → `packages/contracts`

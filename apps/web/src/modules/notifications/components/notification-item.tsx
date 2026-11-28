@@ -1,9 +1,10 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo } from "react";
 import { cn } from "@/shared/lib/utils";
 import { formatRelativeTime } from "@/shared/lib/formatters";
 import { Button } from "@corely/ui";
 import { Check, Info, AlertTriangle, AlertCircle, ExternalLink } from "lucide-react";
-import type { NotificationListItem } from "@corely/contracts";
+import { OperationalRequestReviewReminderType, type NotificationListItem } from "@corely/contracts";
 import { Link } from "react-router-dom";
 
 export interface NotificationItemProps {
@@ -13,6 +14,7 @@ export interface NotificationItemProps {
 }
 
 export function NotificationItem({ notification, onMarkRead, className }: NotificationItemProps) {
+  const uiCopy = useUiCopy("ui.notifications-notification-item");
   const isRead = !!notification.readAt;
 
   const Icon = useMemo(() => {
@@ -54,7 +56,9 @@ export function NotificationItem({ notification, onMarkRead, className }: Notifi
       <div className="flex-1 space-y-1 overflow-hidden">
         <div className="flex items-start justify-between gap-2">
           <p className={cn("text-sm font-medium leading-none", !isRead && "font-semibold")}>
-            {notification.title}
+            {notification.type === OperationalRequestReviewReminderType
+              ? uiCopy("request-awaiting-review")
+              : notification.title}
           </p>
           <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
             {formatRelativeTime(notification.createdAt)}
@@ -71,7 +75,8 @@ export function NotificationItem({ notification, onMarkRead, className }: Notifi
             className="inline-flex items-center text-xs text-primary hover:underline mt-1"
             onClick={() => !isRead && onMarkRead(notification.id)}
           >
-            View details <ExternalLink className="ml-1 h-3 w-3" />
+            {uiCopy("view-details") + " "}
+            <ExternalLink className="ml-1 h-3 w-3" />
           </Link>
         )}
       </div>
@@ -85,10 +90,10 @@ export function NotificationItem({ notification, onMarkRead, className }: Notifi
             e.stopPropagation();
             onMarkRead(notification.id);
           }}
-          title="Mark as read"
+          title={uiCopy("mark-as-read")}
         >
           <Check className="h-3 w-3" />
-          <span className="sr-only">Mark as read</span>
+          <span className="sr-only">{uiCopy("mark-as-read")}</span>
         </Button>
       )}
     </div>

@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +38,8 @@ import {
 } from "./website-site-editor-utils";
 
 export default function WebsiteSiteEditorPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.website-websitesiteeditorpage");
   const { siteId } = useParams<{ siteId: string }>();
   const isEdit = Boolean(siteId);
   const navigate = useNavigate();
@@ -44,7 +49,7 @@ export default function WebsiteSiteEditorPage() {
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const faviconInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: websiteSiteKeys.detail(siteId ?? ""),
     queryFn: () => (siteId ? websiteApi.getSite(siteId) : Promise.resolve(null)),
     enabled: isEdit,
@@ -191,7 +196,7 @@ export default function WebsiteSiteEditorPage() {
     const trimmedSlug = slug.trim() || slugify(trimmedName);
 
     if (!trimmedName || !trimmedSlug || !defaultLocale.trim()) {
-      toast.error("Name, slug, and default locale are required.");
+      toast.error(uiCopy("name-slug-and-default"));
       return;
     }
 
@@ -199,7 +204,7 @@ export default function WebsiteSiteEditorPage() {
     setCustomRowErrors(customResult.rowErrors);
 
     if (Object.keys(customResult.rowErrors).length > 0) {
-      toast.error("Fix custom property errors before saving.");
+      toast.error(uiCopy("fix-custom-property-errors"));
       return;
     }
 
@@ -254,7 +259,7 @@ export default function WebsiteSiteEditorPage() {
 
   const handleApplyCommonJson = () => {
     if (commonJsonState.status === "invalid") {
-      toast.error("Common JSON is invalid.");
+      toast.error(uiCopy("common-json-is-invalid"));
       return;
     }
 
@@ -265,12 +270,12 @@ export default function WebsiteSiteEditorPage() {
     }
 
     syncCommon(parsed.data);
-    toast.success("Applied common JSON.");
+    toast.success(uiCopy("applied-common-json"));
   };
 
   const handleApplyThemeJson = () => {
     if (themeJsonState.status === "invalid") {
-      toast.error("Theme JSON is invalid.");
+      toast.error(uiCopy("theme-json-is-invalid"));
       return;
     }
 
@@ -281,7 +286,7 @@ export default function WebsiteSiteEditorPage() {
     }
 
     syncTheme(parsed.data);
-    toast.success("Applied theme JSON.");
+    toast.success(uiCopy("applied-theme-json"));
   };
 
   const canSave =
@@ -303,25 +308,39 @@ export default function WebsiteSiteEditorPage() {
     setSearchParams({}, { replace: true });
   };
 
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-6 p-6 animate-fade-in lg:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {uiCopy("back")}
           </Button>
           <div>
-            <div className="text-lg font-semibold">{isEdit ? "Edit site" : "Create site"}</div>
+            <div className="text-lg font-semibold">
+              {isEdit ? uiCopy("edit-site") : uiCopy("create-site")}
+            </div>
             <div className="text-sm text-muted-foreground">
-              Manage website branding and settings
+              {uiCopy("manage-website-branding-and")}
             </div>
           </div>
         </div>
         {activeTab === "settings" ? (
           <Button variant="accent" disabled={!canSave} onClick={handleSave}>
             <Save className="h-4 w-4" />
-            Save
+            {uiCopy("save")}
           </Button>
         ) : null}
       </div>
@@ -329,8 +348,8 @@ export default function WebsiteSiteEditorPage() {
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         {isEdit ? (
           <TabsList>
-            <TabsTrigger value="settings">Site Settings</TabsTrigger>
-            <TabsTrigger value="external-content">External Content</TabsTrigger>
+            <TabsTrigger value="settings">{uiCopy("site-settings")}</TabsTrigger>
+            <TabsTrigger value="external-content">{uiCopy("external-content")}</TabsTrigger>
           </TabsList>
         ) : null}
 

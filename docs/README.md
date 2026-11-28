@@ -1,6 +1,38 @@
 # Documentation
 
-Welcome to the Corely documentation. This directory contains detailed information about the architecture, modules, and development guides.
+Corely is a collection of connected, AI-native apps for running a team’s
+internal operations. Teams start with the capabilities they need and expand
+into finance and specialist operations as their work demands.
+
+Finance is optional; accounting is not a prerequisite for operational apps.
+Implementation evidence, target design and unvalidated hypotheses are kept separate.
+
+- [Shared workspace experience](./menu/FREELANCER_COMPANY_MODE.md) — solo and team configuration
+
+## Engineering workflow
+
+- [Corely Engineering Guide](./engineering-guide.md) — ticket delivery, verification, PRs and UI/UX review
+- [Agent skills](./ai/skills-management.md) — task-specific workflows customized for this repository
+
+## Product direction
+
+- [Corely strategy](./products/corely/README.md)
+- [Long-term 32-app map](./products/corely/app-catalog.md) — not a delivery or availability commitment
+- [Focused launch proposal](./products/corely/launch-plan.md) — Schedule, Team, Daily Work
+- [Pilot booking decision](./products/corely/pilot-booking-decision.md) — OpenBuk replacement, staff surface and cutover gates
+- [Pilot research protocol](./products/corely/pilot-research-protocol.md) — hypotheses, baseline measures and evidence handling
+- [Conditional P2 promotion criteria](./products/corely/p2-promotion-criteria.md) — eight epic-specific evidence checklists; no implementation commitment
+- [P1/P2 backlog package](./products/corely/p1-p2-backlog/README.md) — issue specifications and live project reconciliation
+- [P1/P2 capability reuse inventory](./products/corely/p1-p2-backlog/capability-reuse-inventory.md) — current owners, evidence and residual gaps for all 68 features
+- [Repository alignment and discrepancies](./products/corely/repository-alignment.md)
+- [Connected-app architecture and ownership](./architecture/connected-apps.md)
+- [Positioning decision](./decisions/ADR-0002-connected-operations-apps.md)
+- [Focused App Center, Invoice and HR surfaces](./decisions/ADR-0003-focused-app-surfaces.md) — approved application host plan, callback matrix and retained legacy-traffic gates
+- [Focused-surface source, host and backlog inventory](./architecture/focused-app-surfaces-inventory.md) — current reuse evidence, legacy routes and bounded deployment observations
+- [Corely-native SSO and app sessions](./decisions/ADR-0004-central-identity-app-sessions.md) — existing Identity selected, application hosts approved; runtime delivery remains pending
+
+Dated implementation/status reports retain historical context; they do not prove
+current readiness or authorize implementing the catalog.
 
 ## Structure
 
@@ -8,6 +40,8 @@ Welcome to the Corely documentation. This directory contains detailed informatio
 
 High-level design, boundaries, and core decisions.
 
+- [Upgradeable app customizations](./architecture/upgradeable-apps.md)
+- [Source release inventory](./tasks/457-export-app-release-inventory.md)
 - [Architecture Overview](./architecture/architect.md)
 - [Boundaries](./architecture/BOUNDARIES.md)
 - [Overall Structure](./architecture/overall-structure.md)
@@ -22,6 +56,9 @@ High-level design, boundaries, and core decisions.
 Design and implementation of the AI features.
 
 - [AI Copilot](./ai/ai-copilot.md)
+- [Authorized Tasks assistant verification](./tasks/326-authorized-operational-copilot-tools.md)
+- [Cited Knowledge answer verification](./tasks/325-cited-knowledge-answers.md)
+- [Morning operations briefing verification](./tasks/329-source-linked-operations-briefing.md)
 - [Streaming Architecture](./ai/COPILOT_STREAMING.md)
 - [Streaming Implementation](./ai/copilot-streaming.md)
 - [Prompt Management](./ai/prompt-management.md)
@@ -30,7 +67,22 @@ Design and implementation of the AI features.
 
 Backend specific documentation.
 
-- [Auth](./backend/AUTH.md)
+- [Incoming invoice email](./backend/incoming-invoice-email.md) — workspace forwarding, draft review, and Resend setup
+- [Customer invoice issuance and corrections](./backend/invoice-lifecycle.md) — tax and currency checks, issuance retries, correction drafts and optional Accounting
+- [Incoming expense receipts](./backend/incoming-expense-receipts.md) — receipt forwarding, assignment, expense submission, and Resend setup
+- [Staff self-service and departure](./backend/staff-self-service.md) — own-field edits, approved onboarding and explicit workspace access follow-up
+- [Recurring checklists](./backend/recurring-checklists.md) — one task per assignee/local day, checkbox snapshots and bounded background recurrence
+- [Employee tasks](./backend/employee-tasks.md) — Daily Work lifecycle, ownership, permissions and replay/version guarantees
+- [Operational requests](./backend/operational-requests.md) — private drafts, reviewer routing and supporting documents
+- [Private Knowledge procedures](./backend/knowledge-procedures.md) — owner and review metadata, publication history and authorized file access
+- [Published procedure discovery verification](./tasks/324-published-procedure-search.md)
+- [Operations Today](platform/operations-today.md) — local-day summaries and source availability.
+- [People staff directory](./backend/people.md) — workspace profiles, identity links and private-field access
+- [Staff availability and Booking](./backend/people-availability.md) — effective working patterns, dated exceptions and Booking constraints
+- [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files
+- [Focused app launch catalog](./backend/app-launch-catalog.md) — additive descriptors, scoped product contexts and validated deployment origins
+- [Auth and tenant admin sessions](./backend/AUTH.md)
+- [Central SSO login and callbacks](./backend/sso.md) — passwordless email codes, password fallback, registered handoffs and isolated verification
 - [Background Module](./backend/background.md)
 - [Events](./backend/EVENTS.md)
 - [Dependency Injection](./di/)
@@ -43,18 +95,39 @@ Frontend guidelines and specific docs.
 
 - [Brand](./frontend/BRAND.md)
 - [Menu](./menu/)
+- [CRUD and operational entry-point standard](./frontend/crud-ui-standard.md)
+- [Skeleton loading for new features](./frontend/crud-ui-standard.md#skeleton-loading-for-new-features)
 - [List View Standard](./frontend/list-view-implementation.md)
 - [Shared UI Package](./frontend/shared-ui.md)
+- [Localization and catalog ownership](./frontend/localization.md)
+- [App Center](./frontend/app-center.md) — workspace directory on `app.corely.one`, app-specific Backoffice menus and UI evidence
+- [Requests in App Center](./frontend/app-center.md#requests) — signed-in intake, request queue and client updates
+- [Focused surface diagnostics](./observability/focused-surfaces.md) — sanitized request observations, release reports and pilot operations gates
+- [Focused app UX verification](./frontend/focused-ux-verification.md) — accessibility corrections, locale/keyboard checks and responsive evidence
+- [Focused App Shell](./frontend/focused-app-shell.md) — scoped navigation, app switching and client composition
+- [Focused Invoice client](./frontend/focused-invoice-client.md) — reused invoice screens, scoped customer/supporting workflows, draft-only assistant and verification evidence
+- [Invoice-only launch verification](./tasks/433-invoice-only-navigation.md) — explicit local opt-in, scoped navigation and UI evidence
+- [Invoice link migration](./frontend/invoice-link-migration.md) — opt-in legacy handoff, route/query map and rollback
+- [Focused HR client](./frontend/focused-hr-client.md) — existing People views through host sessions, scoped navigation and evidence
+- [HR privacy verification](./backend/hr-privacy-verification.md) — scoped authorization, private files, revocation and actual test evidence
+- [Workspace Session Boundary](./frontend/workspace-session-boundary.md) — validated arrival, per-tab context and draft/write guards
 
 ### 🚀 DevOps & Infra
 
 Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
+- [Operational recovery rehearsal](./devops/operational-recovery.md)
+- [GitHub Actions backup](../backup/github-actions/README.md)
+- [Deploy with Vercel and Supabase](./devops/vercel-supabase.md)
+- [Prisma Migration Baseline](./devops/prisma-baseline.md)
 - [Configuration](./devops/configuration.md)
+- [Corely Sign production configuration](./devops/corely-sign.md)
 - [Background Runtime](./devops/background-runtime.md)
+- [Vercel Queues for workflows](./tasks/447-vercel-workflow-queues.md)
 - [Customization](./devops/customization.md)
 - [Licensing](./devops/licensing.md)
+- [Supabase Storage for invoice PDFs](./tasks/448-supabase-pdf-storage.md)
 
 ### 🧪 Testing
 
@@ -100,6 +173,7 @@ General developer guides and references.
 - [Module Template](./guides/MODULE-TEMPLATE.md)
 - [Debug Stream](./guides/DEBUG_STREAM.md)
 - [Environment Setup](./guides/ENV_SETUP.md)
+- [Local focused surfaces](./guides/LOCAL_FOCUSED_SURFACES.md) — trusted multi-origin HTTPS, shared API configuration and standalone clients
 - [POS Vertical Packs](./guides/POS_VERTICAL_PACKS.md)
 - [Vercel Surface Proxy](./guides/VERCEL_SURFACE_PROXY.md)
 - [Security Guide](./guides/SECURITY.md)
@@ -113,7 +187,16 @@ General developer guides and references.
 
 ### 📂 Other Resources
 
+- [Historical plans and status reports](./archive/README.md)
+
+- [Operational access and private-data policy](./platform/operational-access.md) — shared foundation acceptance, current membership, conversation/file access, workspace caches and linked People owner requirements.
+- [Opt-in browser session providers](frontend/browser-sessions.md) — shared bootstrap, logout, stale-tab isolation and legacy-origin migration.
+- [Focused app navigation and API access](backend/focused-app-navigation.md) — menu contexts and separate operation authorization.
+- [Corely CLI](backend/corely-cli.md) - pilot packaging, production ingress, sign-in, workspace selection, and rollback.
+- [Host-specific sessions and shared API transport](backend/host-sessions.md) — Identity-owned cookie transport and verification limits.
 - [Platform Menu API](./platform/menu.md)
+- [Resumable pilot setup](./platform/pilot-setup.md) — private OpenBuk checkpoints, explicit publication and manually shared staff invitations
+- [Operational package and staff shell](./platform/operational-package.md) — OpenBuk navigation, deep links and independent access gates
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)
@@ -122,4 +205,16 @@ General developer guides and references.
 - [Workflows](./workflows/)
 - [Trademarks](./TRADEMARKS.md)
 
+[Backoffice modules, routes and deployment](architecture/architect.md#back-office-deployment)
+
+## Products
+
+- [OpenBuk](products/openbuk/README.md) — studio setup, small-team booking and release gates.
+- [Booking availability and write consistency](products/openbuk/booking-availability.md)
+- [OpenBuk screenshot walkthrough](products/openbuk/screenshots.md)
+
+- [Frontend consumer checks](frontend/consumer-ci.md) — local checks for focused and existing Vite consumers.
+
+- [Multi-origin session and authorization regressions](testing/multi-origin-regressions.md) — disposable real-session browser journeys and sanitized evidence.
+- [Pilot accessibility and locales](tasks/332-pilot-accessibility-locales.md) — keyboard, responsive and locale evidence for the focused package.
 - [Native signing ownership](decisions/ADR-0005-native-sign.md)

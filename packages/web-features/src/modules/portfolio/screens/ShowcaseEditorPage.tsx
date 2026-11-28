@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -5,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
@@ -30,6 +31,7 @@ const typeOptions = [
 ];
 
 export default function ShowcaseEditorPage() {
+  const uiCopy = useUiCopy("ui.portfolio-showcaseeditorpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -87,25 +89,25 @@ export default function ShowcaseEditorPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-h1 text-foreground">
-            {isEdit ? "Edit showcase" : "Create showcase"}
+            {isEdit ? uiCopy("edit-showcase") : uiCopy("create-showcase")}
           </h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/portfolio/showcases")}>
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : "Save"}
+            {saveMutation.isPending ? uiCopy("saving") : uiCopy("save")}
           </Button>
         </div>
       </div>
 
       {isLoading && isEdit ? (
-        <div className="text-sm text-muted-foreground">Loading showcase...</div>
+        <LoadingSkeleton variant="form" label={uiCopy("loading-showcase")} />
       ) : (
         <div className="space-y-6">
           {isEdit && showcase && (
@@ -113,14 +115,14 @@ export default function ShowcaseEditorPage() {
               <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    Public Link
+                    {uiCopy("public-link")}
                     <Badge variant={showcase.isPublished ? "default" : "secondary"}>
-                      {showcase.isPublished ? "Published" : "Unpublished"}
+                      {showcase.isPublished ? uiCopy("published") : uiCopy("unpublished")}
                     </Badge>
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Your portfolio is accessible via these links.
-                    {!showcase.isPublished && " (Only visible to you while unpublished)"}
+                    {uiCopy("your-portfolio-is-accessible")}
+                    {!showcase.isPublished && uiCopy("only-visible-to-you")}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 w-full sm:w-auto">
@@ -137,10 +139,10 @@ export default function ShowcaseEditorPage() {
                         onClick={() => {
                           void navigator.clipboard
                             .writeText(`https://${showcase.primaryDomain}`)
-                            .then(() => toast.success("Copied custom domain link"));
+                            .then(() => toast.success(uiCopy("copied-custom-domain-link")));
                         }}
                       >
-                        Copy
+                        {uiCopy("copy")}
                       </Button>
                     </div>
                   )}
@@ -156,16 +158,18 @@ export default function ShowcaseEditorPage() {
                       onClick={() => {
                         void navigator.clipboard
                           .writeText(`${window.location.origin}/p/${showcase.slug}`)
-                          .then(() => toast.success("Copied slug link"));
+                          .then(() => toast.success(uiCopy("copied-slug-link")));
                       }}
                     >
-                      Copy
+                      {uiCopy("copy")}
                     </Button>
                   </div>
                   {showcase.primaryDomain && (
                     <p className="text-[10px] text-muted-foreground max-w-xs">
-                      * Ensure your DNS CNAME points <strong>{showcase.primaryDomain}</strong> to{" "}
-                      <strong>{window.location.host}</strong> to use the custom domain.
+                      {uiCopy("ensure-your-dns-cname") + " "}
+                      <strong>{showcase.primaryDomain}</strong>
+                      {" " + uiCopy("to")} <strong>{window.location.host}</strong>
+                      {" " + uiCopy("to-use-the-custom")}
                     </p>
                   )}
                 </div>
@@ -177,7 +181,7 @@ export default function ShowcaseEditorPage() {
             <Card>
               <CardContent className="p-8 space-y-6">
                 <div>
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">{uiCopy("name")}</Label>
                   <Input
                     id="name"
                     value={form.watch("name")}
@@ -188,7 +192,7 @@ export default function ShowcaseEditorPage() {
                         form.setValue("slug", slugify(value), { shouldValidate: true });
                       }
                     }}
-                    placeholder="Oneway8x Studio"
+                    placeholder={uiCopy("oneway8x-studio")}
                   />
                   {form.formState.errors.name && (
                     <p className="text-sm text-destructive mt-1">
@@ -197,7 +201,7 @@ export default function ShowcaseEditorPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="slug">Slug</Label>
+                  <Label htmlFor="slug">{uiCopy("slug")}</Label>
                   <Input
                     id="slug"
                     value={form.watch("slug")}
@@ -205,7 +209,7 @@ export default function ShowcaseEditorPage() {
                       setSlugTouched(true);
                       form.setValue("slug", event.target.value, { shouldValidate: true });
                     }}
-                    placeholder="oneway8x"
+                    placeholder={uiCopy("oneway8x")}
                   />
                   {form.formState.errors.slug && (
                     <p className="text-sm text-destructive mt-1">
@@ -214,7 +218,7 @@ export default function ShowcaseEditorPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="type">Type</Label>
+                  <Label htmlFor="type">{uiCopy("type")}</Label>
                   <select
                     id="type"
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -238,11 +242,11 @@ export default function ShowcaseEditorPage() {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="primaryDomain">Primary domain</Label>
+                  <Label htmlFor="primaryDomain">{uiCopy("primary-domain")}</Label>
                   <Input
                     id="primaryDomain"
                     {...form.register("primaryDomain")}
-                    placeholder="oneway8x.com"
+                    placeholder={uiCopy("oneway8x-com")}
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -256,7 +260,7 @@ export default function ShowcaseEditorPage() {
                       />
                     )}
                   />
-                  <Label htmlFor="isPublished">Published</Label>
+                  <Label htmlFor="isPublished">{uiCopy("published")}</Label>
                 </div>
               </CardContent>
             </Card>

@@ -71,6 +71,19 @@ describe("InvoiceEmail Template", () => {
       expect(result.html).toContain("Pay to");
     });
 
+    it("renders the invoice and subject using the recipient locale", async () => {
+      const props = { ...mockProps, locale: "fr-FR", customMessage: "client note unchanged" };
+      const result = await renderEmail(<InvoiceEmail {...props} />);
+
+      expect(result.html).toContain('lang="fr"');
+      expect(result.html).toContain("Détails de la facture");
+      expect(result.text).toContain("client note unchanged");
+      const subject = buildInvoiceEmailSubject(props);
+      expect(subject).toContain("Acme Corp");
+      expect(subject).toContain("INV-001");
+      expect(subject).toContain("facture");
+    });
+
     it("should include custom message when provided", async () => {
       const propsWithMessage: InvoiceEmailProps = {
         ...mockProps,

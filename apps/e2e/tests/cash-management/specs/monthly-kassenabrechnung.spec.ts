@@ -30,7 +30,7 @@ test.describe("Monthly Cash E2E - Kassenabrechnung", () => {
     });
 
     const assistant = new CashAssistantPage(cashPage);
-    await cashPage.goto(`/assistant`);
+    await cashPage.goto(`/cash/assistant`);
     await assistant.sendMessage("Show me the monthly report for 2026-07.");
 
     const messages = await cashPage.locator("body").innerText();

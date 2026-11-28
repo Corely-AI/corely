@@ -264,9 +264,10 @@ async function postStripeWebhook(
     return;
   }
 
-  const stripeSecret =
-    process.env.STRIPE_WEBHOOK_SECRET ??
-    "whsec_cd7d117e34d198633d3c215ce9321c687c821577f783047cff8ecf25f0edeee5";
+  const stripeSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!stripeSecret) {
+    throw new Error("STRIPE_WEBHOOK_SECRET is required when the fake Stripe webhook is rejected");
+  }
   const stripeSignature = Stripe.webhooks.generateTestHeaderString({
     payload: rawBody,
     secret: stripeSecret,

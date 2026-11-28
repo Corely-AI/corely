@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "scope": "Local structural/content consistency checks only; not GitHub creation or code verification",
+  "logical_entries": 85,
+  "epics": 17,
+  "features": 68,
+  "P1": {
+    "epics": 9,
+    "features": 38
+  },
+  "P2": {
+    "epics": 8,
+    "features": 30
+  },
+  "catalog_apps_covered": [1, 2, 3, 4, 5, 11, 12, 16, 18, 21, 26, 27, 28],
+  "hard_dependency_edges": 155,
+  "hard_graph_acyclic": true,
+  "graph_with_conditional_promotion_acyclic": true,
+  "all_body_files_match_manifest": true,
+  "remote_mutations_performed": false,
+  "project_configuration_verified": false
+}

@@ -1,6 +1,7 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, CardContent, Input, Label } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 
@@ -21,6 +22,7 @@ type UsageRow = {
 };
 
 export default function UsageReportPage() {
+  const uiCopy = useUiCopy("ui.inventory-usagereportpage");
   const [warehouseId, setWarehouseId] = useState("");
   const [fromDate, setFromDate] = useState(toDateInput(addDays(new Date(), -30)));
   const [toDate, setToDate] = useState(toDateInput(new Date()));
@@ -109,13 +111,11 @@ export default function UsageReportPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-h1 text-foreground">Usage Report</h1>
-          <p className="text-sm text-muted-foreground">
-            Track material consumption by product and movement reason
-          </p>
+          <h1 className="text-h1 text-foreground">{uiCopy("usage-report")}</h1>
+          <p className="text-sm text-muted-foreground">{uiCopy("track-material-consumption-by")}</p>
         </div>
         <Button variant="outline" onClick={() => void refetch()} disabled={isFetching}>
-          Refresh
+          {uiCopy("refresh")}
         </Button>
       </div>
 
@@ -123,13 +123,13 @@ export default function UsageReportPage() {
         <CardContent className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Warehouse</Label>
+              <Label>{uiCopy("warehouse")}</Label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={warehouseId}
                 onChange={(event) => setWarehouseId(event.target.value)}
               >
-                <option value="">All warehouses</option>
+                <option value="">{uiCopy("all-warehouses")}</option>
                 {warehouses?.items.map((warehouse) => (
                   <option key={warehouse.id} value={warehouse.id}>
                     {warehouse.name}
@@ -138,7 +138,7 @@ export default function UsageReportPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label>From</Label>
+              <Label>{uiCopy("from")}</Label>
               <Input
                 type="date"
                 value={fromDate}
@@ -146,7 +146,7 @@ export default function UsageReportPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>To</Label>
+              <Label>{uiCopy("to")}</Label>
               <Input
                 type="date"
                 value={toDate}
@@ -158,19 +158,19 @@ export default function UsageReportPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Total consumed qty
+                {uiCopy("total-consumed-qty")}
               </div>
               <div className="text-2xl font-semibold">{totals.totalConsumedQty}</div>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Consumption moves
+                {uiCopy("consumption-moves")}
               </div>
               <div className="text-2xl font-semibold">{totals.totalMoves}</div>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Products impacted
+                {uiCopy("products-impacted")}
               </div>
               <div className="text-2xl font-semibold">{totals.productCount}</div>
             </div>
@@ -181,22 +181,24 @@ export default function UsageReportPage() {
       <Card>
         <CardContent className="p-6">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading usage report...</div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-usage-report")} />
           ) : isError ? (
-            <div className="text-center py-8 text-destructive">Failed to load usage report.</div>
+            <div className="text-center py-8 text-destructive">
+              {uiCopy("failed-to-load-usage")}
+            </div>
           ) : usageRows.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No consumption data in selected range.
+              {uiCopy("no-consumption-data-in")}
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground">
-                  <th className="py-2">Product</th>
-                  <th>Total consumed</th>
-                  <th>Shipment qty</th>
-                  <th>Adjustment qty</th>
-                  <th>Moves</th>
+                  <th className="py-2">{uiCopy("product")}</th>
+                  <th>{uiCopy("total-consumed")}</th>
+                  <th>{uiCopy("shipment-qty")}</th>
+                  <th>{uiCopy("adjustment-qty")}</th>
+                  <th>{uiCopy("moves")}</th>
                 </tr>
               </thead>
               <tbody>

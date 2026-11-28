@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildToolCtx, validationError } from "./tool-utils";
 
 describe("tool-utils", () => {
-  it("builds context with workspace fallback to tenant", () => {
+  it("does not infer a workspace from tenant identity", () => {
     const ctx = buildToolCtx({
       tenantId: "tenant-1",
       userId: "user-1",
@@ -11,7 +11,7 @@ describe("tool-utils", () => {
 
     expect(ctx).toEqual({
       tenantId: "tenant-1",
-      workspaceId: "tenant-1",
+      workspaceId: undefined,
       userId: "user-1",
       correlationId: "tool-1",
       requestId: "tool-1",

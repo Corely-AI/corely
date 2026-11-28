@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { PrismaService, getPrismaClient } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
 import type {
   ResourceRepositoryPort,
   ResourceFilters,
@@ -51,8 +52,12 @@ export class PrismaResourceRepoAdapter implements ResourceRepositoryPort {
     return this.mapToDomain(created);
   }
 
-  async findById(id: string, tenantId: string): Promise<BookingResource | null> {
-    const row = await this.prisma.bookingResource.findUnique({
+  async findById(
+    id: string,
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<BookingResource | null> {
+    const row = await getPrismaClient(this.prisma, tx).bookingResource.findUnique({
       where: { id, tenantId },
     });
     return row ? this.mapToDomain(row) : null;
@@ -65,6 +70,10 @@ export class PrismaResourceRepoAdapter implements ResourceRepositoryPort {
     pageSize: number
   ): Promise<ResourcePage> {
     const where: Prisma.BookingResourceWhereInput = { tenantId };
+
+    if (filters.workspaceId) {
+      where.OR = [{ workspaceId: filters.workspaceId }, { workspaceId: null }];
+    }
 
     if (filters.q) {
       where.name = { contains: filters.q, mode: "insensitive" };

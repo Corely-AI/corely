@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { Button } from "@corely/ui";
+import {
+  OperationalTaskApplyResultSchema,
+  OperationalTaskCompletionSchema,
+  OperationalTaskListResultSchema,
+  OperationalTaskTools,
+} from "@corely/contracts";
+import { lastAssistantMessageIsCompleteWithApprovalResponses } from "ai";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   fetchCopilotHistory,
   useCopilotChatOptions,
   type CopilotChatMessage,
 } from "@/lib/copilot-api";
+import { useAuth } from "@/lib/auth-provider";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+import { PageLoadingSkeleton } from "@/shared/components/page-loading-skeleton";
 
 type MessagePart = {
   type: string;
@@ -24,27 +36,25 @@ type MessagePart = {
 const ConfirmCard: React.FC<{
   toolCallId: string;
   toolName: string;
+  details?: React.ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
-}> = ({ toolCallId, toolName, onConfirm, onCancel }) => {
+}> = ({ toolCallId, toolName, details, onConfirm, onCancel }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="border rounded p-3 my-2 bg-white shadow-sm">
+    <div className="my-2 rounded-md border border-border bg-card p-3 text-card-foreground shadow-sm">
       <div className="text-sm font-semibold">{t("copilot.confirmation.title")}</div>
-      <div className="text-xs text-gray-600">
-        {t("copilot.confirmation.subtitle", { toolName, toolCallId })}
-      </div>
+      {details ?? (
+        <div className="text-xs text-muted-foreground">
+          {t("copilot.confirmation.subtitle", { toolName, toolCallId })}
+        </div>
+      )}
       <div className="flex gap-2 mt-2">
         <Button size="sm" onClick={onConfirm} data-testid={`confirm-${toolCallId}`}>
           {t("common.confirm")}
         </Button>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={onCancel}
-          data-testid={`cancel-${toolCallId}`}
-        >
+        <Button size="sm" variant="outline" onClick={onCancel} data-testid={`cancel-${toolCallId}`}>
           {t("common.cancel")}
         </Button>
       </div>
@@ -62,17 +72,49 @@ const MessageBubble: React.FC<{
   return (
     <div
       className={`max-w-3xl w-full p-3 rounded-lg ${
-        role === "user" ? "bg-blue-50 text-gray-900 ml-auto" : "bg-gray-50 text-gray-900"
-      } border border-gray-200 shadow-sm`}
+        role === "user" ? "ml-auto bg-muted text-foreground" : "bg-card text-card-foreground"
+      } border border-border shadow-sm`}
     >
-      <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">{roleLabel}</div>
+      <div className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+        {roleLabel}
+      </div>
       <div className="space-y-1 text-sm leading-relaxed">{children}</div>
     </div>
   );
 };
 
-export const CopilotPage: React.FC = () => {
+function taskAssistantCopy(language: string) {
+  return language?.startsWith("de")
+    ? {
+        complete: "Aufgabe abschließen",
+        version: "Version",
+        unavailable: "Der Assistent ist nicht verfügbar.",
+        tasks: "Tagesaufgaben",
+        prompt: "Fragen Sie zu Ihren Aufgaben…",
+      }
+    : language?.startsWith("vi")
+      ? {
+          complete: "Hoàn thành công việc",
+          version: "Phiên bản",
+          unavailable: "Trợ lý hiện không khả dụng.",
+          tasks: "Công việc hằng ngày",
+          prompt: "Hỏi về công việc…",
+        }
+      : {
+          complete: "Complete task",
+          version: "Version",
+          unavailable: "The assistant is unavailable.",
+          tasks: "Daily Work",
+          prompt: "Ask about tasks…",
+        };
+}
+
+export const CopilotPage: React.FC<{ activeModule?: "freelancer" | "tasks" }> = ({
+  activeModule = "freelancer",
+}) => {
   const { t, i18n } = useTranslation();
+  const operational = activeModule === "tasks";
+  const reviewCopy = taskAssistantCopy(i18n.language);
   const {
     options: chatOptions,
     runId,
@@ -80,12 +122,28 @@ export const CopilotPage: React.FC = () => {
     workspaceId,
     accessToken,
   } = useCopilotChatOptions({
-    activeModule: "freelancer",
+    activeModule,
+    ...(operational ? { runIdMode: "controlled" as const } : {}),
     locale: i18n.language,
   });
 
-  const { messages, sendMessage, addToolResult, addToolApprovalResponse, setMessages } =
-    useChat<CopilotChatMessage>(chatOptions);
+  const {
+    messages,
+    sendMessage,
+    addToolResult,
+    addToolApprovalResponse,
+    setMessages,
+    error,
+    status,
+  } = useChat<CopilotChatMessage>({
+    ...chatOptions,
+    ...(operational
+      ? {
+          id: "tasks-current-session",
+          sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+        }
+      : {}),
+  });
   const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,6 +160,9 @@ export const CopilotPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (operational) {
+      return;
+    }
     let cancelled = false;
     void fetchCopilotHistory({ runId, apiBase, workspaceId, accessToken })
       .then((history) => {
@@ -116,7 +177,7 @@ export const CopilotPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
+  }, [accessToken, apiBase, hydratedRunId, operational, runId, setMessages, workspaceId]);
 
   const renderPart = (part: MessagePart, messageId: string) => {
     if (part.type === "text") {
@@ -156,11 +217,34 @@ export const CopilotPage: React.FC = () => {
         );
       }
       if (part.state === "approval-requested" && part.approval?.id) {
+        const proposal =
+          toolName === OperationalTaskTools.apply
+            ? OperationalTaskCompletionSchema.safeParse(part.input)
+            : undefined;
+        if (proposal && !proposal.success) {
+          return (
+            <p role="alert" className="text-sm text-destructive">
+              {t("copilot.denied")}
+            </p>
+          );
+        }
         return (
           <ConfirmCard
             key={toolCallId}
             toolCallId={toolCallId}
             toolName={toolName}
+            details={
+              proposal?.success ? (
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium">
+                    {reviewCopy.complete} · {proposal.data.title}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {reviewCopy.version} {proposal.data.version}
+                  </p>
+                </div>
+              ) : undefined
+            }
             onConfirm={() =>
               addToolApprovalResponse?.({ id: part.approval?.id ?? toolCallId, approved: true })
             }
@@ -168,6 +252,54 @@ export const CopilotPage: React.FC = () => {
               addToolApprovalResponse?.({ id: part.approval?.id ?? toolCallId, approved: false })
             }
           />
+        );
+      }
+      if (toolName === OperationalTaskTools.propose && part.state === "output-available") {
+        // The next approval card displays the reviewed data without the proposal proof.
+        return null;
+      }
+      if (operational && part.state === "output-available") {
+        const list =
+          toolName === OperationalTaskTools.list
+            ? OperationalTaskListResultSchema.safeParse(part.output)
+            : undefined;
+        if (list?.success && list.data.tasks.length) {
+          return (
+            <div className="space-y-1 text-sm">
+              <ul className="list-disc pl-5">
+                {list.data.tasks.map((task) => (
+                  <li key={task.taskId}>{task.title}</li>
+                ))}
+              </ul>
+              <p className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <Link to="/tasks" className="underline">
+                  {reviewCopy.tasks}
+                </Link>
+                <time dateTime={list.data.retrievedAt}>
+                  {new Date(list.data.retrievedAt).toLocaleString(i18n.language)}
+                </time>
+              </p>
+            </div>
+          );
+        }
+        const applied =
+          toolName === OperationalTaskTools.apply
+            ? OperationalTaskApplyResultSchema.safeParse(part.output)
+            : undefined;
+        if (applied?.success) {
+          return (
+            <Link className="text-sm underline" to={applied.data.source.path}>
+              {applied.data.task.title}
+            </Link>
+          );
+        }
+        return null;
+      }
+      if (operational && (part.state === "output-error" || part.state === "output-denied")) {
+        return (
+          <p role="status" className="text-sm text-destructive">
+            {part.errorText ?? t("copilot.denied")}
+          </p>
         );
       }
       if (part.state === "output-available") {
@@ -190,7 +322,7 @@ export const CopilotPage: React.FC = () => {
           </div>
         );
       }
-      return (
+      return operational ? null : (
         <div className="text-xs text-gray-600">
           {t("copilot.toolCall", { toolName, toolCallId })}
         </div>
@@ -218,9 +350,21 @@ export const CopilotPage: React.FC = () => {
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-semibold">{t("copilot.title")}</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-xl font-semibold">{t("copilot.title")}</h1>
+        {operational && (
+          <Link className="text-sm underline" to="/tasks">
+            {reviewCopy.tasks}
+          </Link>
+        )}
+      </div>
+      {operational && error && (
+        <p role="alert" className="text-sm text-destructive">
+          {reviewCopy.unavailable}
+        </p>
+      )}
 
-      <div className="border rounded p-3 h-[60vh] overflow-y-auto bg-white shadow-sm">
+      <div className="h-[60vh] overflow-y-auto rounded-md border border-border bg-background p-3 shadow-sm">
         {messages.map((m) => (
           <div key={m.id} className="mb-3 flex flex-col gap-1">
             <MessageBubble role={m.role}>
@@ -238,15 +382,48 @@ export const CopilotPage: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
-          className="flex-1 border rounded px-3 py-2"
+          className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-foreground"
           value={input}
           onChange={handleInputChange}
-          placeholder={t("copilot.placeholder")}
+          placeholder={operational ? reviewCopy.prompt : t("copilot.placeholder")}
+          aria-label={operational ? reviewCopy.prompt : t("copilot.placeholder")}
         />
-        <Button type="submit">{t("common.send")}</Button>
+        <Button
+          type="submit"
+          disabled={operational && (status === "submitted" || status === "streaming")}
+        >
+          {t("assistant.send")}
+        </Button>
       </form>
     </div>
   );
 };
+
+export function OperationalCopilotPage() {
+  const { i18n } = useTranslation();
+  const { user } = useAuth();
+  const { activeWorkspaceId } = useWorkspace();
+  const { hasCapability, isLoading } = useWorkspaceConfig();
+  if (isLoading) {
+    return <PageLoadingSkeleton />;
+  }
+  if (!activeWorkspaceId || !hasCapability("ai.copilot")) {
+    const copy = taskAssistantCopy(i18n.language);
+    return (
+      <div className="space-y-3 p-4">
+        <p role="status">{copy.unavailable}</p>
+        <Button variant="outline" asChild>
+          <Link to="/tasks">{copy.tasks}</Link>
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <CopilotPage
+      key={JSON.stringify([user?.userId, user?.activeTenantId, activeWorkspaceId])}
+      activeModule="tasks"
+    />
+  );
+}
 
 export default CopilotPage;

@@ -1,8 +1,10 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarPlus, Users, Edit2 } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -25,6 +27,7 @@ import { MaterialsSection } from "../../portal/components/MaterialsSection";
 import { SessionsPanel } from "../components/SessionsPanel";
 
 export default function ClassGroupDetailPage() {
+  const uiCopy = useUiCopy("ui.classes-classgroupdetailpage");
   const { id } = useParams<{ id: string }>();
   const groupId = id ?? "";
   const navigate = useNavigate();
@@ -116,7 +119,7 @@ export default function ClassGroupDetailPage() {
       });
     },
     onSuccess: async () => {
-      toast.success("Student enrolled");
+      toast.success(uiCopy("student-enrolled"));
       setSelectedStudentId("");
       setSelectedPayerId("");
       setOverridePrice("");
@@ -131,12 +134,12 @@ export default function ClassGroupDetailPage() {
     mutationFn: async (enrollmentId: string) =>
       classesApi.updateEnrollment(enrollmentId, { isActive: false }),
     onSuccess: async () => {
-      toast.success("Enrollment deactivated");
+      toast.success(uiCopy("enrollment-deactivated"));
       await queryClient.invalidateQueries({
         queryKey: classEnrollmentKeys.list({ classGroupId: groupId }),
       });
     },
-    onError: () => toast.error("Failed to update enrollment"),
+    onError: () => toast.error(uiCopy("failed-to-update-enrollment")),
   });
 
   const createSession = useMutation({
@@ -155,7 +158,7 @@ export default function ClassGroupDetailPage() {
       });
     },
     onSuccess: async () => {
-      toast.success("Session added");
+      toast.success(uiCopy("session-added"));
       setSessionStart("");
       setSessionDuration("60");
       setSessionTopic("");
@@ -182,7 +185,7 @@ export default function ClassGroupDetailPage() {
     onError: (error) => {
       const apiError = error instanceof ApiError ? error : normalizeError(error);
       if (apiError.code === "Classes:MonthLocked") {
-        toast.error("Month is locked", {
+        toast.error(uiCopy("month-is-locked"), {
           description:
             apiError.detail ||
             "This month has already been billed. Reopen the month or create an adjustment.",
@@ -201,7 +204,7 @@ export default function ClassGroupDetailPage() {
           apiError.detail.toLowerCase().includes("classes.write") ||
           apiError.detail.toLowerCase().includes("permission"))
       ) {
-        toast.error("Cannot generate sessions for current month", {
+        toast.error(uiCopy("cannot-generate-sessions-for"), {
           description:
             "This month may already be billed/locked, or your current workspace context does not match this class group.",
         });
@@ -252,11 +255,18 @@ export default function ClassGroupDetailPage() {
   }, [customers, students]);
 
   if (isGroupLoading) {
-    return <div className="text-muted-foreground">Loading class group...</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-class-group")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (!group) {
-    return <div className="text-muted-foreground">Class group not found.</div>;
+    return <div className="text-muted-foreground">{uiCopy("class-group-not-found")}</div>;
   }
 
   return (
@@ -271,14 +281,14 @@ export default function ClassGroupDetailPage() {
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => navigate(`/class-groups/${group.id}/edit`)}>
             <Edit2 className="h-4 w-4" />
-            Edit
+            {uiCopy("edit")}
           </Button>
           <Button
             variant="accent"
             onClick={() => setSessionStart(new Date().toISOString().slice(0, 16))}
           >
             <CalendarPlus className="h-4 w-4" />
-            Add session
+            {uiCopy("add-session")}
           </Button>
         </div>
       </div>
@@ -286,19 +296,19 @@ export default function ClassGroupDetailPage() {
       <Card>
         <CardContent className="p-6 grid gap-4 md:grid-cols-3">
           <div>
-            <div className="text-sm text-muted-foreground">Default price</div>
+            <div className="text-sm text-muted-foreground">{uiCopy("default-price")}</div>
             <div className="text-lg font-semibold">
               {formatMoney(group.defaultPricePerSession, undefined, group.currency)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-muted-foreground">Status</div>
+            <div className="text-sm text-muted-foreground">{uiCopy("status")}</div>
             <div className="text-lg font-semibold">
-              {group.status === "ACTIVE" ? "Active" : "Archived"}
+              {group.status === "ACTIVE" ? uiCopy("active") : uiCopy("archived")}
             </div>
           </div>
           <div>
-            <div className="text-sm text-muted-foreground">Updated</div>
+            <div className="text-sm text-muted-foreground">{uiCopy("updated")}</div>
             <div className="text-lg font-semibold">{formatDate(group.updatedAt, "en-US")}</div>
           </div>
         </CardContent>
@@ -307,14 +317,15 @@ export default function ClassGroupDetailPage() {
       <Card>
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <Users className="h-4 w-4" /> Roster
+            <Users className="h-4 w-4" />
+            {" " + uiCopy("roster")}
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_1fr_160px_120px] items-end">
             <div className="space-y-2">
-              <Label>Student</Label>
+              <Label>{uiCopy("student")}</Label>
               <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select student" />
+                  <SelectValue placeholder={uiCopy("select-student")} />
                 </SelectTrigger>
                 <SelectContent>
                   {rosterOptions.map((option) => (
@@ -326,10 +337,10 @@ export default function ClassGroupDetailPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Payer</Label>
+              <Label>{uiCopy("payer")}</Label>
               <Select value={selectedPayerId} onValueChange={setSelectedPayerId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select payer" />
+                  <SelectValue placeholder={uiCopy("select-payer")} />
                 </SelectTrigger>
                 <SelectContent>
                   {payerOptions.map((option) => (
@@ -341,12 +352,12 @@ export default function ClassGroupDetailPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Override price</Label>
+              <Label>{uiCopy("override-price")}</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="Optional"
+                placeholder={uiCopy("optional")}
                 value={overridePrice}
                 onChange={(e) => setOverridePrice(e.target.value)}
               />
@@ -357,13 +368,13 @@ export default function ClassGroupDetailPage() {
               onClick={() => addEnrollment.mutate()}
               disabled={!selectedStudentId || !selectedPayerId || addEnrollment.isPending}
             >
-              Enroll
+              {uiCopy("enroll")}
             </Button>
           </div>
 
           {!primaryPayerId && selectedStudentId ? (
             <div className="text-xs text-muted-foreground mt-[-0.5rem]">
-              No primary payer set for this student.
+              {uiCopy("no-primary-payer-set")}
             </div>
           ) : null}
 
@@ -372,16 +383,16 @@ export default function ClassGroupDetailPage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Student
+                    {uiCopy("student")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Payer
+                    {uiCopy("payer")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Status
+                    {uiCopy("status")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Price override
+                    {uiCopy("price-override")}
                   </th>
                   <th />
                 </tr>
@@ -399,7 +410,7 @@ export default function ClassGroupDetailPage() {
                       {nameByClient.get(enrollment.payerClientId) ?? enrollment.payerClientId}
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {enrollment.isActive ? "Active" : "Inactive"}
+                      {enrollment.isActive ? uiCopy("active") : uiCopy("inactive")}
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
                       {enrollment.priceOverridePerSession
@@ -419,7 +430,7 @@ export default function ClassGroupDetailPage() {
                 {enrollments.length === 0 ? (
                   <tr>
                     <td className="px-4 py-8 text-sm text-center text-muted-foreground" colSpan={5}>
-                      No students enrolled yet.
+                      {uiCopy("no-students-enrolled-yet")}
                     </td>
                   </tr>
                 ) : null}

@@ -1,6 +1,9 @@
 import { z } from "zod";
+import { AppDirectoryDescriptorSchema, AppDirectoryEntrySchema } from "./app-directory.schema";
+import { AppLaunchDescriptorSchema, AppCatalogLaunchSchema } from "./app-launch.schema";
 import { AllowedSurfacesSchema } from "./surface.schema";
 import { AllowedVerticalsSchema } from "./experience-targeting.schema";
+import { OperationalExperienceContributionSchema } from "./operational-package.schema";
 
 /**
  * Menu Contribution - Defines a menu item contributed by an app
@@ -51,6 +54,9 @@ export const AppManifestSchema = z.object({
     .describe("Fine-grained capability strings provided by this app"),
   permissions: z.array(z.string()).describe("RBAC permission keys used by this app"),
   menu: z.array(MenuContributionSchema).describe("Menu contributions from this app"),
+  launch: AppLaunchDescriptorSchema.optional(),
+  directory: AppDirectoryDescriptorSchema.optional(),
+  operationalExperiences: z.array(OperationalExperienceContributionSchema).optional(),
   settingsSchema: z.any().optional().describe("JSON Schema for tenant-specific app settings"),
 
   // Entitlement & Features
@@ -95,10 +101,36 @@ export const AppCatalogItemSchema = z.object({
   version: z.string(),
   description: z.string().optional(),
   dependencies: z.array(z.string()),
+  launch: AppCatalogLaunchSchema.optional(),
+  directory: AppDirectoryEntrySchema.optional(),
   enabled: z.boolean().optional().describe("Enabled status (only in tenant context)"),
 });
 
 export type AppCatalogItem = z.infer<typeof AppCatalogItemSchema>;
+
+/** Optional entry to the retained host administration UI; never a grant to mutate. */
+export const AppManagementLinkSchema = z.object({
+  path: z
+    .string()
+    .regex(/^\/settings\/tenants\/[^/?#]+$/)
+    .optional(),
+});
+export type AppManagementLink = z.infer<typeof AppManagementLinkSchema>;
+
+/** Administrative target only; it never changes authenticated request authority. */
+export const AppCatalogQuerySchema = z.object({ forTenantId: z.string().min(1).optional() });
+
+export const UpdateTenantAppEnablementSchema = z.object({
+  enabled: z.boolean(),
+  cascade: z.boolean().optional().default(false),
+  expectedDependents: z.array(z.string().min(1)).optional(),
+});
+export type UpdateTenantAppEnablement = z.infer<typeof UpdateTenantAppEnablementSchema>;
+
+export const AppDependencyConflictSchema = z.object({
+  dependents: z.array(z.string()),
+  approvalChanged: z.boolean().optional(),
+});
 
 /**
  * Tenant App Install - Tenant-specific app installation record

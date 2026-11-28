@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Alert,
   AlertDescription,
   AlertTitle,
@@ -58,8 +59,8 @@ export function BillingScreen() {
       billingApi.createCheckoutSession({
         productKey: billingProductKey,
         planCode,
-        successPath: "/billing?checkout=success",
-        cancelPath: "/billing?checkout=cancelled",
+        successPath: "/cash/billing?checkout=success",
+        cancelPath: "/cash/billing?checkout=cancelled",
       }),
     onSuccess: (result) => {
       window.location.assign(result.checkoutUrl);
@@ -70,7 +71,7 @@ export function BillingScreen() {
     mutationFn: () =>
       billingApi.createPortalSession({
         productKey: billingProductKey,
-        returnPath: "/billing",
+        returnPath: "/cash/billing",
       }),
     onSuccess: (result) => {
       window.location.assign(result.portalUrl);
@@ -107,26 +108,28 @@ export function BillingScreen() {
 
   if (overviewQuery.isLoading) {
     return (
-      <div className="space-y-5 px-4 py-5 sm:px-5 sm:py-6 lg:space-y-6 lg:p-8 animate-fade-in">
-        <div className="space-y-3">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-5 w-[32rem] max-w-full" />
-        </div>
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2">
-          <Skeleton className="h-10 w-44 rounded-md" />
-          <Skeleton className="h-10 w-40 rounded-md" />
-          <Skeleton className="h-10 w-56 rounded-md" />
-        </div>
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="space-y-5 px-4 py-5 sm:px-5 sm:py-6 lg:space-y-6 lg:p-8 animate-fade-in">
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-5 w-[32rem] max-w-full" />
+          </div>
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2">
+            <Skeleton className="h-10 w-44 rounded-md" />
+            <Skeleton className="h-10 w-40 rounded-md" />
+            <Skeleton className="h-10 w-56 rounded-md" />
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <Skeleton className="h-72 rounded-lg" />
+            <Skeleton className="h-72 rounded-lg" />
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+            <Skeleton className="h-80 rounded-lg" />
+            <Skeleton className="h-80 rounded-lg" />
+          </div>
           <Skeleton className="h-72 rounded-lg" />
-          <Skeleton className="h-72 rounded-lg" />
         </div>
-        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-          <Skeleton className="h-80 rounded-lg" />
-          <Skeleton className="h-80 rounded-lg" />
-        </div>
-        <Skeleton className="h-72 rounded-lg" />
-      </div>
+      </LoadingSkeleton>
     );
   }
 

@@ -1,0 +1,27 @@
+{
+  "de-task-board": {
+    "passes": 23,
+    "manualReview": [],
+    "findings": []
+  },
+  "de-public-booking": {
+    "passes": 17,
+    "manualReview": [],
+    "findings": []
+  },
+  "en-public-booking": {
+    "passes": 17,
+    "manualReview": [],
+    "findings": []
+  },
+  "vi-public-booking": {
+    "passes": 17,
+    "manualReview": [],
+    "findings": []
+  },
+  "vi-review-dialog": {
+    "passes": 18,
+    "manualReview": [],
+    "findings": []
+  }
+}

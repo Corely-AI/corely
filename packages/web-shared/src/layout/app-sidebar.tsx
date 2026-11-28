@@ -1,5 +1,5 @@
 import React from "react";
-import type { WorkspaceNavigationGroup } from "@corely/contracts";
+import type { WorkspaceNavigationGroup, WorkspaceNavigationItem } from "@corely/contracts";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -34,10 +34,10 @@ import {
   resolveNavigationGroupLabelKey,
   resolveNavigationItemLabelKey,
 } from "@corely/web-shared/shared/workspaces/navigation-labels";
-import { WorkspaceTypeBadge } from "@corely/web-shared/shared/workspaces/WorkspaceTypeBadge";
 import { useCanManageTenants, useCanReadTenants } from "@corely/web-shared/shared/lib/permissions";
 import { getDocsBaseUrl } from "@corely/web-shared/shared/lib/docs-url";
 import { useSurfaceId } from "@corely/web-shared/shared/surface";
+import { filterSidebarNavigation } from "./sidebar-navigation";
 
 export type WorkspaceSwitcherMode = "always" | "multi" | "hidden";
 
@@ -50,10 +50,11 @@ export interface AppSidebarProps {
   configError?: Error | null;
   hiddenItemIds?: readonly string[];
   showPlatformAdminNav?: boolean;
-  showWorkspaceTypeBadge?: boolean;
   workspaceSwitcherMode?: WorkspaceSwitcherMode;
   allowWorkspaceCreation?: boolean;
   notificationBell?: React.ReactNode;
+  directoryLink?: React.ReactNode;
+  renderNavigationChildren?: (item: WorkspaceNavigationItem) => React.ReactNode;
   logo?: React.ReactNode;
   onNavigate?: () => void;
 }
@@ -70,23 +71,6 @@ const isWorkspaceSwitcherVisible = (mode: WorkspaceSwitcherMode, workspaceCount:
   return true;
 };
 
-const removeHiddenItems = (
-  groups: WorkspaceNavigationGroup[],
-  hiddenItemIds: readonly string[]
-): WorkspaceNavigationGroup[] => {
-  if (hiddenItemIds.length === 0) {
-    return groups;
-  }
-
-  const hiddenIds = new Set(hiddenItemIds);
-  return groups
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => !hiddenIds.has(item.id)),
-    }))
-    .filter((group) => group.items.length > 0);
-};
-
 export function AppSidebar({
   collapsed = false,
   onToggle,
@@ -96,10 +80,11 @@ export function AppSidebar({
   configError,
   hiddenItemIds,
   showPlatformAdminNav = true,
-  showWorkspaceTypeBadge = true,
   workspaceSwitcherMode = "always",
   allowWorkspaceCreation,
   notificationBell,
+  directoryLink,
+  renderNavigationChildren,
   logo,
   onNavigate,
 }: AppSidebarProps) {
@@ -124,24 +109,11 @@ export function AppSidebar({
   const showSurfacePlatformAdminNav =
     showPlatformAdminNav && surfaceId === "platform" && (canReadTenants || canManageTenants);
 
-  const resolvedGroups = React.useMemo(() => {
-    const sourceGroups = navigationGroups ?? workspaceNavigationGroups;
-    const groupsWithoutHiddenItems = removeHiddenItems(sourceGroups, hiddenItemIds ?? []);
-
-    if (isHostScope) {
-      return groupsWithoutHiddenItems;
-    }
-
-    return groupsWithoutHiddenItems
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((item) => {
-          const route = item.route ?? "";
-          return !route.startsWith("/settings/platform");
-        }),
-      }))
-      .filter((group) => group.items.length > 0);
-  }, [hiddenItemIds, isHostScope, navigationGroups, workspaceNavigationGroups]);
+  const sourceGroups = navigationGroups ?? workspaceNavigationGroups;
+  const resolvedGroups = React.useMemo(
+    () => filterSidebarNavigation(sourceGroups, isHostScope, hiddenItemIds),
+    [sourceGroups, isHostScope, hiddenItemIds]
+  );
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -192,6 +164,7 @@ export function AppSidebar({
         className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin"
         data-testid={`sidebar-nav${variant === "mobile" ? "-mobile" : ""}`}
       >
+        {directoryLink}
         {resolvedLoading ? (
           <div className="space-y-2 animate-pulse">
             {[1, 2, 3, 4].map((i) => (
@@ -226,29 +199,33 @@ export function AppSidebar({
                       ? t(itemLabelKey, { defaultValue: item.label })
                       : item.label;
                     return (
-                      <NavLink
-                        key={item.id}
-                        to={item.route || "#"}
-                        end={item.exact || item.route === "/tax"}
-                        target={openInNewTab ? "_blank" : undefined}
-                        rel={openInNewTab ? "noreferrer" : undefined}
-                        data-testid={`nav-${item.id}`}
-                        onClick={onNavigate}
-                        className={({ isActive }) =>
-                          cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                            isActive
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                          )
-                        }
-                      >
-                        <Icon className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span>{itemLabel}</span>}
-                        {!collapsed && item.pinned && (
-                          <span className="ml-auto text-xs text-muted-foreground">📌</span>
-                        )}
-                      </NavLink>
+                      <React.Fragment key={item.id}>
+                        <NavLink
+                          to={item.route || "#"}
+                          end={item.exact || item.route === "/tax"}
+                          target={openInNewTab ? "_blank" : undefined}
+                          rel={openInNewTab ? "noreferrer" : undefined}
+                          data-testid={`nav-${item.id}`}
+                          aria-label={collapsed ? itemLabel : undefined}
+                          title={collapsed ? itemLabel : undefined}
+                          onClick={onNavigate}
+                          className={({ isActive }) =>
+                            cn(
+                              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                              isActive
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                            )
+                          }
+                        >
+                          <Icon className="h-5 w-5 shrink-0" />
+                          {!collapsed && <span>{itemLabel}</span>}
+                          {!collapsed && item.pinned && (
+                            <span className="ml-auto text-xs text-muted-foreground">📌</span>
+                          )}
+                        </NavLink>
+                        {!collapsed && renderNavigationChildren?.(item)}
+                      </React.Fragment>
                     );
                   })}
                 </div>
@@ -299,8 +276,6 @@ export function AppSidebar({
                 )}
               </div>
             )}
-
-            {!collapsed && showWorkspaceTypeBadge ? <WorkspaceTypeBadge /> : null}
           </>
         ) : null}
       </nav>

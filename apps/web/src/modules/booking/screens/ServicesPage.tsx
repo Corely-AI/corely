@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -23,6 +26,7 @@ import {
 } from "@/shared/list-kit";
 import { bookingServiceKeys } from "../queries";
 import {
+  LoadingSkeleton,
   Table,
   TableBody,
   TableCell,
@@ -60,6 +64,8 @@ const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
 };
 
 export const ServicesPage = () => {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.booking-servicespage");
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -110,10 +116,10 @@ export const ServicesPage = () => {
         correlationId: apiClient.generateCorrelationId(),
       }),
     onSuccess: async () => {
-      toast.success("Service deleted");
+      toast.success(uiCopy("service-deleted"));
       await invalidateResourceQueries(queryClient, "booking/services");
     },
-    onError: () => toast.error("Failed to delete service"),
+    onError: () => toast.error(uiCopy("failed-to-delete-service")),
   });
 
   const bulkDeleteMutation = useMutation({
@@ -126,11 +132,11 @@ export const ServicesPage = () => {
         )
       ),
     onSuccess: async () => {
-      toast.success("Selected services deleted");
+      toast.success(uiCopy("selected-services-deleted"));
       setSelectedIds(new Set());
       await invalidateResourceQueries(queryClient, "booking/services");
     },
-    onError: () => toast.error("Failed to delete selected services"),
+    onError: () => toast.error(uiCopy("failed-to-delete-selected")),
   });
 
   const toggleSelection = (id: string) => {
@@ -152,7 +158,7 @@ export const ServicesPage = () => {
     <Button asChild>
       <Link to="/booking/services/new">
         <PlusIcon className="h-4 w-4 mr-2" />
-        Add Service
+        {uiCopy("add-service")}
       </Link>
     </Button>
   );
@@ -160,7 +166,7 @@ export const ServicesPage = () => {
   return (
     <>
       <CrudListPageLayout
-        title="Services & Offerings"
+        title={uiCopy("services-offerings")}
         subtitle="Define bookable services, their duration, prices, and required resource types."
         primaryAction={primaryAction}
         toolbar={
@@ -177,11 +183,11 @@ export const ServicesPage = () => {
             ]}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
-            placeholder="Search service name"
+            placeholder={uiCopy("search-service-name")}
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load services"}
+                {(error as Error)?.message || uiCopy("failed-to-load-services")}
               </div>
             ) : null}
           </ListToolbar>
@@ -202,25 +208,27 @@ export const ServicesPage = () => {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="space-y-4 p-4">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={`service-skeleton-${index}`}
-                    className="h-12 w-full animate-pulse rounded bg-muted/20"
-                  />
-                ))}
-              </div>
+              <LoadingSkeleton label={t("common.loading")}>
+                <div className="space-y-4 p-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={`service-skeleton-${index}`}
+                      className="h-12 w-full animate-pulse motion-reduce:animate-none rounded bg-muted/20"
+                    />
+                  ))}
+                </div>
+              </LoadingSkeleton>
             ) : services.length === 0 ? (
               <EmptyState
                 icon={BookOpen}
-                title="No services found"
-                description="Add your first service offering to start accepting bookings."
+                title={uiCopy("no-services-found")}
+                description={uiCopy("add-your-first-service")}
                 action={
                   <Button
                     variant="outline"
                     onClick={() => setUrlState({ q: "", filters: [], page: 1 })}
                   >
-                    Clear filters
+                    {uiCopy("clear-filters")}
                   </Button>
                 }
               />
@@ -228,7 +236,10 @@ export const ServicesPage = () => {
               <>
                 {selectedIds.size > 0 ? (
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
-                    <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+                    <div className="text-sm text-muted-foreground">
+                      {selectedIds.size}
+                      {" " + uiCopy("selected")}
+                    </div>
                     <ConfirmDeleteDialog
                       trigger={
                         <Button
@@ -236,11 +247,11 @@ export const ServicesPage = () => {
                           size="sm"
                           disabled={bulkDeleteMutation.isPending}
                         >
-                          Delete selected
+                          {uiCopy("delete-selected")}
                         </Button>
                       }
-                      title="Delete selected services"
-                      description="This action cannot be undone."
+                      title={uiCopy("delete-selected-services")}
+                      description={uiCopy("this-action-cannot-be")}
                       isLoading={bulkDeleteMutation.isPending}
                       onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
                     />
@@ -261,20 +272,20 @@ export const ServicesPage = () => {
                                 setSelectedIds(new Set());
                               }
                             }}
-                            aria-label="Select all services"
+                            aria-label={uiCopy("select-all-services")}
                           />
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Name
+                          {uiCopy("name")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Duration
+                          {uiCopy("duration")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Price
+                          {uiCopy("price")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Required Resources
+                          {uiCopy("required-resources")}
                         </TableHead>
                         <TableHead className="w-[120px]" />
                       </TableRow>
@@ -300,25 +311,29 @@ export const ServicesPage = () => {
                                 type="button"
                                 onClick={() => navigator.clipboard.writeText(service.id)}
                                 className="inline-flex items-center text-muted-foreground hover:text-foreground"
-                                aria-label="Copy service id"
+                                aria-label={uiCopy("copy-service-id")}
                               >
                                 <CopyIcon className="h-3 w-3" />
                               </button>
                             </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">
-                            {service.durationMinutes}m
+                            {service.durationMinutes}
+                            {uiCopy("m")}
                             {(service.bufferBeforeMinutes ?? 0) > 0 ||
                             (service.bufferAfterMinutes ?? 0) > 0 ? (
                               <span className="text-muted-foreground text-xs ml-1">
-                                (+{service.bufferBeforeMinutes}m/{service.bufferAfterMinutes}m)
+                                (+{service.bufferBeforeMinutes}
+                                {uiCopy("m-2")}
+                                {service.bufferAfterMinutes}
+                                {uiCopy("m-3")}
                               </span>
                             ) : null}
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">
                             {service.priceCents != null
                               ? `${(service.priceCents / 100).toFixed(2)} ${service.currency || "USD"}`
-                              : "Free"}
+                              : uiCopy("free")}
                           </TableCell>
                           <TableCell className="px-4 py-3">
                             <div className="flex gap-1 flex-wrap">
@@ -356,8 +371,10 @@ export const ServicesPage = () => {
                     <PaginationContent>
                       <PaginationItem>
                         <span className="text-sm text-muted-foreground mr-4">
-                          Page {pageInfo.page} of{" "}
-                          {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                          <PaginationSummary
+                            page={pageInfo.page}
+                            pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                          />
                         </span>
                       </PaginationItem>
                       <PaginationItem>
@@ -396,7 +413,7 @@ export const ServicesPage = () => {
             }
           }}
           trigger={null}
-          title="Delete service"
+          title={uiCopy("delete-service")}
           description={`Delete "${deleteTarget?.name ?? ""}"? This action cannot be undone.`}
           confirmLabel="Delete service"
           isLoading={deleteServiceMutation.isPending}

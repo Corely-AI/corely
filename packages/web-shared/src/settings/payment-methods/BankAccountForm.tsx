@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,6 +42,7 @@ const COUNTRIES = [
 ];
 
 export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormProps) {
+  const uiCopy = useUiCopy("ui.settings-payment-methods-bankaccountform");
   const createMutation = useCreateBankAccount();
 
   const form = useForm<BankAccountFormData>({
@@ -58,7 +60,7 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
 
   const onSubmit = async (data: BankAccountFormData) => {
     createMutation.mutate(
-      { ...data, legalEntityId },
+      { ...data, legalEntityId, isDefault: false },
       {
         onSuccess: (bankAccount) => {
           form.reset();
@@ -76,9 +78,9 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
           name="label"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Label</FormLabel>
+              <FormLabel>{uiCopy("label")}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Main Account" {...field} />
+                <Input placeholder={uiCopy("e-g-main-account")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -90,9 +92,9 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
           name="accountHolderName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Account Holder Name</FormLabel>
+              <FormLabel>{uiCopy("account-holder-name")}</FormLabel>
               <FormControl>
-                <Input placeholder="Full name" {...field} />
+                <Input placeholder={uiCopy("full-name")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -106,7 +108,7 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
             <FormItem>
               <FormLabel>IBAN</FormLabel>
               <FormControl>
-                <Input placeholder="International Bank Account Number" {...field} />
+                <Input placeholder={uiCopy("international-bank-account-number")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -118,9 +120,9 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
           name="bic"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>BIC/SWIFT</FormLabel>
+              <FormLabel>{uiCopy("bic-swift")}</FormLabel>
               <FormControl>
-                <Input placeholder="Bank Identifier Code" {...field} />
+                <Input placeholder={uiCopy("bank-identifier-code")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -132,9 +134,9 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
           name="bankName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bank Name</FormLabel>
+              <FormLabel>{uiCopy("bank-name")}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Deutsche Bank" {...field} />
+                <Input placeholder={uiCopy("e-g-deutsche-bank")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -147,7 +149,7 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Currency</FormLabel>
+                <FormLabel>{uiCopy("currency")}</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger>
@@ -172,7 +174,7 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
             name="country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Country</FormLabel>
+                <FormLabel>{uiCopy("country")}</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger>
@@ -194,7 +196,7 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
         </div>
 
         <Button type="submit" disabled={createMutation.isPending} className="w-full">
-          {createMutation.isPending ? "Creating..." : "Create Account"}
+          {createMutation.isPending ? uiCopy("creating") : uiCopy("create-account")}
         </Button>
       </form>
     </Form>

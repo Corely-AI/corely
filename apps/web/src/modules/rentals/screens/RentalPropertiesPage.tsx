@@ -1,8 +1,9 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Home, Tags } from "lucide-react";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
@@ -37,6 +38,7 @@ const statusVariant = (status: string) => {
 };
 
 export default function RentalPropertiesPage() {
+  const uiCopy = useUiCopy("ui.rentals-rentalpropertiespage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
@@ -102,7 +104,7 @@ export default function RentalPropertiesPage() {
       await queryClient.invalidateQueries({
         queryKey: rentalsPublicKeys.settings(activeWorkspace?.slug),
       });
-      toast.success("Global rental contact updated");
+      toast.success(uiCopy("global-rental-contact-updated"));
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Failed to update rental contact");
@@ -114,7 +116,7 @@ export default function RentalPropertiesPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search properties"
+          placeholder={uiCopy("search-properties")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -141,7 +143,7 @@ export default function RentalPropertiesPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load properties"}
+          {(error as Error)?.message || uiCopy("failed-to-load-properties")}
         </div>
       ) : null}
     </div>
@@ -151,18 +153,18 @@ export default function RentalPropertiesPage() {
     <>
       <Button variant="outline" onClick={() => navigate("/rentals/categories")}>
         <Tags className="h-4 w-4" />
-        Categories
+        {uiCopy("categories")}
       </Button>
       <Button variant="accent" onClick={() => navigate("/rentals/properties/new")}>
         <Plus className="h-4 w-4" />
-        New Property
+        {uiCopy("new-property")}
       </Button>
     </>
   );
 
   return (
     <CrudListPageLayout
-      title="Vacation Rentals"
+      title={uiCopy("vacation-rentals")}
       subtitle="Manage your properties and availability"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -171,23 +173,21 @@ export default function RentalPropertiesPage() {
         <CardContent className="p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold">Global Host Contact</h2>
-              <p className="text-sm text-muted-foreground">
-                This contact is used for all public rental detail pages.
-              </p>
+              <h2 className="text-base font-semibold">{uiCopy("global-host-contact")}</h2>
+              <p className="text-sm text-muted-foreground">{uiCopy("this-contact-is-used")}</p>
             </div>
             <Button
               variant="outline"
               onClick={() => saveSettingsMutation.mutate()}
               disabled={saveSettingsMutation.isPending || isLoadingSettings}
             >
-              Save Contact
+              {uiCopy("save-contact")}
             </Button>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Contact Method</Label>
+              <Label>{uiCopy("contact-method")}</Label>
               <Select
                 value={hostContactMethod ?? "NONE"}
                 onValueChange={(value) =>
@@ -195,19 +195,19 @@ export default function RentalPropertiesPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose contact method" />
+                  <SelectValue placeholder={uiCopy("choose-contact-method")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NONE">Not configured</SelectItem>
-                  <SelectItem value="PHONE">Phone call</SelectItem>
-                  <SelectItem value="EMAIL">Email</SelectItem>
+                  <SelectItem value="NONE">{uiCopy("not-configured")}</SelectItem>
+                  <SelectItem value="PHONE">{uiCopy("phone-call")}</SelectItem>
+                  <SelectItem value="EMAIL">{uiCopy("email")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2 md:col-span-2">
               {hostContactMethod === "EMAIL" ? (
                 <>
-                  <Label htmlFor="global-host-email">Host Email</Label>
+                  <Label htmlFor="global-host-email">{uiCopy("host-email")}</Label>
                   <Input
                     id="global-host-email"
                     type="email"
@@ -218,7 +218,7 @@ export default function RentalPropertiesPage() {
                 </>
               ) : hostContactMethod === "PHONE" ? (
                 <>
-                  <Label htmlFor="global-host-phone">Host Phone</Label>
+                  <Label htmlFor="global-host-phone">{uiCopy("host-phone")}</Label>
                   <Input
                     id="global-host-phone"
                     value={hostContactPhone}
@@ -228,9 +228,9 @@ export default function RentalPropertiesPage() {
                 </>
               ) : (
                 <>
-                  <Label>Host Contact Value</Label>
+                  <Label>{uiCopy("host-contact-value")}</Label>
                   <div className="h-10 rounded-md border border-dashed px-3 text-sm text-muted-foreground flex items-center">
-                    Select a method to provide host contact details.
+                    {uiCopy("select-a-method-to")}
                   </div>
                 </>
               )}
@@ -242,12 +242,12 @@ export default function RentalPropertiesPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading properties...</div>
+            <LoadingSkeleton variant="list" label={uiCopy("loading-properties")} />
           ) : !properties || properties.length === 0 ? (
             <EmptyState
               icon={Home}
-              title="No properties yet"
-              description="Add your first vacation rental property to get started."
+              title={uiCopy("no-properties-yet")}
+              description={uiCopy("add-your-first-vacation")}
               action={primaryAction}
             />
           ) : (
@@ -256,16 +256,16 @@ export default function RentalPropertiesPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Name
+                      {uiCopy("name")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Status
+                      {uiCopy("status")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Max Guests
+                      {uiCopy("max-guests")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Updated
+                      {uiCopy("updated")}
                     </th>
                     <th />
                   </tr>

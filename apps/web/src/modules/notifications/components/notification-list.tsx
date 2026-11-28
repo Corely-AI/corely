@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Tabs, TabsList, TabsTrigger, ScrollArea, Button, Skeleton } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  ScrollArea,
+  Button,
+  Skeleton,
+} from "@corely/ui";
 import { CheckCheck } from "lucide-react";
 import {
   useNotificationsList,
@@ -83,15 +91,17 @@ export function NotificationList() {
         <ScrollArea className="flex-1 mt-2">
           <div className="flex flex-col gap-1 p-2">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex gap-3 p-3">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
+              <LoadingSkeleton label={t("common.loading")}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex gap-3 p-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </LoadingSkeleton>
             ) : isError ? (
               <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
                 <p>{t("notifications.error", "Failed to load notifications")}</p>

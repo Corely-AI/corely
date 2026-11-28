@@ -1,4 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { AuthorizeToolService } from "../../application/services/authorize-tool.service";
+import { ForbiddenException, Injectable, Logger } from "@nestjs/common";
 import type { EnvService } from "@corely/config";
 import { streamText, convertToModelMessages, stepCountIs, validateUIMessages } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
@@ -21,7 +22,11 @@ import { type WorkspaceKind, PromptRegistry } from "@corely/prompts";
 import { PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 import { copilotMessageMetadataSchema } from "../../application/validation/copilot-message-metadata.schema";
-import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
+import {
+  type OperationalTaskCompletion,
+  type PosVerticalId,
+  type SurfaceId,
+} from "@corely/contracts";
 import { DeterministicLanguageModelV1 } from "./deterministic-model-registry";
 
 const normalizePromptLanguage = (locale?: string): string => {
@@ -42,6 +47,10 @@ const resolveSystemPromptId = (
   activeAppId?: string,
   verticalId?: PosVerticalId | null
 ): string => {
+  if (activeAppId === "tasks") {
+    return "operations.copilot.system";
+  }
+
   if (surfaceId === "crm") {
     return "crm.copilot.system";
   }
@@ -74,7 +83,8 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     private readonly env: EnvService,
     private readonly observability: ObservabilityPort,
     private readonly promptRegistry: PromptRegistry,
-    private readonly promptUsageLogger: PromptUsageLogger
+    private readonly promptUsageLogger: PromptUsageLogger,
+    private readonly authorizeTool: AuthorizeToolService
   ) {
     this.openai = createOpenAI({
       apiKey: this.env.OPENAI_API_KEY || "",
@@ -92,6 +102,8 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     tenantId: string;
     toolTenantId?: string;
     workspaceId?: string;
+    explicitWorkspace?: boolean;
+    operationalApprovals?: ReadonlyMap<string, OperationalTaskCompletion>;
     userId: string;
     workspaceKind?: WorkspaceKind;
     environment?: string;
@@ -101,17 +113,34 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any, any>; usage?: LanguageModelUsage }> {
     const toolTenantId = params.toolTenantId ?? params.tenantId;
+    const operationalTurn = params.activeAppId === "tasks";
     const latestUserMessage = [...params.messages]
       .reverse()
       .find((message) => message.role === "user")
       ?.parts.find((part) => part.type === "text")?.text;
-    const aiTools = buildAiTools(params.tools, {
+    const toolContext = {
+      tenantId: toolTenantId,
+      workspaceId: params.workspaceId,
+      userId: params.userId,
+    };
+    const tools = await this.authorizeTool.filterAllowed(
+      params.tools.filter((candidate) => !candidate.operational || params.explicitWorkspace),
+      toolContext
+    );
+    if (operationalTurn && !tools.some((candidate) => candidate.operational)) {
+      throw new ForbiddenException("Task assistant unavailable");
+    }
+    const aiTools = buildAiTools(tools, {
+      authorize: (candidate) => this.authorizeTool.assert(candidate, toolContext),
       toolExecutions: this.toolExecutions,
       audit: this.audit,
       outbox: this.outbox,
       locale: params.locale,
       tenantId: toolTenantId,
+      runTenantId: params.tenantId,
       workspaceId: params.workspaceId,
+      explicitWorkspace: params.explicitWorkspace,
+      operationalApprovals: params.operationalApprovals,
       activeAppId: params.activeAppId,
       runId: params.runId,
       userId: params.userId,
@@ -167,12 +196,14 @@ export class AiSdkModelAdapter implements LanguageModelPort {
                 REQUEST_CLARIFICATION_TOOL: "request_cash_clarification",
                 COLLECT_INPUTS_TOOL: "collect_inputs",
               }
-            : {
-                CUSTOMER_SEARCH_TOOL: "customer_search",
-                INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
-                COLLECT_INPUTS_TOOL: "collect_inputs",
-                LANGUAGE: normalizePromptLanguage(params.locale),
-              };
+            : operationalTurn
+              ? { LANGUAGE: normalizePromptLanguage(params.locale) }
+              : {
+                  CUSTOMER_SEARCH_TOOL: "customer_search",
+                  INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
+                  COLLECT_INPUTS_TOOL: "collect_inputs",
+                  LANGUAGE: normalizePromptLanguage(params.locale),
+                };
     const systemPrompt = this.promptRegistry.render(
       systemPromptId,
       promptContext,
@@ -214,10 +245,14 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     const toolset = {
       ...aiTools,
-      collect_inputs: buildCollectInputsTool(collectInputsDescription.content),
-      request_cash_clarification: buildRequestCashClarificationTool(
-        "Ask for exactly one unresolved material cash fact, then wait for the user's answer. Call this tool at most once per assistant response. Never ask for a fact already stated by the user or deterministically derivable from those stated facts."
-      ),
+      ...(operationalTurn
+        ? {}
+        : {
+            collect_inputs: buildCollectInputsTool(collectInputsDescription.content),
+            request_cash_clarification: buildRequestCashClarificationTool(
+              "Ask for exactly one unresolved material cash fact, then wait for the user's answer. Call this tool at most once per assistant response. Never ask for a fact already stated by the user or deterministically derivable from those stated facts."
+            ),
+          }),
     };
 
     this.logger.debug(`Starting streamText with ${Object.keys(toolset).length} tools`);
@@ -320,6 +355,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       experimental_telemetry: {
         isEnabled: true,
         functionId: "copilot.streamChat",
+        ...(operationalTurn ? { recordInputs: false, recordOutputs: false } : {}),
       },
     });
 

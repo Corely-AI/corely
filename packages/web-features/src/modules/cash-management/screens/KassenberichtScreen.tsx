@@ -1,9 +1,10 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, Button, Input } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, Button, Input } from "@corely/ui";
 import { type CashReportPreviewDto } from "@corely/contracts";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 
@@ -18,6 +19,7 @@ function formatNumber(amountCents: number) {
 }
 
 function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
+  const uiCopy = useUiCopy("ui.cash-management-kassenberichtscreen");
   const { t } = useTranslation();
   const otherOutflows = report.bankDepositsCents + report.otherCashOutflowsCents;
   const totalOutflows =
@@ -48,9 +50,9 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
         {/* Header */}
         <div className="mb-2 flex items-end justify-between">
           <div className="flex items-baseline gap-2">
-            <h1 className="text-2xl font-bold text-black">Kassenbericht</h1>
+            <h1 className="text-2xl font-bold text-black">{uiCopy("kassenbericht")}</h1>
             <div className="ml-2 text-sm">
-              Datum{" "}
+              {uiCopy("datum")}{" "}
               {t("cash.ui.kassenbericht.explanations.date") && (
                 <span className="text-xs text-muted-foreground">
                   ({t("cash.ui.kassenbericht.explanations.date")})
@@ -64,7 +66,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
               </span>
             </div>
             <div className="ml-2 text-sm">
-              Nr.{" "}
+              {uiCopy("nr")}{" "}
               {t("cash.ui.kassenbericht.explanations.number") && (
                 <span className="text-xs text-muted-foreground">
                   ({t("cash.ui.kassenbericht.explanations.number")})
@@ -75,7 +77,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
           </div>
           <div className="text-right text-sm leading-tight">
             <div>
-              Währung{" "}
+              {uiCopy("wa-hrung")}{" "}
               {t("cash.ui.kassenbericht.explanations.currency") && (
                 <span className="text-xs text-muted-foreground">
                   ({t("cash.ui.kassenbericht.explanations.currency")})
@@ -98,7 +100,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
           <tbody>
             <tr>
               <td colSpan={3} className="border border-black p-2 font-bold">
-                Kassenbestand bei Geschäftsschluss
+                {uiCopy("kassenbestand-bei-gescha-ftsschluss")}
                 {t("cash.ui.kassenbericht.explanations.closingCash") && (
                   <div className="text-xs font-normal text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.closingCash")}
@@ -109,9 +111,9 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
                 {formatNumber(closingCash)}
               </td>
               <td className="border border-black p-1 text-center align-top text-[10px] leading-tight">
-                Buch-
+                {uiCopy("buch")}
                 <br />
-                vermerk
+                {uiCopy("vermerk")}
                 {t("cash.ui.kassenbericht.explanations.bookNote") && (
                   <div className="text-[9px] font-normal text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.bookNote")}
@@ -122,7 +124,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td className="border border-black p-2 font-bold">
-                Ausgaben im Laufe des Tages
+                {uiCopy("ausgaben-im-laufe-des")}
                 {t("cash.ui.kassenbericht.explanations.outflows") && (
                   <div className="text-xs font-normal text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.outflows")}
@@ -131,9 +133,9 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
               </td>
               <td className="border border-black p-1 text-center text-xs">%</td>
               <td className="border border-black p-1 text-center text-xs leading-tight">
-                Vorsteuer
+                {uiCopy("vorsteuer")}
                 <br />
-                Betrag
+                {uiCopy("betrag")}
                 {t("cash.ui.kassenbericht.explanations.taxAmount") && (
                   <div className="text-[9px] font-normal text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.taxAmount")}
@@ -141,9 +143,9 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
                 )}
               </td>
               <td className="border border-black p-1 text-center text-xs leading-tight">
-                Netto-/Brutto-
+                {uiCopy("netto-brutto")}
                 <br />
-                Betrag
+                {uiCopy("betrag")}
                 {t("cash.ui.kassenbericht.explanations.netGrossAmount") && (
                   <div className="text-[9px] font-normal text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.netGrossAmount")}
@@ -155,7 +157,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td className="border border-black p-2">
-                1. Wareneinkäufe und Warennebenkosten
+                {uiCopy("1-wareneinka-ufe-und")}
                 {t("cash.ui.kassenbericht.explanations.purchases") && (
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.purchases")}
@@ -182,7 +184,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td className="border border-black p-2">
-                2. Geschäftsausgaben
+                {uiCopy("2-gescha-ftsausgaben")}
                 {t("cash.ui.kassenbericht.explanations.expenses") && (
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.expenses")}
@@ -209,7 +211,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td className="border border-black p-2">
-                3. Privatentnahmen
+                {uiCopy("3-privatentnahmen")}
                 {t("cash.ui.kassenbericht.explanations.withdrawals") && (
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.withdrawals")}
@@ -228,7 +230,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td className="border border-black p-2">
-                4. Sonstige Ausgaben (z.B. Bankeinzahlungen)
+                {uiCopy("4-sonstige-ausgaben-z")}
                 {t("cash.ui.kassenbericht.explanations.otherOutflows") && (
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.otherOutflows")}
@@ -255,7 +257,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td colSpan={3} className="border border-black p-2 text-right text-sm">
-                Summe
+                {uiCopy("summe")}
                 {t("cash.ui.kassenbericht.explanations.total") && (
                   <span className="ml-2 text-xs text-muted-foreground font-normal">
                     ({t("cash.ui.kassenbericht.explanations.total")})
@@ -270,7 +272,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td colSpan={3} className="border border-black p-2 text-sm">
-                abzüglich Kassenendbestand des Vortages
+                {uiCopy("abzu-glich-kassenendbestand-des")}
                 {t("cash.ui.kassenbericht.explanations.previousClosingCash") && (
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.previousClosingCash")}
@@ -285,7 +287,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td colSpan={3} className="border border-black p-2 text-sm font-bold">
-                = Kasseneingang
+                {uiCopy("kasseneingang")}
                 {t("cash.ui.kassenbericht.explanations.cashReceived") && (
                   <div className="text-xs font-normal text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.cashReceived")}
@@ -300,7 +302,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td className="border border-black p-2 text-sm">
-                abzüglich sonstige Einnahmen
+                {uiCopy("abzu-glich-sonstige-einnahmen")}
                 {t("cash.ui.kassenbericht.explanations.otherIncome") && (
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.otherIncome")}
@@ -317,7 +319,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 
             <tr>
               <td colSpan={3} className="border border-black p-2 text-sm font-bold">
-                = Bareinnahmen (Tageslosung)
+                {uiCopy("bareinnahmen-tageslosung")}
                 {t("cash.ui.kassenbericht.explanations.cashSales") && (
                   <div className="text-xs font-normal text-muted-foreground mt-0.5">
                     {t("cash.ui.kassenbericht.explanations.cashSales")}
@@ -336,7 +338,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
         <div className="mt-8 flex justify-between text-sm">
           <div className="flex items-end">
             <div>
-              Kundenzahl
+              {uiCopy("kundenzahl")}
               {t("cash.ui.kassenbericht.explanations.customerCount") && (
                 <div className="text-xs text-muted-foreground leading-none mt-1">
                   {t("cash.ui.kassenbericht.explanations.customerCount")}
@@ -352,7 +354,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
           </div>
           <div className="flex items-end">
             <div>
-              Unterschrift
+              {uiCopy("unterschrift")}
               {t("cash.ui.kassenbericht.explanations.signature") && (
                 <div className="text-xs text-muted-foreground leading-none mt-1">
                   {t("cash.ui.kassenbericht.explanations.signature")}
@@ -371,6 +373,7 @@ function KassenberichtPaper({ report }: { report: CashReportPreviewDto }) {
 }
 
 export function KassenberichtScreen() {
+  const uiCopy = useUiCopy("ui.cash-management-kassenberichtscreen");
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -394,7 +397,12 @@ export function KassenberichtScreen() {
   }
   if (reportQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.kassenbericht.loading")}</div>
+      <LoadingSkeleton
+        variant="form"
+        label={t("cash.ui.kassenbericht.loading")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
   if (!reportQuery.data?.preview) {
@@ -468,13 +476,13 @@ export function KassenberichtScreen() {
           {latestRevision ? (
             <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 print:border-black print:bg-white">
               <p className="font-semibold">
-                Kassenbericht đã được điều chỉnh - Revision {latestRevision.revisionNo}
+                {uiCopy("kassenbericht-a-u-o") + " "}
+                {latestRevision.revisionNo}
               </p>
               <p className="mt-1">
-                {latestRevision.reason}. Bản chốt gốc vẫn được lưu giữ đầy đủ.
-                {latestRevision.downstreamReviewRequired
-                  ? " Các ngày đã chốt sau đó cần được quản lý kiểm tra."
-                  : ""}
+                {latestRevision.reason}
+                {uiCopy("ba-n-cho-t")}
+                {latestRevision.downstreamReviewRequired ? uiCopy("ca-c-nga-y") : ""}
               </p>
             </div>
           ) : null}

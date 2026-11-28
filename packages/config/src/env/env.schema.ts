@@ -21,7 +21,15 @@ export const envSchema = z.object({
   // REDIS CACHE & QUEUE
   // ============================================================================
   REDIS_URL: z.string().url("REDIS_URL must be a valid Redis connection string").optional(),
-  WORKFLOW_QUEUE_DRIVER: z.enum(["memory", "cloudtasks"]).optional(),
+  WORKFLOW_QUEUE_DRIVER: z.enum(["memory", "cloudtasks", "vercel"]).optional(),
+  VERCEL_WORKFLOW_QUEUE_REGION: z
+    .string()
+    .regex(/^[a-z]{3}[0-9]+$/)
+    .optional(),
+  VERCEL_WORKFLOW_QUEUE_NAMESPACE: z
+    .string()
+    .regex(/^[a-z0-9-]{1,48}$/)
+    .optional(),
   WORKFLOW_CLOUDTASKS_LOCATION: z.string().optional(),
   WORKFLOW_CLOUDTASKS_QUEUE_PREFIX: z.string().optional(),
   WORKFLOW_CLOUDTASKS_TARGET_BASE_URL: z.string().url().optional(),
@@ -178,6 +186,22 @@ export const envSchema = z.object({
   RESEND_FROM: z.string().optional(),
   RESEND_REPLY_TO: z.string().optional(),
   RESEND_WEBHOOK_SECRET: z.string().optional(),
+  INVOICE_EMAIL_RESEND_WEBHOOK_SECRET: z.string().optional(),
+  EXPENSE_EMAIL_RESEND_WEBHOOK_SECRET: z.string().optional(),
+  EXPENSE_EMAIL_DOMAIN: z.preprocess(
+    (value) => (typeof value === "string" ? value.trim().toLowerCase() || undefined : value),
+    z
+      .string()
+      .regex(/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/)
+      .optional()
+  ),
+  INVOICE_EMAIL_DOMAIN: z.preprocess(
+    (value) => (typeof value === "string" ? value.trim().toLowerCase() || undefined : value),
+    z
+      .string()
+      .regex(/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/)
+      .optional()
+  ),
   SUMUP_WEBHOOK_SECRET: z.string().optional(),
   INTEGRATIONS_SECRET_KEY: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional(),
@@ -194,6 +218,12 @@ export const envSchema = z.object({
   // ============================================================================
   STORAGE_PROVIDER: z.enum(["gcs", "s3", "local"]).default("gcs"),
   STORAGE_BUCKET: z.string().default("uploads"),
+  INVOICE_PDF_STORAGE_PROVIDER: z.enum(["gcs", "supabase"]).default("gcs"),
+  SUPABASE_STORAGE_S3_ENDPOINT: z.string().url().optional(),
+  SUPABASE_STORAGE_S3_REGION: z.string().min(1).optional(),
+  SUPABASE_STORAGE_S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+  SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  SUPABASE_STORAGE_INVOICE_BUCKET: z.string().min(1).optional(),
   STORAGE_KEY_PREFIX: z.string().optional(),
   SIGNED_URL_UPLOAD_TTL_SECONDS: z.coerce.number().int().positive().default(600),
   SIGNED_URL_DOWNLOAD_TTL_SECONDS: z.coerce.number().int().positive().default(600),
@@ -219,7 +249,32 @@ export const envSchema = z.object({
   // SECURITY & AUTH
   // ============================================================================
   JWT_SECRET: z.string().optional(),
+  CORELY_LAUNCH_INVOICE_ORIGIN: z.string().url().optional(),
+  CORELY_LAUNCH_INVOICE_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
+  CORELY_LAUNCH_HR_ORIGIN: z.string().url().optional(),
+  CORELY_LAUNCH_LEGACY_ORIGIN: z.string().url().optional(),
   WEB_BASE_URL: z.string().url().optional(),
+  CORELY_SSO_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
+  CORELY_CLI_AUTH_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
+  CORELY_CLI_AGENT_GRANTS_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
+  CORELY_SSO_REGISTRATIONS: z.string().optional(),
+  CORELY_SSO_SECRET: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/i)
+    .optional(),
+  CORELY_SSO_PROXY_KEY: z.string().min(32).optional(),
   PASSWORD_RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
   CORELY_PROXY_KEY_APP: z.string().min(1).optional(),
   CORELY_PROXY_KEY_POS: z.string().min(1).optional(),
@@ -249,12 +304,18 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "ANTHROPIC_API_KEY",
   "RESEND_API_KEY",
   "RESEND_WEBHOOK_SECRET",
+  "INVOICE_EMAIL_RESEND_WEBHOOK_SECRET",
+  "EXPENSE_EMAIL_RESEND_WEBHOOK_SECRET",
   "SUMUP_WEBHOOK_SECRET",
   "INTEGRATIONS_SECRET_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "JWT_SECRET",
+  "CORELY_SSO_SECRET",
+  "CORELY_SSO_PROXY_KEY",
   "GOOGLE_APPLICATION_CREDENTIALS",
+  "SUPABASE_STORAGE_S3_ACCESS_KEY_ID",
+  "SUPABASE_STORAGE_S3_SECRET_ACCESS_KEY",
   "LANGFUSE_SECRET_KEY",
   "OTEL_EXPORTER_OTLP_HEADERS",
   "WORKFLOW_QUEUE_SECRET",

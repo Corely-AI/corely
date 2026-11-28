@@ -1,3 +1,4 @@
+import type { ContextAwareRequest } from "../../../../shared/request-context";
 import {
   Controller,
   Post,
@@ -248,6 +249,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async getMe(
+    @Req() request: ContextAwareRequest,
     @CurrentUserId() userId: string,
     @CurrentTenantId() tenantId: string | null,
     @CurrentWorkspaceId() workspaceId: string | null
@@ -288,7 +290,16 @@ export class AuthController {
       name: user.getName(),
       activeTenantId: tenantId ?? null,
       activeWorkspaceId: tenantId === null ? undefined : (workspaceId ?? undefined),
-      memberships: membershipDtos,
+      memberships:
+        request.user?.tenantAdminRoleId && tenantId
+          ? [
+              {
+                tenantId,
+                roleId: request.user.tenantAdminRoleId,
+                tenantName: (await this.tenantRepo.findById(tenantId))?.getName() ?? tenantId,
+              },
+            ]
+          : membershipDtos,
     };
   }
 
@@ -299,6 +310,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async switchTenant(
+    @Req() req: ContextAwareRequest,
     @CurrentUserId() userId: string,
     @CurrentTenantId() fromTenantId: string | null,
     @Body() input: SwitchTenantDto
@@ -307,6 +319,9 @@ export class AuthController {
       throw new BadRequestException("Missing required fields");
     }
 
+    if (req.user?.tenantAdminRoleId) {
+      throw new BadRequestException("End the tenant admin session before switching tenants");
+    }
     const result = await this.switchTenantUseCase.execute({
       userId,
       fromTenantId,

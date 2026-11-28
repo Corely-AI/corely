@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type Path, useFieldArray, useForm } from "react-hook-form";
@@ -463,11 +464,7 @@ export default function NewShipmentPage() {
   };
 
   if (isConfigLoading || isPermissionsLoading) {
-    return (
-      <div className="p-6 lg:p-8">
-        <p className="text-muted-foreground">Loading create shipment screen...</p>
-      </div>
-    );
+    return <PageLoadingSkeleton variant="form" />;
   }
 
   if (!hasCapability("import.basic")) {

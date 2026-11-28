@@ -2,9 +2,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import { LoadingSkeleton, Badge } from "@corely/ui";
 import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
-import { HelpCircle, Pencil, ArrowRight, Loader2 } from "lucide-react";
+import { HelpCircle, Pencil, ArrowRight } from "lucide-react";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { type TaxReportDto } from "@corely/contracts";
 
@@ -51,11 +51,7 @@ export function AnnualReportsSection({ reports, isLoading, locale }: AnnualRepor
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="h-64 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/30" />
-          </Card>
-        </div>
+        <LoadingSkeleton label={t("common.loading")} variant="cards" />
       ) : sortedReports.length === 0 ? (
         <div className="text-sm text-muted-foreground italic">
           {t("tax.center.annual.noFilings", { year: new Date().getFullYear() })}

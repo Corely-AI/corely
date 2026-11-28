@@ -16,9 +16,19 @@ import { allocateUniqueNumber } from "./numbering";
 import { getIdempotentResult, storeIdempotentResult } from "./idempotency";
 import type { QuoteDeps } from "./sales-quote.deps";
 
+import {
+  QUOTE_SEND_POLICY_REJECTED,
+  quoteSendRejection,
+  type QuoteSendRegistration,
+} from "@corely/sales/extensions";
+import { quoteSendPolicies } from "../../quote-send-extensions";
+
 @RequireTenant()
 export class SendQuoteUseCase extends BaseUseCase<SendQuoteInput, SendQuoteOutput> {
-  constructor(private readonly services: QuoteDeps) {
+  constructor(
+    private readonly services: QuoteDeps,
+    private readonly policies: readonly QuoteSendRegistration[] = quoteSendPolicies
+  ) {
     super({ logger: services.logger });
   }
 
@@ -44,6 +54,14 @@ export class SendQuoteUseCase extends BaseUseCase<SendQuoteInput, SendQuoteOutpu
     const quote = await this.services.quoteRepo.findById(tenantId, input.quoteId);
     if (!quote) {
       return err(new NotFoundError("Quote not found"));
+    }
+
+    if (quote.status === "DRAFT") {
+      const rejection = quoteSendRejection(this.policies, quote.tenantId, {
+        validUntilDate: quote.validUntilDate,
+      });
+      if (rejection)
+        {return err(new ValidationError(rejection, undefined, QUOTE_SEND_POLICY_REJECTED));}
     }
 
     const now = this.services.clock.now();

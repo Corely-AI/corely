@@ -1,4 +1,5 @@
 export * from "./invoice.types";
+export * from "./invoice-line-net-cents";
 export * from "./create-invoice.schema";
 export * from "./create-invoice-from-customer.schema";
 export * from "./update-invoice.schema";

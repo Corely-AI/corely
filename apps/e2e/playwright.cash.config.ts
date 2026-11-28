@@ -32,7 +32,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm --filter @corely/cash-management dev --host 0.0.0.0 --port ${port}`,
+    env: {
+      VITE_API_BASE_URL: "/api",
+      CORELY_DEV_API_TARGET: process.env.API_URL ?? "http://127.0.0.1:3000",
+    },
+    command: `pnpm --filter @corely/web dev --host 0.0.0.0 --port ${port}`,
     url: baseURL,
     reuseExistingServer: !isCI,
     timeout: 120_000,

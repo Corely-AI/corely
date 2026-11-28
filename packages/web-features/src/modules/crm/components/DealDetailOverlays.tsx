@@ -1,4 +1,6 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
+import { DealLossGuidanceSlot } from "@corely/crm-ui";
 import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import {
@@ -100,6 +102,7 @@ export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
   onPendingFollowUpOpenChange,
   onConfirmCreateFollowUp,
 }) => {
+  const uiCopy = useUiCopy("ui.crm-dealdetailoverlays");
   const { t } = useTranslation();
 
   return (
@@ -143,6 +146,7 @@ export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
           </DialogHeader>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">{t("crm.deals.markLostDescription")}</p>
+            <DealLossGuidanceSlot tenantId={deal.tenantId} />
             <Input
               placeholder={t("crm.deals.markLostPlaceholder")}
               value={lostReason}
@@ -199,16 +203,14 @@ export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingRecommendation?.title ?? "Apply recommendation"}
+              {pendingRecommendation?.title ?? uiCopy("apply-recommendation")}
             </AlertDialogTitle>
             <AlertDialogDescription>{pendingRecommendation?.reason}</AlertDialogDescription>
           </AlertDialogHeader>
           {pendingRecommendation ? (
             <Alert>
-              <AlertTitle>Explicit confirmation required</AlertTitle>
-              <AlertDescription>
-                This action applies an AI suggestion and updates CRM data only after confirmation.
-              </AlertDescription>
+              <AlertTitle>{uiCopy("explicit-confirmation-required")}</AlertTitle>
+              <AlertDescription>{uiCopy("this-action-applies-an")}</AlertDescription>
             </Alert>
           ) : null}
           <AlertDialogFooter>
@@ -227,7 +229,7 @@ export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingFollowUpToolCard?.title ?? "Create follow-up"}
+              {pendingFollowUpToolCard?.title ?? uiCopy("create-follow-up")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingFollowUpToolCard?.payload.subject}
@@ -236,7 +238,7 @@ export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={onConfirmCreateFollowUp}>
-              {pendingFollowUpToolCard?.confirmationLabel ?? "Create follow-up"}
+              {pendingFollowUpToolCard?.confirmationLabel ?? uiCopy("create-follow-up")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

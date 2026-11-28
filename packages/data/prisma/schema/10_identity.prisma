@@ -66,6 +66,7 @@ model User {
   memberships          Membership[]
   refreshTokens        RefreshToken[]
   passwordResetTokens  PasswordResetToken[]
+  ssoCentralSessions   SsoCentralSession[]
   workspaceMemberships WorkspaceMembership[]
   rolePermissionGrants RolePermissionGrant[]
 

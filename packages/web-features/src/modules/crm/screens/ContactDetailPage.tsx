@@ -1,3 +1,5 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -6,16 +8,21 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { customersApi } from "@corely/web-shared/lib/customers-api";
 
 export default function ContactDetailPage() {
+  const uiCopy = useUiCopy("ui.crm-contactdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: contact } = useQuery({
+  const { data: contact, isLoading } = useQuery({
     queryKey: ["crm-contact", id],
     queryFn: () => customersApi.getCustomer(id!, "CONTACT"),
     enabled: Boolean(id),
   });
 
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
+
   if (!contact) {
-    return <div className="p-6 lg:p-8">Contact not found</div>;
+    return <div className="p-6 lg:p-8">{uiCopy("contact-not-found")}</div>;
   }
 
   return (
@@ -28,7 +35,7 @@ export default function ContactDetailPage() {
           <h1 className="text-h1 text-foreground" data-testid="crm-contact-detail-name">
             {contact.displayName}
           </h1>
-          <p className="text-sm text-muted-foreground">Contact</p>
+          <p className="text-sm text-muted-foreground">{uiCopy("contact")}</p>
         </div>
         <Button
           variant="outline"
@@ -36,12 +43,12 @@ export default function ContactDetailPage() {
           data-testid="crm-contact-edit"
         >
           <Edit className="h-4 w-4" />
-          Edit
+          {uiCopy("edit")}
         </Button>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
+          <CardTitle>{uiCopy("contact-information")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <p data-testid="crm-contact-detail-email">{contact.email || "-"}</p>

@@ -1,0 +1,122 @@
+{
+  "en": {
+    "signingOut": "Signing out of Corely…",
+    "logoutFailed": "Sign-out could not be confirmed. Your private data is hidden. Try signing out again.",
+    "migrationBlocked": "Old offline work needs recovery in the previous account before this origin can migrate. Close other Corely tabs and contact your administrator.",
+    "logout": "Retry sign out",
+    "booting": "Checking your session…",
+    "unauthenticated": "Sign in to continue",
+    "forbidden": "You do not have access to this app.",
+    "unavailable": "Corely is temporarily unavailable. Try again.",
+    "login": "Sign in",
+    "retry": "Try again"
+  },
+  "de": {
+    "signingOut": "Abmeldung von Corely…",
+    "logoutFailed": "Die Abmeldung konnte nicht bestätigt werden. Private Daten sind ausgeblendet. Bitte erneut abmelden.",
+    "migrationBlocked": "Alte Offline-Aufträge müssen im bisherigen Konto wiederhergestellt werden. Schließe andere Corely-Tabs und kontaktiere deine Administration.",
+    "logout": "Abmeldung wiederholen",
+    "booting": "Sitzung wird geprüft…",
+    "unauthenticated": "Zum Fortfahren anmelden",
+    "forbidden": "Du hast keinen Zugriff auf diese App.",
+    "unavailable": "Corely ist vorübergehend nicht verfügbar. Versuche es erneut.",
+    "login": "Anmelden",
+    "retry": "Erneut versuchen"
+  },
+  "vi": {
+    "signingOut": "Đang đăng xuất khỏi Corely…",
+    "logoutFailed": "Chưa thể xác nhận đăng xuất. Dữ liệu riêng tư đã được ẩn. Hãy thử đăng xuất lại.",
+    "migrationBlocked": "Cần khôi phục công việc ngoại tuyến trong tài khoản cũ trước khi chuyển đổi. Đóng các thẻ Corely khác và liên hệ quản trị viên.",
+    "logout": "Thử đăng xuất lại",
+    "booting": "Đang kiểm tra phiên đăng nhập…",
+    "unauthenticated": "Đăng nhập để tiếp tục",
+    "forbidden": "Bạn không có quyền truy cập ứng dụng này.",
+    "unavailable": "Corely tạm thời không khả dụng. Vui lòng thử lại.",
+    "login": "Đăng nhập",
+    "retry": "Thử lại"
+  },
+  "tr": {
+    "signingOut": "Corely oturumu kapatılıyor…",
+    "logoutFailed": "Oturum kapatma doğrulanamadı. Özel verileriniz gizlenir. Oturumu tekrar kapatmayı deneyin.",
+    "migrationBlocked": "Bu kaynağın taşınabilmesi için önceki hesaptaki eski çevrimdışı çalışmaların kurtarılması gerekiyor. Diğer Corely sekmelerini kapatın ve yöneticinizle iletişime geçin.",
+    "logout": "Oturumu kapatmayı yeniden dene",
+    "booting": "Oturumunuz kontrol ediliyor…",
+    "unauthenticated": "Devam etmek için oturum açın",
+    "forbidden": "Bu uygulamaya erişiminiz yok.",
+    "unavailable": "Corely geçici olarak kullanılamıyor. Tekrar deneyin.",
+    "login": "Oturum aç",
+    "retry": "Tekrar dene"
+  },
+  "pl": {
+    "signingOut": "Wylogowywanie się z Corely…",
+    "logoutFailed": "Nie udało się potwierdzić wylogowania. Twoje prywatne dane są ukryte. Spróbuj wylogować się ponownie.",
+    "migrationBlocked": "Zanim będzie można przenieść to źródło, należy przywrócić starą pracę w trybie offline na poprzednim koncie. Zamknij inne karty Corely i skontaktuj się z administratorem.",
+    "logout": "Spróbuj się wylogować ponownie",
+    "booting": "Sprawdzam sesję…",
+    "unauthenticated": "Zaloguj się, aby kontynuować",
+    "forbidden": "Nie masz dostępu do tej aplikacji.",
+    "unavailable": "Corely jest chwilowo niedostępny. Spróbuj ponownie.",
+    "login": "Zaloguj się",
+    "retry": "Spróbuj ponownie"
+  },
+  "ru": {
+    "signingOut": "Выход из Corely…",
+    "logoutFailed": "Выход не удалось подтвердить. Ваши личные данные скрыты. Попробуйте выйти еще раз.",
+    "migrationBlocked": "Прежде чем можно будет перенести этот источник, старую автономную работу необходимо восстановить в предыдущей учетной записи. Закройте другие вкладки Corely и обратитесь к администратору.",
+    "logout": "Повторить попытку выхода",
+    "booting": "Проверка сеанса…",
+    "unauthenticated": "Войдите, чтобы продолжить",
+    "forbidden": "У вас нет доступа к этому приложению.",
+    "unavailable": "Corely временно недоступен. Попробуйте еще раз.",
+    "login": "Войти",
+    "retry": "Попробуйте еще раз"
+  },
+  "pt-PT": {
+    "signingOut": "A sair de Corely…",
+    "logoutFailed": "A saída não pôde ser confirmada. Os seus dados privados estão ocultos. Tente sair novamente.",
+    "migrationBlocked": "O trabalho offline antigo necessita de recuperação na conta anterior antes que esta origem possa migrar. Feche outros separadores Corely e contacte o seu administrador.",
+    "logout": "Tente sair novamente",
+    "booting": "Verificando a sua sessão…",
+    "unauthenticated": "Faça login para continuar",
+    "forbidden": "Não tem acesso a este aplicativo.",
+    "unavailable": "Corely está temporariamente indisponível. Tente novamente.",
+    "login": "Faça login",
+    "retry": "Tente novamente"
+  },
+  "it": {
+    "signingOut": "Uscita da Corely…",
+    "logoutFailed": "Impossibile confermare la disconnessione. I tuoi dati privati ​​sono nascosti. Prova a uscire di nuovo.",
+    "migrationBlocked": "Il vecchio lavoro offline deve essere ripristinato nell'account precedente prima che questa origine possa essere migrata. Chiudi le altre schede Corely e contatta l'amministratore.",
+    "logout": "Riprovare a uscire",
+    "booting": "Controllo della sessione…",
+    "unauthenticated": "Accedi per continuare",
+    "forbidden": "Non hai accesso a questa app.",
+    "unavailable": "Corely è temporaneamente non disponibile. Riprova.",
+    "login": "Accedi",
+    "retry": "Riprova"
+  },
+  "fr": {
+    "signingOut": "Déconnexion de Corely…",
+    "logoutFailed": "La déconnexion n'a pas pu être confirmée. Vos données privées sont masquées. Essayez de vous déconnecter à nouveau.",
+    "migrationBlocked": "L'ancien travail hors ligne doit être récupéré dans le compte précédent avant que cette origine puisse migrer. Fermez les autres onglets Corely et contactez votre administrateur.",
+    "logout": "Réessayez de vous déconnecter",
+    "booting": "Vérification de votre session…",
+    "unauthenticated": "Connectez-vous pour continuer",
+    "forbidden": "Vous n'avez pas accès à cette application.",
+    "unavailable": "Corely est temporairement indisponible. Essayer à nouveau.",
+    "login": "Connectez-vous",
+    "retry": "Réessayez"
+  },
+  "es": {
+    "signingOut": "Cerrando sesión en Corely…",
+    "logoutFailed": "No se pudo confirmar el cierre de sesión. Tus datos privados están ocultos. Intente cerrar sesión nuevamente.",
+    "migrationBlocked": "El trabajo antiguo sin conexión necesita recuperación en la cuenta anterior antes de que este origen pueda migrar. Cierre otras pestañas de Corely y comuníquese con su administrador.",
+    "logout": "Reintentar cerrar sesión",
+    "booting": "Comprobando tu sesión...",
+    "unauthenticated": "Inicia sesión para continuar",
+    "forbidden": "No tienes acceso a esta aplicación.",
+    "unavailable": "Corely no está disponible temporalmente. Intentar otra vez.",
+    "login": "Iniciar sesión",
+    "retry": "Inténtalo de nuevo"
+  }
+}

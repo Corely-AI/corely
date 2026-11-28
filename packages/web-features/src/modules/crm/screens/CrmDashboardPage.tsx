@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
@@ -144,10 +145,11 @@ const dashboardEmptyClass =
   "rounded-xl border border-dashed border-border/70 bg-background/60 p-4 text-sm text-muted-foreground dark:border-border/35 dark:bg-background/35";
 
 export default function CrmDashboardPage() {
+  const uiCopy = useUiCopy("ui.crm-crmdashboardpage");
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const locale = i18n.language === "vi" ? "vi-VN" : i18n.language === "de" ? "de-DE" : "en-DE";
+  const locale = i18n.language === "en" ? "en-DE" : t("common.locale");
 
   const [searchTerm, setSearchTerm] = React.useState("");
   const [dateRange, setDateRange] = React.useState<DateRangeKey>("30d");
@@ -739,11 +741,11 @@ export default function CrmDashboardPage() {
       <div className="p-6 lg:p-8">
         <Alert>
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>CRM dashboard unavailable</AlertTitle>
+          <AlertTitle>{uiCopy("crm-dashboard-unavailable")}</AlertTitle>
           <AlertDescription className="space-y-3">
             <p>We couldn&apos;t load deals, leads, activities, or sequence health.</p>
             <Button variant="outline" size="sm" onClick={retryAll}>
-              Retry
+              {uiCopy("retry")}
             </Button>
           </AlertDescription>
         </Alert>
@@ -777,7 +779,7 @@ export default function CrmDashboardPage() {
           <Button asChild variant="accent-outline">
             <Link to="/assistant">
               <Bot className="h-4 w-4" />
-              Open Assistant
+              {uiCopy("open-assistant")}
             </Link>
           </Button>
         </div>
@@ -791,9 +793,9 @@ export default function CrmDashboardPage() {
               <Input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search deals, leads, contacts"
+                placeholder={uiCopy("search-deals-leads-contacts")}
                 className="pl-9"
-                aria-label="Global CRM search"
+                aria-label={uiCopy("global-crm-search")}
               />
             </div>
 
@@ -804,13 +806,13 @@ export default function CrmDashboardPage() {
               >
                 <SelectTrigger>
                   <CalendarDays className="h-4 w-4" />
-                  <SelectValue placeholder="Date range" />
+                  <SelectValue placeholder={uiCopy("date-range")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="7d">7d</SelectItem>
-                  <SelectItem value="30d">30d</SelectItem>
-                  <SelectItem value="quarter">Quarter</SelectItem>
+                  <SelectItem value="today">{uiCopy("today")}</SelectItem>
+                  <SelectItem value="7d">{uiCopy("7d")}</SelectItem>
+                  <SelectItem value="30d">{uiCopy("30d")}</SelectItem>
+                  <SelectItem value="quarter">{uiCopy("quarter")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -818,10 +820,10 @@ export default function CrmDashboardPage() {
             <div className="lg:col-span-3 grid grid-cols-2 gap-3">
               <Select value={ownerFilter} onValueChange={setOwnerFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Owner" />
+                  <SelectValue placeholder={uiCopy("owner")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">Owner: All</SelectItem>
+                  <SelectItem value="ALL">{uiCopy("owner-all")}</SelectItem>
                   {ownerOptions.map((owner) => (
                     <SelectItem key={owner} value={owner}>
                       {owner}
@@ -832,10 +834,10 @@ export default function CrmDashboardPage() {
 
               <Select value={stageFilter} onValueChange={setStageFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Stage" />
+                  <SelectValue placeholder={uiCopy("stage")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">Stage: All</SelectItem>
+                  <SelectItem value="ALL">{uiCopy("stage-all")}</SelectItem>
                   {DEFAULT_PIPELINE_STAGES.map((stage) => (
                     <SelectItem key={stage.id} value={stage.id}>
                       {stage.name}
@@ -849,21 +851,22 @@ export default function CrmDashboardPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="accent">
-                    <Plus className="h-4 w-4" />+ New
+                    <Plus className="h-4 w-4" />
+                    {uiCopy("new")}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem onClick={() => navigate("/crm/deals/new")}>
-                    Deal
+                    {uiCopy("deal")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/crm/leads/new")}>
-                    Lead
+                    {uiCopy("lead")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/crm/activities/new")}>
-                    Activity
+                    {uiCopy("activity")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/crm/sequences")}>
-                    Enroll in Sequence
+                    {uiCopy("enroll-in-sequence")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -874,31 +877,31 @@ export default function CrmDashboardPage() {
             <Select value={pipelineFilter} onValueChange={setPipelineFilter}>
               <SelectTrigger>
                 <Filter className="h-4 w-4" />
-                <SelectValue placeholder="Pipeline" />
+                <SelectValue placeholder={uiCopy("pipeline")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="DEFAULT">Pipeline: Default</SelectItem>
+                <SelectItem value="DEFAULT">{uiCopy("pipeline-default")}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={uiCopy("status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Status: All</SelectItem>
-                <SelectItem value="OPEN">Open</SelectItem>
-                <SelectItem value="WON">Won</SelectItem>
-                <SelectItem value="LOST">Lost</SelectItem>
+                <SelectItem value="ALL">{uiCopy("status-all")}</SelectItem>
+                <SelectItem value="OPEN">{uiCopy("open")}</SelectItem>
+                <SelectItem value="WON">{uiCopy("won")}</SelectItem>
+                <SelectItem value="LOST">{uiCopy("lost")}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={tagFilter} onValueChange={setTagFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Tags" />
+                <SelectValue placeholder={uiCopy("tags")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Tags: All</SelectItem>
+                <SelectItem value="ALL">{uiCopy("tags-all")}</SelectItem>
                 {tagOptions.map((tag) => (
                   <SelectItem key={tag} value={tag}>
                     {tag}
@@ -920,7 +923,7 @@ export default function CrmDashboardPage() {
               <p className="text-xl font-semibold text-foreground">{kpi.value}</p>
               <p className="text-xs text-muted-foreground">
                 {kpi.delta === null
-                  ? "No baseline"
+                  ? uiCopy("no-baseline")
                   : `${kpi.delta > 0 ? "+" : ""}${Math.round(kpi.delta)}% vs previous period`}
               </p>
             </CardContent>
@@ -932,40 +935,38 @@ export default function CrmDashboardPage() {
         <div className="grid gap-4 xl:grid-cols-12">
           <Card className={cn("xl:col-span-8", dashboardCardClass)}>
             <CardHeader>
-              <CardTitle>Get your CRM workspace live</CardTitle>
-              <CardDescription>
-                Complete setup to unlock AI briefing, risk alerts, and sequence recommendations.
-              </CardDescription>
+              <CardTitle>{uiCopy("get-your-crm-workspace")}</CardTitle>
+              <CardDescription>{uiCopy("complete-setup-to-unlock")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className={cn("flex items-center justify-between", dashboardInsetClass)}>
-                <p className="text-sm">1. Import contacts or add your first leads</p>
+                <p className="text-sm">{uiCopy("1-import-contacts-or")}</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/crm/leads/new">Add lead</Link>
+                  <Link to="/crm/leads/new">{uiCopy("add-lead")}</Link>
                 </Button>
               </div>
               <div className={cn("flex items-center justify-between", dashboardInsetClass)}>
-                <p className="text-sm">2. Create pipeline stages</p>
+                <p className="text-sm">{uiCopy("2-create-pipeline-stages")}</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/crm/deals">Open pipeline</Link>
+                  <Link to="/crm/deals">{uiCopy("open-pipeline")}</Link>
                 </Button>
               </div>
               <div className={cn("flex items-center justify-between", dashboardInsetClass)}>
-                <p className="text-sm">3. Add your first deal</p>
+                <p className="text-sm">{uiCopy("3-add-your-first")}</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/crm/deals/new">Create deal</Link>
+                  <Link to="/crm/deals/new">{uiCopy("create-deal")}</Link>
                 </Button>
               </div>
               <div className={cn("flex items-center justify-between", dashboardInsetClass)}>
-                <p className="text-sm">4. Connect your email inbox</p>
+                <p className="text-sm">{uiCopy("4-connect-your-email")}</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/crm/settings/email">Connect email</Link>
+                  <Link to="/crm/settings/email">{uiCopy("connect-email")}</Link>
                 </Button>
               </div>
               <div className={cn("flex items-center justify-between", dashboardInsetClass)}>
-                <p className="text-sm">5. Create your first sequence</p>
+                <p className="text-sm">{uiCopy("5-create-your-first")}</p>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/crm/sequences/new">Create sequence</Link>
+                  <Link to="/crm/sequences/new">{uiCopy("create-sequence")}</Link>
                 </Button>
               </div>
             </CardContent>
@@ -973,16 +974,11 @@ export default function CrmDashboardPage() {
 
           <Card className={cn("xl:col-span-4", dashboardCardClass)}>
             <CardHeader>
-              <CardTitle>AI Daily Brief</CardTitle>
-              <CardDescription>
-                Once your CRM has activity, AI will summarize movement, overdue follow-ups, and next
-                best actions.
-              </CardDescription>
+              <CardTitle>{uiCopy("ai-daily-brief")}</CardTitle>
+              <CardDescription>{uiCopy("once-your-crm-has")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className={dashboardEmptyClass}>
-                Add leads, log activities, and update deals to generate recommendations.
-              </div>
+              <div className={dashboardEmptyClass}>{uiCopy("add-leads-log-activities")}</div>
             </CardContent>
           </Card>
         </div>
@@ -994,41 +990,36 @@ export default function CrmDashboardPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" />
-                  AI Daily Brief
+                  {uiCopy("ai-daily-brief")}
                 </CardTitle>
-                <CardDescription>
-                  Deal movement, new leads, overdue follow-ups, and sequence steps due.
-                </CardDescription>
+                <CardDescription>{uiCopy("deal-movement-new-leads")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/assistant">Open Assistant</Link>
+                <Link to="/assistant">{uiCopy("open-assistant")}</Link>
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className={dashboardInsetClass}>
-                  <p className="text-xs text-muted-foreground">Deal movement</p>
+                  <p className="text-xs text-muted-foreground">{uiCopy("deal-movement")}</p>
                   <p className="text-lg font-semibold">{filteredDeals.length}</p>
                 </div>
                 <div className={dashboardInsetClass}>
-                  <p className="text-xs text-muted-foreground">New leads</p>
+                  <p className="text-xs text-muted-foreground">{uiCopy("new-leads")}</p>
                   <p className="text-lg font-semibold">{newUnworkedLeads.length}</p>
                 </div>
                 <div className={dashboardInsetClass}>
-                  <p className="text-xs text-muted-foreground">Overdue follow-ups</p>
+                  <p className="text-xs text-muted-foreground">{uiCopy("overdue-follow-ups")}</p>
                   <p className="text-lg font-semibold">{overdueWork.length}</p>
                 </div>
                 <div className={dashboardInsetClass}>
-                  <p className="text-xs text-muted-foreground">Sequence steps due</p>
+                  <p className="text-xs text-muted-foreground">{uiCopy("sequence-steps-due")}</p>
                   <p className="text-lg font-semibold">{upcomingWork.length}</p>
                 </div>
               </div>
 
               {aiRecommendations.length === 0 ? (
-                <div className={dashboardEmptyClass}>
-                  No recommendations right now. Keep logging activity and AI will surface next
-                  steps.
-                </div>
+                <div className={dashboardEmptyClass}>{uiCopy("no-recommendations-right-now")}</div>
               ) : (
                 <div className="space-y-3">
                   {aiRecommendations.map((recommendation) => (
@@ -1045,14 +1036,14 @@ export default function CrmDashboardPage() {
                               return next;
                             })
                           }
-                          aria-label="Dismiss recommendation"
+                          aria-label={uiCopy("dismiss-recommendation")}
                         >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
                       <details className="text-sm text-muted-foreground">
                         <summary className="cursor-pointer list-none inline-flex items-center gap-1 hover:text-foreground">
-                          Explain why
+                          {uiCopy("explain-why")}
                         </summary>
                         <p className="pt-2">{recommendation.why}</p>
                       </details>
@@ -1069,11 +1060,11 @@ export default function CrmDashboardPage() {
           <Card className={cn("xl:col-span-4", dashboardCardClass)}>
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
               <div>
-                <CardTitle>Today / Overdue</CardTitle>
-                <CardDescription>Follow-ups and tasks across deals and contacts.</CardDescription>
+                <CardTitle>{uiCopy("today-overdue")}</CardTitle>
+                <CardDescription>{uiCopy("follow-ups-and-tasks")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/crm/activities">View all</Link>
+                <Link to="/crm/activities">{uiCopy("view-all")}</Link>
               </Button>
             </CardHeader>
             <CardContent>
@@ -1087,21 +1078,21 @@ export default function CrmDashboardPage() {
                       size="sm"
                       onClick={() => void activitiesQuery.refetch()}
                     >
-                      Retry
+                      {uiCopy("retry")}
                     </Button>
                   </AlertDescription>
                 </Alert>
               ) : (
                 <Tabs value={workTab} onValueChange={(value) => setWorkTab(value as WorkTab)}>
                   <TabsList className="grid w-full grid-cols-3 bg-muted/70 dark:bg-muted/35">
-                    <TabsTrigger value="today">Today</TabsTrigger>
-                    <TabsTrigger value="overdue">Overdue</TabsTrigger>
-                    <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                    <TabsTrigger value="today">{uiCopy("today")}</TabsTrigger>
+                    <TabsTrigger value="overdue">{uiCopy("overdue")}</TabsTrigger>
+                    <TabsTrigger value="upcoming">{uiCopy("upcoming")}</TabsTrigger>
                   </TabsList>
 
                   <div className="pt-3 space-y-3">
                     {currentWorkItems.length === 0 ? (
-                      <div className={dashboardEmptyClass}>No items in this queue.</div>
+                      <div className={dashboardEmptyClass}>{uiCopy("no-items-in-this")}</div>
                     ) : (
                       currentWorkItems.slice(0, 6).map(({ activity, dueDate }) => {
                         const relatedDeal = activity.dealId ? dealById.get(activity.dealId) : null;
@@ -1112,7 +1103,7 @@ export default function CrmDashboardPage() {
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline">{activity.type}</Badge>
                                 <Badge variant={priorityVariant}>
-                                  {dueDate < now ? "High" : "Medium"}
+                                  {dueDate < now ? uiCopy("high") : uiCopy("medium")}
                                 </Badge>
                               </div>
                               <span className="text-xs text-muted-foreground">
@@ -1125,7 +1116,7 @@ export default function CrmDashboardPage() {
                                 ? relatedDeal.title
                                 : activity.partyId
                                   ? `Contact ${activity.partyId}`
-                                  : "Unlinked"}
+                                  : uiCopy("unlinked")}
                             </p>
                             <div className="flex flex-wrap gap-2">
                               <Button
@@ -1134,10 +1125,10 @@ export default function CrmDashboardPage() {
                                 onClick={() => handleCompleteActivity(activity.id)}
                               >
                                 <Check className="h-3.5 w-3.5" />
-                                Complete
+                                {uiCopy("complete")}
                               </Button>
                               <Button size="sm" variant="ghost" asChild>
-                                <Link to="/crm/activities/new">Snooze</Link>
+                                <Link to="/crm/activities/new">{uiCopy("snooze")}</Link>
                               </Button>
                               <Button size="sm" variant="ghost" asChild>
                                 <Link
@@ -1147,14 +1138,14 @@ export default function CrmDashboardPage() {
                                       : "/crm/activities"
                                   }
                                 >
-                                  Open
+                                  {uiCopy("open")}
                                 </Link>
                               </Button>
                               <Button size="sm" variant="ghost" asChild>
                                 <Link
                                   to={`/crm/activities/new${activity.dealId ? `?dealId=${activity.dealId}` : ""}`}
                                 >
-                                  Quick note
+                                  {uiCopy("quick-note")}
                                 </Link>
                               </Button>
                             </div>
@@ -1171,15 +1162,15 @@ export default function CrmDashboardPage() {
           <Card className={cn("xl:col-span-7", dashboardCardClass)}>
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
               <div>
-                <CardTitle>Pipeline Snapshot</CardTitle>
-                <CardDescription>Stage coverage and at-risk deals.</CardDescription>
+                <CardTitle>{uiCopy("pipeline-snapshot")}</CardTitle>
+                <CardDescription>{uiCopy("stage-coverage-and-at")}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/crm/deals">Open pipeline</Link>
+                  <Link to="/crm/deals">{uiCopy("open-pipeline")}</Link>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/crm/deals/new">Create deal</Link>
+                  <Link to="/crm/deals/new">{uiCopy("create-deal")}</Link>
                 </Button>
               </div>
             </CardHeader>
@@ -1190,7 +1181,7 @@ export default function CrmDashboardPage() {
                   <AlertTitle>Couldn&apos;t load pipeline data</AlertTitle>
                   <AlertDescription>
                     <Button variant="outline" size="sm" onClick={() => void dealsQuery.refetch()}>
-                      Retry
+                      {uiCopy("retry")}
                     </Button>
                   </AlertDescription>
                 </Alert>
@@ -1200,7 +1191,10 @@ export default function CrmDashboardPage() {
                     {pipelineByStage.map((stage) => (
                       <div key={stage.stageId} className={dashboardInsetClass}>
                         <p className="text-xs text-muted-foreground">{stage.stageName}</p>
-                        <p className="text-base font-semibold">{stage.count} deals</p>
+                        <p className="text-base font-semibold">
+                          {stage.count}
+                          {" " + uiCopy("deals")}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {formatMoney(stage.valueCents, locale)}
                         </p>
@@ -1210,14 +1204,14 @@ export default function CrmDashboardPage() {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">At risk deals</p>
+                      <p className="text-sm font-medium">{uiCopy("at-risk-deals")}</p>
                       <Button variant="ghost" size="sm" asChild>
-                        <Link to="/crm/activities/new">Bulk create follow-ups</Link>
+                        <Link to="/crm/activities/new">{uiCopy("bulk-create-follow-ups")}</Link>
                       </Button>
                     </div>
                     {atRiskDeals.length === 0 ? (
                       <div className={cn(dashboardEmptyClass, "p-3")}>
-                        No at-risk deals for the selected filters.
+                        {uiCopy("no-at-risk-deals")}
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -1232,20 +1226,22 @@ export default function CrmDashboardPage() {
                             <div>
                               <p className="text-sm font-medium">{deal.title}</p>
                               <p className="text-xs text-muted-foreground">
-                                {reasons.includes("no_recent_activity") && "No recent activity"}
-                                {reasons.includes("close_date_passed") && " • Close date passed"}
-                                {reasons.includes("stalled") && " • Stalled"}
+                                {reasons.includes("no_recent_activity") &&
+                                  uiCopy("no-recent-activity")}
+                                {reasons.includes("close_date_passed") &&
+                                  uiCopy("close-date-passed")}
+                                {reasons.includes("stalled") && uiCopy("stalled")}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                Last touch:{" "}
+                                {uiCopy("last-touch")}{" "}
                                 {lastActivity
                                   ? formatDate(lastActivity.toISOString(), locale)
-                                  : "Never"}
+                                  : uiCopy("never")}
                               </p>
                             </div>
                             <Button variant="outline" size="sm" asChild>
                               <Link to={`/crm/deals/${deal.id}`}>
-                                Open
+                                {uiCopy("open")}
                                 <ArrowRight className="h-3.5 w-3.5" />
                               </Link>
                             </Button>
@@ -1262,11 +1258,11 @@ export default function CrmDashboardPage() {
           <Card className={cn("xl:col-span-5", dashboardCardClass)}>
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
               <div>
-                <CardTitle>Deals Closing Soon</CardTitle>
-                <CardDescription>Open deals with close dates in the next 30 days.</CardDescription>
+                <CardTitle>{uiCopy("deals-closing-soon")}</CardTitle>
+                <CardDescription>{uiCopy("open-deals-with-close")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/crm/deals">View all</Link>
+                <Link to="/crm/deals">{uiCopy("view-all")}</Link>
               </Button>
             </CardHeader>
             <CardContent>
@@ -1276,7 +1272,7 @@ export default function CrmDashboardPage() {
                   <AlertTitle>Couldn&apos;t load deals</AlertTitle>
                 </Alert>
               ) : dealsClosingSoon.length === 0 ? (
-                <div className={dashboardEmptyClass}>No deals closing in the next 30 days.</div>
+                <div className={dashboardEmptyClass}>{uiCopy("no-deals-closing-in")}</div>
               ) : (
                 <div className="space-y-2">
                   {dealsClosingSoon.map((deal) => (
@@ -1294,14 +1290,14 @@ export default function CrmDashboardPage() {
                           {stageNameById.get(deal.stageId) ?? deal.stageId}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Close{" "}
+                          {uiCopy("close")}{" "}
                           {deal.expectedCloseDate
                             ? formatDate(deal.expectedCloseDate, locale)
-                            : "Not set"}
+                            : uiCopy("not-set")}
                         </p>
                       </div>
                       <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/crm/deals/${deal.id}`}>Open</Link>
+                        <Link to={`/crm/deals/${deal.id}`}>{uiCopy("open")}</Link>
                       </Button>
                     </div>
                   ))}
@@ -1314,10 +1310,10 @@ export default function CrmDashboardPage() {
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
               <div>
                 <CardTitle>New &amp; Unworked Leads</CardTitle>
-                <CardDescription>Fresh leads with no reply yet.</CardDescription>
+                <CardDescription>{uiCopy("fresh-leads-with-no")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/crm/leads">View all</Link>
+                <Link to="/crm/leads">{uiCopy("view-all")}</Link>
               </Button>
             </CardHeader>
             <CardContent>
@@ -1327,12 +1323,12 @@ export default function CrmDashboardPage() {
                   <AlertTitle>Couldn&apos;t load leads</AlertTitle>
                   <AlertDescription>
                     <Button variant="outline" size="sm" onClick={() => void leadsQuery.refetch()}>
-                      Retry
+                      {uiCopy("retry")}
                     </Button>
                   </AlertDescription>
                 </Alert>
               ) : newUnworkedLeads.length === 0 ? (
-                <div className={dashboardEmptyClass}>No unworked leads in this date range.</div>
+                <div className={dashboardEmptyClass}>{uiCopy("no-unworked-leads-in")}</div>
               ) : (
                 <div className="space-y-2">
                   {newUnworkedLeads.map((lead) => (
@@ -1340,15 +1336,15 @@ export default function CrmDashboardPage() {
                       <p className="text-sm font-medium">
                         {`${lead.firstName ?? ""} ${lead.lastName ?? ""}`.trim() ||
                           lead.companyName ||
-                          "Unnamed lead"}
+                          uiCopy("unnamed-lead")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {lead.email ?? lead.phone ?? "No contact info"}
+                        {lead.email ?? lead.phone ?? uiCopy("no-contact-info")}
                       </p>
                       <div className="flex items-center justify-between">
                         <Badge variant="muted">{lead.source}</Badge>
                         <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/crm/leads/${lead.id}`}>Open</Link>
+                          <Link to={`/crm/leads/${lead.id}`}>{uiCopy("open")}</Link>
                         </Button>
                       </div>
                     </div>
@@ -1361,11 +1357,11 @@ export default function CrmDashboardPage() {
           <Card className={cn("xl:col-span-4", dashboardCardClass)}>
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
               <div>
-                <CardTitle>Sequences Health</CardTitle>
-                <CardDescription>Replies, throughput, and due sequence actions.</CardDescription>
+                <CardTitle>{uiCopy("sequences-health")}</CardTitle>
+                <CardDescription>{uiCopy("replies-throughput-and-due")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/crm/sequences">View all</Link>
+                <Link to="/crm/sequences">{uiCopy("view-all")}</Link>
               </Button>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -1379,7 +1375,7 @@ export default function CrmDashboardPage() {
                       size="sm"
                       onClick={() => void sequencesQuery.refetch()}
                     >
-                      Retry
+                      {uiCopy("retry")}
                     </Button>
                   </AlertDescription>
                 </Alert>
@@ -1387,17 +1383,17 @@ export default function CrmDashboardPage() {
                 <>
                   <div className="grid grid-cols-3 gap-2">
                     <div className={dashboardInsetClass}>
-                      <p className="text-xs text-muted-foreground">Active sequences</p>
+                      <p className="text-xs text-muted-foreground">{uiCopy("active-sequences")}</p>
                       <p className="text-lg font-semibold">{sequences.length}</p>
                     </div>
                     <div className={dashboardInsetClass}>
-                      <p className="text-xs text-muted-foreground">Replies (7d)</p>
+                      <p className="text-xs text-muted-foreground">{uiCopy("replies-7d")}</p>
                       <p className="text-lg font-semibold">
                         {sequenceCommunications7d.inboundReplies}
                       </p>
                     </div>
                     <div className={dashboardInsetClass}>
-                      <p className="text-xs text-muted-foreground">Reply rate</p>
+                      <p className="text-xs text-muted-foreground">{uiCopy("reply-rate")}</p>
                       <p className="text-lg font-semibold">{sequenceCommunications7d.replyRate}%</p>
                     </div>
                   </div>
@@ -1405,17 +1401,17 @@ export default function CrmDashboardPage() {
                   {isEmailHealthWarning ? (
                     <Alert>
                       <Mail className="h-4 w-4" />
-                      <AlertTitle>Email warnings detected</AlertTitle>
+                      <AlertTitle>{uiCopy("email-warnings-detected")}</AlertTitle>
                       <AlertDescription className="flex items-center justify-between gap-2">
-                        <span>Reply rate is below 10% this week.</span>
+                        <span>{uiCopy("reply-rate-is-below")}</span>
                         <Button variant="outline" size="sm" asChild>
-                          <Link to="/crm/settings/email">Review settings</Link>
+                          <Link to="/crm/settings/email">{uiCopy("review-settings")}</Link>
                         </Button>
                       </AlertDescription>
                     </Alert>
                   ) : (
                     <div className={cn(dashboardEmptyClass, "p-3")}>
-                      Sequence delivery health looks stable.
+                      {uiCopy("sequence-delivery-health-looks")}
                     </div>
                   )}
                 </>
@@ -1426,11 +1422,11 @@ export default function CrmDashboardPage() {
           <Card className={cn("xl:col-span-4", dashboardCardClass)}>
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
               <div>
-                <CardTitle>Recent Activity Feed</CardTitle>
-                <CardDescription>Latest CRM updates and interactions.</CardDescription>
+                <CardTitle>{uiCopy("recent-activity-feed")}</CardTitle>
+                <CardDescription>{uiCopy("latest-crm-updates-and")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/crm/activities">View all</Link>
+                <Link to="/crm/activities">{uiCopy("view-all")}</Link>
               </Button>
             </CardHeader>
             <CardContent>
@@ -1440,7 +1436,7 @@ export default function CrmDashboardPage() {
                   <AlertTitle>Couldn&apos;t load activity feed</AlertTitle>
                 </Alert>
               ) : recentActivityFeed.length === 0 ? (
-                <div className={dashboardEmptyClass}>No activity yet.</div>
+                <div className={dashboardEmptyClass}>{uiCopy("no-activity-yet")}</div>
               ) : (
                 <div className="space-y-2">
                   {recentActivityFeed.map((activity) => (
@@ -1460,7 +1456,7 @@ export default function CrmDashboardPage() {
                           ? `Deal ${activity.dealId}`
                           : activity.partyId
                             ? `Contact ${activity.partyId}`
-                            : "General"}
+                            : uiCopy("general")}
                       </p>
                     </div>
                   ))}
@@ -1474,10 +1470,17 @@ export default function CrmDashboardPage() {
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <CircleDashed className="h-3.5 w-3.5" />
         <span>
-          Filters applied: {filteredDeals.length} deals, {filteredLeads.length} leads.
+          {uiCopy("filters-applied") + " "}
+          {filteredDeals.length}
+          {" " + uiCopy("deals-2") + " "}
+          {filteredLeads.length}
+          {" " + uiCopy("leads")}
         </span>
         <Clock3 className="h-3.5 w-3.5 ml-2" />
-        <span>Last refresh: {formatDateTime(new Date().toISOString(), locale)}</span>
+        <span>
+          {uiCopy("last-refresh") + " "}
+          {formatDateTime(new Date().toISOString(), locale)}
+        </span>
       </div>
     </div>
   );

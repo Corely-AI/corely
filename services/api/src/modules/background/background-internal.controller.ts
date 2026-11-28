@@ -1,3 +1,5 @@
+import { EnvService } from "@corely/config";
+import { RecurringGenerationUseCase } from "../tasks/public";
 import { Body, Controller, Logger, Param, Post, UseGuards } from "@nestjs/common";
 import { OutboxPollerService } from "./runtime/modules/outbox/outbox-poller.service";
 import { InvoicePdfService } from "./runtime/modules/invoices/application/invoice-pdf.service";
@@ -20,7 +22,9 @@ export class BackgroundInternalController {
     private readonly outboxPoller: OutboxPollerService,
     private readonly invoicePdfService: InvoicePdfService,
     private readonly trialExpiryRunner: TrialExpiryRunnerService,
-    private readonly coachingPrepRunner: CoachingPrepReminderRunnerService
+    private readonly coachingPrepRunner: CoachingPrepReminderRunnerService,
+    private readonly recurringTasks: RecurringGenerationUseCase,
+    private readonly env: EnvService
   ) {}
 
   @Post("internal/background/outbox/run")
@@ -49,12 +53,25 @@ export class BackgroundInternalController {
       logger: new Logger(BackgroundInternalController.name),
     });
 
+    // Legacy ticks without configured service credentials must not acquire new write authority.
+    const recurringReport =
+      this.env.WORKER_API_SERVICE_TOKEN || process.env.INTERNAL_WORKER_KEY
+        ? await this.recurringTasks.run(Math.min(25, limit), 30000)
+        : { processedCount: 0, updatedCount: 0, skippedCount: 0, errorCount: 0, durationMs: 0 };
     return {
-      processedCount: outboxReport.processedCount + coachingPrepReport.processedCount,
-      updatedCount: outboxReport.updatedCount + coachingPrepReport.updatedCount,
-      skippedCount: outboxReport.skippedCount + coachingPrepReport.skippedCount,
-      errorCount: outboxReport.errorCount + coachingPrepReport.errorCount,
-      durationMs: outboxReport.durationMs + coachingPrepReport.durationMs,
+      recurringTasks: recurringReport,
+      processedCount:
+        recurringReport.processedCount +
+        outboxReport.processedCount +
+        coachingPrepReport.processedCount,
+      updatedCount:
+        recurringReport.updatedCount + outboxReport.updatedCount + coachingPrepReport.updatedCount,
+      skippedCount:
+        recurringReport.skippedCount + outboxReport.skippedCount + coachingPrepReport.skippedCount,
+      errorCount:
+        recurringReport.errorCount + outboxReport.errorCount + coachingPrepReport.errorCount,
+      durationMs:
+        recurringReport.durationMs + outboxReport.durationMs + coachingPrepReport.durationMs,
       outbox: outboxReport,
       coachingPrep: coachingPrepReport,
     };

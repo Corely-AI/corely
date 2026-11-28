@@ -1,8 +1,9 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, MessageSquare, UserPlus } from "lucide-react";
-import { Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Textarea } from "@corely/ui";
@@ -30,6 +31,7 @@ const contentClass =
   "[&_a]:text-accent [&_a]:underline [&_img]:rounded-md [&_img]:border [&_img]:border-border";
 
 export default function PublicCmsPostPage() {
+  const uiCopy = useUiCopy("ui.cms-publiccmspostpage");
   const { slug } = useParams<{ slug: string }>();
   const { workspaceSlug } = usePublicWorkspace();
   const basePath = workspaceSlug ? `/w/${workspaceSlug}/cms` : "/cms";
@@ -83,7 +85,7 @@ export default function PublicCmsPostPage() {
       saveCmsReaderSession(nextSession);
       setSession(nextSession);
       setAuthPassword("");
-      toast.success("Signed in");
+      toast.success(uiCopy("signed-in"));
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Failed to authenticate");
@@ -106,7 +108,7 @@ export default function PublicCmsPostPage() {
     },
     onSuccess: async () => {
       setCommentBody("");
-      toast.success("Comment submitted for review");
+      toast.success(uiCopy("comment-submitted-for-review"));
       await queryClient.invalidateQueries({
         queryKey: cmsPublicKeys.comments(workspaceSlug, slug, { page: 1, pageSize: 50 }),
       });
@@ -122,14 +124,14 @@ export default function PublicCmsPostPage() {
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to={basePath} className="flex items-center gap-2">
             <Logo size="sm" />
-            <span className="text-sm text-muted-foreground">Articles</span>
+            <span className="text-sm text-muted-foreground">{uiCopy("articles")}</span>
           </Link>
           {post?.slug ? (
             <Link
               to={buildCmsPostPublicLink(post.slug, workspaceSlug)}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
-              Share link
+              {uiCopy("share-link")}
             </Link>
           ) : null}
         </div>
@@ -137,10 +139,11 @@ export default function PublicCmsPostPage() {
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         {isLoading ? (
-          <div className="text-center text-muted-foreground py-12">Loading post...</div>
+          <LoadingSkeleton variant="detail" label={uiCopy("loading-post")} />
         ) : isError || !post ? (
           <div className="text-center text-muted-foreground py-12">
-            Post not found. <Link to={basePath}>Back to articles</Link>
+            {uiCopy("post-not-found") + " "}
+            <Link to={basePath}>{uiCopy("back-to-articles")}</Link>
           </div>
         ) : (
           <>
@@ -168,7 +171,7 @@ export default function PublicCmsPostPage() {
             <section className="space-y-6">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-accent" />
-                <h2 className="text-h2 text-foreground">Comments</h2>
+                <h2 className="text-h2 text-foreground">{uiCopy("comments")}</h2>
               </div>
 
               {session ? (
@@ -176,7 +179,8 @@ export default function PublicCmsPostPage() {
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-muted-foreground">
-                        Signed in as {session.reader.displayName || session.reader.email}
+                        {uiCopy("signed-in-as") + " "}
+                        {session.reader.displayName || session.reader.email}
                       </div>
                       <Button
                         variant="ghost"
@@ -187,16 +191,16 @@ export default function PublicCmsPostPage() {
                         }}
                       >
                         <LogOut className="h-4 w-4" />
-                        Sign out
+                        {uiCopy("sign-out")}
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="comment-body">Leave a comment</Label>
+                      <Label htmlFor="comment-body">{uiCopy("leave-a-comment")}</Label>
                       <Textarea
                         id="comment-body"
                         value={commentBody}
                         onChange={(event) => setCommentBody(event.target.value)}
-                        placeholder="Share your thoughts..."
+                        placeholder={uiCopy("share-your-thoughts")}
                       />
                     </div>
                     <Button
@@ -204,10 +208,10 @@ export default function PublicCmsPostPage() {
                       onClick={() => commentMutation.mutate()}
                       disabled={commentMutation.isPending}
                     >
-                      Submit comment
+                      {uiCopy("submit-comment")}
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      Comments are reviewed before appearing publicly.
+                      {uiCopy("comments-are-reviewed-before")}
                     </p>
                   </CardContent>
                 </Card>
@@ -216,7 +220,9 @@ export default function PublicCmsPostPage() {
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-h3 text-foreground">
-                        {authMode === "login" ? "Sign in to comment" : "Create an account"}
+                        {authMode === "login"
+                          ? uiCopy("sign-in-to-comment")
+                          : uiCopy("create-an-account")}
                       </h3>
                       <Button
                         variant="ghost"
@@ -226,23 +232,23 @@ export default function PublicCmsPostPage() {
                         }
                       >
                         <UserPlus className="h-4 w-4" />
-                        {authMode === "login" ? "Sign up" : "Sign in"}
+                        {authMode === "login" ? uiCopy("sign-up") : uiCopy("sign-in")}
                       </Button>
                     </div>
                     <div className="grid gap-3">
                       {authMode === "signup" ? (
                         <div className="space-y-2">
-                          <Label htmlFor="display-name">Display name</Label>
+                          <Label htmlFor="display-name">{uiCopy("display-name")}</Label>
                           <Input
                             id="display-name"
                             value={authDisplayName}
                             onChange={(event) => setAuthDisplayName(event.target.value)}
-                            placeholder="Your name"
+                            placeholder={uiCopy("your-name")}
                           />
                         </div>
                       ) : null}
                       <div className="space-y-2">
-                        <Label htmlFor="reader-email">Email</Label>
+                        <Label htmlFor="reader-email">{uiCopy("email")}</Label>
                         <Input
                           id="reader-email"
                           type="email"
@@ -252,7 +258,7 @@ export default function PublicCmsPostPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="reader-password">Password</Label>
+                        <Label htmlFor="reader-password">{uiCopy("password")}</Label>
                         <Input
                           id="reader-password"
                           type="password"
@@ -266,7 +272,7 @@ export default function PublicCmsPostPage() {
                         onClick={() => authMutation.mutate()}
                         disabled={authMutation.isPending}
                       >
-                        {authMode === "login" ? "Sign in" : "Create account"}
+                        {authMode === "login" ? uiCopy("sign-in") : uiCopy("create-account")}
                       </Button>
                     </div>
                   </CardContent>
@@ -275,13 +281,13 @@ export default function PublicCmsPostPage() {
 
               <div className="space-y-4">
                 {comments.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">No comments yet.</div>
+                  <div className="text-sm text-muted-foreground">{uiCopy("no-comments-yet")}</div>
                 ) : (
                   comments.map((comment) => (
                     <Card key={comment.id}>
                       <CardContent className="p-4 space-y-2">
                         <div className="text-sm font-medium">
-                          {comment.readerDisplayName || "Reader"}
+                          {comment.readerDisplayName || uiCopy("reader")}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {formatDateTime(comment.createdAt, "en-US")}

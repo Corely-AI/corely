@@ -133,7 +133,7 @@ test.describe("Cash dashboard", () => {
       workspaceId,
     });
 
-    const dashboardUrl = `/dashboard?registerId=${encodeURIComponent(register.id)}&day=${dayKey}`;
+    const dashboardUrl = `/cash/dashboard?registerId=${encodeURIComponent(register.id)}&day=${dayKey}`;
     await page.goto(dashboardUrl);
     await expect(page.getByTestId("cash-dashboard-page")).toBeVisible();
     await expect(page.getByTestId("cash-dashboard-banner-title")).toHaveText(
@@ -266,7 +266,7 @@ test.describe("Cash dashboard", () => {
       workspaceId,
     });
 
-    const dashboardUrl = `/dashboard?registerId=${encodeURIComponent(register.id)}&day=${dayKey}`;
+    const dashboardUrl = `/cash/dashboard?registerId=${encodeURIComponent(register.id)}&day=${dayKey}`;
     await page.goto(dashboardUrl);
     await expect(page.getByTestId("cash-dashboard-page")).toBeVisible();
     await expect(page.getByTestId("cash-dashboard-banner-title")).toHaveText(

@@ -2,12 +2,15 @@ import { useState, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
-import { type RegisterBindingRequest } from "@corely/web-shared/lib/cash-management-api";
-import { type CashAssistantWorkspace } from "@corely/contracts";
+import type { CashAssistantWorkspace, ResolveCashAssistantWorkspaceInput } from "@corely/contracts";
 import { THREAD_LIST_QUERY_KEY } from "./assistant-utils";
 
+type RegisterBindingRequest = Pick<
+  ResolveCashAssistantWorkspaceInput,
+  "registerId" | "conversationId"
+>;
+
 export function useAssistantRegisterBinding(
-  activeModule: string | undefined,
   threadId: string | undefined,
   t: any,
   toast: any,
@@ -45,7 +48,7 @@ export function useAssistantRegisterBinding(
       );
       void queryClient.invalidateQueries({ queryKey: THREAD_LIST_QUERY_KEY });
       if (ws.conversationId && ws.conversationId !== threadId) {
-        navigate(`/assistant/t/${ws.conversationId}`);
+        navigate(`/cash/assistant/t/${ws.conversationId}`);
       }
     },
     onError: (error: unknown) => {

@@ -15,7 +15,7 @@ export const buildToolCtx = (params: {
   runId?: string;
 }): UseCaseContext => ({
   tenantId: params.tenantId,
-  workspaceId: params.workspaceId ?? params.tenantId,
+  workspaceId: params.workspaceId,
   userId: params.userId,
   correlationId: params.toolCallId ?? params.runId,
   requestId: params.toolCallId,

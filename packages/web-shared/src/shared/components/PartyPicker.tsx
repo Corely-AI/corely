@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronDown } from "lucide-react";
@@ -46,6 +47,7 @@ export function PartyPicker({
   testId,
   optionTestIdPrefix,
 }: PartyPickerProps) {
+  const uiCopy = useUiCopy("ui.shared-partypicker");
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const trimmedSearchTerm = searchTerm.trim();
@@ -135,7 +137,7 @@ export function PartyPicker({
           <CommandList>
             <CommandEmpty>
               {isLoading
-                ? "Loading parties..."
+                ? uiCopy("loading-parties")
                 : isSearching
                   ? `No results for "${trimmedSearchTerm}"`
                   : emptyText}
@@ -150,7 +152,7 @@ export function PartyPicker({
                     setSearchTerm("");
                   }}
                 >
-                  Clear selection
+                  {uiCopy("clear-selection")}
                 </CommandItem>
               ) : null}
               {options.map((party) => (

@@ -1,5 +1,9 @@
+import { ExpenseReceiptEmailSettingsCard } from "./ExpenseReceiptEmailSettingsCard";
+import { InvoiceEmailSettingsCard } from "./InvoiceEmailSettingsCard";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -8,8 +12,6 @@ import { Separator } from "@corely/ui";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 import { useToast } from "@corely/ui";
-import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
-import { Badge } from "@corely/ui";
 import { Switch } from "@corely/ui";
 import {
   AlertDialog,
@@ -25,9 +27,10 @@ import {
 import { useAuth } from "@/lib/auth-provider";
 
 export const WorkspaceSettingsPage: React.FC = () => {
+  const uiCopy = useUiCopy("ui.workspaces-workspacesettingspage");
   const { activeWorkspace, activeWorkspaceId, refresh } = useWorkspace();
   const { user } = useAuth();
-  const { config, refresh: refreshConfig } = useWorkspaceConfig();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -43,7 +46,6 @@ export const WorkspaceSettingsPage: React.FC = () => {
     publicEnabled: false,
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [isUpgrading, setIsUpgrading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const tenantName = useMemo(() => {
     if (!user) {
@@ -128,30 +130,6 @@ export const WorkspaceSettingsPage: React.FC = () => {
     }
   };
 
-  const handleUpgrade = async () => {
-    if (!activeWorkspaceId) {
-      return;
-    }
-    setIsUpgrading(true);
-    try {
-      await workspacesApi.upgradeWorkspace(activeWorkspaceId);
-      await refresh();
-      await refreshConfig();
-      toast({
-        title: "Workspace upgraded",
-        description: "Your workspace now uses company defaults.",
-      });
-    } catch (error) {
-      toast({
-        title: "Upgrade failed",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpgrading(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!activeWorkspaceId) {
       return;
@@ -159,6 +137,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
     setIsDeleting(true);
     try {
       await workspacesApi.deleteWorkspace(activeWorkspaceId);
+      await refresh();
       toast({
         title: "Workspace deleted",
         description: "The workspace has been removed.",
@@ -176,47 +155,74 @@ export const WorkspaceSettingsPage: React.FC = () => {
     }
   };
 
-  const workspaceKind = config?.kind ?? activeWorkspace?.kind ?? "PERSONAL";
-  const canUpgrade = workspaceKind === "PERSONAL" && config?.currentUser.isWorkspaceAdmin;
-
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-h1">Workspace settings</h1>
-          <p className="text-muted-foreground">Update legal details, currency, and address.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-h1">{uiCopy("workspace-settings")}</h1>
+          {activeWorkspace && (
+            <p className="break-words font-medium text-foreground">{activeWorkspace.name}</p>
+          )}
+          <p className="text-muted-foreground">{uiCopy("update-legal-details-currency")}</p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving}>
-          Save changes
+        <Button className="shrink-0" onClick={handleSave} disabled={isSaving}>
+          {uiCopy("save-changes")}
         </Button>
       </div>
 
+      <section aria-labelledby="email-forwarding" className="space-y-4 has-[>div:empty]:hidden">
+        <h2 id="email-forwarding" className="text-h2">
+          {t("settings.emailForwarding")}
+        </h2>
+        <div className="space-y-4">
+          <InvoiceEmailSettingsCard key={activeWorkspaceId} workspaceId={activeWorkspaceId} />
+          <ExpenseReceiptEmailSettingsCard
+            key={`expense-${activeWorkspaceId}`}
+            workspaceId={activeWorkspaceId}
+          />
+        </div>
+      </section>
+
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
+          <CardTitle>{uiCopy("profile")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label>Name</Label>
+            <Label>{uiCopy("name")}</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             />
           </div>
           <div className="space-y-2">
-            <Label>Tenant name</Label>
+            <Label>{uiCopy("tenant-name")}</Label>
             <Input value={tenantName} readOnly />
           </div>
           <div className="space-y-2">
-            <Label>Legal name</Label>
+            <Label>{uiCopy("legal-name")}</Label>
             <Input
               value={form.legalName}
               onChange={(e) => setForm((f) => ({ ...f, legalName: e.target.value }))}
-              placeholder="Registered name for invoices"
+              placeholder={uiCopy("registered-name-for-invoices")}
             />
           </div>
+          {activeWorkspace && (
+            <div className="space-y-2">
+              <Label htmlFor="workspace-legal-entity-type">{t("workspace.legalEntityType")}</Label>
+              <Input
+                id="workspace-legal-entity-type"
+                value={
+                  activeWorkspace.kind === "COMPANY"
+                    ? t("workspace.legalEntityCompany")
+                    : t("workspace.legalEntityPersonal")
+                }
+                readOnly
+              />
+            </div>
+          )}
           <div className="space-y-2">
-            <Label>Currency</Label>
+            <Label>{uiCopy("currency")}</Label>
             <Input
               value={form.currency}
               onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value.toUpperCase() }))}
@@ -224,7 +230,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label>Country code</Label>
+            <Label>{uiCopy("country-code")}</Label>
             <Input
               value={form.countryCode}
               onChange={(e) =>
@@ -238,33 +244,33 @@ export const WorkspaceSettingsPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Address</CardTitle>
+          <CardTitle>{uiCopy("address")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2 md:col-span-3">
-            <Label>Street</Label>
+            <Label>{uiCopy("street")}</Label>
             <Input
               value={form.addressLine1}
               onChange={(e) => setForm((f) => ({ ...f, addressLine1: e.target.value }))}
-              placeholder="Street and number"
+              placeholder={uiCopy("street-and-number")}
             />
           </div>
           <div className="space-y-2">
-            <Label>City</Label>
+            <Label>{uiCopy("city")}</Label>
             <Input
               value={form.city}
               onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
             />
           </div>
           <div className="space-y-2">
-            <Label>Postal code</Label>
+            <Label>{uiCopy("postal-code")}</Label>
             <Input
               value={form.postalCode}
               onChange={(e) => setForm((f) => ({ ...f, postalCode: e.target.value }))}
             />
           </div>
           <div className="space-y-2">
-            <Label>Tax ID</Label>
+            <Label>{uiCopy("tax-id")}</Label>
             <Input
               value={form.taxId}
               onChange={(e) => setForm((f) => ({ ...f, taxId: e.target.value }))}
@@ -275,11 +281,11 @@ export const WorkspaceSettingsPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Public Site Settings</CardTitle>
+          <CardTitle>{uiCopy("public-site-settings")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="slug">Workspace Slug</Label>
+            <Label htmlFor="slug">{uiCopy("workspace-slug")}</Label>
             <Input
               id="slug"
               value={form.slug}
@@ -294,19 +300,19 @@ export const WorkspaceSettingsPage: React.FC = () => {
               placeholder="my-workspace"
             />
             <p className="text-xs text-muted-foreground">
-              This slug will be used in your public URLs:{" "}
+              {uiCopy("this-slug-will-be")}{" "}
               <code className="bg-muted px-1 rounded">
-                /w/{form.slug || "your-slug"}/rental/...
+                {uiCopy("w")}
+                {form.slug || "your-slug"}
+                {uiCopy("rental")}
               </code>
             </p>
           </div>
 
           <div className="flex items-center justify-between space-x-2">
             <div className="space-y-1">
-              <Label htmlFor="public-enabled">Enable Public Site</Label>
-              <p className="text-sm text-muted-foreground">
-                Allow public access to your published content (rentals, CMS posts, etc.)
-              </p>
+              <Label htmlFor="public-enabled">{uiCopy("enable-public-site")}</Label>
+              <p className="text-sm text-muted-foreground">{uiCopy("allow-public-access-to")}</p>
             </div>
             <Switch
               id="public-enabled"
@@ -317,44 +323,8 @@ export const WorkspaceSettingsPage: React.FC = () => {
 
           {form.publicEnabled && !form.slug && (
             <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-800 dark:text-yellow-200">
-              ⚠️ You need to set a workspace slug to use the public site features.
+              {uiCopy("you-need-to-set")}
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Workspace type</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Current kind:</span>
-            <Badge variant="secondary">
-              {workspaceKind === "PERSONAL" ? "Freelancer" : "Company"}
-            </Badge>
-          </div>
-          {workspaceKind === "PERSONAL" ? (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Freelancer workspaces use minimal defaults. Upgrading keeps all data and unlocks
-                company capabilities.
-              </p>
-              <div>
-                <Button onClick={handleUpgrade} disabled={!canUpgrade || isUpgrading}>
-                  {isUpgrading ? "Upgrading..." : "Upgrade to Company"}
-                </Button>
-                {!config?.currentUser.isWorkspaceAdmin && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Only workspace admins can upgrade.
-                  </p>
-                )}
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Your workspace is already using company features and capabilities.
-            </p>
           )}
         </CardContent>
       </Card>
@@ -363,33 +333,31 @@ export const WorkspaceSettingsPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Danger zone</CardTitle>
+          <CardTitle>{uiCopy("danger-zone")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Removing a workspace will delete its data. This action is restricted to owners.
-          </p>
+          <p className="text-sm text-muted-foreground">{uiCopy("removing-a-workspace-will")}</p>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" disabled={isDeleting}>
-                {isDeleting ? "Deleting..." : "Delete workspace"}
+                {isDeleting ? uiCopy("deleting") : uiCopy("delete-workspace")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle>{uiCopy("are-you-absolutely-sure")}</AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete the workspace &quot;
                   {activeWorkspace?.name}&quot; and remove all its data.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{uiCopy("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDelete}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  Delete Workspace
+                  {uiCopy("delete-workspace-2")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

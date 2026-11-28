@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -7,6 +9,7 @@ import { ListToolbar, useListUrlState } from "@/shared/list-kit";
 import { coachingApi } from "@/lib/coaching-api";
 import { coachingOfferKeys } from "../queries";
 import {
+  TableLoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -30,6 +33,8 @@ const getLocalizedValue = (
 };
 
 export const CoachingOffersPage = () => {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.coaching-engagements-coachingofferspage");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [state, setUrlState] = useListUrlState(
     { pageSize: 20, sort: "updatedAt:desc" },
@@ -46,7 +51,7 @@ export const CoachingOffersPage = () => {
     [state.page, state.pageSize, state.q]
   );
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: coachingOfferKeys.list(queryParams),
     queryFn: () => coachingApi.listOffers(queryParams),
     placeholderData: keepPreviousData,
@@ -54,13 +59,13 @@ export const CoachingOffersPage = () => {
 
   return (
     <CrudListPageLayout
-      title="Coaching offers"
+      title={uiCopy("coaching-offers")}
       subtitle="Create and maintain reusable coaching offers with availability and booking rules."
       primaryAction={
         <Button asChild>
           <Link to="/coaching/offers/new">
             <PlusIcon className="h-4 w-4 mr-2" />
-            Add offer
+            {uiCopy("add-offer")}
           </Link>
         </Button>
       }
@@ -75,7 +80,7 @@ export const CoachingOffersPage = () => {
             { label: "Updated (Oldest)", value: "updatedAt:asc" },
           ]}
           onFilterClick={() => setIsFilterOpen((value) => !value)}
-          placeholder="Search offer id"
+          placeholder={uiCopy("search-offer-id")}
         />
       }
     >
@@ -84,16 +89,25 @@ export const CoachingOffersPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Offer</TableHead>
-                <TableHead>Meeting</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Timezone</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{uiCopy("offer")}</TableHead>
+                <TableHead>{uiCopy("meeting")}</TableHead>
+                <TableHead>{uiCopy("price")}</TableHead>
+                <TableHead>{uiCopy("duration")}</TableHead>
+                <TableHead>{uiCopy("timezone")}</TableHead>
+                <TableHead>{uiCopy("status")}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
+              {isLoading ? (
+                <TableLoadingSkeleton columns={7} label={t("common.loading")} />
+              ) : isError && !data ? (
+                <TableRow>
+                  <TableCell colSpan={7}>
+                    <p role="alert">{t("common.error")}</p>
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {(data?.items ?? []).map((offer) => (
                 <TableRow key={offer.id}>
                   <TableCell>
@@ -106,23 +120,26 @@ export const CoachingOffersPage = () => {
                   <TableCell>
                     {(offer.priceCents / 100).toFixed(2)} {offer.currency}
                   </TableCell>
-                  <TableCell>{offer.sessionDurationMinutes}m</TableCell>
+                  <TableCell>
+                    {offer.sessionDurationMinutes}
+                    {uiCopy("m")}
+                  </TableCell>
                   <TableCell>{offer.availabilityRule.timezone}</TableCell>
                   <TableCell>
                     <Badge variant={offer.archivedAt ? "secondary" : "outline"}>
-                      {offer.archivedAt ? "Archived" : "Active"}
+                      {offer.archivedAt ? uiCopy("archived") : uiCopy("active")}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Button asChild size="sm" variant="outline">
-                      <Link to={`/coaching/offers/${offer.id}`}>Open</Link>
+                      <Link to={`/coaching/offers/${offer.id}`}>{uiCopy("open")}</Link>
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
-              {!isLoading && (data?.items?.length ?? 0) === 0 ? (
+              {!isLoading && (!isError || data) && (data?.items?.length ?? 0) === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7}>No coaching offers yet.</TableCell>
+                  <TableCell colSpan={7}>{uiCopy("no-coaching-offers-yet")}</TableCell>
                 </TableRow>
               ) : null}
             </TableBody>

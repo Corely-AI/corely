@@ -1,9 +1,11 @@
+import { LegacyInvoiceObservation } from "./legacy-invoice-observation";
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { PublicFormPage } from "../../modules/forms";
 import { PublicCmsListPage, PublicCmsPostPage } from "../../modules/cms";
 import { PublicRentalsListScreen, PublicRentalDetailScreen } from "../../modules/rentals";
 import NotFound from "@corely/web-shared/shared/components/NotFound";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
 import ForgotPasswordPage from "../../routes/auth/forgot-password";
@@ -21,10 +23,29 @@ import {
   PublicShowcaseBlog,
 } from "../../modules/portfolio";
 import { appShellRoutes } from "./app-shell-routes";
+import { GuestOnly } from "./guest-only";
 import { getDefaultRouteForSurface, useSurfaceId } from "@corely/web-shared/shared/surface";
+import { useAuth } from "@corely/web-shared/lib/auth-provider";
+import { CORELY_APP_ORIGIN } from "../corely-app-origin";
+
+// OpenBuk owns its branded layout and stylesheet in the shared web build.
+function OpenBukEntry() {
+  React.useEffect(() => window.location.reload(), []);
+  return null;
+}
 
 const SurfaceRootRedirect = () => {
   const surfaceId = useSurfaceId();
+  const { search } = useLocation();
+  const { user, isLoading } = useAuth();
+  if (window.location.origin === CORELY_APP_ORIGIN) {
+    if (isLoading) {
+      return <PageLoadingSkeleton variant="cards" />;
+    }
+    if (user?.activeTenantId !== null) {
+      return <Navigate to={{ pathname: "/apps", search }} replace />;
+    }
+  }
   return <Navigate to={getDefaultRouteForSurface(surfaceId)} replace />;
 };
 
@@ -35,7 +56,9 @@ export const Router = () => (
       v7_relativeSplatPath: true,
     }}
   >
+    <LegacyInvoiceObservation />
     <Routes>
+      <Route path="/openbuk/*" element={<OpenBukEntry />} />
       {/* Root Route: Domain Mode Portfolio OR Dashboard Redirect */}
       <Route
         path="/"
@@ -68,8 +91,12 @@ export const Router = () => (
         <Route path="blog" element={<PublicShowcaseBlog />} />
       </Route>
 
-      <Route path="/auth/login" element={<LoginPage />} />
-      <Route path="/auth/signup" element={<SignupPage />} />
+      <Route element={<GuestOnly />}>
+        <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/signup" element={<SignupPage />} />
+      </Route>
+      <Route path="/cash/signup" element={<SignupPage defaultPath="/cash/dashboard" />} />
       <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
       <Route path="/f/:publicId" element={<PublicFormPage />} />

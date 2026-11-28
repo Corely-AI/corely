@@ -1,12 +1,14 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { ApiError } from "@corely/api-client";
+import { ExpenseSubmissionGuidanceSlot, type ExpenseSubmissionGuidance } from "@corely/expenses-ui";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck, ShieldOff, ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Badge } from "@corely/ui";
-import { Separator } from "@corely/ui";
+import { LoadingSkeleton, Separator } from "@corely/ui";
 import { expensesApi } from "@corely/web-shared/lib/expenses-api";
 import { expenseKeys } from "../queries";
 import { formatDate, formatMoney } from "@corely/web-shared/shared/lib/formatters";
@@ -15,7 +17,7 @@ import { invalidateResourceQueries } from "@corely/web-shared/shared/crud";
 import { toast } from "sonner";
 import { DetailScreenHeader } from "@corely/web-shared/shared/components/DetailScreenHeader";
 import { CustomAttributesSection } from "@corely/web-shared/shared/custom-attributes";
-import type { ExpenseDeductibilityResult } from "@corely/contracts";
+import { EMAILED_EXPENSE_PREFIX, type ExpenseDeductibilityResult } from "@corely/contracts";
 
 // ---------------------------------------------------------------------------
 // Deductibility summary sub-component
@@ -80,7 +82,13 @@ function DeductibilitySummary({ d, locale }: { d: ExpenseDeductibilityResult; lo
   );
 }
 
-export const ExpenseDetailPage = () => {
+export const ExpenseDetailPage = ({
+  workspaceId,
+  submissionGuidance,
+}: {
+  workspaceId?: string;
+  submissionGuidance?: ExpenseSubmissionGuidance;
+} = {}) => {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -107,7 +115,12 @@ export const ExpenseDetailPage = () => {
       toast.success(t("expenses.notifications.transitioned", { to: vars.to }));
       await invalidateResourceQueries(queryClient, "expenses", { id });
     },
-    onError: () => toast.error(t("expenses.notifications.transitionFailed")),
+    onError: (error) =>
+      toast.error(
+        error instanceof ApiError && error.code === "Expenses:SubmissionPolicyRejected"
+          ? error.detail
+          : t("expenses.notifications.transitionFailed")
+      ),
   });
 
   const deleteMutation = useMutation({
@@ -153,10 +166,12 @@ export const ExpenseDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-32 w-full" />
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </LoadingSkeleton>
     );
   }
 
@@ -211,6 +226,12 @@ export const ExpenseDetailPage = () => {
         )}
       </div>
 
+      {workspaceId &&
+        expense.tenantId === workspaceId &&
+        capabilities?.transitions.some(({ to, enabled }) => to === "SUBMITTED" && enabled) && (
+          <ExpenseSubmissionGuidanceSlot status={expense.status} Guidance={submissionGuidance} />
+        )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -235,7 +256,11 @@ export const ExpenseDetailPage = () => {
               <div>
                 <p className="text-sm text-muted-foreground">{t("expenses.amount")}</p>
                 <p className="font-medium">
-                  {formatMoney(expense.totalAmountCents ?? 0, i18n.language)}
+                  {formatMoney(
+                    expense.totalAmountCents ?? 0,
+                    i18n.language,
+                    expense.id.startsWith(EMAILED_EXPENSE_PREFIX) ? expense.currency : undefined
+                  )}
                 </p>
               </div>
               <div>
@@ -274,7 +299,17 @@ export const ExpenseDetailPage = () => {
               <CardTitle>{t("expenses.receipt")}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              {t("expenses.detail.attachReceipts")}
+              {expense.id.startsWith(EMAILED_EXPENSE_PREFIX) &&
+              Boolean(expense.receipts?.length) ? (
+                <Link
+                  className="text-primary underline"
+                  to={`/expenses/receipt-inbox?receipt=${expense.id}`}
+                >
+                  {t("expenses.receiptEmail.original")}
+                </Link>
+              ) : (
+                t("expenses.detail.attachReceipts")
+              )}
             </CardContent>
           </Card>
           <Card>

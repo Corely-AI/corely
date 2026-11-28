@@ -4,6 +4,7 @@ import { Link, useSearchParams, useParams, useNavigate } from "react-router-dom"
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardContent,
@@ -47,8 +48,8 @@ export function DailyCloseScreen() {
   });
 
   const previewRecord = previewQuery.data?.preview;
-  const isClosed = previewRecord?.status === "LOCKED";
   const status = previewRecord?.status;
+  const isClosed = status === "LOCKED" || status === "CLOSED";
   const expectedBalance = previewRecord?.expectedClosingCashCents ?? 0;
   const countedClosingCash = previewRecord?.countedClosingCashCents;
   const cashDifference = previewRecord?.cashDifferenceCents;
@@ -115,7 +116,12 @@ export function DailyCloseScreen() {
 
   if (registerQuery.isLoading || previewQuery.isLoading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+      <LoadingSkeleton
+        variant="form"
+        label={t("cash.ui.common.loadingRegister")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 
@@ -181,7 +187,7 @@ export function DailyCloseScreen() {
           </div>
 
           {/* ── OPEN or CALCULATED: Kassensturz entry form ── */}
-          {(status === "OPEN" || status === "CALCULATED") && (
+          {status && !isClosed && (
             <div className="space-y-5 mt-6 animate-in fade-in slide-in-from-bottom-2">
               {/* Expected / Counted / Difference summary */}
               <div className="grid gap-4 md:grid-cols-3">
@@ -320,7 +326,7 @@ export function DailyCloseScreen() {
           )}
 
           {/* ── LOCKED: summary display only ── */}
-          {status === "LOCKED" && (
+          {isClosed && (
             <div className="space-y-6 mt-6">
               {verificationStatus === "NOT_COUNTED" ? (
                 <div className="p-4 rounded-lg bg-blue-50 text-blue-800 flex flex-col gap-2">

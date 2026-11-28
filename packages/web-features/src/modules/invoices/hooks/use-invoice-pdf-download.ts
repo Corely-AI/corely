@@ -1,10 +1,13 @@
+import {
+  useInvoicesApi,
+  useInvoicePaymentMethodsApi,
+  useInvoiceKeys,
+  useInvoiceRuntime,
+} from "../invoice-runtime";
 import { useCallback, useEffect, useRef } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
-import { paymentMethodsApi } from "@corely/web-shared/lib/payment-methods-api";
 import { pollAsyncJob } from "@corely/web-shared/shared/lib/async-poll";
-import { invoiceQueryKeys } from "../queries";
 
 type InvoiceForPdf = {
   status?: string;
@@ -42,6 +45,10 @@ export const useInvoicePdfDownload = ({
   t,
   debugEnabled,
 }: UseInvoicePdfDownloadParams) => {
+  const invoicesApi = useInvoicesApi();
+  const paymentMethodsApi = useInvoicePaymentMethodsApi();
+  const invoiceQueryKeys = useInvoiceKeys();
+  const isFocused = Boolean(useInvoiceRuntime());
   const downloadAbortRef = useRef<AbortController | null>(null);
   const downloadInFlightRef = useRef(false);
 
@@ -60,7 +67,9 @@ export const useInvoicePdfDownload = ({
   );
 
   const ensureInvoicePdfDefaults = useCallback(async () => {
-    if (!id || !invoice || invoice.status !== "DRAFT") {
+    // The focused BFF intentionally excludes legacy payment-settings endpoints.
+    // Finalize/PDF application use cases resolve their own existing defaults.
+    if (isFocused || !id || !invoice || invoice.status !== "DRAFT") {
       return;
     }
 
@@ -107,6 +116,7 @@ export const useInvoicePdfDownload = ({
     getPaymentMethodId,
     id,
     invoice,
+    isFocused,
     logPdfDebug,
     queryClient,
     setPaymentMethodId,
@@ -186,17 +196,9 @@ export const useInvoicePdfDownload = ({
             invoiceId,
             downloadUrl: pollResult.response.downloadUrl,
           });
-          const opened = window.open(
-            pollResult.response.downloadUrl,
-            "_blank",
-            "noopener,noreferrer"
-          );
-          if (!opened) {
-            logPdfDebug("Popup likely blocked while opening PDF", { invoiceId });
-            toast.error(t("invoices.errors.downloadFailed"), {
-              description: "Please allow pop-ups for this site and try again.",
-            });
-          }
+          // noopener may return null even when the window opens. It cannot be
+          // used to infer popup failure; keep the secure navigation flags.
+          window.open(pollResult.response.downloadUrl, "_blank", "noopener,noreferrer");
           return;
         }
 

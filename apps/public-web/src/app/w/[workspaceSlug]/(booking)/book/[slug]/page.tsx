@@ -1,13 +1,10 @@
+import { getPublicBookingMessages } from "@/components/pages/public-booking-messages";
 import { getRequestContext } from "@/lib/request-context";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { PublicBookingClient } from "@/components/pages/public-booking-client";
-import {
-  BOOKING_REVALIDATE,
-  getPublicBookingMetadata,
-  getPublicBookingPageData,
-} from "@/app/(booking)/book/_shared";
+import { getPublicBookingMetadata, getPublicBookingPageData } from "@/app/(booking)/book/_shared";
 
-export const revalidate = BOOKING_REVALIDATE;
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -25,6 +22,7 @@ export default async function WorkspacePublicBookingPage({
 }: {
   params: Promise<{ workspaceSlug: string; slug: string }>;
   searchParams?: Promise<{
+    lang?: string;
     serviceId?: string;
     staffId?: string;
     day?: string;
@@ -43,6 +41,7 @@ export default async function WorkspacePublicBookingPage({
 
   return (
     <PublicBookingClient
+      {...getPublicBookingMessages(initial?.lang, ctx.acceptLanguage)}
       routeSlug={slug}
       page={result.page}
       services={result.services}

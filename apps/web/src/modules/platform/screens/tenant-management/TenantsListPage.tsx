@@ -1,3 +1,6 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -5,11 +8,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Alert, AlertDescription } from "@corely/ui";
-import { CreditCard, Loader2, AlertCircle, Power, PowerOff } from "lucide-react";
+import { CreditCard, AlertCircle, Power, PowerOff } from "lucide-react";
 import { useTenants } from "../../hooks/useTenants";
 import { useUpdateTenant } from "../../hooks/useUpdateTenant";
 import type { TenantDto, UpdateTenantInput } from "@corely/contracts";
-import { useCanManageTenants } from "@/shared/lib/permissions";
+import { apiClient } from "@corely/web-shared/lib/api-client";
+import { setTenantAdminSession } from "@corely/web-shared/lib/tenant-admin-session";
+import { TenantAdminSessionSchema } from "@corely/contracts";
+import {
+  hasPermission,
+  useCanManageTenants,
+  useEffectivePermissions,
+  useIsHostScope,
+} from "@/shared/lib/permissions";
 import { useTranslation } from "react-i18next";
 import { TenantPlanModal } from "./TenantPlanModal";
 import {
@@ -28,7 +39,29 @@ import {
 } from "@corely/ui";
 
 export function TenantsListPage() {
+  const uiCopy = useUiCopy("ui.platform-tenant-management-tenantslistpage");
   const { t } = useTranslation();
+  const { data: effectivePermissions } = useEffectivePermissions();
+  const canOpenTenant =
+    useIsHostScope() && hasPermission(effectivePermissions?.permissions, "platform.tenants.access");
+  const [openingTenant, setOpeningTenant] = useState<string | null>(null);
+  const [openError, setOpenError] = useState<string | null>(null);
+  async function openTenant(tenant: TenantDto) {
+    setOpeningTenant(tenant.id);
+    setOpenError(null);
+    try {
+      const result = await apiClient.post(
+        "/platform/tenants/" + encodeURIComponent(tenant.id) + "/admin-session",
+        undefined,
+        { workspaceScope: "none" }
+      );
+      setTenantAdminSession(TenantAdminSessionSchema.parse(result));
+      window.location.assign("/dashboard");
+    } catch {
+      setOpenError(tenant.id);
+      setOpeningTenant(null);
+    }
+  }
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [state, setUrlState] = useListUrlState(
     { pageSize: 20, sort: "createdAt:desc" },
@@ -96,18 +129,14 @@ export function TenantsListPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="list" />;
   }
 
   if (error) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>Failed to load tenants. Please try again.</AlertDescription>
+        <AlertDescription>{uiCopy("failed-to-load-tenants")}</AlertDescription>
       </Alert>
     );
   }
@@ -163,7 +192,7 @@ export function TenantsListPage() {
                 <TableHead>{t("common.name")}</TableHead>
                 <TableHead>{t("tenants.slug")}</TableHead>
                 <TableHead>{t("tenants.status")}</TableHead>
-                <TableHead>Plan</TableHead>
+                <TableHead>{uiCopy("plan")}</TableHead>
                 <TableHead>{t("tenants.tenantId")}</TableHead>
                 <TableHead className="text-right">{t("tenants.actions")}</TableHead>
               </TableRow>
@@ -195,18 +224,33 @@ export function TenantsListPage() {
                             {tenant.plan}
                           </span>
                           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                            {tenant.planStatus || "active"} • {tenant.billingMethod || "stripe"}
+                            {tenant.planStatus || uiCopy("active")} •{" "}
+                            {tenant.billingMethod || uiCopy("stripe")}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm italic">No plan</span>
+                        <span className="text-muted-foreground text-sm italic">
+                          {uiCopy("no-plan")}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground font-mono">
                       {tenant.id}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex flex-wrap justify-end gap-2 xl:flex-nowrap">
+                        {canOpenTenant && tenant.status === "ACTIVE" ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={openingTenant !== null}
+                            onClick={() => void openTenant(tenant)}
+                          >
+                            {openingTenant === tenant.id
+                              ? t("tenants.openingAdminSession")
+                              : t("tenants.openAdminSession")}
+                          </Button>
+                        ) : null}
                         {canManageTenants ? (
                           <Button
                             variant="ghost"
@@ -235,7 +279,7 @@ export function TenantsListPage() {
                               setSelectedTenantForPlan(tenant);
                               setIsPlanModalOpen(true);
                             }}
-                            title="Manage Plan"
+                            title={uiCopy("manage-plan")}
                             data-testid={`manage-plan-${tenant.id}`}
                           >
                             <CreditCard className="h-4 w-4 text-primary" />
@@ -245,6 +289,11 @@ export function TenantsListPage() {
                           <Link to={`/settings/tenants/${tenant.id}`}>{t("tenants.manage")}</Link>
                         </Button>
                       </div>
+                      {openError === tenant.id ? (
+                        <p className="mt-2 text-sm text-destructive" role="alert">
+                          {t("tenants.openAdminSessionError")}
+                        </p>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 ))
@@ -256,8 +305,10 @@ export function TenantsListPage() {
               <PaginationContent>
                 <PaginationItem>
                   <span className="text-sm text-muted-foreground mr-4">
-                    Page {pageInfo.page} of{" "}
-                    {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    <PaginationSummary
+                      page={pageInfo.page}
+                      pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                    />
                   </span>
                 </PaginationItem>
                 <PaginationItem>

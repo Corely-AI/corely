@@ -1,6 +1,8 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -24,6 +26,7 @@ import {
 const tableShapes: RestaurantTableShape[] = ["SQUARE", "ROUND", "RECTANGLE"];
 
 export default function RestaurantFloorPlanPage() {
+  const uiCopy = useUiCopy("ui.restaurant-restaurantfloorplanpage");
   const navigate = useNavigate();
   const floorPlan = useRestaurantFloorPlan();
   const createRoom = useUpsertDiningRoom();
@@ -82,16 +85,16 @@ export default function RestaurantFloorPlanPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-foreground">Restaurant floor plan</h1>
-        <p className="text-sm text-muted-foreground">
-          Configure dining rooms and tables for the restaurant POS pack.
-        </p>
+        <h1 className="text-3xl font-semibold text-foreground">
+          {uiCopy("restaurant-floor-plan")}
+        </h1>
+        <p className="text-sm text-muted-foreground">{uiCopy("configure-dining-rooms-and")}</p>
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" onClick={() => navigate("/restaurant/copilot")}>
-            Open Restaurant Copilot
+            {uiCopy("open-restaurant-copilot")}
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/pos/admin/registers">Manage POS Registers</Link>
+            <Link to="/pos/admin/registers">{uiCopy("manage-pos-registers")}</Link>
           </Button>
         </div>
       </div>
@@ -101,22 +104,22 @@ export default function RestaurantFloorPlanPage() {
           <CardContent className="p-6 space-y-6">
             <div className="space-y-4">
               <div>
-                <h2 className="font-semibold text-foreground">Add dining room</h2>
+                <h2 className="font-semibold text-foreground">{uiCopy("add-dining-room")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Backoffice setup for service areas and floor sections.
+                  {uiCopy("backoffice-setup-for-service")}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="restaurant-room-name">Name</Label>
+                <Label htmlFor="restaurant-room-name">{uiCopy("name")}</Label>
                 <Input
                   id="restaurant-room-name"
                   value={roomName}
                   onChange={(event) => setRoomName(event.target.value)}
-                  placeholder="Main hall"
+                  placeholder={uiCopy("main-hall")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="restaurant-room-order">Sort order</Label>
+                <Label htmlFor="restaurant-room-order">{uiCopy("sort-order")}</Label>
                 <Input
                   id="restaurant-room-order"
                   type="number"
@@ -125,25 +128,25 @@ export default function RestaurantFloorPlanPage() {
                 />
               </div>
               <Button onClick={() => void handleCreateRoom()} disabled={createRoom.isPending}>
-                Save dining room
+                {uiCopy("save-dining-room")}
               </Button>
             </div>
 
             <div className="border-t pt-6 space-y-4">
               <div>
-                <h2 className="font-semibold text-foreground">Add table</h2>
+                <h2 className="font-semibold text-foreground">{uiCopy("add-table")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Tables become available in the POS floor-plan view.
+                  {uiCopy("tables-become-available-in")}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Dining room</Label>
+                <Label>{uiCopy("dining-room")}</Label>
                 <Select
                   value={selectedRoom?.id ?? ""}
                   onValueChange={(value) => setSelectedRoomId(value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a room" />
+                    <SelectValue placeholder={uiCopy("choose-a-room")} />
                   </SelectTrigger>
                   <SelectContent>
                     {rooms.map((room) => (
@@ -155,7 +158,7 @@ export default function RestaurantFloorPlanPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="restaurant-table-name">Table name</Label>
+                <Label htmlFor="restaurant-table-name">{uiCopy("table-name")}</Label>
                 <Input
                   id="restaurant-table-name"
                   value={tableName}
@@ -165,7 +168,7 @@ export default function RestaurantFloorPlanPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="restaurant-table-capacity">Capacity</Label>
+                  <Label htmlFor="restaurant-table-capacity">{uiCopy("capacity")}</Label>
                   <Input
                     id="restaurant-table-capacity"
                     type="number"
@@ -175,7 +178,7 @@ export default function RestaurantFloorPlanPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Shape</Label>
+                  <Label>{uiCopy("shape")}</Label>
                   <Select
                     value={tableShape}
                     onValueChange={(value) => setTableShape(value as RestaurantTableShape)}
@@ -197,7 +200,7 @@ export default function RestaurantFloorPlanPage() {
                 onClick={() => void handleCreateTable()}
                 disabled={createTable.isPending || rooms.length === 0}
               >
-                Save table
+                {uiCopy("save-table")}
               </Button>
             </div>
           </CardContent>
@@ -205,14 +208,12 @@ export default function RestaurantFloorPlanPage() {
 
         <div className="space-y-4">
           {floorPlan.isLoading ? (
-            <Card>
-              <CardContent className="p-6">Loading floor plan…</CardContent>
-            </Card>
+            <LoadingSkeleton variant="cards" label={uiCopy("loading-floor-plan")} />
           ) : null}
           {!floorPlan.isLoading && rooms.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-sm text-muted-foreground">
-                No dining rooms configured yet.
+                {uiCopy("no-dining-rooms-configured")}
               </CardContent>
             </Card>
           ) : null}
@@ -223,10 +224,15 @@ export default function RestaurantFloorPlanPage() {
                   <div>
                     <h2 className="text-xl font-semibold text-foreground">{room.name}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {room.tables.length} table{room.tables.length === 1 ? "" : "s"}
+                      {room.tables.length}
+                      {" " + uiCopy("table")}
+                      {room.tables.length === 1 ? "" : uiCopy("s")}
                     </p>
                   </div>
-                  <Badge variant="secondary">Sort {room.sortOrder}</Badge>
+                  <Badge variant="secondary">
+                    {uiCopy("sort") + " "}
+                    {room.sortOrder}
+                  </Badge>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {room.tables.map((table) => (
@@ -243,12 +249,13 @@ export default function RestaurantFloorPlanPage() {
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Capacity {table.capacity ?? "?"} · {table.shape}
+                        {uiCopy("capacity") + " "}
+                        {table.capacity ?? "?"} · {table.shape}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {table.activeOrderId
                           ? `Active order ${table.activeOrderId.slice(0, 8)}`
-                          : "No open check"}
+                          : uiCopy("no-open-check")}
                       </div>
                     </div>
                   ))}

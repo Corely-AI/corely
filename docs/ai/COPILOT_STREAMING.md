@@ -1,5 +1,11 @@
 # Copilot Streaming (AI SDK 5) Overview
 
+> Product alignment — 2026-11-07: use the [AI target policy](ai-copilot.md) for
+> authorization, proposals, deterministic validation and sensitive-action approval.
+> This technical guide retains historical SDK terminology; verify current versions
+> in package metadata. Tool registration and streaming do not prove complete
+> authorization/privacy coverage. Reuse this infrastructure; add no parallel layer.
+
 This document explains how the Corely Copilot works end-to-end: streaming protocol, backend architecture, tool registration, idempotency, and how to add new tools or customize message rendering.
 
 ## Why Data Stream Protocol (AI SDK)

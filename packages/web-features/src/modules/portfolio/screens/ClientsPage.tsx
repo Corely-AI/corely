@@ -1,8 +1,10 @@
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Plus, Search, Star, Trash2 } from "lucide-react";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
@@ -29,6 +31,7 @@ const typeOptions: { label: string; value: "" | PortfolioClientType }[] = [
 ];
 
 export default function ClientsPage() {
+  const uiCopy = useUiCopy("ui.portfolio-clientspage");
   const { showcaseId } = useParams<{ showcaseId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -70,7 +73,7 @@ export default function ClientsPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => portfolioApi.deleteClient(id),
     onSuccess: async () => {
-      toast.success("Client deleted");
+      toast.success(uiCopy("client-deleted"));
       if (showcaseId) {
         await queryClient.invalidateQueries({
           queryKey: ["portfolio", "clients", "list", showcaseId],
@@ -87,7 +90,7 @@ export default function ClientsPage() {
       <div className="relative">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search clients"
+          placeholder={uiCopy("search-clients")}
           className="pl-8 w-64"
           defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
@@ -114,7 +117,7 @@ export default function ClientsPage() {
       </select>
       {isError ? (
         <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load clients"}
+          {(error as Error)?.message || uiCopy("failed-to-load-clients")}
         </div>
       ) : null}
     </div>
@@ -127,13 +130,13 @@ export default function ClientsPage() {
       disabled={!showcaseId}
     >
       <Plus className="h-4 w-4" />
-      New client
+      {uiCopy("new-client")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Clients"
+      title={uiCopy("clients")}
       subtitle="Logos, testimonials, and client relationships"
       primaryAction={primaryAction}
       toolbar={toolbar}
@@ -141,12 +144,12 @@ export default function ClientsPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading clients...</div>
+            <LoadingSkeleton variant="cards" label={uiCopy("loading-clients")} />
           ) : clients.length === 0 ? (
             <EmptyState
               icon={Building2}
-              title="No clients yet"
-              description="Add clients to connect them with your projects."
+              title={uiCopy("no-clients-yet")}
+              description={uiCopy("add-clients-to-connect")}
               action={primaryAction}
             />
           ) : (
@@ -156,19 +159,19 @@ export default function ClientsPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Name
+                        {uiCopy("name")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Type
+                        {uiCopy("type")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Location
+                        {uiCopy("location")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Featured
+                        {uiCopy("featured")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
+                        {uiCopy("updated")}
                       </th>
                       <th />
                     </tr>
@@ -189,7 +192,7 @@ export default function ClientsPage() {
                           {client.featured ? (
                             <Badge variant="success" className="inline-flex items-center gap-1">
                               <Star className="h-3 w-3" />
-                              Featured
+                              {uiCopy("featured")}
                             </Badge>
                           ) : (
                             "—"
@@ -222,7 +225,7 @@ export default function ClientsPage() {
               {data?.pageInfo ? (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
                   <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+                    <PaginationSummary page={data.pageInfo.page} total={data.pageInfo.total} />
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -231,7 +234,7 @@ export default function ClientsPage() {
                       disabled={listState.page <= 1}
                       onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
                     >
-                      Previous
+                      {uiCopy("previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -239,7 +242,7 @@ export default function ClientsPage() {
                       disabled={!data.pageInfo.hasNextPage}
                       onClick={() => setListState({ page: listState.page + 1 })}
                     >
-                      Next
+                      {uiCopy("next")}
                     </Button>
                   </div>
                 </div>
@@ -256,8 +259,8 @@ export default function ClientsPage() {
           }
         }}
         trigger={null}
-        title="Delete client"
-        description="This will permanently delete the client."
+        title={uiCopy("delete-client")}
+        description={uiCopy("this-will-permanently-delete")}
         isLoading={deleteMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) {

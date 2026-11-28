@@ -1,3 +1,4 @@
+import { isPersonnelDocumentId } from "../../../../../../documents/public";
 import { NotFoundError } from "@corely/domain";
 import { type PrismaService } from "@corely/data";
 import type { DocumentsPort } from "../../ports/documents.port";
@@ -13,6 +14,9 @@ export class DocumentsPortAdapter implements DocumentsPort {
     tenantId: string;
     documentId: string;
   }): Promise<{ buffer: Buffer; contentType: string }> {
+    if (isPersonnelDocumentId(params.documentId)) {
+      throw new NotFoundError("Document not found", { code: "Issues:DocumentNotFound" });
+    }
     const document = await this.prisma.document.findUnique({
       where: { id: params.documentId, tenantId: params.tenantId },
     });

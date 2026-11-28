@@ -6,10 +6,12 @@ import type {
   ServiceOffering,
   AvailabilityRule,
 } from "../../domain/booking.entities";
+import type { TransactionContext } from "@corely/kernel";
 
 // ─── Resource Repository ──────────────────────────────────────────────────────
 
 export interface ResourceFilters {
+  workspaceId?: string;
   type?: string;
   isActive?: boolean;
   q?: string;
@@ -22,7 +24,7 @@ export interface ResourcePage {
 
 export interface ResourceRepositoryPort {
   create(resource: BookingResource): Promise<BookingResource>;
-  findById(id: string, tenantId: string): Promise<BookingResource | null>;
+  findById(id: string, tenantId: string, tx?: TransactionContext): Promise<BookingResource | null>;
   findMany(
     tenantId: string,
     filters: ResourceFilters,
@@ -38,6 +40,7 @@ export const RESOURCE_REPOSITORY = "booking/resource-repository";
 // ─── Service Offering Repository ──────────────────────────────────────────────
 
 export interface ServiceFilters {
+  workspaceId?: string;
   q?: string;
   isActive?: boolean;
 }
@@ -65,8 +68,13 @@ export const SERVICE_REPOSITORY = "booking/service-repository";
 // ─── Availability Rule Repository ─────────────────────────────────────────────
 
 export interface AvailabilityRuleRepositoryPort {
-  upsert(rule: AvailabilityRule): Promise<AvailabilityRule>;
-  findByResourceId(resourceId: string, tenantId: string): Promise<AvailabilityRule | null>;
+  lockResource(tenantId: string, resourceId: string, tx: TransactionContext): Promise<void>;
+  upsert(rule: AvailabilityRule, tx?: TransactionContext): Promise<AvailabilityRule>;
+  findByResourceId(
+    resourceId: string,
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<AvailabilityRule | null>;
 }
 
 export const AVAILABILITY_RULE_REPOSITORY = "booking/availability-rule-repository";
@@ -89,20 +97,41 @@ export interface BookingPage {
 }
 
 export interface BookingRepositoryPort {
-  create(booking: BookingEntity, allocations: BookingAllocation[]): Promise<BookingEntity>;
-  findById(id: string, tenantId: string): Promise<BookingEntity | null>;
+  /** Recheck availability and, when holdId is set, consume the active hold atomically. */
+  create(
+    booking: BookingEntity,
+    allocations: BookingAllocation[],
+    tx?: TransactionContext
+  ): Promise<BookingEntity>;
+  findById(id: string, tenantId: string, tx?: TransactionContext): Promise<BookingEntity | null>;
+  lockMutation(tenantId: string, key: string, tx: TransactionContext): Promise<void>;
+  mutationReceipt(
+    tenantId: string,
+    action: string,
+    key: string,
+    fingerprint: string,
+    tx: TransactionContext
+  ): Promise<BookingEntity | null>;
+  saveMutationReceipt(
+    booking: BookingEntity,
+    action: string,
+    key: string,
+    fingerprint: string,
+    tx: TransactionContext
+  ): Promise<void>;
   findMany(
     tenantId: string,
     filters: BookingFilters,
     page: number,
     pageSize: number
   ): Promise<BookingPage>;
-  update(booking: BookingEntity): Promise<BookingEntity>;
+  update(booking: BookingEntity, tx: TransactionContext): Promise<BookingEntity>;
   /** Replace all allocations for a booking inside the same tx */
   replaceAllocations(
     bookingId: string,
     tenantId: string,
-    allocations: BookingAllocation[]
+    allocations: BookingAllocation[],
+    tx: TransactionContext
   ): Promise<void>;
   /**
    * Returns true if any CONFIRMED/HOLD booking already has an allocation for
@@ -123,7 +152,7 @@ export const BOOKING_REPOSITORY = "booking/booking-repository";
 // ─── Hold Repository ──────────────────────────────────────────────────────────
 
 export interface HoldRepositoryPort {
-  create(hold: BookingHold): Promise<BookingHold>;
+  create(hold: BookingHold, tx?: TransactionContext): Promise<BookingHold>;
   findById(id: string, tenantId: string): Promise<BookingHold | null>;
   update(hold: BookingHold): Promise<BookingHold>;
   hasActiveOverlap(

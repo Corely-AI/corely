@@ -5,7 +5,7 @@ import { Building2, Plus, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
-import { Input } from "@corely/ui";
+import { LoadingSkeleton, Input } from "@corely/ui";
 import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import type { AccountDto } from "@corely/contracts";
@@ -15,7 +15,7 @@ export default function AccountsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["accounts", search],
     queryFn: () => crmApi.listAccounts({ q: search || undefined }),
   });
@@ -49,7 +49,13 @@ export default function AccountsPage() {
         </div>
       </div>
 
-      {accounts.length === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton variant="cards" label={t("common.loading")} />
+      ) : isError && !data ? (
+        <p className="p-4 text-sm text-destructive" role="alert">
+          {t("common.error")}
+        </p>
+      ) : accounts.length === 0 ? (
         <Card data-testid="crm-accounts-empty">
           <CardContent className="p-0">
             <EmptyState

@@ -7,9 +7,11 @@ import type {
   CatalogUomDto,
   CatalogVariantDto,
 } from "@corely/contracts";
+import type { TransactionContext } from "@corely/kernel";
 
 export type CatalogListParams = {
   q?: string;
+  name?: string;
   page: number;
   pageSize: number;
   sort?: string;
@@ -35,13 +37,22 @@ export type CatalogListResult<T> = {
 export const CATALOG_REPOSITORY = "catalog/repository";
 
 export interface CatalogRepositoryPort {
-  findItemById(scope: CatalogScope, itemId: string): Promise<CatalogItemDto | null>;
-  findItemByCode(scope: CatalogScope, code: string): Promise<CatalogItemDto | null>;
+  findItemById(
+    scope: CatalogScope,
+    itemId: string,
+    tx?: TransactionContext
+  ): Promise<CatalogItemDto | null>;
+  findItemByCode(
+    scope: CatalogScope,
+    code: string,
+    tx?: TransactionContext
+  ): Promise<CatalogItemDto | null>;
   createItem(scope: CatalogScope, item: Omit<CatalogItemDto, "variants">): Promise<void>;
   updateItem(scope: CatalogScope, item: Omit<CatalogItemDto, "variants">): Promise<void>;
   listItems(
     scope: CatalogScope,
-    params: CatalogListParams
+    params: CatalogListParams,
+    tx?: TransactionContext
   ): Promise<CatalogListResult<CatalogItemDto>>;
   countActiveVariants(scope: CatalogScope, itemId: string): Promise<number>;
 

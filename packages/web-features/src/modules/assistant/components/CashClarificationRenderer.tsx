@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import {
   type RequestCashClarificationInput,
@@ -18,13 +19,16 @@ export const CashClarificationRenderer: React.FC<ToolRendererProps> = ({
   submittingToolIds,
   markSubmitting,
 }) => {
+  const uiCopy = useUiCopy("ui.assistant-cashclarificationrenderer");
   const { t, i18n } = useTranslation();
   const reqOutput = output as RequestCashClarificationOutput | undefined;
 
   if (state === "output-available" || reqOutput?.choiceId) {
     return (
       <div className="rounded-md border border-border/40 bg-muted/20 px-3 py-1.5 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">{reqOutput?.label ?? "Selected"}</span>
+        <span className="font-medium text-foreground">
+          {reqOutput?.label ?? uiCopy("selected")}
+        </span>
       </div>
     );
   }

@@ -10,7 +10,9 @@ export class TenantEntitlementsReadAdapter implements TenantEntitlementsReadPort
     tenantId: string,
     tx?: TransactionContext
   ): Promise<Record<string, boolean>> {
-    const entitlements = await this.service.getEntitlements(tenantId, tx);
+    const entitlements = await (tx
+      ? this.service.getEntitlements(tenantId, tx)
+      : this.service.getEntitlements(tenantId));
 
     // Convert ResolvedAppEntitlement[] to Record<string, boolean>
     return entitlements.apps.reduce(
@@ -23,7 +25,9 @@ export class TenantEntitlementsReadAdapter implements TenantEntitlementsReadPort
   }
 
   async isAppEnabled(tenantId: string, appId: string, tx?: TransactionContext): Promise<boolean> {
-    const entitlements = await this.service.getEntitlements(tenantId, tx);
+    const entitlements = await (tx
+      ? this.service.getEntitlements(tenantId, tx)
+      : this.service.getEntitlements(tenantId));
     const app = entitlements.apps.find((a) => a.appId === appId);
     return app?.enabled ?? false;
   }

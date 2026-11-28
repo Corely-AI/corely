@@ -2,7 +2,7 @@ import React from "react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { formatDateTime } from "@corely/web-shared/shared/lib/formatters";
 import { useTaxFilingAttachmentsQuery } from "../hooks/useTaxFilingAttachmentsQuery";
@@ -70,9 +70,7 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
         />
       </CardHeader>
       <CardContent className="space-y-3">
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">{t("tax.attachments.loading")}</p>
-        ) : null}
+        {isLoading ? <LoadingSkeleton variant="list" label={t("tax.attachments.loading")} /> : null}
         {isError ? <p className="text-sm text-destructive">{t("tax.attachments.error")}</p> : null}
         {attachments.length === 0 && !isLoading ? (
           <p className="text-sm text-muted-foreground">{t("tax.attachments.empty")}</p>

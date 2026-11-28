@@ -1,7 +1,9 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
+  LoadingSkeleton,
   Badge,
   Button,
   Card,
@@ -78,6 +80,7 @@ const MILESTONE_STATUS: MilestoneCompletionStatus[] = [
 ];
 
 export default function CohortDetailScreen() {
+  const uiCopy = useUiCopy("ui.classes-cohorts-cohort-detail-screen");
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const cohortId = id ?? "";
@@ -189,7 +192,7 @@ export default function CohortDetailScreen() {
 
   const onAddTeamMember = async () => {
     if (!teamPartyId.trim()) {
-      toast.error("partyId is required.");
+      toast.error(uiCopy("partyid-is-required"));
       return;
     }
     const existing = teamQuery.data?.items ?? [];
@@ -200,7 +203,7 @@ export default function CohortDetailScreen() {
     try {
       await upsertTeamMutation.mutateAsync({ members: nextMembers });
       setTeamPartyId("");
-      toast.success("Cohort team updated");
+      toast.success(uiCopy("cohort-team-updated"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update team");
     }
@@ -208,7 +211,7 @@ export default function CohortDetailScreen() {
 
   const onCreateApplication = async () => {
     if (!studentClientId.trim() || !payerClientId.trim()) {
-      toast.error("studentClientId and payerClientId are required.");
+      toast.error(uiCopy("studentclientid-and-payerclientid-are"));
       return;
     }
     try {
@@ -222,7 +225,7 @@ export default function CohortDetailScreen() {
       setPayerClientId("");
       setPlacementLevel("");
       setPlacementGoal("");
-      toast.success("Application created");
+      toast.success(uiCopy("application-created"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create application");
     }
@@ -231,7 +234,7 @@ export default function CohortDetailScreen() {
   const onApproveApplication = async (enrollmentId: string) => {
     try {
       await approveApplicationMutation.mutateAsync({ enrollmentId, input: {} });
-      toast.success("Application approved");
+      toast.success(uiCopy("application-approved"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to approve application");
     }
@@ -239,7 +242,7 @@ export default function CohortDetailScreen() {
 
   const onUpsertBillingPlan = async () => {
     if (!selectedEnrollmentId) {
-      toast.error("Select an enrolled learner first.");
+      toast.error(uiCopy("select-an-enrolled-learner"));
       return;
     }
     const amountCents = Math.max(0, Math.round(Number(billingAmount || "0") * 100));
@@ -285,7 +288,7 @@ export default function CohortDetailScreen() {
           },
         });
       }
-      toast.success("Billing plan saved");
+      toast.success(uiCopy("billing-plan-saved"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to save billing plan");
     }
@@ -294,7 +297,7 @@ export default function CohortDetailScreen() {
   const onGenerateInvoices = async () => {
     try {
       await generateInvoicesMutation.mutateAsync({ sendInvoices: false });
-      toast.success("Invoices generated");
+      toast.success(uiCopy("invoices-generated"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to generate invoices");
     }
@@ -302,7 +305,7 @@ export default function CohortDetailScreen() {
 
   const onCreateMilestone = async () => {
     if (!milestoneTitle.trim()) {
-      toast.error("Milestone title is required.");
+      toast.error(uiCopy("milestone-title-is-required"));
       return;
     }
     try {
@@ -312,7 +315,7 @@ export default function CohortDetailScreen() {
         required: true,
       });
       setMilestoneTitle("");
-      toast.success("Milestone created");
+      toast.success(uiCopy("milestone-created"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create milestone");
     }
@@ -320,7 +323,7 @@ export default function CohortDetailScreen() {
 
   const onCreateResource = async () => {
     if (!resourceTitle.trim()) {
-      toast.error("Resource title is required.");
+      toast.error(uiCopy("resource-title-is-required"));
       return;
     }
     try {
@@ -334,7 +337,7 @@ export default function CohortDetailScreen() {
       setResourceTitle("");
       setResourceUrl("");
       setResourceDocumentId("");
-      toast.success("Resource created");
+      toast.success(uiCopy("resource-created"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create resource");
     }
@@ -363,14 +366,21 @@ export default function CohortDetailScreen() {
   };
 
   if (cohortQuery.isLoading) {
-    return <div className="p-6 text-sm text-muted-foreground">Loading cohort...</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading-cohort")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
 
   if (cohortQuery.isError || !cohort) {
     return (
       <div className="p-6">
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Failed to load cohort.
+          {uiCopy("failed-to-load-cohort")}
         </div>
       </div>
     );
@@ -399,9 +409,10 @@ export default function CohortDetailScreen() {
         <div>
           <h1 className="text-2xl font-semibold">{cohort.name}</h1>
           <p className="text-sm text-muted-foreground">
-            {cohort.startAt ? formatDate(cohort.startAt, "en-US") : "No start"} to{" "}
-            {cohort.endAt ? formatDate(cohort.endAt, "en-US") : "No end"} · {cohort.timezone} ·{" "}
-            {cohort.deliveryMode}
+            {cohort.startAt ? formatDate(cohort.startAt, "en-US") : uiCopy("no-start")}
+            {" " + uiCopy("to")}{" "}
+            {cohort.endAt ? formatDate(cohort.endAt, "en-US") : uiCopy("no-end")} ·{" "}
+            {cohort.timezone} · {cohort.deliveryMode}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -422,7 +433,7 @@ export default function CohortDetailScreen() {
             data-testid="classes-cohort-edit-button"
             onClick={() => navigate(`/classes/cohorts/${cohort.id}/edit`)}
           >
-            Edit
+            {uiCopy("edit")}
           </Button>
         </div>
       </div>
@@ -430,22 +441,22 @@ export default function CohortDetailScreen() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview" data-testid="classes-cohort-tab-overview">
-            Overview
+            {uiCopy("overview")}
           </TabsTrigger>
           <TabsTrigger value="sessions" data-testid="classes-cohort-tab-sessions">
-            Sessions
+            {uiCopy("sessions")}
           </TabsTrigger>
           <TabsTrigger value="learners" data-testid="classes-cohort-tab-learners">
-            Learners
+            {uiCopy("learners")}
           </TabsTrigger>
           <TabsTrigger value="billing" data-testid="classes-cohort-tab-billing">
-            Billing
+            {uiCopy("billing")}
           </TabsTrigger>
           <TabsTrigger value="outcomes" data-testid="classes-cohort-tab-outcomes">
-            Outcomes
+            {uiCopy("outcomes")}
           </TabsTrigger>
           <TabsTrigger value="resources" data-testid="classes-cohort-tab-resources">
-            Resources
+            {uiCopy("resources")}
           </TabsTrigger>
         </TabsList>
 
@@ -453,15 +464,15 @@ export default function CohortDetailScreen() {
           <Card data-testid="classes-cohort-overview-meta-card">
             <CardContent className="grid gap-4 p-6 md:grid-cols-3">
               <div>
-                <div className="text-sm text-muted-foreground">Program</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("program")}</div>
                 <div className="font-medium">{cohort.programId ?? "—"}</div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">Capacity</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("capacity")}</div>
                 <div className="font-medium">{cohort.capacity ?? "—"}</div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">Community</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("community")}</div>
                 <div className="font-medium break-all">{cohort.communityUrl ?? "—"}</div>
               </div>
             </CardContent>
@@ -469,13 +480,13 @@ export default function CohortDetailScreen() {
 
           <Card data-testid="classes-cohort-team-card">
             <CardContent className="space-y-4 p-6">
-              <h2 className="text-base font-semibold">Team</h2>
+              <h2 className="text-base font-semibold">{uiCopy("team")}</h2>
               {(teamQuery.data?.items?.length ?? 0) === 0 ? (
                 <div
                   className="text-sm text-muted-foreground"
                   data-testid="classes-cohort-team-empty"
                 >
-                  No team members assigned yet.
+                  {uiCopy("no-team-members-assigned")}
                 </div>
               ) : (
                 <div className="space-y-2" data-testid="classes-cohort-team-list">
@@ -508,7 +519,7 @@ export default function CohortDetailScreen() {
                 <PartyPicker
                   value={teamPartyId}
                   onValueChange={setTeamPartyId}
-                  placeholder="Select team member"
+                  placeholder={uiCopy("select-team-member")}
                   searchPlaceholder="Search people by name or partyId..."
                   testId="classes-cohort-team-party-picker"
                   optionTestIdPrefix="classes-cohort-team-party-option"
@@ -534,7 +545,7 @@ export default function CohortDetailScreen() {
                   disabled={!teamPartyId.trim() || upsertTeamMutation.isPending}
                   onClick={() => void onAddTeamMember()}
                 >
-                  Add team member
+                  {uiCopy("add-team-member")}
                 </Button>
               </div>
             </CardContent>
@@ -543,18 +554,17 @@ export default function CohortDetailScreen() {
 
         <TabsContent value="sessions" className="space-y-4 pt-4">
           {sessionsQuery.isLoading ? (
-            <div
-              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+            <LoadingSkeleton
+              variant="list"
+              label={uiCopy("loading-sessions")}
               data-testid="classes-cohort-sessions-loading"
-            >
-              Loading sessions...
-            </div>
+            />
           ) : sessions.length === 0 ? (
             <div
               className="rounded-md border border-border p-4 text-sm text-muted-foreground"
               data-testid="classes-cohort-sessions-empty"
             >
-              No sessions found.
+              {uiCopy("no-sessions-found")}
             </div>
           ) : (
             <div
@@ -565,16 +575,16 @@ export default function CohortDetailScreen() {
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Starts at
+                      {uiCopy("starts-at")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Type
+                      {uiCopy("type")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Meeting
+                      {uiCopy("meeting")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Link
+                      {uiCopy("link")}
                     </th>
                   </tr>
                 </thead>
@@ -602,7 +612,7 @@ export default function CohortDetailScreen() {
                             target="_blank"
                             rel="noreferrer"
                           >
-                            Join
+                            {uiCopy("join")}
                           </a>
                         ) : (
                           "—"
@@ -619,10 +629,10 @@ export default function CohortDetailScreen() {
         <TabsContent value="learners" className="space-y-4 pt-4">
           <Card data-testid="classes-cohort-create-application-card">
             <CardContent className="space-y-3 p-6">
-              <h2 className="text-base font-semibold">Create application</h2>
+              <h2 className="text-base font-semibold">{uiCopy("create-application")}</h2>
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Learner `studentClientId`</Label>
+                  <Label>{uiCopy("learner-studentclientid")}</Label>
                   <Input
                     value={studentClientId}
                     onChange={(event) => setStudentClientId(event.target.value)}
@@ -630,7 +640,7 @@ export default function CohortDetailScreen() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Payer `payerClientId`</Label>
+                  <Label>{uiCopy("payer-payerclientid")}</Label>
                   <Input
                     value={payerClientId}
                     onChange={(event) => setPayerClientId(event.target.value)}
@@ -638,7 +648,7 @@ export default function CohortDetailScreen() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Placement level</Label>
+                  <Label>{uiCopy("placement-level")}</Label>
                   <Input
                     value={placementLevel}
                     onChange={(event) => setPlacementLevel(event.target.value)}
@@ -646,7 +656,7 @@ export default function CohortDetailScreen() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Placement goal</Label>
+                  <Label>{uiCopy("placement-goal")}</Label>
                   <Input
                     value={placementGoal}
                     onChange={(event) => setPlacementGoal(event.target.value)}
@@ -659,7 +669,7 @@ export default function CohortDetailScreen() {
                 data-testid="classes-cohort-application-create-button"
                 onClick={() => void onCreateApplication()}
               >
-                Create APPLIED enrollment
+                {uiCopy("create-applied-enrollment")}
               </Button>
             </CardContent>
           </Card>
@@ -681,18 +691,18 @@ export default function CohortDetailScreen() {
           </div>
 
           {learnersQuery.isLoading ? (
-            <div
-              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+            <LoadingSkeleton
+              variant="list"
+              label={uiCopy("loading-learners")}
               data-testid="classes-cohort-learners-loading"
-            >
-              Loading learners...
-            </div>
+            />
           ) : learners.length === 0 ? (
             <div
               className="rounded-md border border-border p-4 text-sm text-muted-foreground"
               data-testid="classes-cohort-learners-empty"
             >
-              No learners with status {learnerStatus}.
+              {uiCopy("no-learners-with-status") + " "}
+              {learnerStatus}.
             </div>
           ) : (
             <div
@@ -703,19 +713,19 @@ export default function CohortDetailScreen() {
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Learner
+                      {uiCopy("learner")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Status
+                      {uiCopy("status")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Placement
+                      {uiCopy("placement")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Payer
+                      {uiCopy("payer")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Price
+                      {uiCopy("price")}
                     </th>
                     <th />
                   </tr>
@@ -754,7 +764,7 @@ export default function CohortDetailScreen() {
                             data-testid={`classes-cohort-enrollment-approve-${enrollment.id}`}
                             onClick={() => void onApproveApplication(enrollment.id)}
                           >
-                            Approve & enroll
+                            {uiCopy("approve-enroll")}
                           </Button>
                         ) : null}
                       </td>
@@ -769,22 +779,22 @@ export default function CohortDetailScreen() {
         <TabsContent value="billing" className="space-y-4 pt-4">
           <Card data-testid="classes-cohort-billing-card">
             <CardContent className="space-y-3 p-6">
-              <h2 className="text-base font-semibold">Enrollment billing plan</h2>
+              <h2 className="text-base font-semibold">{uiCopy("enrollment-billing-plan")}</h2>
               {enrolledLearners.length === 0 ? (
                 <div
                   className="text-sm text-muted-foreground"
                   data-testid="classes-cohort-billing-empty"
                 >
-                  No enrolled learners yet.
+                  {uiCopy("no-enrolled-learners-yet")}
                 </div>
               ) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
                     <div className="space-y-2 md:col-span-2">
-                      <Label>Enrollment</Label>
+                      <Label>{uiCopy("enrollment")}</Label>
                       <Select value={selectedEnrollmentId} onValueChange={setSelectedEnrollmentId}>
                         <SelectTrigger data-testid="classes-cohort-billing-enrollment-select">
-                          <SelectValue placeholder="Select enrollment" />
+                          <SelectValue placeholder={uiCopy("select-enrollment")} />
                         </SelectTrigger>
                         <SelectContent>
                           {enrolledLearners.map((enrollment) => (
@@ -796,7 +806,7 @@ export default function CohortDetailScreen() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Plan type</Label>
+                      <Label>{uiCopy("plan-type")}</Label>
                       <Select
                         value={billingType}
                         onValueChange={(value) => setBillingType(value as BillingPlanType)}
@@ -814,7 +824,7 @@ export default function CohortDetailScreen() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Amount</Label>
+                      <Label>{uiCopy("amount")}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -825,7 +835,7 @@ export default function CohortDetailScreen() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Currency</Label>
+                      <Label>{uiCopy("currency")}</Label>
                       <Input
                         value={billingCurrency}
                         onChange={(event) => setBillingCurrency(event.target.value)}
@@ -833,7 +843,7 @@ export default function CohortDetailScreen() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Due date</Label>
+                      <Label>{uiCopy("due-date")}</Label>
                       <Input
                         type="date"
                         value={billingDueDate}
@@ -842,7 +852,7 @@ export default function CohortDetailScreen() {
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <Label>Selected learner</Label>
+                      <Label>{uiCopy("selected-learner")}</Label>
                       <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
                         {selectedEnrollment?.studentClientId ?? "—"}
                       </div>
@@ -854,24 +864,24 @@ export default function CohortDetailScreen() {
                       data-testid="classes-cohort-billing-save-plan-button"
                       onClick={() => void onUpsertBillingPlan()}
                     >
-                      Save billing plan
+                      {uiCopy("save-billing-plan")}
                     </Button>
                     <Button
                       variant="outline"
                       data-testid="classes-cohort-billing-generate-invoices-button"
                       onClick={() => void onGenerateInvoices()}
                     >
-                      Generate invoices
+                      {uiCopy("generate-invoices")}
                     </Button>
                   </div>
                   <div
                     className="rounded-md border border-border bg-muted/30 p-3 text-sm"
                     data-testid="classes-cohort-billing-current-plan"
                   >
-                    Current plan:{" "}
+                    {uiCopy("current-plan")}{" "}
                     {billingPlanQuery.data?.billingPlan
                       ? `${billingPlanQuery.data.billingPlan.type}`
-                      : "No billing plan"}
+                      : uiCopy("no-billing-plan")}
                   </div>
                 </>
               )}
@@ -883,19 +893,19 @@ export default function CohortDetailScreen() {
           <Card data-testid="classes-cohort-outcomes-summary-card">
             <CardContent className="grid gap-4 p-6 md:grid-cols-3">
               <div data-testid="classes-cohort-outcomes-required-count">
-                <div className="text-sm text-muted-foreground">Required milestones</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("required-milestones")}</div>
                 <div className="text-xl font-semibold">
                   {outcomesSummaryQuery.data?.summary.totalRequiredMilestones ?? 0}
                 </div>
               </div>
               <div data-testid="classes-cohort-outcomes-passed-count">
-                <div className="text-sm text-muted-foreground">Passed completions</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("passed-completions")}</div>
                 <div className="text-xl font-semibold">
                   {outcomesSummaryQuery.data?.summary.totalCompletionsPassed ?? 0}
                 </div>
               </div>
               <div data-testid="classes-cohort-outcomes-at-risk-count">
-                <div className="text-sm text-muted-foreground">At-risk learners</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("at-risk-learners")}</div>
                 <div className="text-xl font-semibold">
                   {outcomesSummaryQuery.data?.summary.atRiskLearnersCount ?? 0}
                 </div>
@@ -905,10 +915,10 @@ export default function CohortDetailScreen() {
 
           <Card data-testid="classes-cohort-milestones-card">
             <CardContent className="space-y-3 p-6">
-              <h2 className="text-base font-semibold">Milestones</h2>
+              <h2 className="text-base font-semibold">{uiCopy("milestones")}</h2>
               <div className="grid gap-2 md:grid-cols-3">
                 <Input
-                  placeholder="Milestone title"
+                  placeholder={uiCopy("milestone-title")}
                   value={milestoneTitle}
                   onChange={(event) => setMilestoneTitle(event.target.value)}
                   data-testid="classes-cohort-milestone-title-input"
@@ -918,13 +928,13 @@ export default function CohortDetailScreen() {
                   data-testid="classes-cohort-milestone-add-button"
                   onClick={() => void onCreateMilestone()}
                 >
-                  Add milestone
+                  {uiCopy("add-milestone")}
                 </Button>
               </div>
               {milestonesQuery.isLoading ? (
-                <div className="text-sm text-muted-foreground">Loading milestones...</div>
+                <LoadingSkeleton variant="list" label={uiCopy("loading-milestones")} />
               ) : milestones.length === 0 ? (
-                <div className="text-sm text-muted-foreground">No milestones yet.</div>
+                <div className="text-sm text-muted-foreground">{uiCopy("no-milestones-yet")}</div>
               ) : (
                 <div className="space-y-2">
                   {milestones.map((milestone) => (
@@ -936,8 +946,10 @@ export default function CohortDetailScreen() {
                       <div>
                         <div className="text-sm font-medium">{milestone.title}</div>
                         <div className="text-xs text-muted-foreground">
-                          {milestone.type} · {milestone.required ? "Required" : "Optional"} · due{" "}
-                          {milestone.dueAt ? formatDate(milestone.dueAt, "en-US") : "N/A"}
+                          {milestone.type} ·{" "}
+                          {milestone.required ? uiCopy("required") : uiCopy("optional")}
+                          {" " + uiCopy("due")}{" "}
+                          {milestone.dueAt ? formatDate(milestone.dueAt, "en-US") : uiCopy("n-a")}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -946,7 +958,7 @@ export default function CohortDetailScreen() {
                           onValueChange={(value) => {
                             const firstEnrollmentId = enrolledLearners[0]?.id;
                             if (!firstEnrollmentId) {
-                              toast.error("No enrolled learner to update completion for.");
+                              toast.error(uiCopy("no-enrolled-learner-to"));
                               return;
                             }
                             void milestoneMutations.upsertCompletion.mutateAsync({
@@ -975,7 +987,7 @@ export default function CohortDetailScreen() {
                           data-testid={`classes-cohort-milestone-delete-${milestone.id}`}
                           onClick={() => void milestoneMutations.remove.mutateAsync(milestone.id)}
                         >
-                          Delete
+                          {uiCopy("delete")}
                         </Button>
                       </div>
                     </div>
@@ -989,10 +1001,10 @@ export default function CohortDetailScreen() {
         <TabsContent value="resources" className="space-y-4 pt-4">
           <Card data-testid="classes-cohort-resources-add-card">
             <CardContent className="space-y-3 p-6">
-              <h2 className="text-base font-semibold">Add resource</h2>
+              <h2 className="text-base font-semibold">{uiCopy("add-resource")}</h2>
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Type</Label>
+                  <Label>{uiCopy("type")}</Label>
                   <Select
                     value={resourceType}
                     onValueChange={(value) => setResourceType(value as ClassResourceType)}
@@ -1010,7 +1022,7 @@ export default function CohortDetailScreen() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Visibility</Label>
+                  <Label>{uiCopy("visibility")}</Label>
                   <Select
                     value={resourceVisibility}
                     onValueChange={(value) =>
@@ -1030,7 +1042,7 @@ export default function CohortDetailScreen() {
                   </Select>
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Title</Label>
+                  <Label>{uiCopy("title")}</Label>
                   <Input
                     value={resourceTitle}
                     onChange={(event) => setResourceTitle(event.target.value)}
@@ -1038,7 +1050,7 @@ export default function CohortDetailScreen() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>URL (for LINK/RECORDING)</Label>
+                  <Label>{uiCopy("url-for-link-recording")}</Label>
                   <Input
                     value={resourceUrl}
                     onChange={(event) => setResourceUrl(event.target.value)}
@@ -1047,7 +1059,7 @@ export default function CohortDetailScreen() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Document ID (for DOC/RECORDING)</Label>
+                  <Label>{uiCopy("document-id-for-doc")}</Label>
                   <Input
                     value={resourceDocumentId}
                     onChange={(event) => setResourceDocumentId(event.target.value)}
@@ -1060,18 +1072,17 @@ export default function CohortDetailScreen() {
                 data-testid="classes-cohort-resource-add-button"
                 onClick={() => void onCreateResource()}
               >
-                Add resource
+                {uiCopy("add-resource")}
               </Button>
             </CardContent>
           </Card>
 
           {resourcesQuery.isLoading ? (
-            <div
-              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+            <LoadingSkeleton
+              variant="list"
+              label={uiCopy("loading-resources")}
               data-testid="classes-cohort-resources-loading"
-            >
-              Loading resources...
-            </div>
+            />
           ) : (
             groupedResources.map((group) => (
               <Card key={group.type} data-testid={`classes-cohort-resources-group-${group.type}`}>
@@ -1079,7 +1090,9 @@ export default function CohortDetailScreen() {
                   <h3 className="text-sm font-semibold">{group.type}</h3>
                   {group.items.length === 0 ? (
                     <div className="text-sm text-muted-foreground">
-                      No {group.type.toLowerCase()} items.
+                      {uiCopy("no") + " "}
+                      {group.type.toLowerCase()}
+                      {" " + uiCopy("items")}
                     </div>
                   ) : (
                     group.items.map((resource, index) => (
@@ -1091,7 +1104,9 @@ export default function CohortDetailScreen() {
                         <div className="space-y-1">
                           <div className="text-sm font-medium">{resource.title}</div>
                           <div className="text-xs text-muted-foreground">
-                            {resource.visibility} · sort {resource.sortOrder}
+                            {resource.visibility}
+                            {" " + uiCopy("sort") + " "}
+                            {resource.sortOrder}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {resource.url
@@ -1106,7 +1121,7 @@ export default function CohortDetailScreen() {
                             disabled={index === 0}
                             onClick={() => void onMoveResource(resource.id, "up")}
                           >
-                            Up
+                            {uiCopy("up")}
                           </Button>
                           <Button
                             variant="outline"
@@ -1114,14 +1129,14 @@ export default function CohortDetailScreen() {
                             disabled={index === group.items.length - 1}
                             onClick={() => void onMoveResource(resource.id, "down")}
                           >
-                            Down
+                            {uiCopy("down")}
                           </Button>
                           <Button
                             variant="outline"
                             data-testid={`classes-cohort-resource-delete-${resource.id}`}
                             onClick={() => void resourceMutations.remove.mutateAsync(resource.id)}
                           >
-                            Delete
+                            {uiCopy("delete")}
                           </Button>
                         </div>
                       </div>

@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -23,6 +26,7 @@ import {
 } from "@/shared/list-kit";
 import { bookingResourceKeys } from "../queries";
 import {
+  LoadingSkeleton,
   Table,
   TableBody,
   TableCell,
@@ -66,6 +70,8 @@ const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
 };
 
 export const ResourcesPage = () => {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.booking-resourcespage");
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -125,10 +131,10 @@ export const ResourcesPage = () => {
         correlationId: apiClient.generateCorrelationId(),
       }),
     onSuccess: async () => {
-      toast.success("Resource deleted");
+      toast.success(uiCopy("resource-deleted"));
       await invalidateResourceQueries(queryClient, "booking/resources");
     },
-    onError: () => toast.error("Failed to delete resource"),
+    onError: () => toast.error(uiCopy("failed-to-delete-resource")),
   });
 
   const bulkDeleteMutation = useMutation({
@@ -141,11 +147,11 @@ export const ResourcesPage = () => {
         )
       ),
     onSuccess: async () => {
-      toast.success("Selected resources deleted");
+      toast.success(uiCopy("selected-resources-deleted"));
       setSelectedIds(new Set());
       await invalidateResourceQueries(queryClient, "booking/resources");
     },
-    onError: () => toast.error("Failed to delete selected resources"),
+    onError: () => toast.error(uiCopy("failed-to-delete-selected")),
   });
 
   const toggleSelection = (id: string) => {
@@ -167,7 +173,7 @@ export const ResourcesPage = () => {
     <Button asChild>
       <Link to="/booking/resources/new">
         <PlusIcon className="h-4 w-4 mr-2" />
-        Add Resource
+        {uiCopy("add-resource")}
       </Link>
     </Button>
   );
@@ -175,7 +181,7 @@ export const ResourcesPage = () => {
   return (
     <>
       <CrudListPageLayout
-        title="Booking Resources"
+        title={uiCopy("booking-resources")}
         subtitle="Manage physical assets, staff, and rooms available for booking."
         primaryAction={primaryAction}
         toolbar={
@@ -192,11 +198,11 @@ export const ResourcesPage = () => {
             ]}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
-            placeholder="Search resource name"
+            placeholder={uiCopy("search-resource-name")}
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load resources"}
+                {(error as Error)?.message || uiCopy("failed-to-load-resources")}
               </div>
             ) : null}
           </ListToolbar>
@@ -217,25 +223,27 @@ export const ResourcesPage = () => {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="space-y-4 p-4">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={`resource-skeleton-${index}`}
-                    className="h-12 w-full animate-pulse rounded bg-muted/20"
-                  />
-                ))}
-              </div>
+              <LoadingSkeleton label={t("common.loading")}>
+                <div className="space-y-4 p-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={`resource-skeleton-${index}`}
+                      className="h-12 w-full animate-pulse motion-reduce:animate-none rounded bg-muted/20"
+                    />
+                  ))}
+                </div>
+              </LoadingSkeleton>
             ) : resources.length === 0 ? (
               <EmptyState
                 icon={Warehouse}
-                title="No resources found"
-                description="Create your first resource to make it available for bookings."
+                title={uiCopy("no-resources-found")}
+                description={uiCopy("create-your-first-resource")}
                 action={
                   <Button
                     variant="outline"
                     onClick={() => setUrlState({ q: "", filters: [], page: 1 })}
                   >
-                    Clear filters
+                    {uiCopy("clear-filters")}
                   </Button>
                 }
               />
@@ -243,7 +251,10 @@ export const ResourcesPage = () => {
               <>
                 {selectedIds.size > 0 ? (
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
-                    <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+                    <div className="text-sm text-muted-foreground">
+                      {selectedIds.size}
+                      {" " + uiCopy("selected")}
+                    </div>
                     <ConfirmDeleteDialog
                       trigger={
                         <Button
@@ -251,11 +262,11 @@ export const ResourcesPage = () => {
                           size="sm"
                           disabled={bulkDeleteMutation.isPending}
                         >
-                          Delete selected
+                          {uiCopy("delete-selected")}
                         </Button>
                       }
-                      title="Delete selected resources"
-                      description="This action cannot be undone."
+                      title={uiCopy("delete-selected-resources")}
+                      description={uiCopy("this-action-cannot-be")}
                       isLoading={bulkDeleteMutation.isPending}
                       onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
                     />
@@ -276,20 +287,20 @@ export const ResourcesPage = () => {
                                 setSelectedIds(new Set());
                               }
                             }}
-                            aria-label="Select all resources"
+                            aria-label={uiCopy("select-all-resources")}
                           />
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Name
+                          {uiCopy("name")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Type
+                          {uiCopy("type")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Status
+                          {uiCopy("status")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Capacity
+                          {uiCopy("capacity")}
                         </TableHead>
                         <TableHead className="w-[120px]" />
                       </TableRow>
@@ -315,7 +326,7 @@ export const ResourcesPage = () => {
                                 type="button"
                                 onClick={() => navigator.clipboard.writeText(resource.id)}
                                 className="inline-flex items-center text-muted-foreground hover:text-foreground"
-                                aria-label="Copy resource id"
+                                aria-label={uiCopy("copy-resource-id")}
                               >
                                 <CopyIcon className="h-3 w-3" />
                               </button>
@@ -326,7 +337,7 @@ export const ResourcesPage = () => {
                           </TableCell>
                           <TableCell className="px-4 py-3">
                             <Badge variant={resource.isActive ? "default" : "secondary"}>
-                              {resource.isActive ? "Active" : "Inactive"}
+                              {resource.isActive ? uiCopy("active") : uiCopy("inactive")}
                             </Badge>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">
@@ -359,8 +370,10 @@ export const ResourcesPage = () => {
                     <PaginationContent>
                       <PaginationItem>
                         <span className="text-sm text-muted-foreground mr-4">
-                          Page {pageInfo.page} of{" "}
-                          {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                          <PaginationSummary
+                            page={pageInfo.page}
+                            pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                          />
                         </span>
                       </PaginationItem>
                       <PaginationItem>
@@ -399,7 +412,7 @@ export const ResourcesPage = () => {
             }
           }}
           trigger={null}
-          title="Delete resource"
+          title={uiCopy("delete-resource")}
           description={`Delete "${deleteTarget?.name ?? ""}"? This action cannot be undone.`}
           confirmLabel="Delete resource"
           isLoading={deleteResourceMutation.isPending}

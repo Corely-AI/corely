@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -20,6 +21,7 @@ import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-er
 import { useApiErrorToast } from "@/shared/lib/errors/use-api-error-toast";
 
 export default function CreateTenantPage() {
+  const uiCopy = useUiCopy("ui.platform-tenant-management-createtenantpage");
   const navigate = useNavigate();
   const showErrorToast = useApiErrorToast();
   const createTenant = useCreateTenant();
@@ -53,7 +55,7 @@ export default function CreateTenantPage() {
   const onSubmit = (values: TenantFormValues) => {
     createTenant.mutate(values, {
       onSuccess: () => {
-        toast.success("Tenant created successfully.");
+        toast.success(uiCopy("tenant-created-successfully"));
         navigate("/settings/tenants");
       },
       onError: (error) => {
@@ -73,7 +75,7 @@ export default function CreateTenantPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/settings/tenants")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Create tenant</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("create-tenant")}</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -81,14 +83,14 @@ export default function CreateTenantPage() {
             onClick={() => navigate("/settings/tenants")}
             disabled={createTenant.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={createTenant.isPending}
           >
-            {createTenant.isPending ? "Creating..." : "Create tenant"}
+            {createTenant.isPending ? uiCopy("creating") : uiCopy("create-tenant")}
           </Button>
         </div>
       </div>
@@ -99,12 +101,13 @@ export default function CreateTenantPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Label htmlFor="name">
-                  Tenant name <span className="text-destructive">*</span>
+                  {uiCopy("tenant-name") + " "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
                   {...form.register("name")}
-                  placeholder="Acme Inc."
+                  placeholder={uiCopy("acme-inc")}
                   data-testid="tenant-name-input"
                 />
                 {form.formState.errors.name && (
@@ -116,7 +119,8 @@ export default function CreateTenantPage() {
 
               <div>
                 <Label htmlFor="slug">
-                  Slug / Code <span className="text-destructive">*</span>
+                  {uiCopy("slug-code") + " "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="slug"
@@ -136,14 +140,14 @@ export default function CreateTenantPage() {
               </div>
 
               <div>
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">{uiCopy("status")}</Label>
                 <Controller
                   control={form.control}
                   name="status"
                   render={({ field }) => (
                     <Select value={field.value ?? "ACTIVE"} onValueChange={field.onChange}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={uiCopy("select-status")} />
                       </SelectTrigger>
                       <SelectContent>
                         {statusOptions.map((option) => (
@@ -163,11 +167,11 @@ export default function CreateTenantPage() {
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">{uiCopy("notes")}</Label>
                 <Textarea
                   id="notes"
                   {...form.register("notes")}
-                  placeholder="Optional notes for internal use"
+                  placeholder={uiCopy("optional-notes-for-internal")}
                   rows={4}
                 />
                 {form.formState.errors.notes && (

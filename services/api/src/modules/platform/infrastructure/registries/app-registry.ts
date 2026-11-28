@@ -1,3 +1,7 @@
+import { tasksAppManifest } from "../../../tasks/tasks.manifest";
+import { requestsAppManifest } from "../../../requests/requests.manifest";
+import { knowledgeAppManifest } from "../../../knowledge/knowledge.manifest";
+import { peopleAppManifest } from "../../../people/people.manifest";
 import { signAppManifest } from "../../../sign/sign.manifest";
 import { Injectable } from "@nestjs/common";
 import type { AppManifest } from "@corely/contracts";
@@ -26,7 +30,7 @@ import { importAppManifest } from "../../../import/import.manifest";
 import { directoryAppManifest } from "../../../directory/directory.manifest";
 import { bookingAppManifest } from "../../../booking/booking.manifest";
 import { formsAppManifest } from "../../../forms/forms.manifest";
-import { coachingEngagementsAppManifest } from "../../../coaching-engagements";
+import { coachingEngagementsAppManifest } from "../../../coaching-engagements/coaching-engagements.manifest";
 import { restaurantAppManifest } from "../../../restaurant/restaurant.manifest";
 import { posAdminAppManifest } from "../../../pos/pos.manifest";
 import { nailsPosAppManifest } from "../../vertical-packs/nails.manifest";
@@ -122,6 +126,10 @@ export class AppRegistry implements AppRegistryPort {
     this.register(importAppManifest);
     this.register(directoryAppManifest);
     this.register(bookingAppManifest);
+    this.register(peopleAppManifest);
+    this.register(tasksAppManifest);
+    this.register(requestsAppManifest);
+    this.register(knowledgeAppManifest);
     this.register(signAppManifest);
     this.register(formsAppManifest);
     this.register(coachingEngagementsAppManifest);

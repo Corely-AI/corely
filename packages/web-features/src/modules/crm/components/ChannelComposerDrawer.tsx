@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Drawer,
@@ -76,6 +77,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
   onOpenAiDraft,
   aiDisabled = false,
 }) => {
+  const uiCopy = useUiCopy("ui.crm-channelcomposerdrawer");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -154,7 +156,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
       setNewTemplateName("");
       setTemplateValue(`workspace:${result.template.id}`);
       await queryClient.invalidateQueries({ queryKey: channelTemplateQueryKeys.all });
-      toast.success("Template saved");
+      toast.success(uiCopy("template-saved"));
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Failed to save template");
@@ -238,22 +240,22 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
   const handleSaveTemplate = () => {
     const normalizedBody = body.trim();
     if (!workspaceId) {
-      toast.error("Workspace is required");
+      toast.error(uiCopy("workspace-is-required"));
       return;
     }
 
     if (!normalizedBody) {
-      toast.error("Message body is required");
+      toast.error(uiCopy("message-body-is-required"));
       return;
     }
 
     if (channel.capabilities.subject && !subject.trim()) {
-      toast.error("Subject is required for email templates");
+      toast.error(uiCopy("subject-is-required-for"));
       return;
     }
 
     if (!newTemplateName.trim()) {
-      toast.error("Template name is required");
+      toast.error(uiCopy("template-name-is-required"));
       return;
     }
 
@@ -265,7 +267,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
       await navigator.clipboard.writeText(`{${key}}`);
       toast.success(`Copied {${key}}`);
     } catch {
-      toast.error("Failed to copy placeholder");
+      toast.error(uiCopy("failed-to-copy-placeholder"));
     }
   };
 
@@ -293,7 +295,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
                         )
                       }
                     >
-                      Manage templates
+                      {uiCopy("manage-templates")}
                     </Button>
                     <Button
                       variant="outline"
@@ -304,13 +306,13 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
                         setSaveDialogOpen(true);
                       }}
                     >
-                      Save as template
+                      {uiCopy("save-as-template")}
                     </Button>
                   </div>
                 </div>
 
                 {templatesLoading ? (
-                  <div className="text-sm text-muted-foreground">Loading templates...</div>
+                  <div className="text-sm text-muted-foreground">{uiCopy("loading-templates")}</div>
                 ) : allTemplateOptions.length > 0 ? (
                   <Select value={templateValue} onValueChange={applyTemplate}>
                     <SelectTrigger>
@@ -319,7 +321,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
                     <SelectContent>
                       {workspaceTemplateOptions.length > 0 ? (
                         <SelectGroup>
-                          <SelectLabel>Workspace templates</SelectLabel>
+                          <SelectLabel>{uiCopy("workspace-templates")}</SelectLabel>
                           {workspaceTemplateOptions.map((template) => (
                             <SelectItem key={template.value} value={template.value}>
                               {template.name}
@@ -329,7 +331,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
                       ) : null}
                       {systemTemplateOptions.length > 0 ? (
                         <SelectGroup>
-                          <SelectLabel>System templates</SelectLabel>
+                          <SelectLabel>{uiCopy("system-templates")}</SelectLabel>
                           {systemTemplateOptions.map((template) => (
                             <SelectItem key={template.value} value={template.value}>
                               {template.name}
@@ -341,7 +343,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
                   </Select>
                 ) : (
                   <div className="text-sm text-muted-foreground">
-                    No templates yet for this channel.
+                    {uiCopy("no-templates-yet-for")}
                   </div>
                 )}
               </div>
@@ -370,9 +372,9 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
 
             <aside className="rounded-lg border border-border bg-muted/40 p-3 space-y-3">
               <div>
-                <div className="text-sm font-medium text-foreground">Placeholders</div>
+                <div className="text-sm font-medium text-foreground">{uiCopy("placeholders")}</div>
                 <div className="text-xs text-muted-foreground">
-                  Insert dynamic deal/contact data.
+                  {uiCopy("insert-dynamic-deal-contact")}
                 </div>
               </div>
               <div className="space-y-2 max-h-[320px] overflow-auto pr-1">
@@ -391,7 +393,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
                           void copyPlaceholder(placeholder.key);
                         }}
                       >
-                        Copy
+                        {uiCopy("copy")}
                       </Button>
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
@@ -406,7 +408,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
           <DrawerFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             {onOpenAiDraft && (
               <Button variant="outline" onClick={onOpenAiDraft} disabled={aiDisabled}>
-                AI Draft
+                {uiCopy("ai-draft")}
               </Button>
             )}
             {canCopy && (
@@ -437,20 +439,20 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save draft as template</DialogTitle>
+            <DialogTitle>{uiCopy("save-draft-as-template")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="crm-template-name">Template name</Label>
+              <Label htmlFor="crm-template-name">{uiCopy("template-name")}</Label>
               <Input
                 id="crm-template-name"
                 value={newTemplateName}
                 onChange={(event) => setNewTemplateName(event.target.value)}
-                placeholder="e.g. Follow-up after intro"
+                placeholder={uiCopy("e-g-follow-up")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Channel</Label>
+              <Label>{uiCopy("channel")}</Label>
               <Input value={channel.label} readOnly className="bg-muted" />
             </div>
           </div>
@@ -460,14 +462,14 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
               onClick={() => setSaveDialogOpen(false)}
               disabled={saveAsTemplateMutation.isPending}
             >
-              Cancel
+              {uiCopy("cancel")}
             </Button>
             <Button
               variant="accent"
               onClick={handleSaveTemplate}
               disabled={saveAsTemplateMutation.isPending}
             >
-              {saveAsTemplateMutation.isPending ? "Saving..." : "Save template"}
+              {saveAsTemplateMutation.isPending ? uiCopy("saving") : uiCopy("save-template")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,18 +1,23 @@
-import { useState } from "react";
+import { useInvoicesApi, useInvoiceKeys } from "../invoice-runtime";
+import { useRef, useState } from "react";
+import { createIdempotencyKey } from "@corely/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
-import { invoiceQueryKeys } from "../queries";
+
 import type { InvoiceDto } from "@corely/contracts";
 
 export function useSendInvoice() {
+  const invoicesApi = useInvoicesApi();
+  const invoiceQueryKeys = useInvoiceKeys();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState<InvoiceDto | null>(null);
+  const sending = useRef(false);
+  const deliveryIntents = useRef(new Map<string, string>());
 
   const openSendDialog = async (invoiceOrId: InvoiceDto | string) => {
     if (typeof invoiceOrId === "string") {
@@ -39,21 +44,30 @@ export function useSendInvoice() {
     message: string;
     sendCopy: boolean;
   }) => {
-    if (!currentInvoice) {
+    if (!currentInvoice || sending.current) {
       return;
     }
 
+    sending.current = true;
     setIsSending(true);
+    const payload = { to: data.to, subject: data.subject, message: data.message, attachPdf: false };
+    const fingerprint = JSON.stringify([currentInvoice.id, payload]);
+    let idempotencyKey = deliveryIntents.current.get(fingerprint);
+    if (!idempotencyKey) {
+      idempotencyKey = createIdempotencyKey();
+      deliveryIntents.current.set(fingerprint, idempotencyKey);
+    }
     try {
-      if (currentInvoice.status === "DRAFT") {
+      // A previous attempt may have finalized/queued the invoice before its response was lost.
+      const latest = await invoicesApi.getInvoice(currentInvoice.id);
+      if (latest.invoice.status === "DRAFT") {
         await invoicesApi.finalizeInvoice(currentInvoice.id);
       }
       await invoicesApi.sendInvoice(currentInvoice.id, {
-        to: data.to,
-        subject: data.subject,
-        message: data.message,
-        attachPdf: false,
+        ...payload,
+        idempotencyKey,
       });
+      deliveryIntents.current.delete(fingerprint);
       toast.success(t("invoices.email.sent"));
       setIsOpen(false);
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(currentInvoice.id) });
@@ -62,6 +76,7 @@ export function useSendInvoice() {
       console.error("Failed to send invoice", err);
       toast.error(t("invoices.email.sendFailed"));
     } finally {
+      sending.current = false;
       setIsSending(false);
     }
   };

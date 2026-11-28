@@ -13,7 +13,22 @@ const baseURL =
 
 export default defineConfig({
   testDir: "./tests",
-  testIgnore: ["**/sign/**"],
+  // This suite requires its own disposable HTTPS/database fixture.
+  testIgnore: [
+    "**/sign/**",
+    "**/sso/**",
+    "**/workspace-session/**",
+    "**/focused-invoice/**",
+    "**/app-center/**",
+    "**/focused-hr/**",
+    "**/invoice-links/**",
+    "**/requests/**",
+    "**/pilot-accessibility/**",
+    "**/operations-today/**",
+    "**/focused-ux/**",
+    "**/observability/**",
+    "**/multi-origin/**",
+  ],
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,

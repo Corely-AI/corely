@@ -13,11 +13,21 @@ import type {
   ReopenIssueResponse,
   ResolveIssueRequest,
   ResolveIssueResponse,
+  SubmitServiceRequest,
+  SendClientUpdate,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 import { buildListQuery } from "./api-query-utils";
 
 export class IssuesApi {
+  submitRequest(input: SubmitServiceRequest) {
+    return apiClient.post<{ id: string }>("/issues/requests", input);
+  }
+
+  sendClientUpdate(issueId: string, input: SendClientUpdate) {
+    return apiClient.post<{ accepted: boolean }>(`/issues/${issueId}/client-update`, input);
+  }
+
   async listIssues(params: ListIssuesRequest): Promise<ListIssuesResponse> {
     const query = buildListQuery(params);
     const endpoint = query.toString() ? `/issues?${query.toString()}` : "/issues";

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 API_BASE_URL="${API_BASE_URL:-http://localhost:3000}"
-FRONTEND_BASE_URL="${FRONTEND_BASE_URL:-http://localhost:8088}"
+FRONTEND_BASE_URL="${FRONTEND_BASE_URL:-http://localhost:8080}"
 PRODUCT_KEY="cash-management"
 
 ensure_command() {
@@ -89,9 +89,9 @@ Add these values to your local .env:
 STRIPE_BILLING_PRICE_STARTER_MONTHLY=${starter_price_id}
 STRIPE_BILLING_PRICE_PRO_MONTHLY=${pro_price_id}
 STRIPE_BILLING_PRICE_MULTI_LOCATION_MONTHLY=${multi_price_id}
-STRIPE_BILLING_SUCCESS_URL=${FRONTEND_BASE_URL}/settings/billing?checkout=success
-STRIPE_BILLING_CANCEL_URL=${FRONTEND_BASE_URL}/settings/billing?checkout=cancelled
-STRIPE_BILLING_PORTAL_RETURN_URL=${FRONTEND_BASE_URL}/settings/billing
+STRIPE_BILLING_SUCCESS_URL=${FRONTEND_BASE_URL}/cash/billing?checkout=success
+STRIPE_BILLING_CANCEL_URL=${FRONTEND_BASE_URL}/cash/billing?checkout=cancelled
+STRIPE_BILLING_PORTAL_RETURN_URL=${FRONTEND_BASE_URL}/cash/billing
 
 Start local webhook forwarding with:
 

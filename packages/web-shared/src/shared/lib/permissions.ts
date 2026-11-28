@@ -28,6 +28,7 @@ export const useEffectivePermissions = () => {
 export const HOST_PLATFORM_PERMISSION_KEYS = new Set<string>([
   "platform.tenants.read",
   "platform.tenants.write",
+  "platform.tenants.access",
   "platform.roles.read",
   "platform.roles.write",
   "platform.settings.read",
@@ -44,10 +45,8 @@ export const isHostScopedPlatformPermission = (key: string): boolean =>
 
 export const useActiveRoleId = () => {
   const { user } = useAuth();
-  const activeTenantId = user?.activeWorkspaceId ?? user?.activeTenantId;
-  const membership = user?.memberships?.find(
-    (entry) => entry.tenantId === activeTenantId || entry.workspaceId === activeTenantId
-  );
+  const activeTenantId = user?.activeTenantId;
+  const membership = user?.memberships?.find((entry) => entry.tenantId === activeTenantId);
 
   return {
     roleId: membership?.roleId,

@@ -1,9 +1,11 @@
+import { useTranslation } from "react-i18next";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
-import { Label } from "@corely/ui";
+import { TableLoadingSkeleton, Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { PartyPicker } from "@/shared/components";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
@@ -11,10 +13,16 @@ import { useNavigate } from "react-router-dom";
 import type { InventoryDocumentType } from "@corely/contracts";
 
 export default function DocumentsPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.inventory-documentspage");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const {
+    data,
+    isLoading: documentsLoading,
+    isError: documentsError,
+  } = useQuery({
     queryKey: inventoryQueryKeys.documents.list(),
     queryFn: () => inventoryApi.listDocuments(),
   });
@@ -51,9 +59,9 @@ export default function DocumentsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Documents</h1>
+        <h1 className="text-h1 text-foreground">{uiCopy("documents")}</h1>
         <Button variant="outline" onClick={() => navigate("/inventory/copilot")}>
-          AI: Create doc
+          {uiCopy("ai-create-doc")}
         </Button>
       </div>
 
@@ -61,30 +69,30 @@ export default function DocumentsPage() {
         <CardContent className="p-6 space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Type</Label>
+              <Label>{uiCopy("type")}</Label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={documentType}
                 onChange={(event) => setDocumentType(event.target.value as InventoryDocumentType)}
               >
-                <option value="RECEIPT">Receipt</option>
-                <option value="DELIVERY">Delivery</option>
-                <option value="TRANSFER">Transfer</option>
-                <option value="ADJUSTMENT">Adjustment</option>
+                <option value="RECEIPT">{uiCopy("receipt")}</option>
+                <option value="DELIVERY">{uiCopy("delivery")}</option>
+                <option value="TRANSFER">{uiCopy("transfer")}</option>
+                <option value="ADJUSTMENT">{uiCopy("adjustment")}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Party Id</Label>
+              <Label>{uiCopy("party-id")}</Label>
               <PartyPicker
                 value={partyId}
                 onValueChange={setPartyId}
-                placeholder="Select party (optional)"
+                placeholder={uiCopy("select-party-optional")}
                 searchPlaceholder="Search party..."
                 testId="inventory-document-party-picker"
               />
             </div>
             <div className="space-y-2">
-              <Label>Posting Date</Label>
+              <Label>{uiCopy("posting-date")}</Label>
               <Input
                 type="date"
                 value={postingDate}
@@ -97,18 +105,18 @@ export default function DocumentsPage() {
                 onClick={() => createDocument.mutate()}
                 disabled={!productId || createDocument.isPending}
               >
-                Create Draft
+                {uiCopy("create-draft")}
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Product Id</Label>
+              <Label>{uiCopy("product-id")}</Label>
               <Input value={productId} onChange={(event) => setProductId(event.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Quantity</Label>
+              <Label>{uiCopy("quantity")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -117,14 +125,14 @@ export default function DocumentsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>From Location</Label>
+              <Label>{uiCopy("from-location")}</Label>
               <Input
                 value={fromLocationId}
                 onChange={(event) => setFromLocationId(event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>To Location</Label>
+              <Label>{uiCopy("to-location")}</Label>
               <Input
                 value={toLocationId}
                 onChange={(event) => setToLocationId(event.target.value)}
@@ -139,31 +147,43 @@ export default function DocumentsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground">
-                <th className="py-2">Number</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Posting Date</th>
+                <th className="py-2">{uiCopy("number")}</th>
+                <th>{uiCopy("type")}</th>
+                <th>{uiCopy("status")}</th>
+                <th>{uiCopy("posting-date")}</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {data?.items.map((doc) => (
-                <tr key={doc.id} className="border-t border-border">
-                  <td className="py-2 font-medium">{doc.documentNumber || "Draft"}</td>
-                  <td>{doc.documentType}</td>
-                  <td>{doc.status}</td>
-                  <td>{doc.postingDate || "-"}</td>
-                  <td className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/inventory/documents/${doc.id}`)}
-                    >
-                      View
-                    </Button>
+              {documentsLoading ? (
+                <TableLoadingSkeleton columns={5} label={t("common.loading")} />
+              ) : documentsError && !data ? (
+                <tr>
+                  <td colSpan={5} className="p-4 text-sm text-destructive">
+                    <p role="alert">{t("common.error")}</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                <>
+                  {data?.items.map((doc) => (
+                    <tr key={doc.id} className="border-t border-border">
+                      <td className="py-2 font-medium">{doc.documentNumber || uiCopy("draft")}</td>
+                      <td>{doc.documentType}</td>
+                      <td>{doc.status}</td>
+                      <td>{doc.postingDate || "-"}</td>
+                      <td className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/inventory/documents/${doc.id}`)}
+                        >
+                          {uiCopy("view")}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
           </table>
         </CardContent>

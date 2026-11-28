@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { Plus, Trash2 } from "lucide-react";
 import { Button, Input, Label, Textarea } from "@corely/ui";
 import type { Dispatch, SetStateAction } from "react";
@@ -16,14 +17,13 @@ export function WebsiteSiteEditorCustomPropertiesSection({
   setCustomRows,
   setCustomRowErrors,
 }: WebsiteSiteEditorCustomPropertiesSectionProps) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-custom-properties-section");
   return (
     <div className="space-y-3 rounded-lg border border-border/60 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold">Custom properties</h3>
-          <p className="text-sm text-muted-foreground">
-            Key/value JSON settings persisted through Custom Attributes.
-          </p>
+          <h3 className="text-base font-semibold">{uiCopy("custom-properties")}</h3>
+          <p className="text-sm text-muted-foreground">{uiCopy("key-value-json-settings")}</p>
         </div>
         <Button
           type="button"
@@ -34,18 +34,21 @@ export function WebsiteSiteEditorCustomPropertiesSection({
           }
         >
           <Plus className="h-4 w-4" />
-          Add property
+          {uiCopy("add-property")}
         </Button>
       </div>
 
       {customRows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No custom properties yet.</p>
+        <p className="text-sm text-muted-foreground">{uiCopy("no-custom-properties-yet")}</p>
       ) : null}
 
       {customRows.map((row, index) => (
         <div key={row.id} className="space-y-2 rounded-md border border-border/60 p-3">
           <div className="flex items-center justify-between gap-2">
-            <Label>Property #{index + 1}</Label>
+            <Label>
+              {uiCopy("property")}
+              {index + 1}
+            </Label>
             <Button
               type="button"
               variant="ghost"
@@ -63,7 +66,7 @@ export function WebsiteSiteEditorCustomPropertiesSection({
             </Button>
           </div>
           <Input
-            placeholder="analytics.ga4"
+            placeholder={uiCopy("analytics-ga4")}
             value={row.key}
             onChange={(event) =>
               setCustomRows((prev) =>
@@ -76,7 +79,7 @@ export function WebsiteSiteEditorCustomPropertiesSection({
           <Textarea
             rows={4}
             className="font-mono text-xs"
-            placeholder='{"enabled": true}'
+            placeholder={uiCopy("enabled-true")}
             value={row.valueText}
             onChange={(event) =>
               setCustomRows((prev) =>

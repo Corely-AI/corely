@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -14,6 +15,7 @@ interface DealKanbanCardProps {
 }
 
 export const DealKanbanCard: FC<DealKanbanCardProps> = ({ deal, isDragging = false }) => {
+  const uiCopy = useUiCopy("ui.crm-deal-kanban-card");
   const { i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -60,7 +62,7 @@ export const DealKanbanCard: FC<DealKanbanCardProps> = ({ deal, isDragging = fal
           {...attributes}
           {...listeners}
           className="mt-0.5 shrink-0 text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label="Drag deal"
+          aria-label={uiCopy("drag-deal")}
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="h-4 w-4" />

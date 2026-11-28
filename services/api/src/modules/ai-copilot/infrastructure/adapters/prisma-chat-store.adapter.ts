@@ -180,7 +180,7 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
       const contentText = extractTextFromMessage(message) || undefined;
       const existing = await this.prisma.message.findUnique({
         where: { id: message.id },
-        select: { tenantId: true },
+        select: { tenantId: true, runId: true },
       });
 
       if (!existing) {
@@ -201,13 +201,13 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
           if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
             const concurrent = await this.prisma.message.findUnique({
               where: { id: message.id },
-              select: { tenantId: true },
+              select: { tenantId: true, runId: true },
             });
             if (!concurrent) {
               throw error;
             }
-            if (concurrent.tenantId !== params.tenantId) {
-              throw new Error("Message tenant mismatch");
+            if (concurrent.tenantId !== params.tenantId || concurrent.runId !== params.chatId) {
+              throw new Error("Message scope mismatch");
             }
             await this.prisma.message.update({
               where: { id: message.id },
@@ -224,8 +224,8 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
         }
       }
 
-      if (existing.tenantId !== params.tenantId) {
-        throw new Error("Message tenant mismatch");
+      if (existing.tenantId !== params.tenantId || existing.runId !== params.chatId) {
+        throw new Error("Message scope mismatch");
       }
 
       await this.prisma.message.update({

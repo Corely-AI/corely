@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import * as Clipboard from "expo-clipboard";
@@ -24,6 +25,7 @@ export function ErrorBanner({
   onDismiss,
   testID = "error-banner",
 }: ErrorBannerProps) {
+  const uiCopy = useUiCopy("ui.errorbanner");
   const [copied, setCopied] = React.useState(false);
 
   const handleCopyTraceId = async () => {
@@ -73,10 +75,11 @@ export function ErrorBanner({
             testID={`${testID}-trace-id-button`}
           >
             <Text style={[styles.traceIdLabel, { color: textColor }]}>
-              Trace ID: {traceId.substring(0, 8)}...
+              {uiCopy("trace-id") + " "}
+              {traceId.substring(0, 8)}...
             </Text>
             <Text style={[styles.copyButton, { color: textColor }]}>
-              {copied ? "✓ Copied" : "Copy"}
+              {copied ? uiCopy("copied") : uiCopy("copy")}
             </Text>
           </TouchableOpacity>
         )}

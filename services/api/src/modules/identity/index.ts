@@ -4,3 +4,5 @@ export * from "./adapters/http/auth.guard";
 export * from "./adapters/http/rbac.guard";
 export * from "./adapters/http/current-user.decorator";
 export * from "./adapters/http/auth.dto";
+
+export { DeliverSsoEmailCodeUseCase } from "./application/services/sso-email-code.service";

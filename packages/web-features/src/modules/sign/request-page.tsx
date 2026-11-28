@@ -1,4 +1,4 @@
-import { Badge, Button, EmptyState, Input } from "@corely/ui";
+import { LoadingSkeleton, Badge, Button, EmptyState, Input } from "@corely/ui";
 import { CrudListPageLayout } from "@corely/web-shared/shared/crud/CrudListPageLayout";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
 import React, { useEffect, useState } from "react";
@@ -14,13 +14,16 @@ import { apiClient } from "@corely/web-shared/lib/api-client";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { RequestActions } from "./request-actions";
+import { RequestDetailSkeleton } from "./request-loading";
 export default function RequestPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const { activeWorkspaceId } = useWorkspace();
   const [params] = useSearchParams();
-  if (!activeWorkspaceId || !user?.activeTenantId) return null;
-  if (!id)
+  if (!activeWorkspaceId || !user?.activeTenantId) {
+    return null;
+  }
+  if (!id) {
     return (
       <DraftList
         key={JSON.stringify([
@@ -33,15 +36,16 @@ export default function RequestPage() {
         query={params.toString()}
       />
     );
+  }
   return (
-    <Detail
+    <RequestDetail
       key={JSON.stringify([id, user.userId, user.activeTenantId, activeWorkspaceId])}
       id={id}
       workspace={activeWorkspaceId}
     />
   );
 }
-function Detail({ id, workspace }: { id: string; workspace: string }) {
+export function RequestDetail({ id, workspace }: { id: string; workspace: string }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<SignRequestDraft>(),
     [error, setError] = useState(""),
@@ -56,15 +60,18 @@ function Detail({ id, workspace }: { id: string; workspace: string }) {
         { workspaceScope: "none", signal: controller.signal }
       )
       .then((value) => {
-        if (!controller.signal.aborted) setDraft(SignRequestDraftSchema.parse(value));
+        if (!controller.signal.aborted) {
+          setDraft(SignRequestDraftSchema.parse(value));
+        }
       })
       .catch((reason) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(reason instanceof Error ? reason.message : t("sign.saveFailed"));
+        }
       });
     return () => controller.abort();
   }, [workspace, id, attempt, t]);
-  if (error)
+  if (error) {
     return (
       <section className="space-y-3 p-6">
         <p role="alert">{error}</p>
@@ -73,12 +80,10 @@ function Detail({ id, workspace }: { id: string; workspace: string }) {
         </Button>
       </section>
     );
-  if (!draft)
-    return (
-      <p className="p-4 text-muted-foreground" role="status">
-        {t("sign.loadingRequest")}
-      </p>
-    );
+  }
+  if (!draft) {
+    return <RequestDetailSkeleton />;
+  }
   return (
     <section className="space-y-4 p-4 sm:p-6 lg:p-8">
       <h1 className="break-words text-h1 text-foreground">{draft.title}</h1>
@@ -94,7 +99,6 @@ function Detail({ id, workspace }: { id: string; workspace: string }) {
         ))}
       </ol>
       <RequestActions workspace={workspace} draft={draft} />
-
     </section>
   );
 }
@@ -105,8 +109,11 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
   function filter(key: string, value: string) {
     const next = new URLSearchParams(params);
     next.delete("cursor");
-    if (value) next.set(key, value);
-    else next.delete(key);
+    if (value) {
+      next.set(key, value);
+    } else {
+      next.delete(key);
+    }
     setParams(next);
   }
   const { t } = useTranslation();
@@ -123,11 +130,14 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
         { workspaceScope: "none", signal: controller.signal }
       )
       .then((value) => {
-        if (!controller.signal.aborted) setPage(SignRequestListSchema.parse(value));
+        if (!controller.signal.aborted) {
+          setPage(SignRequestListSchema.parse(value));
+        }
       })
       .catch((reason) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setError(reason instanceof Error ? reason.message : t("sign.saveFailed"));
+        }
       });
     return () => controller.abort();
   }, [workspace, query, attempt, t]);
@@ -185,9 +195,7 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
           </Button>
         </div>
       ) : !page ? (
-        <p className="p-4 text-muted-foreground" role="status">
-          {t("sign.loadingRequest")}
-        </p>
+        <LoadingSkeleton label={t("sign.loadingRequest")} variant="list" className="p-4" />
       ) : (
         <>
           {page.items.length === 0 ? (
@@ -228,7 +236,6 @@ function DraftList({ workspace, query }: { workspace: string; query: string }) {
           )}
         </>
       )}
-
     </CrudListPageLayout>
   );
 }

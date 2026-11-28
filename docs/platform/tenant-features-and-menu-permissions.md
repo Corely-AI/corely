@@ -49,6 +49,23 @@ in:
 
 `TenantEntitlementsPage` loads the entitlements payload and passes `entitlements.features` into `TenantFeaturesTab`.
 
+## Product boundary clarification (2026-11-07)
+
+A product app, domain module, deployed surface and customer package need not map
+one-to-one. Reuse the current manifest/enablement/menu machinery; do not create a
+parallel registry for the [long-term catalog](../products/corely/app-catalog.md).
+
+Keep five controls separate: tenant app enablement, workspace capabilities,
+product subscriptions, user permissions and backend authorization. Installation
+records intersect effective feature enablement; subscription state is resolved
+through billing/entitlements and is not an automatic per-catalog-app subscription.
+`MenuBuilderService` also filters surface/vertical targets. See
+[connected-app architecture](../architecture/connected-apps.md) for source links.
+
+**Menu visibility is not authorization.** Route guards protect client navigation;
+backend endpoints/use cases must independently authorize reads/writes and enforce
+tenant/workspace ownership. This note is not an audit that all endpoints do so.
+
 ## Important Distinction
 
 There are two related but different concepts:

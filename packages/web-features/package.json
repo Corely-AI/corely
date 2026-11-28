@@ -7,16 +7,27 @@
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*",
+    "./modules/tasks": "./src/modules/tasks/index.ts",
+    "./modules/tasks/daily-work-page": "./src/modules/tasks/daily-work-page.tsx",
+    "./modules/knowledge/knowledge-page": "./src/modules/knowledge/knowledge-page.tsx",
+    "./modules/people": "./src/modules/people/index.ts",
+    "./modules/people/self-service": "./src/modules/people/self-service.ts",
     "./modules/sign/overview-page": "./src/modules/sign/overview-page.tsx",
     "./modules/sign/template-page": "./src/modules/sign/template-page.tsx",
-    "./modules/sign/request-page": "./src/modules/sign/request-page.tsx"
+    "./modules/sign/request-page": "./src/modules/sign/request-page.tsx",
+    "./modules/sign/recipient-form": "./src/modules/sign/recipient-form.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@corely/tasks-ui": "workspace:*",
+    "@corely/people-ui": "workspace:*",
     "@corely/contracts": "workspace:*",
+    "@corely/invoices-ui": "workspace:*",
     "@corely/api-client": "workspace:*",
+    "@corely/crm-ui": "workspace:*",
+    "@corely/expenses-ui": "workspace:*",
     "@corely/ui": "workspace:*",
     "@corely/web-shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
@@ -24,6 +35,7 @@
     "react-dom": "catalog:",
     "react-router-dom": "^6.30.1",
     "zod": "catalog:",
+    "@corely/auth-client": "workspace:*",
     "pdf-lib": "1.17.1",
     "pdfjs-dist": "6.5.438",
     "react-i18next": "^14.1.3"

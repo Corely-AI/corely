@@ -1,15 +1,19 @@
+import { useTranslation } from "react-i18next";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
 import { Card, CardHeader, CardTitle, CardContent } from "@corely/ui";
-import { Button } from "@corely/ui";
+import { LoadingSkeleton, Button } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { ArrowLeft, Printer } from "lucide-react";
 import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import { useReactToPrint } from "react-to-print";
 
 export function VatPeriodDetailsPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.tax-vatperioddetailspage");
   const { key } = useParams<{ key: string }>();
   const navigate = useNavigate();
   const printRef = useRef<HTMLDivElement>(null);
@@ -27,19 +31,21 @@ export function VatPeriodDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-64" />
-      </div>
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-64" />
+        </div>
+      </LoadingSkeleton>
     );
   }
 
   if (!data) {
     return (
       <div className="p-6 lg:p-8">
-        <div className="text-center text-muted-foreground">Period not found</div>
+        <div className="text-center text-muted-foreground">{uiCopy("period-not-found")}</div>
         <Button onClick={() => navigate(-1)} className="mt-4">
-          Go Back
+          {uiCopy("go-back")}
         </Button>
       </div>
     );
@@ -56,13 +62,16 @@ export function VatPeriodDetailsPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">VAT Return {data.periodKey}</h1>
-          <p className="text-muted-foreground">Detailed breakdown of sales and purchases</p>
+          <h1 className="text-2xl font-bold">
+            {uiCopy("vat-return") + " "}
+            {data.periodKey}
+          </h1>
+          <p className="text-muted-foreground">{uiCopy("detailed-breakdown-of-sales")}</p>
         </div>
         <div className="ml-auto flex gap-2">
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
-            Print / PDF
+            {uiCopy("print-pdf")}
           </Button>
         </div>
       </div>
@@ -72,26 +81,30 @@ export function VatPeriodDetailsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Sales VAT (Collected)
+                {uiCopy("total-sales-vat-collected")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatMoney(data.salesVatCents, "EUR")}</div>
               <p className="text-xs text-muted-foreground">
-                on {formatMoney(data.salesNetCents, "EUR")} net sales
+                {uiCopy("on") + " "}
+                {formatMoney(data.salesNetCents, "EUR")}
+                {" " + uiCopy("net-sales")}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Input VAT (Deductible)
+                {uiCopy("total-input-vat-deductible")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatMoney(data.purchaseVatCents, "EUR")}</div>
               <p className="text-xs text-muted-foreground">
-                on {formatMoney(data.purchaseNetCents, "EUR")} net purchases
+                {uiCopy("on") + " "}
+                {formatMoney(data.purchaseNetCents, "EUR")}
+                {" " + uiCopy("net-purchases")}
               </p>
             </CardContent>
           </Card>
@@ -102,13 +115,13 @@ export function VatPeriodDetailsPage() {
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Net Payable
+                {uiCopy("net-payable")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatMoney(payableVat, "EUR")}</div>
               <p className="text-xs text-muted-foreground">
-                {payableVat > 0 ? "To be paid to tax office" : "Refundable from tax office"}
+                {payableVat > 0 ? uiCopy("to-be-paid-to") : uiCopy("refundable-from-tax-office")}
               </p>
             </CardContent>
           </Card>
@@ -116,22 +129,22 @@ export function VatPeriodDetailsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Sales (Output VAT)</CardTitle>
+            <CardTitle>{uiCopy("sales-output-vat")}</CardTitle>
           </CardHeader>
           <CardContent>
             {sales.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No sales records in this period.</p>
+              <p className="text-muted-foreground text-sm">{uiCopy("no-sales-records-in")}</p>
             ) : (
               <div className="relative overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
                     <tr>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">Number</th>
-                      <th className="px-4 py-3">Customer</th>
-                      <th className="px-4 py-3 text-right">Net</th>
+                      <th className="px-4 py-3">{uiCopy("date")}</th>
+                      <th className="px-4 py-3">{uiCopy("number")}</th>
+                      <th className="px-4 py-3">{uiCopy("customer")}</th>
+                      <th className="px-4 py-3 text-right">{uiCopy("net")}</th>
                       <th className="px-4 py-3 text-right">VAT</th>
-                      <th className="px-4 py-3 text-right">Gross</th>
+                      <th className="px-4 py-3 text-right">{uiCopy("gross")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -165,21 +178,21 @@ export function VatPeriodDetailsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Purchases (Input VAT)</CardTitle>
+            <CardTitle>{uiCopy("purchases-input-vat")}</CardTitle>
           </CardHeader>
           <CardContent>
             {purchases.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No purchase records in this period.</p>
+              <p className="text-muted-foreground text-sm">{uiCopy("no-purchase-records-in")}</p>
             ) : (
               <div className="relative overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
                     <tr>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">Merchant</th>
-                      <th className="px-4 py-3 text-right">Net</th>
+                      <th className="px-4 py-3">{uiCopy("date")}</th>
+                      <th className="px-4 py-3">{uiCopy("merchant")}</th>
+                      <th className="px-4 py-3 text-right">{uiCopy("net")}</th>
                       <th className="px-4 py-3 text-right">VAT</th>
-                      <th className="px-4 py-3 text-right">Gross</th>
+                      <th className="px-4 py-3 text-right">{uiCopy("gross")}</th>
                     </tr>
                   </thead>
                   <tbody>

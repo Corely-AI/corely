@@ -123,8 +123,8 @@ export class PrismaBillingRepositoryAdapter
     return this.mapAccount(row);
   }
 
-  async getTenantProfile(tenantId: string): Promise<BillingTenantProfile> {
-    const tenant = await this.prisma.tenant.findUnique({
+  async getTenantProfile(tenantId: string, tx?: TransactionContext): Promise<BillingTenantProfile> {
+    const tenant = await this.client(tx).tenant.findUnique({
       where: { id: tenantId },
       select: {
         id: true,
@@ -140,7 +140,7 @@ export class PrismaBillingRepositoryAdapter
       tenantId: tenant.id,
       name: tenant.name,
       primaryEmail: null,
-      workspaceCount: await this.prisma.workspace.count({
+      workspaceCount: await this.client(tx).workspace.count({
         where: {
           tenantId,
         },

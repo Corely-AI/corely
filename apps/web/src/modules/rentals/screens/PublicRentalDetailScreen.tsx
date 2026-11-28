@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -149,12 +150,7 @@ export default function PublicRentalDetailScreen() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
-        <p className="text-muted-foreground animate-pulse">Loading property details...</p>
-      </div>
-    );
+    return <PageLoadingSkeleton variant="detail" />;
   }
 
   if (isError || !property) {

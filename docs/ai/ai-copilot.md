@@ -1,10 +1,116 @@
+# AI Copilot: connected-app policy and integration
+
+## Target behavior — 2026-11-07
+
+This policy supports [connected operations](../products/corely/README.md) and the
+[focused launch proposal](../products/corely/launch-plan.md). It is a target contract,
+not a claim that every current tool/endpoint has been audited.
+
+**Authorized request → Permission-filtered context → Structured proposal →
+Deterministic validation → Required approval → Execution through application
+use cases → Audited result.**
+
+- Authorize before retrieval and again before execution. Maintain actual tenant/
+  workspace isolation through retrieval, prompt/tool context, proposals and writes.
+- Include source links, data freshness and uncertainty. Treat imported documents,
+  messages and tool results as data, not instructions overriding application policy.
+- Use deterministic scheduling/conflict checks, calculations, permission decisions
+  and state transitions. Revalidate current records and authority before applying
+  a proposal; stale approval must not authorize changed inputs.
+- Confirm sensitive AI-originated changes and external communications with the
+  authorized user. Execute via owning application use cases, never direct model
+  database writes. Trace outcomes through audit and existing safe retry/idempotency
+  controls; expose failure/recovery instead of silently repeating effects.
+- Keep private personnel information out of unrelated operational views, prompts,
+  retrieval and notifications. Publish neutral “unavailable” information only when
+  authorized. Do not automatically cancel bookings, reassign work or send messages
+  in the proposed absence-assistance flow.
+- Keep useful manual workflows available when AI is unavailable.
+- Evaluate work completed, human review effort, correction rates, time saved and
+  prevention of unauthorized actions. Include denied access, stale/concurrent data,
+  prompt injection and personnel-data leakage cases; no evaluation passes claimed here.
+- Proposed launch excludes autonomous employment decisions, candidate ranking,
+  employee productivity scores, lending decisions, bank-detail changes and fund
+  release. Record specialist review needs; do not claim GDPR, employment-law,
+  accounting/tax or AI-regulation compliance from these requirements alone.
+
+## Existing machinery and verification limits
+
+Reuse `services/api/src/modules/ai-copilot`, its tool registry/factory, shared
+contracts/prompts and API-hosted background runtime. Do not add another orchestration
+layer to implement product labels. Static inspection found:
+
+- [StreamCopilotChatUseCase](../../services/api/src/modules/ai-copilot/application/use-cases/stream-copilot-chat.usecase.ts)
+  has idempotency/replay and pending-approval handling.
+- [Tool registry](../../services/api/src/modules/ai-copilot/infrastructure/tools/tool-registry.ts)
+  and [tool factory](../../services/api/src/modules/ai-copilot/infrastructure/tools/tools.factory.ts)
+  provide existing execution composition; [tool helpers](../../services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts)
+  carry tenant/workspace context. A helper’s workspace fallback does not establish
+  correct scope for every new tool: callers must resolve authority explicitly.
+- [Tool tests](../../services/api/src/modules/ai-copilot/__tests__/tools.factory.spec.ts)
+  and [context tests](../../services/api/src/modules/ai-copilot/__tests__/copilot-context.builder.spec.ts)
+  are present; they were inspected, not executed for this documentation change.
+
+These facts do not establish universally permission-filtered retrieval, execution
+revalidation, confirmation, freshness or privacy controls. Review each owning
+use case/tool before exposing it in the focused package.
+
+### Configured deterministic automation is a separate category
+
+Existing workflow execution dispatches configured task types through the
+[task runner](../../services/api/src/modules/background/runtime/modules/workflows/task-runner.processor.ts).
+The [human handler](../../services/api/src/modules/background/runtime/modules/workflows/handlers/human-task.handler.ts)
+refuses automatic completion (“Human tasks must be completed via API”);
+the [email handler](../../services/api/src/modules/background/runtime/modules/workflows/handlers/email-task.handler.ts)
+calls the configured email port without a separate interactive approval in that
+handler. Provider configuration determines actual delivery. Purchasing also has
+explicit auto-post settings and deterministic account-mapping validation.
+
+This policy does not disable those configured automations or add confirmations
+by prose. Preserve their actual authorization/configuration policies, review scope
+and record gaps separately. They do not authorize unrestricted AI-originated
+messages or financial/personnel changes. An outbox event is not proof of delivery.
+
 ## AI Copilot integration
 
 - **Frontend defaults**: `VITE_API_BASE_URL` now points to the real API (`http://localhost:3000`) and `VITE_API_MODE=real`. Set `VITE_API_MODE=mock` if you explicitly want to point to the mock server (`http://localhost:4000` or `VITE_MOCK_API_BASE_URL`).
 - **Shared client**: Use `useCopilotChatOptions` from `apps/web/src/lib/copilot-api.ts` to configure `useChat` across pages. It injects `Authorization`, `X-Workspace-Id`, and `X-Idempotency-Key` headers and targets `/copilot/chat` or `/copilot/runs/:id/messages` for streaming.
 - **Backend surface**: NestJS now exposes `POST /copilot/runs` to create a run, `GET /copilot/runs/:id` to fetch metadata, `GET /copilot/runs/:id/messages` to fetch history, and `POST /copilot/runs/:id/messages` to append + stream. Legacy `POST /copilot/chat` remains for compatibility.
 - **Chat history + search**: `GET /copilot/threads`, `GET /copilot/threads/:threadId`, `GET /copilot/threads/:threadId/messages`, `POST /copilot/threads`, and `GET /copilot/threads/search` provide recent-chat sidebar and history search support. Aliased `/ai-copilot/*` routes are available for the same endpoints.
-- **Running locally**: start `services/api` (`pnpm --filter services/api start:dev`) and `apps/web` (`pnpm --filter apps/web dev`). Ensure `VITE_API_MODE=real` and valid `VITE_API_BASE_URL`. For mock fallback, start `services/mock-server` and switch the mode.
+- **Running locally**: use root `pnpm dev:api` and `pnpm dev:web` scripts with a configured environment. Ensure valid API mode/base URL. Historical mock-server instructions need a separate restoration: no tracked mock runtime/package is present in this commit.
+
+### Daily Work assistant
+
+The Backoffice Tasks assistant at `/tasks/copilot` uses the existing Copilot registry and the
+[Tasks owner](../backend/employee-tasks.md). It requires a verified workspace, enabled Tasks
+and AI Assistant apps, a configured API signing key (`JWT_SECRET` or `JWT_ACCESS_SECRET`),
+and current Tasks read access. It lists up to ten visible tasks with a
+source and retrieval time. The read result omits assignee and personnel details.
+
+The assistant can propose completing one task. The Tasks owner applies the same rules as
+Daily Work when previewing it. Copilot shows the title and version and accepts the signed-in
+actor’s response only for the exact server-stored approval request. The proposal is bound to
+the tenant, workspace, actor and conversation and expires after ten minutes. Approved writes
+use the existing Tasks completion command, which rechecks the current permissions, version and
+task rules. Retries reuse the same Tasks idempotency key.
+
+Task tool execution records and telemetry omit tool payloads. The actor's workspace-scoped
+conversation retains the review content needed for approval. Each model stream has a tool
+execution and model-step limit. Daily Work remains available when the assistant is disabled or
+unavailable. This slice exposes only Tasks reads and completion. Other operational integrations
+use their own issues, owning use cases, and approval policies.
+
+### Morning operations briefing
+
+The Backoffice Today page can generate a morning briefing from the viewer's authorized Today
+sources. The model receives a bounded list of operation categories and times, using local ordinal
+IDs. It chooses an order. The server rechecks the chosen records and displays links to the
+owning Booking, Tasks and Requests screens. Source availability, freshness and the workspace
+date are visible alongside the briefing.
+
+The manual Today view remains usable throughout generation and provider failure. Briefing
+telemetry records generation outcome, latency, token counts, and optional usefulness and
+review timing. These measures describe the briefing and its review.
 
 ### Tool Authoring Guardrails
 

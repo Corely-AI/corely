@@ -1,3 +1,11 @@
+import { EnvModule } from "@corely/config";
+import {
+  appLaunchOriginsProvider,
+  invoiceLaunchEnabledProvider,
+} from "./infrastructure/configuration/app-launch-origins.provider";
+import { ListAppCatalogUseCase } from "./application/use-cases/list-app-catalog.usecase";
+import { ListAppLaunchesUseCase } from "./application/use-cases/list-app-launches.usecase";
+import { GetAppManagementLinkUseCase } from "./application/use-cases/get-app-management-link.usecase";
 import { Module, OnModuleInit, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -21,6 +29,7 @@ import { MenuBuilderService } from "./application/services/menu-builder.service"
 import { DependencyResolverService } from "./application/services/dependency-resolver.service";
 import { WorkspaceTemplateService } from "./application/services/workspace-template.service";
 import { WorkspaceExperienceResolverService } from "./application/services/workspace-experience-resolver.service";
+import { OperationalPackageService } from "./application/services/operational-package.service";
 
 // Use Cases
 import { EnableAppUseCase } from "./application/use-cases/enable-app.usecase";
@@ -56,6 +65,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
 @Module({
   imports: [
     DataModule,
+    EnvModule,
     KernelModule,
     forwardRef(() => IdentityModule),
     WorkspacesModule,
@@ -110,7 +120,13 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     DependencyResolverService,
     WorkspaceTemplateService,
     WorkspaceExperienceResolverService,
+    OperationalPackageService,
 
+    appLaunchOriginsProvider,
+    invoiceLaunchEnabledProvider,
+    ListAppCatalogUseCase,
+    ListAppLaunchesUseCase,
+    GetAppManagementLinkUseCase,
     // Use Cases
     EnableAppUseCase,
     DisableAppUseCase,
@@ -126,6 +142,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     WorkspaceCapabilityGuard,
   ],
   exports: [
+    EnableAppUseCase,
     TenantEntitlementService,
     MenuBuilderService,
     MenuComposerService,

@@ -2,8 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { type TaxFilingSummary } from "@corely/contracts";
 import { Button } from "@corely/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
-import { Loader2, ArrowRight, FileText, CheckCircle2 } from "lucide-react";
+import { LoadingSkeleton, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { ArrowRight, FileText, CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface NextUpCardProps {
@@ -20,9 +20,7 @@ export const NextUpCard = ({ filing, isLoading }: NextUpCardProps) => {
           <CardTitle>{t("tax.center.nextUp.title")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center h-[120px]">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
+          <LoadingSkeleton label={t("common.loading")} variant="detail" />
         </CardContent>
       </Card>
     );

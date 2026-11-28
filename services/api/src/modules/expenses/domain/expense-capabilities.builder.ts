@@ -1,3 +1,4 @@
+import { isEmailedExpense } from "./emailed-expense";
 import {
   type ExpenseAction,
   type ExpenseBadge,
@@ -8,13 +9,10 @@ import {
 } from "@corely/contracts";
 
 export class ExpenseCapabilitiesBuilder {
-  private readonly expense: ExpenseDto;
-  private readonly approvalsEnabled: boolean;
-
-  constructor(expense: ExpenseDto, approvalsEnabled = true) {
-    this.expense = expense;
-    this.approvalsEnabled = approvalsEnabled;
-  }
+  constructor(
+    private readonly expense: ExpenseDto,
+    private readonly canManageEmailedExpense = false
+  ) {}
 
   public build(): ExpenseCapabilities {
     return {
@@ -65,11 +63,9 @@ export class ExpenseCapabilitiesBuilder {
   }
 
   private buildTransitions(): ExpenseTransition[] {
-    // In freelancer mode (approvals disabled), no transitions are needed
-    if (!this.approvalsEnabled) {
+    if (isEmailedExpense(this.expense.id) && !this.canManageEmailedExpense) {
       return [];
     }
-
     const transitions: ExpenseTransition[] = [];
     const s = this.expense.status;
 
@@ -132,7 +128,7 @@ export class ExpenseCapabilitiesBuilder {
     // 2. Delete Action
     // Allow delete in Draft, Submitted, Rejected. Not Paid/Approved ideally?
     // Matching existing flexible logic for now: allow delete unless Paid?
-    if (s !== "PAID") {
+    if (s !== "PAID" && !isEmailedExpense(this.expense.id)) {
       actions.push({
         key: "delete",
         label: "Delete",
@@ -149,6 +145,9 @@ export class ExpenseCapabilitiesBuilder {
 
   private canEdit(): boolean {
     // Typically lock after approval
-    return ["DRAFT", "SUBMITTED", "REJECTED"].includes(this.expense.status);
+    return (
+      !isEmailedExpense(this.expense.id) &&
+      ["DRAFT", "SUBMITTED", "REJECTED"].includes(this.expense.status)
+    );
   }
 }

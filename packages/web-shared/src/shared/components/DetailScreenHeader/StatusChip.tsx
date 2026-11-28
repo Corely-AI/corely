@@ -72,7 +72,7 @@ export function StatusChip({ capabilities, onTransition, disabled }: StatusChipP
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [confirmTransition, setConfirmTransition] = useState<
-    RecordCapabilities["transitions"][number] | null
+    NonNullable<RecordCapabilities["transitions"]>[number] | null
   >(null);
   const [confirmInput, setConfirmInput] = useState("");
 
@@ -83,7 +83,9 @@ export function StatusChip({ capabilities, onTransition, disabled }: StatusChipP
     ? STATUS_TONE_CLASSES[status.tone ?? "muted"] || STATUS_TONE_CLASSES.muted
     : STATUS_TONE_CLASSES.muted;
 
-  const handleTransitionClick = (transition: RecordCapabilities["transitions"][number]) => {
+  const handleTransitionClick = (
+    transition: NonNullable<RecordCapabilities["transitions"]>[number]
+  ) => {
     if (!transition.enabled) {
       return;
     }
@@ -258,7 +260,7 @@ export function StatusChip({ capabilities, onTransition, disabled }: StatusChipP
             <AlertDialogAction
               onClick={handleConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={confirmTransition?.requiresInput && !confirmInput.trim()}
+              disabled={Boolean(confirmTransition?.requiresInput && !confirmInput.trim())}
             >
               {t("common.confirm")}
             </AlertDialogAction>

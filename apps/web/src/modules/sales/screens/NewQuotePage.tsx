@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -8,6 +9,7 @@ import { QuoteForm, type QuoteFormValues } from "../components/QuoteForm";
 import { toast } from "sonner";
 
 export default function NewQuotePage() {
+  const uiCopy = useUiCopy("ui.sales-newquotepage");
   const navigate = useNavigate();
   const location = useLocation();
   const prefill = (location.state as { prefill?: Partial<QuoteFormValues> } | null)?.prefill;
@@ -38,15 +40,15 @@ export default function NewQuotePage() {
         })),
       }),
     onSuccess: (data) => {
-      toast.success("Quote created");
+      toast.success(uiCopy("quote-created"));
       navigate(`/sales/quotes/${data.quote.id}`);
     },
-    onError: () => toast.error("Failed to create quote"),
+    onError: () => toast.error(uiCopy("failed-to-create-quote")),
   });
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <h1 className="text-h1 text-foreground">New Quote</h1>
+      <h1 className="text-h1 text-foreground">{uiCopy("new-quote")}</h1>
       <Card>
         <CardContent className="p-6">
           <QuoteForm

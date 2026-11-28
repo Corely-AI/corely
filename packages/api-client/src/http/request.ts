@@ -34,6 +34,7 @@ export type RequestOptions = {
   parseJson?: boolean;
   streaming?: boolean;
   signal?: AbortSignal;
+  redirect?: RequestRedirect;
 };
 
 type InternalInit = RequestInit & { url: string };
@@ -82,6 +83,7 @@ export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
     method,
     headers,
     credentials: "include",
+    ...(opts.redirect === undefined ? {} : { redirect: opts.redirect }),
   };
   if (opts.signal) {
     init.signal = opts.signal;

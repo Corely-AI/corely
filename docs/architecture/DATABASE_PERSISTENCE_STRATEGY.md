@@ -12,6 +12,15 @@ This document defines Corely's persistence strategy to support **1000+ modules**
 
 ---
 
+## Product framing clarification (2026-11-07)
+
+“1000+ modules” is historical scalability context, not the connected-app roadmap.
+A product app is not a database schema or necessarily a domain module. The
+[product map](../products/corely/app-catalog.md) changes no storage policy: domain
+buckets, extension storage for small modules and approval for heavy schemas remain.
+The schema list/examples and historical completion checklist below are not a fresh
+migration or index audit. See [repository evidence](../products/corely/repository-alignment.md).
+
 ## Problem Statement
 
 **Schema-per-module does not scale:**

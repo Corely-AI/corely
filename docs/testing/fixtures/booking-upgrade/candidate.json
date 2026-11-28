@@ -1,0 +1,10 @@
+{
+  "fixture": true,
+  "bookingRelease": "1.1.0",
+  "extensionManifests": [
+    "packages/tooling/acme-booking-policy-fixture/package.json",
+    "packages/tooling/acme-booking-ui-fixture/package.json"
+  ],
+  "migrations": [],
+  "localPatches": []
+}

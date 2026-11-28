@@ -12,7 +12,15 @@ import {
   UserX,
   DollarSign,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "@corely/ui";
+import {
+  LoadingSkeleton,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+} from "@corely/ui";
 import { formatRelativeTime } from "@/shared/lib/formatters";
 import { CardSkeleton } from "@/shared/components/Skeleton";
 import { teacherDashboardApi } from "@/lib/teacher-dashboard-api";
@@ -83,18 +91,20 @@ export default function TeacherDashboardPage() {
 
   if (isLoading || !summary) {
     return (
-      <div className="p-6 lg:p-8 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
+      <LoadingSkeleton label={t("common.loading")}>
+        <div className="p-6 lg:p-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CardSkeleton />
-          <CardSkeleton />
-        </div>
-      </div>
+      </LoadingSkeleton>
     );
   }
 

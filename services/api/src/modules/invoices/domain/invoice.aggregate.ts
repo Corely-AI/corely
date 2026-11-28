@@ -1,3 +1,5 @@
+import { validateInvoiceDraft } from "@corely/invoices";
+import { invoiceLineNetCents } from "@corely/contracts";
 import { type LocalDate } from "@corely/kernel";
 import {
   type InvoiceLine,
@@ -49,6 +51,8 @@ type InvoiceProps = {
   billToCountry?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  revision?: number;
+  hiddenFromList?: boolean | null;
   pdfStorageKey?: string | null;
   pdfGeneratedAt?: Date | null;
   pdfSourceVersion?: string | null;
@@ -91,6 +95,8 @@ export class InvoiceAggregate {
   billToCountry: string | null;
   createdAt: Date;
   updatedAt: Date;
+  revision: number;
+  hiddenFromList: boolean | null;
   pdfStorageKey: string | null;
   pdfGeneratedAt: Date | null;
   pdfSourceVersion: string | null;
@@ -133,6 +139,8 @@ export class InvoiceAggregate {
     this.billToCountry = props.billToCountry ?? null;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.revision = props.revision ?? 0;
+    this.hiddenFromList = props.hiddenFromList ?? null;
     this.pdfStorageKey = props.pdfStorageKey ?? null;
     this.pdfGeneratedAt = props.pdfGeneratedAt ?? null;
     this.pdfSourceVersion = props.pdfSourceVersion ?? null;
@@ -191,12 +199,8 @@ export class InvoiceAggregate {
     patch: Partial<Pick<InvoiceProps, "customerPartyId" | "currency" | "notes" | "terms">>,
     now: Date
   ) {
-    const allowedAfterDraft = ["notes", "terms"];
     if (this.status !== "DRAFT") {
-      const disallowedPatch = Object.keys(patch).some((k) => !allowedAfterDraft.includes(k));
-      if (disallowedPatch) {
-        throw new Error("Cannot update invoice header after finalize");
-      }
+      throw new Error("Cannot update invoice header after finalize");
     }
 
     if (patch.customerPartyId !== undefined) {
@@ -276,18 +280,7 @@ export class InvoiceAggregate {
     billTo: BillToSnapshot,
     paymentDetails?: PaymentDetailsSnapshot
   ) {
-    if (this.status !== "DRAFT") {
-      throw new Error("Only draft invoices can be finalized");
-    }
-    if (!this.customerPartyId) {
-      throw new Error("Customer is required to finalize");
-    }
-    if (!this.lineItems.length) {
-      throw new Error("At least one line item is required to finalize");
-    }
-    if (!billTo.name.trim()) {
-      throw new Error("Bill-to name is required to finalize");
-    }
+    validateInvoiceDraft(this, billTo.name);
 
     this.setBillToSnapshot(billTo);
     if (paymentDetails) {
@@ -325,16 +318,19 @@ export class InvoiceAggregate {
     this.touch(now);
   }
 
-  cancel(reason: string | undefined, canceledAt: Date | undefined, now: Date) {
-    if (this.status === "PAID") {
-      throw new Error("Cannot cancel a paid invoice");
-    }
+  cancel(now: Date, hideFromList = false) {
     if (this.status === "CANCELED") {
+      if (hideFromList && this.hiddenFromList !== true) {
+        this.hiddenFromList = true;
+        this.touch(now);
+      }
       return;
     }
+    if (this.status === "PAID" || this.payments.length > 0) {
+      throw new Error("Cannot cancel an invoice with recorded payments");
+    }
     this.status = "CANCELED";
-    this.notes = reason ?? this.notes ?? null;
-    this.sentAt = canceledAt ?? this.sentAt;
+    this.hiddenFromList = hideFromList;
     this.touch(now);
   }
 
@@ -350,7 +346,10 @@ export class InvoiceAggregate {
   }
 
   private calculateTotals(): InvoiceTotals {
-    const subtotal = this.lineItems.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
+    const subtotal = this.lineItems.reduce(
+      (sum, line) => sum + invoiceLineNetCents(line.qty, line.unitPriceCents),
+      0
+    );
     const taxCents = this.taxSnapshot?.taxTotalAmountCents ?? 0;
     const discountCents = 0;
     const totalCents = subtotal + taxCents - discountCents;

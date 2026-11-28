@@ -17,7 +17,6 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { InvoicesApplication } from "../../application/invoices.application";
-import { PartyApplication } from "../../../party/application/party.application";
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
@@ -36,6 +35,8 @@ import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
 import { ModuleRef } from "@nestjs/core";
 import { DocumentsApplication } from "../../../documents/application/documents.application";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { EntitlementGuard, RequireApp, RequireCapability } from "../../../platform/public";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import {
   INVOICE_SHARE_LINK_MODULE_ID,
@@ -48,13 +49,13 @@ import {
 const SEND_INVOICE_PDF_WAIT_MS = 90_000;
 
 @Controller("invoices")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard, EntitlementGuard)
+@RequireApp("invoices")
 export class InvoicesHttpController {
   private readonly logger = new Logger(InvoicesHttpController.name);
 
   constructor(
     @Inject(InvoicesApplication) @Optional() private readonly app: InvoicesApplication | null,
-    @Inject(PartyApplication) @Optional() private readonly partyApp: PartyApplication | null,
     @Inject(DocumentsApplication)
     @Optional()
     private readonly documentsApp: DocumentsApplication | null,
@@ -63,6 +64,7 @@ export class InvoicesHttpController {
   ) {}
 
   @Post()
+  @RequirePermission("sales.invoices.manage")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateInvoiceInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -77,6 +79,7 @@ export class InvoicesHttpController {
   }
 
   @Patch(":invoiceId")
+  @RequirePermission("sales.invoices.manage")
   async update(@Param("invoiceId") invoiceId: string, @Body() body: unknown, @Req() req: Request) {
     const input = UpdateInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
@@ -87,6 +90,7 @@ export class InvoicesHttpController {
   }
 
   @Post(":invoiceId/finalize")
+  @RequirePermission("sales.invoices.issue")
   async finalize(
     @Param("invoiceId") invoiceId: string,
     @Body() body: unknown,
@@ -99,6 +103,7 @@ export class InvoicesHttpController {
   }
 
   @Post(":invoiceId/send")
+  @RequirePermission("sales.invoices.issue")
   async send(@Param("invoiceId") invoiceId: string, @Body() body: unknown, @Req() req: Request) {
     const input = SendInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
@@ -146,6 +151,7 @@ export class InvoicesHttpController {
   }
 
   @Post(":invoiceId/payments")
+  @RequirePermission("sales.payments.record")
   async recordPayment(
     @Param("invoiceId") invoiceId: string,
     @Body() body: unknown,
@@ -158,6 +164,7 @@ export class InvoicesHttpController {
   }
 
   @Post(":invoiceId/cancel")
+  @RequirePermission("sales.invoices.void")
   async cancel(@Param("invoiceId") invoiceId: string, @Body() body: unknown, @Req() req: Request) {
     const input = CancelInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
@@ -166,6 +173,7 @@ export class InvoicesHttpController {
   }
 
   @Post(":invoiceId/share-link")
+  @RequirePermission("sales.invoices.issue")
   async generateShareLink(
     @Param("invoiceId") invoiceId: string,
     @Body() body: unknown,
@@ -224,6 +232,7 @@ export class InvoicesHttpController {
   }
 
   @Get(":invoiceId/share-link")
+  @RequirePermission("sales.invoices.read")
   async getShareLink(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const app = this.app ?? this.moduleRef?.get(InvoicesApplication, { strict: false });
@@ -264,6 +273,8 @@ export class InvoicesHttpController {
   }
 
   @Get(":invoiceId/pdf")
+  @RequirePermission("sales.invoices.read")
+  @RequireCapability("invoices.pdf")
   async downloadPdf(
     @Param("invoiceId") invoiceId: string,
     @Query("waitMs") waitMsRaw: string | undefined,
@@ -394,6 +405,7 @@ export class InvoicesHttpController {
   }
 
   @Get(":invoiceId")
+  @RequirePermission("sales.invoices.read")
   async getInvoice(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
     const input = GetInvoiceByIdInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
@@ -401,24 +413,15 @@ export class InvoicesHttpController {
     const mapped = mapResultToHttp(result);
     // Return invoice with capabilities for RecordCommandBar
 
-    let invoice = mapped.invoice;
-    if (this.partyApp && invoice.customerPartyId) {
-      try {
-        const customerResult = await this.partyApp.getCustomerById.execute(
-          { id: invoice.customerPartyId },
-          ctx
-        );
-        const { customer } = mapResultToHttp(customerResult);
-        invoice = { ...invoice, customer };
-      } catch (error) {
-        console.warn("Customer lookup failed", error);
-      }
-    }
+    // Billing snapshots are invoice data. Live customer records require the
+    // separate customer-read boundary and must not piggyback on invoice read.
+    const invoice = mapped.invoice;
 
     return { invoice, capabilities: mapped.capabilities };
   }
 
   @Get()
+  @RequirePermission("sales.invoices.read")
   async list(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const listQuery = parseListQuery(query);
     const input = ListInvoicesInputSchema.parse({

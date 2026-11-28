@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,11 +15,13 @@ import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 import { toast } from "sonner";
 
 export default function DocumentDetailPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.inventory-documentdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: inventoryQueryKeys.documents.detail(id || ""),
     queryFn: () => inventoryApi.getDocument(id || ""),
     enabled: Boolean(id),
@@ -113,6 +118,18 @@ export default function DocumentDetailPage() {
   const editable = data.status === "DRAFT";
   const approvalStatus = requestPostApproval.data?.status;
 
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
+
+  if (isError && !data) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
+
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -121,18 +138,18 @@ export default function DocumentDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Inventory Document</h1>
+            <h1 className="text-h1 text-foreground">{uiCopy("inventory-document")}</h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{data.documentNumber || "Draft"}</span>
+              <span>{data.documentNumber || uiCopy("draft")}</span>
               <Badge>{data.status}</Badge>
               {approvalStatus === "PENDING" ? (
-                <Badge variant="outline">Approval pending</Badge>
+                <Badge variant="outline">{uiCopy("approval-pending")}</Badge>
               ) : null}
               {approvalStatus === "APPROVED" ? (
-                <Badge variant="accent">Approval granted</Badge>
+                <Badge variant="accent">{uiCopy("approval-granted")}</Badge>
               ) : null}
               {approvalStatus === "REJECTED" ? (
-                <Badge variant="outline">Approval rejected</Badge>
+                <Badge variant="outline">{uiCopy("approval-rejected")}</Badge>
               ) : null}
             </div>
           </div>
@@ -141,13 +158,13 @@ export default function DocumentDetailPage() {
           {editable && (
             <Button variant="accent" onClick={() => updateDocument.mutate()}>
               <Save className="h-4 w-4" />
-              Save Draft
+              {uiCopy("save-draft")}
             </Button>
           )}
           {data.status === "DRAFT" && (
             <Button variant="outline" onClick={() => confirmDocument.mutate()}>
               <Check className="h-4 w-4" />
-              Confirm
+              {uiCopy("confirm")}
             </Button>
           )}
           {data.status === "CONFIRMED" && (
@@ -158,7 +175,7 @@ export default function DocumentDetailPage() {
                 disabled={requestPostApproval.isPending}
               >
                 <Check className="h-4 w-4" />
-                {requestPostApproval.isPending ? "Requesting..." : "Request approval"}
+                {requestPostApproval.isPending ? uiCopy("requesting") : uiCopy("request-approval")}
               </Button>
               <Button
                 variant="outline"
@@ -172,19 +189,19 @@ export default function DocumentDetailPage() {
                     toast.message("Posting approval is pending");
                     return;
                   }
-                  toast.error("Posting approval was rejected");
+                  toast.error(uiCopy("posting-approval-was-rejected"));
                 }}
                 disabled={postDocument.isPending}
               >
                 <Upload className="h-4 w-4" />
-                {postDocument.isPending ? "Posting..." : "Post"}
+                {postDocument.isPending ? uiCopy("posting") : uiCopy("post")}
               </Button>
             </>
           )}
           {data.status !== "POSTED" && data.status !== "CANCELED" && (
             <Button variant="ghost" onClick={() => cancelDocument.mutate()}>
               <XCircle className="h-4 w-4" />
-              Cancel
+              {uiCopy("cancel")}
             </Button>
           )}
         </div>
@@ -194,21 +211,21 @@ export default function DocumentDetailPage() {
         <CardContent className="p-6 space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div>
-              <Label>Type</Label>
+              <Label>{uiCopy("type")}</Label>
               <Input value={data.documentType} disabled />
             </div>
             <div>
-              <Label>Party</Label>
+              <Label>{uiCopy("party")}</Label>
               <Input value={data.partyId || ""} disabled={!editable} />
             </div>
             <div>
-              <Label>Posting Date</Label>
+              <Label>{uiCopy("posting-date")}</Label>
               <Input value={data.postingDate || ""} disabled />
             </div>
           </div>
 
           <div>
-            <Label>Notes</Label>
+            <Label>{uiCopy("notes")}</Label>
             <Input
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
@@ -217,7 +234,7 @@ export default function DocumentDetailPage() {
           </div>
 
           <div className="space-y-3">
-            <Label>Line Items</Label>
+            <Label>{uiCopy("line-items")}</Label>
             {lineItems.map((line, index) => (
               <div key={line.id} className="grid grid-cols-12 gap-2">
                 <Input className="col-span-4" value={line.productId} disabled />

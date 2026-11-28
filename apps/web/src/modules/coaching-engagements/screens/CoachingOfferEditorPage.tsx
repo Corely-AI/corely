@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -344,6 +345,10 @@ export default function CoachingOfferEditorPage() {
   const submit = form.handleSubmit(async (values) => {
     await saveMutation.mutateAsync(values);
   });
+
+  if (offerQuery.isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">

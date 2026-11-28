@@ -2,10 +2,16 @@ import type { AppManifest } from "@corely/contracts";
 
 export const issuesAppManifest: AppManifest = {
   appId: "issues",
-  name: "Issues",
+  directory: {
+    menuId: "issues",
+    logo: { iconKey: "ShieldAlert", tone: "accent" },
+    displayName: { en: "Requests", de: "Anfragen", vi: "Yêu cầu" },
+    category: "operations",
+  },
+  name: "Requests",
   tier: 1,
   version: "1.0.0",
-  description: "Issue tracking and management",
+  description: "Receive, resolve and follow up on service requests",
   dependencies: [],
   allowedSurfaces: ["platform"],
   capabilities: ["issues.manage", "issues.voice"],
@@ -16,7 +22,7 @@ export const issuesAppManifest: AppManifest = {
       scope: "web",
       section: "issues",
       labelKey: "nav.issues",
-      defaultLabel: "Issues",
+      defaultLabel: "Requests",
       route: "/issues",
       icon: "Bug",
       order: 30,

@@ -6,11 +6,13 @@ import {
 } from "@corely/contracts";
 import { InvoicesApplication } from "../../application/invoices.application";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
+import { EntitlementGuard, RequireApp } from "../../../platform/public";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 
 @Controller("invoices")
-@UseGuards(AuthGuard, RbacGuard)
+@UseGuards(AuthGuard, RbacGuard, EntitlementGuard)
+@RequireApp("invoices")
 export class InvoicesCopilotController {
   constructor(private readonly app: InvoicesApplication) {}
 

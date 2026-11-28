@@ -1,6 +1,10 @@
 import type { Issue, IssuePriority, IssueSiteType, IssueStatus } from "../../domain/issue.types";
 
+import type { TransactionContext } from "@corely/kernel";
+
 export type IssueListFilters = {
+  workspaceId?: string;
+  ownerOnly?: string;
   q?: string;
   status?: IssueStatus;
   priority?: IssuePriority;
@@ -21,9 +25,17 @@ export type IssueListResult = {
 };
 
 export interface IssueRepositoryPort {
+  finishClientUpdate(issue: Issue, status: "SENT" | "FAILED" | "NEEDS_REVIEW"): Promise<void>;
+  insertRequest(issue: Issue, tx: TransactionContext): Promise<boolean>;
+  queueClientUpdate(
+    issue: Issue,
+    summary: string,
+    now: Date,
+    tx: TransactionContext
+  ): Promise<boolean>;
   create(issue: Issue): Promise<Issue>;
   update(tenantId: string, issueId: string, updates: Partial<Issue>): Promise<Issue>;
-  findById(tenantId: string, issueId: string): Promise<Issue | null>;
+  findById(tenantId: string, issueId: string, workspaceId?: string): Promise<Issue | null>;
   list(
     tenantId: string,
     filters: IssueListFilters,

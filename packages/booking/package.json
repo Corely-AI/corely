@@ -1,0 +1,21 @@
+{
+  "name": "@corely/booking",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./extensions": "./dist/extensions.mjs"
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts src/extensions.ts --dts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*"
+  }
+}

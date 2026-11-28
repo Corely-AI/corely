@@ -1,4 +1,5 @@
 import { apiClient } from "./api-client";
+import type { FeatureHttpClient } from "../session/feature-http-client";
 import type {
   CreateCustomerInput,
   CreateCustomerOutput,
@@ -14,9 +15,9 @@ import type {
   SearchCustomersOutput,
 } from "@corely/contracts";
 
-export const customersApi = {
+export const createCustomersApi = (http: FeatureHttpClient = apiClient) => ({
   async createCustomer(input: CreateCustomerInput): Promise<CustomerDto> {
-    const response = await apiClient.post<CreateCustomerOutput>("/customers", input);
+    const response = await http.post<CreateCustomerOutput>("/customers", input);
     // Support both wrapped `{ customer }` responses and raw DTO bodies
     if (typeof response === "object" && response !== null && "customer" in response) {
       return (response as CreateCustomerOutput).customer;
@@ -30,13 +31,13 @@ export const customersApi = {
     role?: PartyRoleType
   ): Promise<CustomerDto> {
     const query = role ? `?role=${encodeURIComponent(role)}` : "";
-    const response = await apiClient.patch<UpdateCustomerOutput>(`/customers/${id}${query}`, patch);
+    const response = await http.patch<UpdateCustomerOutput>(`/customers/${id}${query}`, patch);
     return response.customer;
   },
 
   async getCustomer(id: string, role?: PartyRoleType): Promise<CustomerDto | null> {
     const query = role ? `?role=${encodeURIComponent(role)}` : "";
-    const response = await apiClient.get<unknown>(`/customers/${id}${query}`);
+    const response = await http.get<unknown>(`/customers/${id}${query}`);
     if (!response) {
       return null;
     }
@@ -75,7 +76,7 @@ export const customersApi = {
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/customers?${queryString}` : "/customers";
 
-    const response = await apiClient.get<unknown>(endpoint);
+    const response = await http.get<unknown>(endpoint);
     if (Array.isArray(response)) {
       return { customers: response as CustomerDto[] };
     }
@@ -114,7 +115,7 @@ export const customersApi = {
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/customers/search?${queryString}` : "/customers/search";
-    const response = await apiClient.get<SearchCustomersOutput>(endpoint);
+    const response = await http.get<SearchCustomersOutput>(endpoint);
     return {
       customers: response.items,
       nextCursor: response.nextCursor ?? undefined,
@@ -123,42 +124,39 @@ export const customersApi = {
 
   async archiveCustomer(id: string, role?: PartyRoleType): Promise<CustomerDto> {
     const query = role ? `?role=${encodeURIComponent(role)}` : "";
-    const response = await apiClient.post<{ customer: CustomerDto }>(
-      `/customers/${id}/archive${query}`
-    );
+    const response = await http.post<{ customer: CustomerDto }>(`/customers/${id}/archive${query}`);
     return response.customer;
   },
 
   async unarchiveCustomer(id: string, role?: PartyRoleType): Promise<CustomerDto> {
     const query = role ? `?role=${encodeURIComponent(role)}` : "";
-    const response = await apiClient.post<{ customer: CustomerDto }>(
+    const response = await http.post<{ customer: CustomerDto }>(
       `/customers/${id}/unarchive${query}`
     );
     return response.customer;
   },
 
   async listStudentGuardians(studentId: string): Promise<ListStudentGuardiansOutput> {
-    return apiClient.get<ListStudentGuardiansOutput>(`/customers/${studentId}/guardians`);
+    return http.get<ListStudentGuardiansOutput>(`/customers/${studentId}/guardians`);
   },
 
   async linkGuardian(studentId: string, input: LinkGuardianInput): Promise<LinkGuardianOutput> {
-    return apiClient.post<LinkGuardianOutput>(`/customers/${studentId}/guardians`, input, {
-      idempotencyKey: apiClient.generateIdempotencyKey(),
+    return http.post<LinkGuardianOutput>(`/customers/${studentId}/guardians`, input, {
+      idempotencyKey: http.generateIdempotencyKey(),
     });
   },
 
   async unlinkGuardian(studentId: string, guardianClientId: string): Promise<LinkGuardianOutput> {
-    return apiClient.delete<LinkGuardianOutput>(
-      `/customers/${studentId}/guardians/${guardianClientId}`
-    );
+    return http.delete<LinkGuardianOutput>(`/customers/${studentId}/guardians/${guardianClientId}`);
   },
 
   async setPrimaryPayer(
     studentId: string,
     input: SetPrimaryPayerInput
   ): Promise<SetPrimaryPayerOutput> {
-    return apiClient.post<SetPrimaryPayerOutput>(`/customers/${studentId}/primary-payer`, input, {
-      idempotencyKey: apiClient.generateIdempotencyKey(),
+    return http.post<SetPrimaryPayerOutput>(`/customers/${studentId}/primary-payer`, input, {
+      idempotencyKey: http.generateIdempotencyKey(),
     });
   },
-};
+});
+export const customersApi = createCustomersApi();

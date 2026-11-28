@@ -22,7 +22,5 @@ The script also syncs the shared favicon and app icon files already used by:
 
 - `apps/web/public`
 - `apps/public-web/public`
-- `apps/freelancer/public`
-- `apps/crm/public`
 - `apps/landing/assets/public`
 - `apps/pos/assets`

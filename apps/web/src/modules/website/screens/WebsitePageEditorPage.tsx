@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -44,13 +47,19 @@ import { useWebsitePageEditorSavePreset } from "./use-website-page-editor-save-p
 const DEFAULT_PRESET = WebsitePageEditorPresetRegistry.fallback();
 
 export default function WebsitePageEditorPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.website-websitepageeditorpage");
   const { siteId, pageId } = useParams<{ siteId: string; pageId: string }>();
   const isEdit = Boolean(pageId);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
 
-  const { data: pageData } = useQuery({
+  const {
+    data: pageData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: websitePageKeys.detail(pageId ?? ""),
     queryFn: () => (pageId ? websiteApi.getPage(pageId) : Promise.resolve(null)),
     enabled: isEdit,
@@ -349,7 +358,7 @@ export default function WebsitePageEditorPage() {
 
   const openPreview = () => {
     if (!previewUrl) {
-      toast.error("Preview URL is unavailable.");
+      toast.error(uiCopy("preview-url-is-unavailable"));
       return;
     }
     openWebsitePreviewWindow(previewUrl);
@@ -365,6 +374,18 @@ export default function WebsitePageEditorPage() {
     queryClient,
     onPresetSaved: setPresetKey,
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="form" />;
+  }
+
+  if (isError && !pageData) {
+    return (
+      <p role="alert" className="p-6 text-destructive">
+        {t("common.error")}
+      </p>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6 lg:p-8">

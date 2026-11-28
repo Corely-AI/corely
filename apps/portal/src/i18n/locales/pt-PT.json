@@ -1,0 +1,88 @@
+{
+  "portal": {
+    "title": "Portal",
+    "dashboard": {
+      "title": "Painel",
+      "welcome": "Bem vindo",
+      "students": {
+        "title": "Alunos",
+        "select": "Selecione Aluno",
+        "linked": "Alunos Vinculados",
+        "viewing": "VISUALIZANDO",
+        "student": "ESTUDANTE",
+        "none": "Nenhum aluno vinculado"
+      },
+      "sessions": {
+        "title": "Próximas sessões",
+        "subtitle": "Consulte a programação das próximas aulas e links para participar em sessões online.",
+        "open": "Agenda aberta"
+      },
+      "materials": {
+        "title": "Materiais",
+        "subtitle": "Todos os documentos partilhados consigo e com os seus alunos.",
+        "items_one": "ARTIGO {{count}}",
+        "items_other": "ARTIGOS {{count}}",
+        "items": "ITENS",
+        "added": "Adicionado",
+        "download_failed": "Falha ao obter o URL de download",
+        "personal": "PESSOAL",
+        "class_group": "GRUPO DE CLASSE",
+        "getFile": "Obter ficheiro",
+        "empty": {
+          "title": "Nada aqui ainda",
+          "subtitle": "Os seus materiais de aprendizagem aparecerão aqui assim que o seu professor os enviar."
+        },
+        "items_many": "ARTIGOS {{count}}"
+      },
+      "invoices": {
+        "title": "Faturas",
+        "subtitle": "Descarregue as faturas do aluno selecionado.",
+        "items_one": "FATURA {{count}}",
+        "items_other": "FATURAS {{count}}",
+        "items": "FATURAS",
+        "invoice": "Fatura",
+        "issued": "Emitido",
+        "due": "Devido",
+        "amount_due": "Valor devido",
+        "download": "Baixar fatura",
+        "download_failed": "Falha ao obter o link para download da fatura",
+        "empty": {
+          "title": "Ainda não há faturas",
+          "subtitle": "As faturas deste aluno aparecerão aqui assim que forem emitidas."
+        },
+        "items_many": "FATURAS {{count}}"
+      }
+    },
+    "login": {
+      "title": "Portal do Aluno e do Guardião",
+      "email_prompt": "Introduza o seu e-mail para receber um código de login",
+      "code_sent": "Introduza o código de 6 dígitos enviado para {{email}}",
+      "email_label": "E-mail",
+      "email_placeholder": "nome@exemplo.com",
+      "send_code": "Enviar código de login",
+      "code_label": "Código de login",
+      "code_placeholder": "000000",
+      "change_email": "Alterar e-mail",
+      "resend_code": "Reenviar código",
+      "resend_in": "Reenviar em {{count}}s",
+      "verify_sign_in": "Verifique e inicie sessão",
+      "errors": {
+        "send_failed": "Falha ao enviar código",
+        "verify_failed": "Código inválido ou expirado"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "Página não encontrada",
+    "returnHome": "Voltar para casa"
+  },
+  "common": {
+    "logout": "Sair",
+    "loading": "Carregando...",
+    "languages": {
+      "en": "PT",
+      "vi": "VI",
+      "de": "DE"
+    }
+  }
+}

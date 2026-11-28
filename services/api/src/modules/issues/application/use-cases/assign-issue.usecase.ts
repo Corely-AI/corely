@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NotFoundError, ValidationFailedError } from "@corely/domain";
 import type { AssignIssueRequest } from "@corely/contracts";
 import type { OutboxPort, UseCaseContext } from "@corely/kernel";
@@ -54,7 +55,11 @@ export class AssignIssueUseCase {
     private readonly idGenerator: IdGeneratorPort
   ) {}
 
-  async execute(input: AssignIssueRequest, ctx: UseCaseContext): Promise<Issue> {
+  async execute(
+    input: AssignIssueRequest,
+    ctx: UseCaseContext,
+    authorizedOperator = false
+  ): Promise<Issue> {
     assertCan(ctx);
     const tenantId = ctx.tenantId!;
 
@@ -64,14 +69,19 @@ export class AssignIssueUseCase {
       ]);
     }
 
-    const issue = await this.issueRepo.findById(tenantId, input.issueId);
-    if (!issue) {
+    const issue = await this.issueRepo.findById(
+      tenantId,
+      input.issueId,
+      ctx.workspaceId ?? undefined
+    );
+    if (!issue || (issue.workspaceId && !authorizedOperator)) {
       throw new NotFoundError("Issue not found", { code: "Issues:NotFound" });
     }
 
-    assertLeadCanAssign(ctx);
+    if (!issue.workspaceId) {assertLeadCanAssign(ctx);}
 
-    const idempotencyKey = input.idempotencyKey ?? "default";
+    const key = input.idempotencyKey ?? (issue.workspaceId ? randomUUID() : "default");
+    const idempotencyKey = issue.workspaceId ? JSON.stringify([issue.id, ctx.userId, key]) : key;
     const cached = await this.idempotency.get(ACTION_KEY, tenantId, idempotencyKey);
     if (cached) {
       return fromStoredIssue(cached.body);

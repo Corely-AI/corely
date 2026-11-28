@@ -1,3 +1,5 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,11 +11,12 @@ import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 
 export default function ProductDetailPage() {
+  const uiCopy = useUiCopy("ui.inventory-productdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: product } = useQuery({
+  const { data: product, isLoading } = useQuery({
     queryKey: inventoryQueryKeys.products.detail(id || ""),
     queryFn: () => inventoryApi.getProduct(id || ""),
     enabled: Boolean(id),
@@ -34,6 +37,10 @@ export default function ProductDetailPage() {
       void queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.products.details() });
     },
   });
+
+  if (isLoading) {
+    return <PageLoadingSkeleton variant="detail" />;
+  }
 
   if (!product) {
     return null;
@@ -61,7 +68,7 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{product.sku}</span>
               <Badge variant={product.isActive ? "secondary" : "outline"}>
-                {product.isActive ? "Active" : "Inactive"}
+                {product.isActive ? uiCopy("active") : uiCopy("inactive")}
               </Badge>
             </div>
           </div>
@@ -71,7 +78,7 @@ export default function ProductDetailPage() {
           onClick={() => toggleStatus.mutate()}
           disabled={toggleStatus.isPending}
         >
-          {product.isActive ? "Deactivate" : "Activate"}
+          {product.isActive ? uiCopy("deactivate") : uiCopy("activate")}
         </Button>
       </div>
 
@@ -80,15 +87,15 @@ export default function ProductDetailPage() {
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-xs text-muted-foreground">Type</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("type")}</div>
                 <div className="text-sm font-medium">{product.productType}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Unit</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("unit")}</div>
                 <div className="text-sm font-medium">{product.unitOfMeasure}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Barcode</div>
+                <div className="text-xs text-muted-foreground">{uiCopy("barcode")}</div>
                 <div className="text-sm font-medium">{product.barcode || "-"}</div>
               </div>
             </div>
@@ -97,17 +104,17 @@ export default function ProductDetailPage() {
 
         <Card>
           <CardContent className="p-6 space-y-3">
-            <h2 className="text-lg font-semibold">Stock Summary</h2>
+            <h2 className="text-lg font-semibold">{uiCopy("stock-summary")}</h2>
             <div className="flex items-center justify-between text-sm">
-              <span>On-hand</span>
+              <span>{uiCopy("on-hand")}</span>
               <span>{summary?.onHand ?? 0}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span>Reserved</span>
+              <span>{uiCopy("reserved")}</span>
               <span>{summary?.reserved ?? 0}</span>
             </div>
             <div className="flex items-center justify-between font-semibold">
-              <span>Available</span>
+              <span>{uiCopy("available")}</span>
               <span>{summary?.available ?? 0}</span>
             </div>
           </CardContent>

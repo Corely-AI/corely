@@ -1,0 +1,728 @@
+{
+  "status": "passed",
+  "tests": [
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 147,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": [
+        "sign in and select Invoice",
+        "open sign-in entry",
+        "enter synthetic credentials",
+        "launch focused Invoice",
+        "verify host cookies and workspace handoff"
+      ],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 194,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 209,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 222,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/login",
+          "status": 400
+        },
+        {
+          "operation": "/api/session/login",
+          "status": 400
+        },
+        {
+          "operation": "/api/session/login",
+          "status": 400
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 404
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 404
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 401
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 281,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:aborted",
+        "network:tunnel-failed"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 303,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:tunnel-failed"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 303,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 319,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 333,
+      "browser": "chromium",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        }
+      ],
+      "states": [
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:tunnel-failed",
+        "network:aborted",
+        "network:aborted"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 147,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": [
+        "sign in and select Invoice",
+        "open sign-in entry",
+        "enter synthetic credentials",
+        "launch focused Invoice",
+        "verify host cookies and workspace handoff"
+      ],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 194,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        }
+      ],
+      "states": ["network:other", "network:other", "network:other"],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 209,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        }
+      ],
+      "states": ["network:other", "network:other", "network:other", "network:other"],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 222,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/login",
+          "status": 400
+        },
+        {
+          "operation": "/api/session/login",
+          "status": 400
+        },
+        {
+          "operation": "/api/session/login",
+          "status": 400
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 404
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 404
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 281,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        }
+      ],
+      "states": ["network:other", "network:other", "network:other"],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 303,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 303,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/bff/invoices",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 319,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other"
+      ],
+      "failureLines": []
+    },
+    {
+      "source": "multi-origin.spec.ts",
+      "line": 333,
+      "browser": "webkit",
+      "status": "passed",
+      "phases": ["open sign-in entry", "enter synthetic credentials", "launch focused Invoice"],
+      "http": [
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "other",
+          "status": 403
+        },
+        {
+          "operation": "/api/session/",
+          "status": 401
+        },
+        {
+          "operation": "other",
+          "status": 403
+        }
+      ],
+      "states": [
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other",
+        "network:other"
+      ],
+      "failureLines": []
+    }
+  ]
+}

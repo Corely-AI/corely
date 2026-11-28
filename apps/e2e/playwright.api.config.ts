@@ -5,6 +5,17 @@ const baseURL = process.env.API_URL ?? "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./tests",
+  // Browser SSO uses its dedicated disposable HTTPS fixture/configuration.
+  testIgnore: [
+    "**/sso/**",
+    "**/workspace-session/**",
+    "**/focused-invoice/**",
+    "**/focused-hr/**",
+    "**/invoice-links/**",
+    "**/focused-ux/**",
+    "**/observability/**",
+    "**/multi-origin/**",
+  ],
   fullyParallel: false,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,

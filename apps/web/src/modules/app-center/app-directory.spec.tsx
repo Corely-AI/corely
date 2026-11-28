@@ -1,0 +1,184 @@
+import React from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type { AppCatalogItem, AppCatalogLaunch } from "@corely/contracts";
+import { AppDirectory, type AppDirectoryProps } from "./app-directory";
+
+afterEach(cleanup);
+const crm: AppCatalogItem = {
+  appId: "crm",
+  name: "CRM",
+  tier: 2,
+  version: "1",
+  dependencies: [],
+  enabled: true,
+  directory: {
+    menuId: "crm-deals",
+    category: "sales",
+    displayName: { en: "CRM", de: "CRM", vi: "CRM" },
+    destination: { origin: "http://localhost:5173", path: "/crm/deals" },
+  },
+};
+const invoice: AppCatalogItem & { launch: AppCatalogLaunch } = {
+  appId: "invoices",
+  name: "Invoices",
+  tier: 1,
+  version: "1",
+  dependencies: [],
+  enabled: true,
+  launch: {
+    launchId: "invoice",
+    surfaceId: "platform",
+    displayName: { en: "Invoice", de: "Rechnungen", vi: "Hóa đơn" },
+    category: "finance",
+    iconKey: "file",
+    availability: "available",
+    url: "https://invoice.app.corely.one/",
+  },
+};
+const hr: AppCatalogItem = {
+  ...invoice,
+  appId: "people",
+  launch: {
+    ...invoice.launch,
+    launchId: "hr",
+    displayName: { en: "HR", de: "Personal", vi: "Nhân sự" },
+    category: "people",
+    availability: "coming-soon",
+    url: undefined,
+  },
+};
+function setup(overrides: Partial<AppDirectoryProps> = {}) {
+  const props: AppDirectoryProps = {
+    apps: [invoice, hr],
+    workspaceId: "workspace-one",
+    locale: "en",
+    loading: false,
+    error: false,
+    launching: false,
+    launchError: false,
+    onLaunch: vi.fn(),
+    onRetry: vi.fn(),
+    ...overrides,
+  };
+  render(<AppDirectory {...props} />);
+  return props;
+}
+describe("workspace app directory", () => {
+  it("groups openable apps and excludes coming-soon apps and records without a surface", () => {
+    setup({
+      apps: [
+        invoice,
+        crm,
+        hr,
+        { ...invoice, appId: "planned", name: "Secret planned app", launch: undefined },
+      ],
+    });
+    expect(screen.getByRole("heading", { name: "Finance" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Sales" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "People" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "HR" })).toBeNull();
+    expect(screen.queryByText("Secret planned app")).toBeNull();
+  });
+  it("launches accessible Invoice", () => {
+    const props = setup();
+    fireEvent.click(screen.getByRole("button", { name: "Open: Invoice" }));
+    expect(props.onLaunch).toHaveBeenCalledWith("invoices");
+  });
+  it("filters by localized name and category and reports no matches", () => {
+    setup({ locale: "de" });
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Personal" } });
+    expect(screen.getByRole("status").textContent).toContain("Keine Apps entsprechen");
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "RECH" } });
+    expect(screen.getByRole("heading", { name: "Rechnungen" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "people" } });
+    expect(screen.getByRole("status").textContent).toContain("Keine Apps entsprechen");
+  });
+  it.each([
+    { loading: true, expected: "Loading apps…" },
+    { apps: [], expected: "No apps available for this workspace." },
+  ])("renders a distinct loading/empty state", ({ expected, ...props }) => {
+    setup(props);
+    expect(screen.getByRole("status").textContent).toBe(expected);
+    expect(screen.queryByRole("button", { name: "Open: Invoice" })).toBeNull();
+  });
+  it("hides stale catalog data on errors and supports retry", () => {
+    const props = setup({ error: true });
+    expect(screen.getByRole("alert").textContent).toContain("Apps could not be loaded");
+    expect(screen.queryByRole("button", { name: "Open: Invoice" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(props.onRetry).toHaveBeenCalledOnce();
+  });
+  it.each(["app-disabled", "unconfigured"] as const)(
+    "shows the empty state when the only app has a %s destination",
+    (availability) => {
+      setup({
+        apps: [
+          {
+            ...invoice,
+            enabled: availability !== "app-disabled",
+            launch: { ...invoice.launch, availability, url: undefined },
+          },
+        ],
+      });
+      expect(screen.getByRole("status").textContent).toBe("No apps available for this workspace.");
+      expect(screen.queryByRole("heading", { name: "Invoice" })).toBeNull();
+    }
+  );
+  it("rejects malformed destinations and shows launch revalidation failures", () => {
+    setup({
+      apps: [
+        {
+          ...invoice,
+          launch: { ...invoice.launch, url: "https://evil.invalid/path?token=secret" },
+        },
+      ],
+      launchError: true,
+    });
+    expect(screen.queryByRole("heading", { name: "Invoice" })).toBeNull();
+    expect(screen.getByRole("alert").textContent).toContain("no longer available");
+  });
+  it("shows an app with a valid directory destination while its focused launch is coming soon", () => {
+    const props = setup({
+      apps: [
+        {
+          ...hr,
+          directory: {
+            menuId: "people-staff",
+            category: "people",
+            displayName: { en: "Staff", de: "Personal", vi: "Nhân sự" },
+            destination: { origin: "http://localhost:5173", path: "/people/staff" },
+          },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Open: Staff" }));
+    expect(props.onLaunch).toHaveBeenCalledWith("people");
+  });
+  it("blocks repeated launches while checking access", () => {
+    setup({ launching: true });
+    expect(
+      (screen.getByRole("button", { name: "Open: Invoice" }) as HTMLButtonElement).disabled
+    ).toBe(true);
+    expect(screen.getByRole("status").textContent).toBe("Checking access…");
+  });
+  it.each(["en", "de", "vi"] as const)(
+    "renders and launches implemented modules in %s",
+    (locale) => {
+      const props = setup({ apps: [crm], locale });
+      const button = screen.getByRole("button");
+      expect((button as HTMLButtonElement).disabled).toBe(false);
+      fireEvent.click(button);
+      expect(props.onLaunch).toHaveBeenCalledWith("crm");
+      expect(screen.getByRole("heading", { name: "CRM" })).toBeTruthy();
+    }
+  );
+  it("filters implemented modules by category and localized name", () => {
+    setup({ apps: [invoice, crm] });
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "sales" } });
+    expect(screen.queryByRole("button", { name: "Open: Invoice" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Open: CRM" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "missing" } });
+    expect(screen.getByRole("status").textContent).toBe("No apps match your search.");
+  });
+});

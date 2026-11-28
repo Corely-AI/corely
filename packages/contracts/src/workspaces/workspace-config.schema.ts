@@ -1,8 +1,18 @@
 import { z } from "zod";
+import { AppLaunchIdSchema } from "../platform/app-launch.schema";
 import { MenuItemSchema } from "../platform/menu.schema";
 import { SurfaceIdSchema } from "../platform/surface.schema";
 import { PosVerticalIdSchema } from "../platform/experience-targeting.schema";
 import { WorkspaceKindSchema, WorkspaceMembershipRoleSchema } from "./workspace.types";
+import {
+  OperationalPackageSchema,
+  WorkspacePackageIdSchema,
+} from "../platform/operational-package.schema";
+import { GetMenuQuerySchema } from "../platform/menu.schema";
+
+export const GetWorkspaceConfigQuerySchema = GetMenuQuerySchema.extend({
+  packageId: WorkspacePackageIdSchema.optional(),
+});
 
 export const WorkspaceCapabilitiesSchema = z.object({
   "workspace.multiUser": z.boolean(),
@@ -90,6 +100,7 @@ export const WorkspaceNavigationSchema = z.object({
 export type WorkspaceNavigation = z.infer<typeof WorkspaceNavigationSchema>;
 
 export const WorkspaceConfigSchema = z.object({
+  launchId: AppLaunchIdSchema.optional(),
   workspaceId: z.string(),
   surfaceId: SurfaceIdSchema,
   verticalId: PosVerticalIdSchema.nullable().optional(),
@@ -105,6 +116,7 @@ export const WorkspaceConfigSchema = z.object({
     isWorkspaceAdmin: z.boolean(),
   }),
   computedAt: z.string(),
+  operationalPackage: OperationalPackageSchema.optional(),
 });
 
 export type WorkspaceConfig = z.infer<typeof WorkspaceConfigSchema>;

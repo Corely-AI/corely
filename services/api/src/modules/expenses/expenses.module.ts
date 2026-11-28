@@ -1,4 +1,7 @@
+import { expenseSubmissionPolicies } from "./expense-extensions";
 import { Module } from "@nestjs/common";
+import { WorkspacesModule } from "../workspaces";
+import { IdentityModule } from "../identity";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
 import type { OutboxPort } from "@corely/kernel";
 import {
@@ -7,6 +10,7 @@ import {
   CustomFieldIndexRepository,
   PrismaService,
 } from "@corely/data";
+import { ExpenseReceiptAccessGuard } from "./http/expense-receipt-access.guard";
 import { ExpensesController } from "./http/expenses.controller";
 import {
   IdempotencyStoragePort,
@@ -26,9 +30,6 @@ import { TransitionExpenseUseCase } from "./application/use-cases/transition-exp
 import { PrismaExpenseRepository } from "./infrastructure/adapters/prisma-expense-repository.adapter";
 import { PrismaGiftThresholdQueryAdapter } from "./infrastructure/adapters/prisma-gift-threshold-query.adapter";
 import { KernelModule } from "../../shared/kernel/kernel.module";
-import { PlatformModule } from "../platform/platform.module";
-import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
-import { WorkspaceTemplateService } from "../platform/application/services/workspace-template.service";
 import {
   CUSTOM_FIELDS_WRITE_PORT,
   DIMENSIONS_WRITE_PORT,
@@ -38,14 +39,20 @@ import {
   ResolveEntityIdsByCustomFieldFiltersUseCase,
   ResolveEntityIdsByDimensionFiltersUseCase,
 } from "../platform-custom-attributes";
-import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/workspace-repository.port";
 import { GIFT_THRESHOLD_QUERY_PORT } from "./application/ports/gift-threshold-query.port";
 import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-query.port";
 
 @Module({
-  imports: [DataModule, KernelModule, PlatformModule, PlatformCustomAttributesModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    PlatformCustomAttributesModule,
+    IdentityModule,
+    WorkspacesModule,
+  ],
   controllers: [ExpensesController],
   providers: [
+    ExpenseReceiptAccessGuard,
     // Repository
     PrismaExpenseRepository,
     { provide: EXPENSE_REPOSITORY, useExisting: PrismaExpenseRepository },
@@ -68,8 +75,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
         customIndexes: CustomFieldIndexRepository,
         dimensionsWritePort: DimensionsWritePort,
         customFieldsWritePort: CustomFieldsWritePort,
-        workspaceRepo: WorkspaceRepositoryPort,
-        templateService: WorkspaceTemplateService,
         prisma: PrismaService,
         giftThresholdQuery: GiftThresholdQueryPort
       ) =>
@@ -84,8 +89,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
           customIndexes,
           dimensionsWritePort,
           customFieldsWritePort,
-          workspaceRepo,
-          templateService,
           prisma,
           giftThresholdQuery
         ),
@@ -101,8 +104,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
         CustomFieldIndexRepository,
         DIMENSIONS_WRITE_PORT,
         CUSTOM_FIELDS_WRITE_PORT,
-        WORKSPACE_REPOSITORY_PORT,
-        WorkspaceTemplateService,
         PrismaService,
         GIFT_THRESHOLD_QUERY_PORT,
       ],
@@ -135,7 +136,7 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
     {
       provide: TransitionExpenseUseCase,
       useFactory: (repo: PrismaExpenseRepository, audit: AuditPort, outbox: OutboxPort) =>
-        new TransitionExpenseUseCase(repo, audit, outbox),
+        new TransitionExpenseUseCase(repo, audit, outbox, expenseSubmissionPolicies),
       inject: [EXPENSE_REPOSITORY, AUDIT_PORT, OUTBOX_PORT],
     },
     {
@@ -193,6 +194,6 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
       ],
     },
   ],
-  exports: [CreateExpenseUseCase],
+  exports: [CreateExpenseUseCase, TransitionExpenseUseCase],
 })
 export class ExpensesModule {}

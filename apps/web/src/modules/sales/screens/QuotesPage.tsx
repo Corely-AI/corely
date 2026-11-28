@@ -1,10 +1,12 @@
+import { useTranslation } from "react-i18next";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Sparkles } from "lucide-react";
 import { Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import { LoadingSkeleton, Badge } from "@corely/ui";
 import { salesApi } from "@/lib/sales-api";
 import { customersApi } from "@/lib/customers-api";
 import { formatMoney } from "@/shared/lib/formatters";
@@ -30,9 +32,15 @@ const getStatusVariant = (status: QuoteDto["status"]) => {
 };
 
 export default function QuotesPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.sales-quotespage");
   const navigate = useNavigate();
 
-  const { data: quotesData } = useQuery({
+  const {
+    data: quotesData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: salesQueryKeys.quotes.list(),
     queryFn: () => salesApi.listQuotes(),
   });
@@ -51,27 +59,33 @@ export default function QuotesPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-h1 text-foreground">Quotes</h1>
-          <p className="text-muted-foreground">Draft, send, and convert sales quotes.</p>
+          <h1 className="text-h1 text-foreground">{uiCopy("quotes")}</h1>
+          <p className="text-muted-foreground">{uiCopy("draft-send-and-convert")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => navigate("/sales/copilot")}>
             <Sparkles className="h-4 w-4" />
-            AI: Create Quote
+            {uiCopy("ai-create-quote")}
           </Button>
           <Button variant="accent" onClick={() => navigate("/sales/quotes/new")}>
             <Plus className="h-4 w-4" />
-            New Quote
+            {uiCopy("new-quote")}
           </Button>
         </div>
       </div>
 
       <Card>
         <CardContent className="p-0">
-          {quotes.length === 0 ? (
+          {isLoading ? (
+            <LoadingSkeleton variant="list" label={t("common.loading")} />
+          ) : isError && !quotesData ? (
+            <p className="p-4 text-sm text-destructive" role="alert">
+              {t("common.error")}
+            </p>
+          ) : quotes.length === 0 ? (
             <EmptyState
-              title="No quotes yet"
-              description="Create your first quote or use Copilot to draft one."
+              title={uiCopy("no-quotes-yet")}
+              description={uiCopy("create-your-first-quote")}
             />
           ) : (
             <div className="overflow-x-auto">
@@ -79,19 +93,19 @@ export default function QuotesPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Quote #
+                      {uiCopy("quote")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Customer
+                      {uiCopy("customer")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Status
+                      {uiCopy("status")}
                     </th>
                     <th className="text-right text-sm font-medium text-muted-foreground px-4 py-3">
-                      Total
+                      {uiCopy("total")}
                     </th>
                     <th className="text-right text-sm font-medium text-muted-foreground px-4 py-3">
-                      Actions
+                      {uiCopy("actions")}
                     </th>
                   </tr>
                 </thead>
@@ -101,7 +115,9 @@ export default function QuotesPage() {
                       key={quote.id}
                       className="border-b border-border last:border-0 hover:bg-muted/30"
                     >
-                      <td className="px-4 py-3 text-sm font-medium">{quote.number ?? "Draft"}</td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        {quote.number ?? uiCopy("draft")}
+                      </td>
                       <td className="px-4 py-3 text-sm">
                         {getCustomerName(quote.customerPartyId)}
                       </td>
@@ -117,7 +133,7 @@ export default function QuotesPage() {
                           size="sm"
                           onClick={() => navigate(`/sales/quotes/${quote.id}`)}
                         >
-                          View
+                          {uiCopy("view")}
                         </Button>
                       </td>
                     </tr>

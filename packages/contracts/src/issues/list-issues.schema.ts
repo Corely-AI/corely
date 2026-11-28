@@ -9,6 +9,7 @@ import {
 } from "./issue.types";
 
 export const ListIssuesRequestSchema = ListQuerySchema.extend({
+  mine: z.boolean().optional(),
   status: IssueStatusSchema.optional(),
   priority: IssuePrioritySchema.optional(),
   siteType: IssueSiteTypeSchema.optional(),
@@ -22,6 +23,7 @@ export const ListIssuesRequestSchema = ListQuerySchema.extend({
 
 export const ListIssuesResponseSchema = z.object({
   items: z.array(IssueSchema),
+  canOperate: z.boolean().optional(),
   pageInfo: PageInfoSchema,
 });
 

@@ -85,8 +85,8 @@ test.describe("Cash management onboarding - resume and checklist", () => {
       workspaceId: auth.workspaceId,
     });
 
-    await page.goto("/dashboard");
-    await page.waitForURL("**/dashboard", { timeout: 10_000 });
+    await page.goto("/cash/dashboard");
+    await page.waitForURL("**/cash/dashboard", { timeout: 10_000 });
     await page.waitForTimeout(1500);
     await expect(page).not.toHaveURL(/\/onboarding/);
   });

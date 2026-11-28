@@ -61,6 +61,7 @@ export const workspacesAppManifest: AppManifest = {
       route: "/settings/roles",
       icon: "ShieldAlert",
       order: 93,
+      requiresPermissions: ["settings.roles.manage"],
     },
   ],
 };

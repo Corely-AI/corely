@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { usePublicPortfolioContext } from "./PublicPortfolioLayout";
@@ -7,6 +8,7 @@ import { Badge } from "@corely/ui";
 import { Link, useParams } from "react-router-dom";
 
 export const PublicShowcaseHome = () => {
+  const uiCopy = useUiCopy("ui.portfolio-public-publicshowcasehome");
   const { showcase, profile, featuredProjects, featuredClients } = usePublicPortfolioContext();
   const { slug } = useParams<{ slug: string }>();
   const isSlugMode = Boolean(slug);
@@ -82,7 +84,7 @@ export const PublicShowcaseHome = () => {
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-muted-foreground">
-                      No image
+                      {uiCopy("no-image")}
                     </div>
                   )}
                 </div>

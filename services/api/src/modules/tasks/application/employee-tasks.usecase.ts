@@ -1,0 +1,333 @@
+import { OpenBukTimezone } from "../../booking/public";
+import { filterTaskList } from "../domain/task-list-filters";
+import { authorizeTasks } from "./task-access-policy";
+import { persistTaskMutation } from "./task-mutation";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from "@nestjs/common";
+import { createHash, randomUUID } from "node:crypto";
+import {
+  CreateEmployeeTaskSchema,
+  TaskCreationPolicyRejectedCode,
+  UpdateEmployeeTaskSchema,
+  TransitionEmployeeTaskSchema,
+  ToggleChecklistStepSchema,
+  ListEmployeeTasksSchema,
+  type EmployeeTask,
+  type TaskSource,
+  type EmployeeTaskList,
+} from "@corely/contracts";
+import {
+  AUDIT_PORT,
+  OUTBOX_PORT,
+  type AuditPort,
+  type OutboxPort,
+  type UseCaseContext,
+  type TransactionContext,
+} from "@corely/kernel";
+import { GetEffectivePermissionsUseCase } from "../../identity/public";
+import { TenantEntitlementService } from "../../platform/public";
+import { StaffOperationsLookup } from "../../people/public";
+import {
+  TASK_REPOSITORY,
+  type TaskRepositoryPort,
+  type TaskScope,
+} from "./ports/task-repository.port";
+import { transitionTask, type TaskRecord } from "@corely/tasks/task-rules";
+
+import { taskCreationRejection } from "@corely/tasks/extensions";
+import { taskCreationPolicies } from "../task-creation-extensions";
+
+type FollowUpCreation = {
+  source: TaskSource;
+  check(scope: TaskScope, tx: TransactionContext): Promise<void>;
+  attach(scope: TaskScope, taskId: string, tx: TransactionContext): Promise<void>;
+};
+type Command = "create" | "update" | "complete" | "reopen" | "checklist";
+@Injectable()
+export class EmployeeTasksUseCase {
+  constructor(
+    @Inject(TASK_REPOSITORY) private readonly repo: TaskRepositoryPort,
+    private readonly permissions: GetEffectivePermissionsUseCase,
+    private readonly staff: StaffOperationsLookup,
+    private readonly entitlements: TenantEntitlementService,
+    @Inject(AUDIT_PORT) private readonly audit: AuditPort,
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
+    @Optional() private readonly workspaceTimezone?: OpenBukTimezone
+  ) {}
+  async authorize(ctx: UseCaseContext, tx?: TransactionContext) {
+    return authorizeTasks(
+      { permissions: this.permissions, staff: this.staff, entitlements: this.entitlements },
+      ctx,
+      tx
+    );
+  }
+
+  private async projection(
+    scope: TaskScope,
+    record: TaskRecord,
+    tx?: TransactionContext
+  ): Promise<EmployeeTask> {
+    const owner = await this.staff.get(scope, record.ownerStaffId, tx);
+    return {
+      ...record,
+      ownerName: owner?.displayName ?? record.ownerName,
+      ownerArchived: !owner || Boolean(owner.archivedAt),
+    };
+  }
+  private async record(scope: TaskScope, id: string, tx?: TransactionContext) {
+    const record = await this.repo.get(scope, id, tx);
+    if (!record || record.workspaceId !== scope.workspaceId) {
+      throw new NotFoundException("Task not found");
+    }
+    return record;
+  }
+  private visible(
+    record: TaskRecord,
+    auth: Awaited<ReturnType<EmployeeTasksUseCase["authorize"]>>
+  ) {
+    if (!auth.manage && record.ownerStaffId !== auth.self?.id) {
+      throw new NotFoundException("Task not found");
+    }
+  }
+  private assertCanTransition(auth: Awaited<ReturnType<EmployeeTasksUseCase["authorize"]>>) {
+    if (!auth.manage && !auth.completeOwn) {
+      throw new ForbiddenException("Task completion denied");
+    }
+  }
+  private assertTransition(record: TaskRecord, completed: boolean) {
+    if (completed && record.checklist?.some((item) => !item.completed)) {
+      throw new ConflictException("Complete every checklist item first");
+    }
+    if ((record.status === "COMPLETED") === completed) {
+      throw new ConflictException("Task already has this status; reload before saving");
+    }
+  }
+  async list(query: unknown, ctx: UseCaseContext): Promise<EmployeeTaskList> {
+    const auth = await this.authorize(ctx);
+    const input = ListEmployeeTasksSchema.parse(query);
+    if (input.view === "team" && !auth.manage) {
+      throw new ForbiddenException("Team task access denied");
+    }
+    const teamView = input.view !== "mine" && auth.manage;
+    const timezone =
+      input.view || input.due !== "all"
+        ? ((await this.workspaceTimezone?.forWorkspace(auth.scope)) ?? "UTC")
+        : "UTC";
+    const visible = (await this.repo.list(auth.scope)).filter(
+      (task) =>
+        (teamView || task.ownerStaffId === auth.self?.id) &&
+        (!input.taskId || task.id === input.taskId)
+    );
+    const records = filterTaskList(visible, input, timezone, new Date()).sort(
+      (a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id)
+    );
+    return {
+      page: input.page,
+      pageSize: input.pageSize,
+      total: records.length,
+      ...(input.view ? { timezone } : {}),
+      items: await Promise.all(
+        records
+          .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+          .map((t) => this.projection(auth.scope, t))
+      ),
+      capabilities: { manage: auth.manage, completeOwn: auth.completeOwn && Boolean(auth.self) },
+    };
+  }
+  async dueToday(window: { from: Date; to: Date }, ctx: UseCaseContext) {
+    const auth = await this.authorize(ctx);
+    const from = window.from.toISOString();
+    const to = window.to.toISOString();
+    return (await this.repo.list(auth.scope))
+      .flatMap(({ id, ownerStaffId, dueAt, title, status }) => {
+        const due = dueAt ? new Date(dueAt).toISOString() : null;
+        if (!due || due < from || due >= to || (!auth.manage && ownerStaffId !== auth.self?.id)) {
+          return [];
+        }
+        return [{ id, title, dueAt: due, status }];
+      })
+      .sort(
+        (first, second) =>
+          first.dueAt.localeCompare(second.dueAt) || first.id.localeCompare(second.id)
+      );
+  }
+
+  async assignees(ctx: UseCaseContext) {
+    const auth = await this.authorize(ctx);
+    if (!auth.manage) {
+      throw new ForbiddenException("Task management required");
+    }
+    return (await this.staff.list(auth.scope))
+      .filter((p) => !p.archivedAt)
+      .map(({ id, displayName }) => ({ id, displayName }))
+      .sort((a, b) => a.displayName.localeCompare(b.displayName) || a.id.localeCompare(b.id));
+  }
+  async authorizeVisibleTask(id: string, ctx: UseCaseContext, tx?: TransactionContext) {
+    const auth = await this.authorize(ctx, tx);
+    const task = await this.record(auth.scope, id, tx);
+    this.visible(task, auth);
+    return { auth, task };
+  }
+
+  async detail(id: string, ctx: UseCaseContext) {
+    const { auth, task } = await this.authorizeVisibleTask(id, ctx);
+    return this.projection(auth.scope, task);
+  }
+  async previewCompletion(id: string, ctx: UseCaseContext) {
+    const auth = await this.authorize(ctx);
+    this.assertCanTransition(auth);
+    const record = await this.record(auth.scope, id);
+    this.visible(record, auth);
+    this.assertTransition(record, true);
+    return { id: record.id, title: record.title, version: record.version };
+  }
+  async command(
+    kind: Command,
+    id: string | null,
+    body: unknown,
+    key: string | undefined,
+    ctx: UseCaseContext,
+    stepId?: string,
+    followUp?: FollowUpCreation,
+    existing?: TransactionContext
+  ) {
+    const initial = await this.authorize(ctx, existing);
+    if (!key || key.length > 160 || !/^[\w-]+$/.test(key)) {
+      throw new BadRequestException("A valid Idempotency-Key is required");
+    }
+    const input =
+      kind === "create"
+        ? CreateEmployeeTaskSchema.parse(body)
+        : kind === "update"
+          ? UpdateEmployeeTaskSchema.parse(body)
+          : kind === "checklist"
+            ? ToggleChecklistStepSchema.parse(body)
+            : TransitionEmployeeTaskSchema.parse(body);
+    const fingerprint = createHash("sha256")
+      .update(
+        JSON.stringify(
+          followUp
+            ? ["follow-up", followUp.source, input]
+            : kind === "checklist"
+              ? [kind, id, stepId, input]
+              : [kind, id, input]
+        )
+      )
+      .digest("hex");
+    const commandKey = createHash("sha256")
+      .update(JSON.stringify([ctx.userId, key]))
+      .digest("hex");
+    const execute = async (tx: TransactionContext) => {
+      // Coordinate assignment with People archival/link changes before checking the current owner.
+      await this.staff.lock(initial.scope, tx);
+      const auth = await this.authorize(ctx, tx);
+      if ((kind === "create" || kind === "update") && !auth.manage) {
+        throw new ForbiddenException("Task management required");
+      }
+      this.assertCanTransition(auth);
+      if (followUp) {
+        await followUp.check(auth.scope, tx);
+      }
+      const replay = await this.repo.replay(auth.scope, commandKey, tx);
+      if (replay) {
+        if (replay.fingerprint !== fingerprint) {
+          throw new ConflictException("Idempotency key already used for another command");
+        }
+        const record = await this.record(auth.scope, replay.taskId, tx);
+        this.visible(record, auth);
+        return this.projection(auth.scope, record, tx);
+      }
+      const previous = id ? await this.record(auth.scope, id, tx) : null;
+      if (previous) {
+        this.visible(previous, auth);
+        if (!("version" in input) || input.version !== previous.version) {
+          throw new ConflictException("Task changed; reload before saving");
+        }
+      }
+      const now = new Date().toISOString();
+      let next: TaskRecord;
+      if (kind === "create" || kind === "update") {
+        const fields = CreateEmployeeTaskSchema.parse(
+          Object.fromEntries(Object.entries(input).filter(([key]) => key !== "version"))
+        );
+        const owner = await this.staff.get(auth.scope, fields.ownerStaffId, tx);
+        // Updating a historical task without changing its archived owner preserves history.
+        const unchangedOwner = previous?.ownerStaffId === fields.ownerStaffId;
+        if (!owner || (owner.archivedAt && !unchangedOwner)) {
+          throw new BadRequestException("Assignee must be active in this workspace");
+        }
+        if (kind === "create") {
+          const message = taskCreationRejection(taskCreationPolicies, auth.scope, {
+            dueAt: fields.dueAt,
+          });
+          if (message) {
+            throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });
+          }
+        }
+        next = {
+          ...fields,
+          id: previous?.id ?? randomUUID(),
+          workspaceId: auth.scope.workspaceId,
+          ownerName: owner.displayName,
+          status: previous?.status ?? "OPEN",
+          version: (previous?.version ?? 0) + 1,
+          createdAt: previous?.createdAt ?? now,
+          updatedAt: now,
+          completedAt: previous?.completedAt ?? null,
+          ...(previous?.recurrence ? { recurrence: previous.recurrence } : {}),
+          ...(previous?.checklist ? { checklist: previous.checklist } : {}),
+        };
+      } else {
+        if (!previous) {
+          throw new NotFoundException("Task not found");
+        }
+        if (kind === "checklist") {
+          if (previous.status !== "OPEN") {
+            throw new ConflictException("Reopen the task before changing its checklist");
+          }
+          const step = previous.checklist?.find((item) => item.id === stepId);
+          if (!step) {
+            throw new NotFoundException("Checklist item not found");
+          }
+          const toggle = ToggleChecklistStepSchema.parse(input);
+          if (step.completed === toggle.completed) {
+            throw new ConflictException("Checklist item already has this state");
+          }
+          next = {
+            ...previous,
+            checklist: (previous.checklist ?? []).map((item) =>
+              item.id === stepId ? { ...item, completed: toggle.completed } : item
+            ),
+            version: previous.version + 1,
+            updatedAt: now,
+          };
+        } else {
+          const completed = kind === "complete";
+          this.assertTransition(previous, completed);
+          next = transitionTask(previous, completed, now);
+        }
+      }
+      await persistTaskMutation(
+        { repo: this.repo, audit: this.audit, outbox: this.outbox },
+        auth.scope,
+        next,
+        kind,
+        ctx,
+        tx
+      );
+      if (followUp) {
+        await followUp.attach(auth.scope, next.id, tx);
+      }
+      await this.repo.saveReplay(auth.scope, commandKey, { fingerprint, taskId: next.id }, tx);
+      return this.projection(auth.scope, next, tx);
+    };
+    return this.repo.transaction(initial.scope, execute, existing);
+  }
+}

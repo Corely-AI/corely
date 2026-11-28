@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { formatDateTime } from "@corely/web-shared/shared/lib/formatters";
 import { useTaxFilingActivityQuery } from "../hooks/useTaxFilingActivityQuery";
 
@@ -22,9 +22,7 @@ export function ActivitySection({ filingId }: ActivitySectionProps) {
         <CardTitle>{t("tax.activity.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">{t("tax.activity.loading")}</p>
-        ) : null}
+        {isLoading ? <LoadingSkeleton variant="list" label={t("tax.activity.loading")} /> : null}
         {isError ? <p className="text-sm text-destructive">{t("tax.activity.error")}</p> : null}
         {events.length === 0 && !isLoading ? (
           <p className="text-sm text-muted-foreground">{t("tax.activity.noActivity")}</p>

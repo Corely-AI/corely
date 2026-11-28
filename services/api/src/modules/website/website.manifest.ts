@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const websiteAppManifest: AppManifest = {
   appId: "website",
+  directory: {
+    menuId: "website-sites",
+    logo: { iconKey: "Globe", tone: "muted" },
+    displayName: { en: "Websites", de: "Websites", vi: "Trang web" },
+    category: "content",
+  },
   name: "Website",
   tier: 2,
   version: "1.0.0",

@@ -4,6 +4,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { type InvoiceFormData } from "../../schemas/invoice-form.schema";
 import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
+import { invoiceLineNetCents } from "@corely/contracts";
 
 const AVAILABLE_VAT_RATES = [0, 7, 19];
 
@@ -19,7 +20,7 @@ export function InvoiceTotals({ locale }: InvoiceTotalsProps) {
   const vatRate = watch("vatRate") || 0;
 
   const subtotalCents = lineItems.reduce(
-    (sum, item) => sum + (item.qty || 0) * (item.unitPriceCents || 0),
+    (sum, item) => sum + invoiceLineNetCents(item.qty, item.unitPriceCents),
     0
   );
   const vatCents = Math.round(subtotalCents * (vatRate / 100));
@@ -40,7 +41,7 @@ export function InvoiceTotals({ locale }: InvoiceTotalsProps) {
             name="vatRate"
             render={({ field: { value, onChange } }) => (
               <Select value={String(value)} onValueChange={(val) => onChange(parseInt(val))}>
-                <SelectTrigger className="w-24 h-8">
+                <SelectTrigger aria-label={t("invoices.vatAmount")} className="w-24 h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

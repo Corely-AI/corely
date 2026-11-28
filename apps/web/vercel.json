@@ -1,3 +1,332 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "git": {
+    "deploymentEnabled": false
+  },
+  "buildCommand": "cd ../.. && pnpm build:web",
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.corely.one"
+        }
+      ],
+      "missing": [{ "type": "query", "key": "request" }],
+      "destination": "/auth/login",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "crm.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/crm",
+      "permanent": false
+    },
+    {
+      "source": "/auth/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "crm.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/crm",
+      "permanent": false
+    },
+    {
+      "source": "/overview",
+      "has": [
+        {
+          "type": "host",
+          "value": "crm.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/crm",
+      "permanent": false
+    },
+    {
+      "source": "/assistant/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "crm.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/crm/assistant/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "crm.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/cash/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/auth/signup",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/cash/signup",
+      "permanent": false
+    },
+    {
+      "source": "/auth/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/cash/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/cash/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/billing",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/cash/billing",
+      "permanent": false
+    },
+    {
+      "source": "/onboarding",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/onboarding/cash-management",
+      "permanent": false
+    },
+    {
+      "source": "/assistant/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/cash/assistant/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/settings",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/cash/settings",
+      "permanent": false
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "cash.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "freelancer.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/auth/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "freelancer.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/overview",
+      "has": [
+        {
+          "type": "host",
+          "value": "freelancer.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/dashboard",
+      "permanent": false
+    },
+    {
+      "source": "/clients/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "freelancer.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/crm/accounts/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/settings",
+      "has": [
+        {
+          "type": "host",
+          "value": "freelancer.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/freelancer/settings",
+      "permanent": false
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "freelancer.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "sign.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/sign",
+      "permanent": false
+    },
+    {
+      "source": "/auth/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "sign.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/sign",
+      "permanent": false
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "sign.corely.one"
+        }
+      ],
+      "destination": "https://admin.corely.one/:path*",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sign/receive",
+      "destination": "/sign/receive.html"
+    },
+    {
+      "source": "/openbuk/app/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/openbuk/:path*",
+      "destination": "/openbuk.html"
+    },
+    {
+      "source": "/((?!api/|sso/|auth/callback|auth/logged-out).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sign/:page(receive|receive\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-store" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'none'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+        }
+      ]
+    },
+    {
+      "source": "/login",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+        }
+      ]
+    }
+  ]
 }

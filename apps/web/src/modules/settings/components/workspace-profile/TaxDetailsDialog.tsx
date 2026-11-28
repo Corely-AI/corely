@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -21,6 +22,7 @@ interface TaxDetailsDialogProps {
 }
 
 export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) {
+  const uiCopy = useUiCopy("ui.settings-workspace-profile-taxdetailsdialog");
   const { activeWorkspace, refresh } = useWorkspace();
   const queryClient = useQueryClient();
 
@@ -43,7 +45,7 @@ export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) 
     onSuccess: async () => {
       await refresh();
       void queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-      toast.success("Tax details updated successfully");
+      toast.success(uiCopy("tax-details-updated-successfully"));
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -62,9 +64,9 @@ export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold">Your tax details</DialogTitle>
+          <DialogTitle className="text-2xl font-semibold">{uiCopy("your-tax-details")}</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Any changes in the tax details will be applied to your account
+            {uiCopy("any-changes-in-the")}
           </DialogDescription>
         </DialogHeader>
 
@@ -72,38 +74,32 @@ export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) 
           {/* Tax Number */}
           <div className="space-y-2">
             <Label htmlFor="tax-number" className="text-sm font-medium">
-              Tax number (Steuernummer)
+              {uiCopy("tax-number-steuernummer")}
             </Label>
             <Input
               id="tax-number"
               value={taxId}
               onChange={(e) => setTaxId(e.target.value)}
-              placeholder="e.g. 33/262/02239"
+              placeholder={uiCopy("e-g-33-262")}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              Your business/freelance tax number from your local tax office. Only for self-employed
-              folks.
-            </p>
+            <p className="text-xs text-muted-foreground">{uiCopy("your-business-freelance-tax")}</p>
           </div>
 
           {/* VAT Number */}
           <div className="space-y-2">
             <Label htmlFor="vat-number" className="text-sm font-medium">
-              VAT number (Umsatzsteuer-ID){" "}
-              <span className="text-muted-foreground font-normal">(Optional)</span>
+              {uiCopy("vat-number-umsatzsteuer-id")}{" "}
+              <span className="text-muted-foreground font-normal">{uiCopy("optional")}</span>
             </Label>
             <Input
               id="vat-number"
               value={vatId}
               onChange={(e) => setVatId(e.target.value)}
-              placeholder="e.g. DE123456789"
+              placeholder={uiCopy("e-g-de123456789")}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              Your EU business number for cross-border trade. For businesses and freelancers dealing
-              with other EU countries.
-            </p>
+            <p className="text-xs text-muted-foreground">{uiCopy("your-eu-business-number")}</p>
           </div>
         </div>
 
@@ -114,7 +110,7 @@ export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) 
             onClick={() => onOpenChange(false)}
             disabled={updateMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             type="button"
@@ -122,7 +118,7 @@ export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) 
             disabled={updateMutation.isPending}
             className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
-            {updateMutation.isPending ? "Saving..." : "Save"}
+            {updateMutation.isPending ? uiCopy("saving") : uiCopy("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

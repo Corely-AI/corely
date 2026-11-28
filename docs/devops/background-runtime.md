@@ -6,7 +6,8 @@ Recurring jobs should be triggered by Cloud Scheduler (or equivalent). Event-dri
 
 ## Internal endpoints
 
-- `POST /internal/background/outbox/run`
+- `POST /internal/background/outbox/run` (also evaluates bounded recurring checklists when service credentials are configured)
+- `POST /internal/background/tasks/recurring/run` — [recurring checklist execution](../backend/recurring-checklists.md); always requires configured service credentials
 - `POST /internal/invoices/:invoiceId/pdf`
 - workflow queue endpoints under `/internal/queues/*`
 

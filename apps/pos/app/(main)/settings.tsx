@@ -1,19 +1,21 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
+import { corelyLocaleDetails, corelyLocales } from "@corely/contracts";
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { useShiftStore } from "@/stores/shiftStore";
-import { useSettingsStore, type LayoutMode, type SupportedLanguage } from "@/stores/settingsStore";
+import { useSettingsStore, type LayoutMode } from "@/stores/settingsStore";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
 import { formatDateTime } from "@/lib/formatters";
 import { Badge, Button, Card, ListRow, SegmentedControl } from "@/ui/components";
 import { posTheme } from "@/ui/theme";
 
 const LAYOUT_OPTIONS: LayoutMode[] = ["AUTO", "PHONE", "TABLET"];
-const LANGUAGE_OPTIONS: SupportedLanguage[] = ["en", "de", "vi"];
 
 export default function SettingsScreen() {
+  const uiCopy = useUiCopy("ui.main-settings");
   const { t } = useTranslation();
   const router = useRouter();
   const { user, logout } = useAuthStore();
@@ -83,9 +85,12 @@ export default function SettingsScreen() {
 
       <Card>
         <View testID="pos-settings-workspace-info">
-          <Text style={styles.sectionTitle}>Workspace</Text>
-          <ListRow title="Workspace ID" subtitle={user?.workspaceId ?? t("settings.noWorkspace")} />
-          <ListRow title="User ID" subtitle={user?.userId ?? t("settings.unknownUser")} />
+          <Text style={styles.sectionTitle}>{uiCopy("workspace")}</Text>
+          <ListRow
+            title={uiCopy("workspace-id")}
+            subtitle={user?.workspaceId ?? t("settings.noWorkspace")}
+          />
+          <ListRow title={uiCopy("user-id")} subtitle={user?.userId ?? t("settings.unknownUser")} />
         </View>
       </Card>
 
@@ -138,14 +143,25 @@ export default function SettingsScreen() {
       <Card>
         <Text style={styles.sectionTitle}>{t("settings.languageTitle")}</Text>
         <Text style={styles.sectionHelp}>{t("settings.languageHelp")}</Text>
-        <SegmentedControl
-          value={language}
-          onChange={(value) => void setLanguage(value)}
-          options={LANGUAGE_OPTIONS.map((option) => ({
-            value: option,
-            label: t(`settings.languages.${option}`),
-          }))}
-        />
+        <View accessibilityRole="radiogroup">
+          {corelyLocales.map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: language === option }}
+              onPress={() => void setLanguage(option)}
+            >
+              <ListRow
+                title={corelyLocaleDetails[option].name}
+                right={
+                  language === option ? (
+                    <Ionicons name="checkmark" size={20} color={posTheme.colors.primary} />
+                  ) : undefined
+                }
+              />
+            </Pressable>
+          ))}
+        </View>
       </Card>
 
       <Card>

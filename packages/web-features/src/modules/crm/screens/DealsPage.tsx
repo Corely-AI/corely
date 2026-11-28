@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Briefcase, KanbanSquare, LayoutList, Plus } from "lucide-react";
@@ -14,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 type ViewMode = "list" | "board";
 
 export default function DealsPage() {
+  const uiCopy = useUiCopy("ui.crm-dealspage");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -55,7 +57,7 @@ export default function DealsPage() {
           <div
             className="flex items-center gap-1 p-1 bg-muted rounded-lg border border-border"
             role="group"
-            aria-label="View mode"
+            aria-label={uiCopy("view-mode")}
           >
             <button
               onClick={() => setView("list")}
@@ -66,10 +68,10 @@ export default function DealsPage() {
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="List view"
+              title={uiCopy("list-view")}
             >
               <LayoutList className="h-4 w-4" />
-              List
+              {uiCopy("list")}
             </button>
             <button
               onClick={() => setView("board")}
@@ -80,10 +82,10 @@ export default function DealsPage() {
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Board view"
+              title={uiCopy("board-view")}
             >
               <KanbanSquare className="h-4 w-4" />
-              Board
+              {uiCopy("board")}
             </button>
           </div>
 
@@ -127,9 +129,9 @@ export default function DealsPage() {
       ) : isError ? (
         <Card data-testid="crm-deals-error">
           <CardContent className="p-6 text-center space-y-3">
-            <p className="text-muted-foreground text-sm">Failed to load deals.</p>
+            <p className="text-muted-foreground text-sm">{uiCopy("failed-to-load-deals")}</p>
             <Button variant="outline" size="sm" onClick={() => void refetch()}>
-              Try again
+              {uiCopy("try-again")}
             </Button>
           </CardContent>
         </Card>

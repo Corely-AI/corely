@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { PaginationSummary } from "@corely/web-shared/shared/components/pagination-summary";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useMemo, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -23,6 +26,7 @@ import {
 } from "@/shared/list-kit";
 import { bookingKeys } from "../queries";
 import {
+  LoadingSkeleton,
   Table,
   TableBody,
   TableCell,
@@ -64,6 +68,8 @@ const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
 };
 
 export const BookingsPage = () => {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.booking-bookingspage");
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -155,10 +161,10 @@ export const BookingsPage = () => {
         }
       ),
     onSuccess: async () => {
-      toast.success("Booking cancelled");
+      toast.success(uiCopy("booking-cancelled"));
       await invalidateResourceQueries(queryClient, "booking/bookings");
     },
-    onError: () => toast.error("Failed to cancel booking"),
+    onError: () => toast.error(uiCopy("failed-to-cancel-booking")),
   });
 
   const bulkCancelMutation = useMutation({
@@ -176,11 +182,11 @@ export const BookingsPage = () => {
         )
       ),
     onSuccess: async () => {
-      toast.success("Selected bookings cancelled");
+      toast.success(uiCopy("selected-bookings-cancelled"));
       setSelectedIds(new Set());
       await invalidateResourceQueries(queryClient, "booking/bookings");
     },
-    onError: () => toast.error("Failed to cancel selected bookings"),
+    onError: () => toast.error(uiCopy("failed-to-cancel-selected")),
   });
 
   const toggleSelection = (id: string) => {
@@ -202,7 +208,7 @@ export const BookingsPage = () => {
     <Button asChild>
       <Link to="/booking/bookings/new">
         <PlusIcon className="h-4 w-4 mr-2" />
-        New Booking
+        {uiCopy("new-booking")}
       </Link>
     </Button>
   );
@@ -210,7 +216,7 @@ export const BookingsPage = () => {
   return (
     <>
       <CrudListPageLayout
-        title="Bookings"
+        title={uiCopy("bookings")}
         subtitle="View and manage customer and internal bookings."
         primaryAction={primaryAction}
         toolbar={
@@ -227,11 +233,11 @@ export const BookingsPage = () => {
             ]}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
-            placeholder="Search booking, customer, or reference"
+            placeholder={uiCopy("search-booking-customer-or")}
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load bookings"}
+                {(error as Error)?.message || uiCopy("failed-to-load-bookings")}
               </div>
             ) : null}
           </ListToolbar>
@@ -252,25 +258,27 @@ export const BookingsPage = () => {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="space-y-4 p-4">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={`booking-skeleton-${index}`}
-                    className="h-12 w-full animate-pulse rounded bg-muted/20"
-                  />
-                ))}
-              </div>
+              <LoadingSkeleton label={t("common.loading")}>
+                <div className="space-y-4 p-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={`booking-skeleton-${index}`}
+                      className="h-12 w-full animate-pulse motion-reduce:animate-none rounded bg-muted/20"
+                    />
+                  ))}
+                </div>
+              </LoadingSkeleton>
             ) : bookings.length === 0 ? (
               <EmptyState
                 icon={CalendarIcon}
-                title="No bookings found"
-                description="Create your first booking to start managing your calendar."
+                title={uiCopy("no-bookings-found")}
+                description={uiCopy("create-your-first-booking")}
                 action={
                   <Button
                     variant="outline"
                     onClick={() => setUrlState({ q: "", filters: [], page: 1 })}
                   >
-                    Clear filters
+                    {uiCopy("clear-filters")}
                   </Button>
                 }
               />
@@ -278,7 +286,10 @@ export const BookingsPage = () => {
               <>
                 {selectedIds.size > 0 ? (
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
-                    <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+                    <div className="text-sm text-muted-foreground">
+                      {selectedIds.size}
+                      {" " + uiCopy("selected")}
+                    </div>
                     <ConfirmDeleteDialog
                       trigger={
                         <Button
@@ -286,11 +297,11 @@ export const BookingsPage = () => {
                           size="sm"
                           disabled={bulkCancelMutation.isPending}
                         >
-                          Cancel selected
+                          {uiCopy("cancel-selected")}
                         </Button>
                       }
-                      title="Cancel selected bookings"
-                      description="This action will cancel all selected bookings."
+                      title={uiCopy("cancel-selected-bookings")}
+                      description={uiCopy("this-action-will-cancel")}
                       isLoading={bulkCancelMutation.isPending}
                       onConfirm={() => bulkCancelMutation.mutate(Array.from(selectedIds))}
                     />
@@ -311,20 +322,20 @@ export const BookingsPage = () => {
                                 setSelectedIds(new Set());
                               }
                             }}
-                            aria-label="Select all bookings"
+                            aria-label={uiCopy("select-all-bookings")}
                           />
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Reference
+                          {uiCopy("reference")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Customer
+                          {uiCopy("customer")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Date & Time
+                          {uiCopy("date-time")}
                         </TableHead>
                         <TableHead className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Status
+                          {uiCopy("status")}
                         </TableHead>
                         <TableHead className="w-[120px]" />
                       </TableRow>
@@ -350,14 +361,14 @@ export const BookingsPage = () => {
                                 type="button"
                                 onClick={() => navigator.clipboard.writeText(booking.id)}
                                 className="inline-flex items-center text-muted-foreground hover:text-foreground"
-                                aria-label="Copy booking id"
+                                aria-label={uiCopy("copy-booking-id")}
                               >
                                 <CopyIcon className="h-3 w-3" />
                               </button>
                             </div>
                           </TableCell>
                           <TableCell className="px-4 py-3 text-sm">
-                            {booking.bookedByName || booking.bookedByEmail || "Internal"}
+                            {booking.bookedByName || booking.bookedByEmail || uiCopy("internal")}
                           </TableCell>
                           <TableCell className="px-4 py-3">
                             <div className="text-sm">
@@ -369,7 +380,7 @@ export const BookingsPage = () => {
                               })}
                             </div>
                             <div className="text-xs text-muted-foreground mt-1">
-                              to{" "}
+                              {uiCopy("to")}{" "}
                               {new Date(booking.endAt).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -424,8 +435,10 @@ export const BookingsPage = () => {
                     <PaginationContent>
                       <PaginationItem>
                         <span className="text-sm text-muted-foreground mr-4">
-                          Page {pageInfo.page} of{" "}
-                          {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                          <PaginationSummary
+                            page={pageInfo.page}
+                            pages={Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                          />
                         </span>
                       </PaginationItem>
                       <PaginationItem>
@@ -464,7 +477,7 @@ export const BookingsPage = () => {
             }
           }}
           trigger={null}
-          title="Cancel booking"
+          title={uiCopy("cancel-booking")}
           description={`Cancel booking ${cancelTarget?.referenceNumber ?? cancelTarget?.id ?? ""}?`}
           confirmLabel="Cancel booking"
           isLoading={cancelBookingMutation.isPending}

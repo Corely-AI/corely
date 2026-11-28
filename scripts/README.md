@@ -1,6 +1,14 @@
-# DI Integration Test Scripts
+# Development and Maintenance Scripts
 
 Automated scripts for running DI integration tests with external infrastructure.
+
+## Manual streaming example
+
+[`test-stream.sh`](test-stream.sh) is the relocated legacy curl example for the
+Copilot streaming endpoint. It contains placeholder credentials and tenant IDs;
+review the current [Copilot API guidance](../docs/ai/ai-copilot.md) and supply the
+appropriate authenticated context before using it. Run from the repository root
+with `./scripts/test-stream.sh`. Relocation does not verify the endpoint contract.
 
 ## Available Scripts
 
@@ -27,7 +35,7 @@ pnpm billing:stripe:cash:setup
 **Notes:**
 
 - Requires `stripe login` first.
-- Uses `http://localhost:3000` for the API and `http://localhost:8088` for the
+- Uses `http://localhost:3000` for the API and `http://localhost:8080` for the
   frontend by default.
 - Override with `API_BASE_URL` and `FRONTEND_BASE_URL` if needed.
 

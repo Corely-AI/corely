@@ -1,17 +1,23 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { List, Mail, Play, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, Button } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, CardHeader, CardTitle, Button } from "@corely/ui";
 import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 
 export default function SequencesPage() {
+  const uiCopy = useUiCopy("ui.crm-sequencespage");
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data: sequences } = useQuery({
+  const {
+    data: sequences,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["sequences"],
     queryFn: () => crmApi.listSequences(),
   });
@@ -22,12 +28,12 @@ export default function SequencesPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-sequences-page">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-h1 text-foreground" data-testid="crm-sequences-header">
-          Sequences
+          {uiCopy("sequences")}
         </h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => navigate("/crm/settings/email")}>
             <Mail className="h-4 w-4" />
-            Email settings
+            {uiCopy("email-settings")}
           </Button>
           <Button
             variant="accent"
@@ -35,18 +41,24 @@ export default function SequencesPage() {
             data-testid="crm-sequences-create"
           >
             <Plus className="h-4 w-4" />
-            New Sequence
+            {uiCopy("new-sequence")}
           </Button>
         </div>
       </div>
 
-      {sequenceList.length === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton variant="cards" label={t("common.loading")} />
+      ) : isError && !sequences ? (
+        <p className="p-4 text-sm text-destructive" role="alert">
+          {t("common.error")}
+        </p>
+      ) : sequenceList.length === 0 ? (
         <Card data-testid="crm-sequences-empty">
           <CardContent className="p-0">
             <EmptyState
               icon={List}
-              title="No sequences found"
-              description="Sequences allow you to automate follow-ups."
+              title={uiCopy("no-sequences-found")}
+              description={uiCopy("sequences-allow-you-to")}
             />
           </CardContent>
         </Card>
@@ -68,12 +80,15 @@ export default function SequencesPage() {
                 </div>
                 <div>
                   <CardTitle className="text-lg">{seq.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{seq.steps?.length || 0} Steps</p>
+                  <p className="text-sm text-muted-foreground">
+                    {seq.steps?.length || 0}
+                    {" " + uiCopy("steps")}
+                  </p>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-0">
                 <p className="text-sm text-muted-foreground line-clamp-2">
-                  {seq.description || "No description provided."}
+                  {seq.description || uiCopy("no-description-provided")}
                 </p>
               </CardContent>
             </Card>

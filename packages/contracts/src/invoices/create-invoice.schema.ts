@@ -4,8 +4,8 @@ import { localDateSchema } from "../shared/local-date.schema";
 
 export const InvoiceLineInputSchema = z.object({
   description: z.string(),
-  qty: z.number().positive(),
-  unitPriceCents: z.number().int().nonnegative(),
+  qty: z.number().positive().max(2_147_483_647),
+  unitPriceCents: z.number().int().nonnegative().max(2_147_483_647),
 });
 
 export const CreateInvoiceInputSchema = z.object({
@@ -22,6 +22,7 @@ export const CreateInvoiceInputSchema = z.object({
   // Source tracking for invoices created from sales artifacts
   sourceType: z.enum(["order", "quote", "deal", "manual", "coaching_engagement"]).optional(),
   sourceId: z.string().optional(),
+  correctsInvoiceId: z.string().trim().min(1).optional(),
   idempotencyKey: z.string().optional(),
 });
 

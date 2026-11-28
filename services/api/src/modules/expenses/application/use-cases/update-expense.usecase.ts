@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationFailedError } from "@corely/domain";
+import { isEmailedExpense } from "../../domain/emailed-expense";
 import type { UseCaseContext } from "@corely/kernel";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
 import type { AuditPort } from "../../../../shared/ports/audit.port";
@@ -61,6 +62,9 @@ export class UpdateExpenseUseCase {
     const expense = await this.repo.findById(tenantId, input.expenseId, { includeArchived: true });
     if (!expense) {
       throw new NotFoundError("Expense not found");
+    }
+    if (isEmailedExpense(expense.id)) {
+      throw new ValidationFailedError("Submitted receipt details are read-only", []);
     }
 
     const totalCents = input.totalAmountCents ?? expense.totalCents;

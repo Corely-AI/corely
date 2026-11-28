@@ -1,6 +1,7 @@
+import type { TransactionContext } from "@corely/kernel";
 import { Injectable, Inject } from "@nestjs/common";
 import type { Prisma } from "@prisma/client";
-import { PrismaService } from "@corely/data";
+import { PrismaService, getPrismaClient } from "@corely/data";
 import { Tenant } from "../../domain/entities/tenant.entity";
 import {
   type ListTenantsRepoQuery,
@@ -15,8 +16,8 @@ import {
 export class PrismaTenantRepository implements TenantRepositoryPort {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async create(tenant: Tenant): Promise<Tenant> {
-    const data = await this.prisma.tenant.create({
+  async create(tenant: Tenant, tx?: TransactionContext): Promise<Tenant> {
+    const data = await getPrismaClient(this.prisma, tx).tenant.create({
       data: {
         id: tenant.getId(),
         name: tenant.getName(),

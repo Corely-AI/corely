@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import { Input, Label, Switch } from "@corely/ui";
 
 type WebsiteSiteEditorDetailsSectionProps = {
@@ -23,15 +24,16 @@ export function WebsiteSiteEditorDetailsSection({
   onDefaultLocaleChange,
   onIsDefaultChange,
 }: WebsiteSiteEditorDetailsSectionProps) {
+  const uiCopy = useUiCopy("ui.website-website-site-editor-details-section");
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Site name</Label>
+          <Label>{uiCopy("site-name")}</Label>
           <Input value={name} onChange={(event) => onNameChange(event.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Site slug</Label>
+          <Label>{uiCopy("site-slug")}</Label>
           <Input
             value={slug}
             onChange={(event) => onSlugChange(event.target.value)}
@@ -39,7 +41,7 @@ export function WebsiteSiteEditorDetailsSection({
           />
         </div>
         <div className="space-y-2">
-          <Label>Default locale</Label>
+          <Label>{uiCopy("default-locale")}</Label>
           <Input
             value={defaultLocale}
             onChange={(event) => onDefaultLocaleChange(event.target.value)}
@@ -49,10 +51,8 @@ export function WebsiteSiteEditorDetailsSection({
 
       <div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/40 px-4 py-3">
         <div>
-          <Label>Default site</Label>
-          <p className="text-sm text-muted-foreground">
-            Use this site when no website slug is provided in the URL.
-          </p>
+          <Label>{uiCopy("default-site")}</Label>
+          <p className="text-sm text-muted-foreground">{uiCopy("use-this-site-when")}</p>
         </div>
         <Switch
           checked={isDefault}

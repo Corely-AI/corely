@@ -1,0 +1,112 @@
+import { z } from "zod";
+
+export const TaskStatusSchema = z.enum(["OPEN", "COMPLETED"]);
+const fields = {
+  title: z.string().trim().min(1).max(240),
+  ownerStaffId: z.string().uuid(),
+  dueAt: z
+    .string()
+    .datetime({ offset: true })
+    .refine((value) => Number.isFinite(Date.parse(value)), "Invalid due time offset")
+    .transform((value) => new Date(value).toISOString())
+    .pipe(z.string().datetime())
+    .nullable()
+    .default(null),
+};
+export const TaskCreationPolicyRejectedCode = "Tasks:CreationPolicyRejected";
+export const CreateEmployeeTaskSchema = z.object(fields).strict();
+export const UpdateEmployeeTaskSchema = z
+  .object({ ...fields, version: z.number().int().positive() })
+  .strict();
+export const TransitionEmployeeTaskSchema = z
+  .object({ version: z.number().int().positive() })
+  .strict();
+export const EmployeeTaskSchema = z
+  .object({
+    id: z.string().uuid(),
+    workspaceId: z.string(),
+    ...fields,
+    checklist: z
+      .array(
+        z
+          .object({
+            id: z.string().uuid(),
+            title: z.string().min(1).max(240),
+            completed: z.boolean(),
+          })
+          .strict()
+      )
+      .min(1)
+      .max(10)
+      .optional(),
+    recurrence: z
+      .object({
+        templateId: z.string().uuid(),
+        templateVersion: z.number().int().positive(),
+        localDate: z.string().date(),
+        checklistTitle: z.string(),
+        timezone: z.string(),
+      })
+      .strict()
+      .optional(),
+    ownerName: z.string(),
+    ownerArchived: z.boolean(),
+    status: TaskStatusSchema,
+    version: z.number().int().positive(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+    completedAt: z.string().datetime().nullable(),
+  })
+  .strict();
+export const TaskDueFilterSchema = z.enum(["all", "today", "overdue", "upcoming"]);
+export type TaskDueFilter = z.infer<typeof TaskDueFilterSchema>;
+export type EmployeeTasksQuery = z.infer<typeof ListEmployeeTasksSchema>;
+export const ListEmployeeTasksSchema = z
+  .object({
+    taskId: z.string().uuid().optional(),
+    status: z.enum(["all", "OPEN", "COMPLETED"]).default("all"),
+    view: z.enum(["auto", "mine", "team"]).optional(),
+    q: z.string().trim().max(120).default(""),
+    due: TaskDueFilterSchema.default("all"),
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(30),
+  })
+  .strict();
+export const TaskAssigneeSchema = z
+  .object({ id: z.string().uuid(), displayName: z.string() })
+  .strict();
+export const EmployeeTaskListSchema = z
+  .object({
+    items: z.array(EmployeeTaskSchema),
+    total: z.number().int(),
+    timezone: z.string().optional(),
+    page: z.number().int(),
+    pageSize: z.number().int(),
+    capabilities: z.object({ manage: z.boolean(), completeOwn: z.boolean() }).strict(),
+  })
+  .strict();
+export type EmployeeTask = z.infer<typeof EmployeeTaskSchema>;
+export type CreateEmployeeTask = z.infer<typeof CreateEmployeeTaskSchema>;
+export type UpdateEmployeeTask = z.infer<typeof UpdateEmployeeTaskSchema>;
+export type EmployeeTaskList = z.infer<typeof EmployeeTaskListSchema>;
+export type TaskAssignee = z.infer<typeof TaskAssigneeSchema>;
+
+// Neutral lifecycle facts consumed by the API-hosted outbox; no personnel details.
+export const EmployeeTaskEventTypeSchema = z.enum([
+  "tasks.task.create",
+  "tasks.task.update",
+  "tasks.task.complete",
+  "tasks.task.reopen",
+  "tasks.task.checklist",
+]);
+export const EmployeeTaskEventPayloadSchema = z
+  .object({
+    workspaceId: z.string().min(1),
+    taskId: z.string().uuid(),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const ToggleChecklistStepSchema = TransitionEmployeeTaskSchema.extend({
+  completed: z.boolean(),
+}).strict();

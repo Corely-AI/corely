@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const cmsAppManifest: AppManifest = {
   appId: "cms",
+  directory: {
+    menuId: "cms-posts",
+    logo: { iconKey: "FileStack", tone: "muted" },
+    displayName: { en: "CMS", de: "Inhalte", vi: "Nội dung" },
+    category: "content",
+  },
   name: "CMS",
   tier: 1,
   version: "1.0.0",

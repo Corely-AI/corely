@@ -1,14 +1,18 @@
+import { useTranslation } from "react-i18next";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Plus } from "lucide-react";
-import { Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent } from "@corely/ui";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import { customersApi } from "@corely/web-shared/lib/customers-api";
 
 export default function ContactsPage() {
+  const { t } = useTranslation();
+  const uiCopy = useUiCopy("ui.crm-contactspage");
   const navigate = useNavigate();
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["crm-contacts"],
     queryFn: () => customersApi.listCustomers({ role: "CONTACT" }),
   });
@@ -19,7 +23,7 @@ export default function ContactsPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-contacts-page">
       <div className="flex items-center justify-between">
         <h1 className="text-h1 text-foreground" data-testid="crm-contacts-header">
-          Contacts
+          {uiCopy("contacts")}
         </h1>
         <Button
           variant="accent"
@@ -27,17 +31,23 @@ export default function ContactsPage() {
           data-testid="crm-contacts-create"
         >
           <Plus className="h-4 w-4" />
-          New Contact
+          {uiCopy("new-contact")}
         </Button>
       </div>
 
-      {contacts.length === 0 ? (
+      {isLoading ? (
+        <LoadingSkeleton variant="cards" label={t("common.loading")} />
+      ) : isError && !data ? (
+        <p className="p-4 text-sm text-destructive" role="alert">
+          {t("common.error")}
+        </p>
+      ) : contacts.length === 0 ? (
         <Card data-testid="crm-contacts-empty">
           <CardContent className="p-0">
             <EmptyState
               icon={Users}
-              title="No contacts found"
-              description="Create a contact to get started."
+              title={uiCopy("no-contacts-found")}
+              description={uiCopy("create-a-contact-to")}
             />
           </CardContent>
         </Card>
@@ -55,7 +65,7 @@ export default function ContactsPage() {
                   <p className="font-medium">{contact.displayName}</p>
                   <p className="text-sm text-muted-foreground">
                     {[contact.email, contact.phone].filter(Boolean).join(" · ") ||
-                      "No contact info"}
+                      uiCopy("no-contact-info")}
                   </p>
                 </div>
               </CardContent>

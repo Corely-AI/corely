@@ -1,3 +1,4 @@
+import { OpenBukProductKey, OpenBukBookingEnabledKey } from "@corely/contracts";
 import type {
   BillingEntitlements,
   BillingFeatureValues,
@@ -158,6 +159,26 @@ const cashManagementPlans: Record<string, BillingPlanDefinition> = {
 };
 
 const billingProducts: BillingProductDefinition[] = [
+  {
+    productKey: OpenBukProductKey,
+    displayName: "OpenBuk",
+    defaultPlanCode: "free",
+    plans: {
+      free: {
+        productKey: OpenBukProductKey,
+        code: "free",
+        name: "OpenBuk Free",
+        priceCents: 0,
+        currency: "EUR",
+        interval: "month",
+        upgradeRank: 0,
+        summary: "Direct booking for an independent studio.",
+        highlights: ["Direct booking page", "Studio schedule", "No booking commission"],
+        entitlements: entitlements(OpenBukProductKey, "free", { [OpenBukBookingEnabledKey]: true }),
+      },
+    },
+    usageMetrics: [],
+  },
   {
     productKey: CashManagementProductKey,
     displayName: "Cash Management",

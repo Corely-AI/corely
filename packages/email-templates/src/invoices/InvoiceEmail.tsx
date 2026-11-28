@@ -12,6 +12,7 @@ import {
   Column,
 } from "@react-email/components";
 import type { InvoiceEmailProps } from "./invoice-email.types";
+import { formatInvoiceEmailTitle, getInvoiceEmailCopy } from "./invoice-email-copy";
 
 export function InvoiceEmail({
   invoiceNumber,
@@ -21,20 +22,29 @@ export function InvoiceEmail({
   customMessage,
   paymentDetails,
   viewInvoiceUrl,
+  locale,
 }: InvoiceEmailProps) {
-  const previewText = `${companyName} sent you an invoice ${invoiceNumber}`;
+  const { language, copy } = getInvoiceEmailCopy(locale);
+  const invoice = { companyName, invoiceNumber };
+  const previewText = formatInvoiceEmailTitle(copy.preview, invoice);
   const payToItems = [
-    paymentDetails?.method ? `Method: ${paymentDetails.method}` : undefined,
-    paymentDetails?.accountHolderName ? `Account: ${paymentDetails.accountHolderName}` : undefined,
-    paymentDetails?.bankName ? `Bank: ${paymentDetails.bankName}` : undefined,
+    paymentDetails?.method ? `${copy.method}: ${paymentDetails.method}` : undefined,
+    paymentDetails?.accountHolderName
+      ? `${copy.account}: ${paymentDetails.accountHolderName}`
+      : undefined,
+    paymentDetails?.bankName ? `${copy.bank}: ${paymentDetails.bankName}` : undefined,
     paymentDetails?.iban ? `IBAN: ${paymentDetails.iban}` : undefined,
     paymentDetails?.bic ? `BIC: ${paymentDetails.bic}` : undefined,
-    paymentDetails?.referenceText ? `Reference: ${paymentDetails.referenceText}` : undefined,
-    paymentDetails?.instructions ? `Instructions: ${paymentDetails.instructions}` : undefined,
+    paymentDetails?.referenceText
+      ? `${copy.reference}: ${paymentDetails.referenceText}`
+      : undefined,
+    paymentDetails?.instructions
+      ? `${copy.instructions}: ${paymentDetails.instructions}`
+      : undefined,
   ].filter((line): line is string => Boolean(line && line.trim().length > 0));
 
   return (
-    <Html>
+    <Html lang={language}>
       <Head />
       <Preview>{previewText}</Preview>
       <Body style={main}>
@@ -44,28 +54,26 @@ export function InvoiceEmail({
           </Section>
 
           <Section style={card}>
-            <Text style={heroTitle}>
-              {companyName} sent you an invoice ({invoiceNumber})
-            </Text>
+            <Text style={heroTitle}>{formatInvoiceEmailTitle(copy.heading, invoice)}</Text>
 
             {customMessage ? <Text style={customMessageText}>{customMessage}</Text> : null}
 
-            <Text style={detailsTitle}>Invoice details</Text>
+            <Text style={detailsTitle}>{copy.details}</Text>
 
             <Row style={detailsRow}>
               <Column style={detailsColumn}>
-                <Text style={label}>Due date</Text>
+                <Text style={label}>{copy.dueDate}</Text>
                 <Text style={value}>{dueDate}</Text>
               </Column>
               <Column style={detailsColumn}>
-                <Text style={label}>Total amount</Text>
+                <Text style={label}>{copy.total}</Text>
                 <Text style={value}>{totalAmount}</Text>
               </Column>
             </Row>
 
             <Row style={detailsRow}>
               <Column style={detailsColumn}>
-                <Text style={label}>Pay to</Text>
+                <Text style={label}>{copy.payTo}</Text>
                 {payToItems.length > 0 ? (
                   payToItems.map((line) => (
                     <Text key={line} style={value}>
@@ -73,23 +81,15 @@ export function InvoiceEmail({
                     </Text>
                   ))
                 ) : (
-                  <Text style={value}>
-                    {viewInvoiceUrl
-                      ? "Open the invoice from the portal link below"
-                      : "See attached invoice PDF"}
-                  </Text>
+                  <Text style={value}>{viewInvoiceUrl ? copy.openBelow : copy.seePdf}</Text>
                 )}
               </Column>
               <Column style={detailsColumn}>
-                <Text style={label}>Invoice</Text>
-                <Text style={value}>
-                  {viewInvoiceUrl
-                    ? "Open the invoice in the portal to view details and download the PDF"
-                    : "The invoice is attached to this email"}
-                </Text>
+                <Text style={label}>{copy.invoice}</Text>
+                <Text style={value}>{viewInvoiceUrl ? copy.portalPdf : copy.attached}</Text>
                 {viewInvoiceUrl ? (
                   <Text style={value}>
-                    Portal link:{" "}
+                    {`${copy.portalLink}: `}
                     <Link href={viewInvoiceUrl} style={inlineLink}>
                       {viewInvoiceUrl}
                     </Link>
@@ -101,13 +101,13 @@ export function InvoiceEmail({
             {viewInvoiceUrl ? (
               <Section style={buttonSection}>
                 <Link href={viewInvoiceUrl} style={button}>
-                  View Invoice
+                  {copy.viewInvoice}
                 </Link>
               </Section>
             ) : null}
           </Section>
 
-          <Text style={footerText}>Sent via Corely.one</Text>
+          <Text style={footerText}>{copy.sentVia}</Text>
         </Container>
       </Body>
     </Html>

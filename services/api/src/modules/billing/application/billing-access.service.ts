@@ -172,13 +172,22 @@ export class BillingAccessService implements BillingAccessPort {
     return entitlements.featureValues;
   }
 
-  async getAllPlanFeatureValues(tenantId: string): Promise<Record<string, unknown>> {
+  async getAllPlanFeatureValues(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<Record<string, unknown>> {
     const entries = await Promise.all(
       listBillingProducts().map(
         async (product) =>
           [
             product.productKey,
-            await this.getPlanFeatureValues(tenantId, product.productKey),
+            tx
+              ? resolveBillingEntitlements(
+                  product.productKey,
+                  (await this.loadEffectiveState(tenantId, product.productKey, tx))
+                    .effectivePlanCode
+                ).featureValues
+              : await this.getPlanFeatureValues(tenantId, product.productKey),
           ] as const
       )
     );
@@ -759,7 +768,7 @@ export class BillingAccessService implements BillingAccessPort {
       return existing;
     }
 
-    const profile = await this.accountRepo.getTenantProfile(tenantId);
+    const profile = await this.accountRepo.getTenantProfile(tenantId, tx);
     return this.accountRepo.upsertAccount(
       {
         tenantId,

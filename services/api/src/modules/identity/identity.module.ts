@@ -1,3 +1,29 @@
+import { TENANT_ADMIN_SESSION_LOCK } from "./application/ports/tenant-admin-session-lock.port";
+import { PrismaTenantAdminSessionLock } from "./infrastructure/adapters/prisma-tenant-admin-session-lock.adapter";
+import { SsoSessionService } from "./application/services/sso-session.service";
+import { randomBytes } from "node:crypto";
+import { AssociateInvitedAccountUseCase } from "./application/use-cases/associate-invited-account.usecase";
+import { CliAgentController } from "./adapters/http/cli-agent.controller";
+import { CliAgentGrantsService } from "./application/services/cli-agent-grants.service";
+import { CLI_GRANT_LOCK } from "./application/ports/cli-grant-lock.port";
+import { PrismaCliGrantLock } from "./infrastructure/adapters/prisma-cli-grant-lock.adapter";
+import { CliSsoController } from "./adapters/http/cli-sso.controller";
+import { SsoController } from "./adapters/http/sso.controller";
+import { SsoHttpSecurity } from "./adapters/http/sso-http-security";
+import { SsoService } from "./application/services/sso.service";
+import { SsoRegistrationService } from "./application/services/sso-registration.service";
+import { PrismaSsoStore } from "./infrastructure/adapters/prisma-sso-store.adapter";
+import { SSO_STORE } from "./application/ports/sso-store.port";
+import { SSO_CRYPTO } from "./application/ports/sso-crypto.port";
+import {
+  SsoEmailCodeService,
+  DeliverSsoEmailCodeUseCase,
+} from "./application/services/sso-email-code.service";
+import { SSO_EMAIL } from "./application/ports/sso-email.port";
+import { ResendSsoEmailAdapter } from "./infrastructure/adapters/resend-sso-email.adapter";
+import { SsoCrypto } from "./infrastructure/security/sso-crypto";
+import { INVITED_ACCOUNT_PORT } from "./application/ports/invited-account.port";
+import { PrismaInvitedAccountAdapter } from "./infrastructure/adapters/prisma-invited-account.adapter";
 /* eslint @typescript-eslint/no-explicit-any: "error" */
 import { Module, forwardRef } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
@@ -6,11 +32,14 @@ import { EnvModule, EnvService } from "@corely/config";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { PlatformModule } from "../platform/platform.module";
+import { PlatformEntitlementsModule } from "../platform-entitlements/platform-entitlements.module";
 
 // Controllers
 import { AuthController } from "./adapters/http/auth.controller";
 import { RolesController } from "./adapters/http/roles.controller";
 import { PermissionsController } from "./adapters/http/permissions.controller";
+import { TenantAdminSessions } from "./application/services/tenant-admin-sessions";
+import { TenantAdminSessionController } from "./adapters/http/tenant-admin-session.controller";
 import { TenantsController } from "./adapters/http/tenants.controller";
 
 // Infrastructure adapters
@@ -67,20 +96,67 @@ import { UpdateTenantUserRoleUseCase } from "./application/use-cases/update-tena
 import { GetTenantUseCase } from "./application/use-cases/get-tenant.usecase";
 import { RequestPasswordResetUseCase } from "./application/use-cases/request-password-reset.usecase";
 import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-password-reset.usecase";
+import { AuthorizeRequestContextUseCase } from "./application/use-cases/authorize-request-context.usecase";
 import { TenantRoleSeederService } from "./application/services/tenant-role-seeder.service";
 
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { GetWorkspacePermissionsUseCase } from "./public";
 @Module({
   imports: [
-    forwardRef(() => WorkspacesModule),
     EnvModule.forRoot(),
     DataModule,
     KernelModule,
     forwardRef(() => PlatformModule),
+    forwardRef(() => PlatformEntitlementsModule),
+    forwardRef(() => WorkspacesModule),
   ],
-  controllers: [AuthController, RolesController, PermissionsController, TenantsController],
+  controllers: [
+    AuthController,
+    RolesController,
+    PermissionsController,
+    TenantsController,
+    TenantAdminSessionController,
+    SsoController,
+    CliSsoController,
+    CliAgentController,
+  ],
   providers: [
+    SsoRegistrationService,
+    CliAgentGrantsService,
+    { provide: CLI_GRANT_LOCK, useClass: PrismaCliGrantLock },
+    SsoService,
+    SsoSessionService,
+    SsoEmailCodeService,
+    DeliverSsoEmailCodeUseCase,
+    {
+      provide: SSO_EMAIL,
+      useFactory: (env: EnvService, registrations: SsoRegistrationService) => {
+        if (!registrations.enabled) {
+          return {
+            sendCode: async () => {
+              throw new Error("SSO disabled");
+            },
+          };
+        }
+        if (env.EMAIL_PROVIDER !== "resend" || !env.RESEND_API_KEY || !env.RESEND_FROM) {
+          throw new Error("SSO email codes require the configured Resend sender");
+        }
+        return new ResendSsoEmailAdapter(env.RESEND_API_KEY, env.RESEND_FROM, env.RESEND_REPLY_TO);
+      },
+      inject: [EnvService, SsoRegistrationService],
+    },
+    SsoHttpSecurity,
+    { provide: SSO_STORE, useClass: PrismaSsoStore },
+    {
+      provide: SSO_CRYPTO,
+      useFactory: (registration: SsoRegistrationService) =>
+        new SsoCrypto(
+          registration.enabled ? registration.encryptionKey : randomBytes(32).toString("hex")
+        ),
+      inject: [SsoRegistrationService],
+    },
+    AssociateInvitedAccountUseCase,
+    { provide: INVITED_ACCOUNT_PORT, useClass: PrismaInvitedAccountAdapter },
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()
     PrismaUserRepository,
     PrismaTenantRepository,
@@ -93,6 +169,9 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     PrismaOutboxAdapter,
     AuthGuard,
     RbacGuard,
+
+    TenantAdminSessions,
+    { provide: TENANT_ADMIN_SESSION_LOCK, useClass: PrismaTenantAdminSessionLock },
 
     // Security
     BcryptPasswordHasher,
@@ -180,6 +259,7 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     DeleteRoleUseCase,
     GetPermissionCatalogUseCase,
     GetEffectivePermissionsUseCase,
+    AuthorizeRequestContextUseCase,
     GetWorkspacePermissionsUseCase,
     GetRolePermissionsUseCase,
     UpdateRolePermissionsUseCase,
@@ -197,6 +277,11 @@ import { GetWorkspacePermissionsUseCase } from "./public";
     PermissionCatalogRegistry,
   ],
   exports: [
+    TenantAdminSessions,
+    DeliverSsoEmailCodeUseCase,
+    AssociateInvitedAccountUseCase,
+    GetEffectivePermissionsUseCase,
+    AuthorizeRequestContextUseCase,
     GetWorkspacePermissionsUseCase,
     Reflector,
     USER_REPOSITORY_TOKEN,

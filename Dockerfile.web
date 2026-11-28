@@ -8,6 +8,15 @@ WORKDIR /app
 # Workspace manifests (keeps install cache-friendly)
 COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/web/package.json ./apps/web/
+COPY packages/booking-ui/package.json ./packages/booking-ui/
+COPY packages/issues-ui/package.json ./packages/issues-ui/
+COPY packages/sales-ui/package.json ./packages/sales-ui/
+COPY packages/tasks-ui/package.json ./packages/tasks-ui/
+COPY packages/people-ui/package.json ./packages/people-ui/
+COPY packages/crm-ui/package.json ./packages/crm-ui/
+COPY packages/expenses-ui/package.json ./packages/expenses-ui/
+COPY packages/customers-ui/package.json ./packages/customers-ui/
+COPY packages/invoices-ui/package.json ./packages/invoices-ui/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/offline-core/package.json ./packages/offline-core/

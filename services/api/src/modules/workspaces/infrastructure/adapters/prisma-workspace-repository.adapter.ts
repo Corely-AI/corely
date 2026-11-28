@@ -101,6 +101,14 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     return this.mapWorkspaceFromPrisma(workspace);
   }
 
+  async findActiveTenantForWorkspace(workspaceId: string): Promise<string | null> {
+    const workspace = await this.prisma.workspace.findFirst({
+      where: { id: workspaceId, deletedAt: null },
+      select: { tenantId: true },
+    });
+    return workspace?.tenantId ?? null;
+  }
+
   async getWorkspaceBySlug(slug: string): Promise<Workspace | null> {
     const workspace = await this.prisma.workspace.findFirst({
       where: { slug, deletedAt: null } as any,
@@ -139,17 +147,15 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     return mapped;
   }
 
-  async listWorkspacesByTenant(tenantId: string, userId: string): Promise<Workspace[]> {
-    // Get workspaces where user has active membership
+  async listWorkspacesByTenant(
+    tenantId: string,
+    userId: string,
+    tenantAdminRoleId?: string
+  ): Promise<Workspace[]> {
     const workspaces = await this.prisma.workspace.findMany({
       where: {
         tenantId,
-        memberships: {
-          some: {
-            userId,
-            status: "ACTIVE",
-          },
-        },
+        ...(tenantAdminRoleId ? {} : { memberships: { some: { userId, status: "ACTIVE" } } }),
         deletedAt: null,
       } as any,
       include: { legalEntity: true },

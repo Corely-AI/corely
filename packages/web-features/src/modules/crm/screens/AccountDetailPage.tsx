@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +9,7 @@ import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { CustomAttributesSection } from "@corely/web-shared/shared/custom-attributes";
 
 export default function AccountDetailPage() {
+  const uiCopy = useUiCopy("ui.crm-accountdetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -33,7 +35,7 @@ export default function AccountDetailPage() {
   if (!account) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-muted-foreground">Account not found</p>
+        <p className="text-muted-foreground">{uiCopy("account-not-found")}</p>
       </div>
     );
   }
@@ -48,7 +50,10 @@ export default function AccountDetailPage() {
           <h1 className="text-h1 text-foreground" data-testid="crm-account-detail-name">
             {account.name}
           </h1>
-          <p className="text-sm text-muted-foreground">Account · {account.accountType}</p>
+          <p className="text-sm text-muted-foreground">
+            {uiCopy("account") + " "}
+            {account.accountType}
+          </p>
         </div>
         <Button
           variant="outline"
@@ -56,7 +61,7 @@ export default function AccountDetailPage() {
           data-testid="crm-account-edit"
         >
           <Edit className="h-4 w-4" />
-          Edit
+          {uiCopy("edit")}
         </Button>
       </div>
 
@@ -66,7 +71,7 @@ export default function AccountDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
-              Contact Information
+              {uiCopy("contact-information")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -96,7 +101,7 @@ export default function AccountDetailPage() {
               </div>
             )}
             {!account.email && !account.phone && !account.website && (
-              <p className="text-sm text-muted-foreground">No contact information</p>
+              <p className="text-sm text-muted-foreground">{uiCopy("no-contact-information")}</p>
             )}
           </CardContent>
         </Card>
@@ -104,11 +109,11 @@ export default function AccountDetailPage() {
         {/* CRM Profile Section */}
         <Card>
           <CardHeader>
-            <CardTitle>CRM Profile</CardTitle>
+            <CardTitle>{uiCopy("crm-profile")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Status</span>
+              <span className="text-muted-foreground">{uiCopy("status")}</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                   account.status === "ACTIVE"
@@ -123,18 +128,18 @@ export default function AccountDetailPage() {
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Type</span>
+              <span className="text-muted-foreground">{uiCopy("type")}</span>
               <span data-testid="crm-account-type">{account.accountType}</span>
             </div>
             {account.industry && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Industry</span>
+                <span className="text-muted-foreground">{uiCopy("industry")}</span>
                 <span>{account.industry}</span>
               </div>
             )}
             {account.notes && (
               <div className="mt-4">
-                <p className="text-sm text-muted-foreground mb-1">Notes</p>
+                <p className="text-sm text-muted-foreground mb-1">{uiCopy("notes")}</p>
                 <p className="text-sm">{account.notes}</p>
               </div>
             )}

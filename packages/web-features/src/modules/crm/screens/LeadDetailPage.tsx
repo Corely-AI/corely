@@ -1,8 +1,10 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, User, Building, Mail, Phone, Calendar } from "lucide-react";
 import {
+  LoadingSkeleton,
   Button,
   Card,
   CardHeader,
@@ -17,6 +19,7 @@ import { toast } from "sonner";
 import { SequenceEnrollmentCard } from "../components/SequenceEnrollmentCard";
 
 export default function LeadDetailPage() {
+  const uiCopy = useUiCopy("ui.crm-leaddetailpage");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -35,7 +38,7 @@ export default function LeadDetailPage() {
         dealTitle: lead?.companyName ? `${lead.companyName} Deal` : undefined,
       }),
     onSuccess: (data) => {
-      toast.success("Lead converted successfully!");
+      toast.success(uiCopy("lead-converted-successfully"));
       void queryClient.invalidateQueries({ queryKey: ["leads"] });
       // Redirect to the new deal
       if (data.deal) {
@@ -43,16 +46,23 @@ export default function LeadDetailPage() {
       }
     },
     onError: (error) => {
-      toast.error("Failed to convert lead");
+      toast.error(uiCopy("failed-to-convert-lead"));
       console.error(error);
     },
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <LoadingSkeleton
+        variant="detail"
+        label={uiCopy("loading")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
+    );
   }
   if (!lead) {
-    return <div>Lead not found</div>;
+    return <div>{uiCopy("lead-not-found")}</div>;
   }
 
   const handleConvert = () => {
@@ -89,7 +99,7 @@ export default function LeadDetailPage() {
             disabled={convertMutation.isPending}
             data-testid="crm-lead-convert"
           >
-            {convertMutation.isPending ? "Converting..." : "Convert to Deal"}
+            {convertMutation.isPending ? uiCopy("converting") : uiCopy("convert-to-deal")}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         )}
@@ -99,23 +109,29 @@ export default function LeadDetailPage() {
         <div className="md:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Overview</CardTitle>
+              <CardTitle>{uiCopy("overview")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {lead.notes && (
                 <div>
-                  <h4 className="font-medium text-sm text-muted-foreground mb-1">Notes</h4>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-1">
+                    {uiCopy("notes")}
+                  </h4>
                   <p className="whitespace-pre-wrap">{lead.notes}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <div>
-                  <h4 className="font-medium text-sm text-muted-foreground mb-1">Source</h4>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-1">
+                    {uiCopy("source")}
+                  </h4>
                   <p>{lead.source}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-sm text-muted-foreground mb-1">Created At</h4>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-1">
+                    {uiCopy("created-at")}
+                  </h4>
                   <p>{new Date(lead.createdAt).toLocaleString()}</p>
                 </div>
               </div>
@@ -129,16 +145,14 @@ export default function LeadDetailPage() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Automation</CardTitle>
-                <CardDescription>
-                  Convert this lead to a deal first, then enroll the deal in a sequence.
-                </CardDescription>
+                <CardTitle>{uiCopy("automation")}</CardTitle>
+                <CardDescription>{uiCopy("convert-this-lead-to")}</CardDescription>
               </CardHeader>
             </Card>
           )}
           <Card>
             <CardHeader>
-              <CardTitle>Contact Info</CardTitle>
+              <CardTitle>{uiCopy("contact-info")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {lead.firstName && (

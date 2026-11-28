@@ -25,6 +25,7 @@ import { documentProviders } from "./providers/document.providers";
 import { stockProviders } from "./providers/stock.providers";
 import { reorderProviders } from "./providers/reorder.providers";
 import { lotProviders } from "./providers/lot.providers";
+import { INVENTORY_LOT_REPO } from "./application/ports/inventory-lot-repository.port";
 import { applicationProviders } from "./providers/application.providers";
 
 @Module({
@@ -60,6 +61,7 @@ import { applicationProviders } from "./providers/application.providers";
     WarehousesApplication,
     InventoryDocumentsApplication,
     StockApplication,
+    INVENTORY_LOT_REPO,
   ],
 })
 export class InventoryModule {}

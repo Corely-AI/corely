@@ -9,13 +9,19 @@ import type { IssueListResult } from "../ports/issue-repository.port";
 export class ListIssuesUseCase {
   constructor(private readonly issueRepo: IssueRepositoryPort) {}
 
-  async execute(input: ListIssuesRequest, ctx: UseCaseContext): Promise<IssueListResult> {
+  async execute(
+    input: ListIssuesRequest,
+    ctx: UseCaseContext,
+    ownerOnly?: string
+  ): Promise<IssueListResult> {
     assertCan(ctx);
     const tenantId = ctx.tenantId!;
 
     return this.issueRepo.list(
       tenantId,
       {
+        workspaceId: ctx.workspaceId ?? undefined,
+        ownerOnly,
         q: input.q,
         status: input.status,
         priority: input.priority,

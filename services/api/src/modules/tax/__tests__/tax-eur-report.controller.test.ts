@@ -61,8 +61,8 @@ describe("TaxController /tax/reports/eur", () => {
       headers: {
         [HEADER_TENANT_ID]: "tenant-1",
         [HEADER_WORKSPACE_ID]: "workspace-1",
-        "x-user-id": "user-1",
       },
+      user: { userId: "user-1", tenantId: "tenant-1", roleIds: [] },
       params: {},
       query: {},
     } as unknown as Request;

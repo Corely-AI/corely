@@ -1,3 +1,4 @@
+import { useUiCopy } from "@/lib/i18n/ui-copy";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { v4 as uuidv4 } from "@lukeed/uuid";
@@ -10,6 +11,7 @@ import { formatCurrencyFromCents } from "@/lib/formatters";
 import { posTheme } from "@/ui/theme";
 
 export default function RestaurantPaymentScreen() {
+  const uiCopy = useUiCopy("ui.restaurant-payment-orderid");
   const router = useRouter();
   const goBack = usePosBackNavigation("/(main)/restaurant");
   const { isTablet } = useAdaptiveLayout();
@@ -19,9 +21,9 @@ export default function RestaurantPaymentScreen() {
 
   if (!activeOrder || activeOrder.id !== orderId) {
     return (
-      <AppShell title="Payment" subtitle="Restaurant settlement" onBack={goBack}>
+      <AppShell title={uiCopy("payment")} subtitle="Restaurant settlement" onBack={goBack}>
         <View style={styles.centered}>
-          <Text style={styles.muted}>Load the table order before taking payment.</Text>
+          <Text style={styles.muted}>{uiCopy("load-the-table-order")}</Text>
         </View>
       </AppShell>
     );
@@ -74,25 +76,25 @@ export default function RestaurantPaymentScreen() {
 
   return (
     <AppShell
-      title="Payment / Close"
+      title={uiCopy("payment-close")}
       subtitle={`Order ${activeOrder.id.slice(0, 8)}`}
       onBack={goBack}
       maxWidth={640}
     >
       <Card>
-        <Text style={styles.title}>Settle table</Text>
+        <Text style={styles.title}>{uiCopy("settle-table")}</Text>
         <Text style={styles.amount}>{formatCurrencyFromCents(activeOrder.totalCents)}</Text>
         <Text style={styles.muted}>
           {hasUnsentItems
-            ? "Send all draft items to kitchen before taking payment."
+            ? uiCopy("send-all-draft-items")
             : isAlreadyClosed
-              ? "This order has already been settled."
-              : "Phase 1 keeps settlement simple: exact cash or single card capture placeholder."}
+              ? uiCopy("this-order-has-already")
+              : uiCopy("phase-1-keeps-settlement")}
         </Text>
         {hasUnsentItems ? (
           <View style={styles.sendAction}>
             <Button
-              label="Send items to kitchen"
+              label={uiCopy("send-items-to-kitchen")}
               variant="secondary"
               onPress={() => void sendItemsToKitchen()}
               disabled={isBusy}
@@ -102,14 +104,14 @@ export default function RestaurantPaymentScreen() {
         <View style={[styles.actions, !isTablet && styles.actionsStacked]}>
           <View style={styles.actionSlot}>
             <Button
-              label="Cash"
+              label={uiCopy("cash")}
               onPress={() => void closeWithMethod("CASH")}
               disabled={!canCloseOrder || isBusy}
             />
           </View>
           <View style={styles.actionSlot}>
             <Button
-              label="Card"
+              label={uiCopy("card")}
               variant="secondary"
               onPress={() => void closeWithMethod("CARD")}
               disabled={!canCloseOrder || isBusy}

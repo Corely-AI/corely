@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Inject, Logger } from "@nestjs/common";
-import type { MenuGroup, MenuItem, SurfaceId } from "@corely/contracts";
+import type { AppLaunchId, MenuGroup, MenuItem, SurfaceId } from "@corely/contracts";
 import { MenuComposerService } from "../services/menu-composer.service";
 import { WorkspaceExperienceResolverService } from "../services/workspace-experience-resolver.service";
 import { WorkspaceTemplateService } from "../services/workspace-template.service";
@@ -16,6 +16,7 @@ import { randomUUID } from "crypto";
 import { APP_REGISTRY_TOKEN, type AppRegistryPort } from "../ports/app-registry.port";
 
 export interface ComposeMenuInput {
+  launchId?: AppLaunchId;
   tenantId: string;
   userId: string;
   permissions: string[];
@@ -30,6 +31,7 @@ export interface ComposeMenuInput {
 }
 
 export interface ComposeMenuOutput {
+  launchId?: AppLaunchId;
   scope: string;
   items: MenuItem[];
   groups: MenuGroup[];
@@ -67,6 +69,12 @@ export class ComposeMenuUseCase {
   ) {}
 
   async execute(input: ComposeMenuInput): Promise<ComposeMenuOutput> {
+    if (
+      input.launchId &&
+      (input.scope !== "web" || !["platform", "app"].includes(input.surfaceId))
+    ) {
+      throw new BadRequestException("Focused apps require the platform web surface");
+    }
     const surfaceLogFields = buildSurfaceResolutionLogFields({
       requestContext: {
         surfaceId: input.surfaceId,
@@ -133,15 +141,11 @@ export class ComposeMenuUseCase {
       })
     );
 
-    // Ensure tenant has default apps installed; fall back to PERSONAL defaults if kind unknown
     const workspace = experience.workspace;
     const workspaceKind = experience.workspaceKind;
 
-    const installedDefaults = await this.ensureDefaultAppsInstalled(
-      input.tenantId,
-      input.userId,
-      workspaceKind
-    );
+    const installedDefaults =
+      !input.launchId && (await this.ensureDefaultAppsInstalled(input.tenantId, input.userId));
     if (installedDefaults) {
       experience = await this.experienceResolver.resolve({
         tenantId: input.tenantId,
@@ -153,6 +157,7 @@ export class ComposeMenuUseCase {
     }
 
     const menu = await this.menuComposer.composeMenuTree({
+      launchId: input.launchId,
       tenantId: input.tenantId,
       userId: input.userId,
       permissions: experience.permissions,
@@ -168,7 +173,7 @@ export class ComposeMenuUseCase {
     let workspaceMetadata: ComposeMenuOutput["workspace"] | undefined;
 
     if (workspace && workspace.legalEntity) {
-      const defaultTerminology = this.templateService.getDefaultTerminology(workspaceKind);
+      const defaultTerminology = this.templateService.getDefaultTerminology();
       const defaultCapabilities = experience.capabilities;
 
       workspaceMetadata = {
@@ -187,6 +192,7 @@ export class ComposeMenuUseCase {
     }
 
     return {
+      ...(input.launchId ? { launchId: input.launchId } : {}),
       scope: input.scope,
       items: menu.items,
       groups: menu.groups,
@@ -197,17 +203,13 @@ export class ComposeMenuUseCase {
   }
 
   /**
-   * Ensure default apps for the workspace kind are enabled for the tenant.
+   * Install any missing baseline apps for the tenant.
    * Runs on every menu request but upserts are idempotent.
    */
-  private async ensureDefaultAppsInstalled(
-    tenantId: string,
-    userId: string,
-    workspaceKind: "PERSONAL" | "COMPANY"
-  ): Promise<boolean> {
-    const currentInstalls = await this.appInstallRepo.listEnabledByTenant(tenantId);
+  private async ensureDefaultAppsInstalled(tenantId: string, userId: string): Promise<boolean> {
+    const currentInstalls = await this.appInstallRepo.listByTenant(tenantId);
     const installed = new Set(currentInstalls.map((i) => i.appId));
-    const defaultApps = this.templateService.getDefaultEnabledApps(workspaceKind);
+    const defaultApps = this.templateService.getDefaultEnabledApps();
     let installedAny = false;
 
     for (const appId of defaultApps) {

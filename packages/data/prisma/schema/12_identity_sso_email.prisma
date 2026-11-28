@@ -1,0 +1,17 @@
+model SsoEmailChallenge {
+  id             String @id
+  transactionId  String @unique
+  email          String
+  userId         String?
+  credentialHash String?
+  codeHash       String
+  codeCipher     String
+  createdAt      DateTime @db.Timestamptz(6)
+  expiresAt      DateTime @db.Timestamptz(6)
+  attempts       Int @default(0)
+  consumedAt     DateTime? @db.Timestamptz(6)
+  transaction    SsoLoginTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@schema("identity")
+}

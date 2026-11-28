@@ -1,3 +1,5 @@
+import { PageLoadingSkeleton } from "@corely/web-shared/shared/components/page-loading-skeleton";
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -17,6 +19,7 @@ interface AppMutationError {
 }
 
 export function AppsManagementPage() {
+  const uiCopy = useUiCopy("ui.platform-appsmanagementpage");
   const { data: apps, isLoading, error } = usePlatformApps();
   const enableApp = useEnableApp();
   const disableApp = useDisableApp();
@@ -98,18 +101,14 @@ export function AppsManagementPage() {
   }, [requiredAppsToEnable, enableApp]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PageLoadingSkeleton variant="cards" />;
   }
 
   if (error) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>Failed to load apps. Please try again.</AlertDescription>
+        <AlertDescription>{uiCopy("failed-to-load-apps")}</AlertDescription>
       </Alert>
     );
   }
@@ -144,18 +143,13 @@ export function AppsManagementPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-7xl">
       <div>
-        <h1 className="text-h1 text-foreground">Apps Management</h1>
-        <p className="text-muted-foreground mt-2">
-          Enable apps to customize your workspace features. Core platform apps stay enabled.
-        </p>
+        <h1 className="text-h1 text-foreground">{uiCopy("apps-management")}</h1>
+        <p className="text-muted-foreground mt-2">{uiCopy("enable-apps-to-customize")}</p>
       </div>
 
       <Alert>
         <Package className="h-4 w-4" />
-        <AlertDescription>
-          Enabling an app will automatically enable its dependencies. Required apps like Core and
-          Workspaces cannot be disabled.
-        </AlertDescription>
+        <AlertDescription>{uiCopy("enabling-an-app-will")}</AlertDescription>
       </Alert>
 
       <div className="space-y-8">
@@ -173,16 +167,19 @@ export function AppsManagementPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <CardTitle className="text-lg">{app.name}</CardTitle>
-                          <CardDescription className="mt-1">v{app.version}</CardDescription>
+                          <CardDescription className="mt-1">
+                            {uiCopy("v")}
+                            {app.version}
+                          </CardDescription>
                         </div>
                         {app.enabled ? (
                           <Badge variant="default" className="ml-2">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
-                            {app.policy.forceEnabled ? "Always Enabled" : "Enabled"}
+                            {app.policy.forceEnabled ? uiCopy("always-enabled") : uiCopy("enabled")}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="ml-2">
-                            Disabled
+                            {uiCopy("disabled")}
                           </Badge>
                         )}
                       </div>
@@ -194,7 +191,7 @@ export function AppsManagementPage() {
 
                       {app.dependencies.length > 0 && (
                         <div>
-                          <p className="text-xs font-medium mb-1">Dependencies:</p>
+                          <p className="text-xs font-medium mb-1">{uiCopy("dependencies")}</p>
                           <div className="flex flex-wrap gap-1">
                             {app.dependencies.map((dep) => (
                               <Badge key={dep} variant="secondary" className="text-xs">
@@ -208,7 +205,7 @@ export function AppsManagementPage() {
                       {(app.capabilities || []).length > 0 && (
                         <div>
                           <p className="text-xs font-medium mb-1">
-                            Capabilities{" "}
+                            {uiCopy("capabilities")}{" "}
                             {(app.capabilities || []).length > 0
                               ? `(${(app.capabilities || []).length})`
                               : ""}
@@ -221,7 +218,8 @@ export function AppsManagementPage() {
                             ))}
                             {(app.capabilities || []).length > 3 && (
                               <Badge variant="outline" className="text-xs">
-                                +{(app.capabilities || []).length - 3} more
+                                +{(app.capabilities || []).length - 3}
+                                {" " + uiCopy("more")}
                               </Badge>
                             )}
                           </div>
@@ -232,7 +230,7 @@ export function AppsManagementPage() {
                         {app.enabled ? (
                           app.policy.hideDisableAction ? (
                             <div className="text-xs text-muted-foreground text-center py-2 border rounded-md">
-                              {app.policy.reason ?? "This app is required and cannot be disabled."}
+                              {app.policy.reason ?? uiCopy("this-app-is-required")}
                             </div>
                           ) : (
                             <Button
@@ -245,12 +243,12 @@ export function AppsManagementPage() {
                               {selectedApp === app.appId ? (
                                 <>
                                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  Disabling...
+                                  {uiCopy("disabling")}
                                 </>
                               ) : (
                                 <>
                                   <PowerOff className="h-4 w-4 mr-2" />
-                                  Disable App
+                                  {uiCopy("disable-app")}
                                 </>
                               )}
                             </Button>
@@ -266,12 +264,12 @@ export function AppsManagementPage() {
                             {selectedApp === app.appId ? (
                               <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Enabling...
+                                {uiCopy("enabling")}
                               </>
                             ) : (
                               <>
                                 <Power className="h-4 w-4 mr-2" />
-                                Enable App
+                                {uiCopy("enable-app")}
                               </>
                             )}
                           </Button>

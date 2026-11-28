@@ -1,10 +1,11 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, CardContent } from "@corely/ui";
+import { LoadingSkeleton, Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
 import { customersApi } from "@/lib/customers-api";
 import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
@@ -19,6 +20,7 @@ import CustomerFormFields from "../components/CustomerFormFields";
 import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function EditSupplierPage() {
+  const uiCopy = useUiCopy("ui.customers-editsupplierpage");
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -53,11 +55,11 @@ export default function EditSupplierPage() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: withWorkspace(["suppliers"]) });
-      toast.success("Supplier updated");
+      toast.success(uiCopy("supplier-updated"));
       navigate("/suppliers");
     },
     onError: () => {
-      toast.error("Failed to update supplier. Please try again.");
+      toast.error(uiCopy("failed-to-update-supplier"));
     },
   });
 
@@ -67,16 +69,19 @@ export default function EditSupplierPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-8">
-        <p className="text-muted-foreground">Loading supplier...</p>
-      </div>
+      <LoadingSkeleton
+        variant="form"
+        label={uiCopy("loading-supplier")}
+        className="p-6 lg:p-8"
+        withHeading
+      />
     );
   }
 
   if (!supplier) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-muted-foreground">Supplier not found.</p>
+        <p className="text-muted-foreground">{uiCopy("supplier-not-found")}</p>
       </div>
     );
   }
@@ -88,7 +93,7 @@ export default function EditSupplierPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/suppliers")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Edit Supplier</h1>
+          <h1 className="text-h1 text-foreground">{uiCopy("edit-supplier")}</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -96,14 +101,14 @@ export default function EditSupplierPage() {
             onClick={() => navigate("/suppliers")}
             disabled={updateSupplierMutation.isPending}
           >
-            Cancel
+            {uiCopy("cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
             disabled={updateSupplierMutation.isPending}
           >
-            {updateSupplierMutation.isPending ? "Saving..." : "Save Changes"}
+            {updateSupplierMutation.isPending ? uiCopy("saving") : uiCopy("save-changes")}
           </Button>
         </div>
       </div>

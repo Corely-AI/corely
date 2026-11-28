@@ -23,6 +23,8 @@ import {
   CurrentUserId,
 } from "../../../identity/adapters/http/current-user.decorator";
 import { ComposeMenuUseCase } from "../../application/use-cases/compose-menu.usecase";
+import { ListAppLaunchesUseCase } from "../../application/use-cases/list-app-launches.usecase";
+import { GetAppManagementLinkUseCase } from "../../application/use-cases/get-app-management-link.usecase";
 import { UpdateMenuOverridesUseCase } from "../../application/use-cases/update-menu-overrides.usecase";
 import { ResetMenuOverridesUseCase } from "../../application/use-cases/reset-menu-overrides.usecase";
 import {
@@ -30,7 +32,10 @@ import {
   type RolePermissionGrantRepositoryPort,
 } from "../../../identity/application/ports/role-permission-grant-repository.port";
 import { toAllowedPermissionKeys } from "../../../../shared/permissions/effective-permissions";
-import { resolveRequestContext } from "../../../../shared/request-context";
+import {
+  resolveRequestContext,
+  type ContextAwareRequest,
+} from "../../../../shared/request-context";
 
 @Controller("menu")
 @UseGuards(AuthGuard)
@@ -40,8 +45,47 @@ export class MenuController {
     private readonly updateMenuOverridesUseCase: UpdateMenuOverridesUseCase,
     private readonly resetMenuOverridesUseCase: ResetMenuOverridesUseCase,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
-    private readonly grantRepo: RolePermissionGrantRepositoryPort
+    private readonly grantRepo: RolePermissionGrantRepositoryPort,
+    private readonly listAppLaunches: ListAppLaunchesUseCase,
+    private readonly managementLink: GetAppManagementLinkUseCase
   ) {}
+
+  @Get("app-management")
+  async getAppManagement(@CurrentTenantId() tenantId: string, @CurrentUserId() userId: string) {
+    if (!tenantId || !userId) {
+      throw new BadRequestException("Missing tenant or user context");
+    }
+    return this.managementLink.execute(tenantId, userId);
+  }
+
+  @Get("launches")
+  async getLaunches(
+    @CurrentTenantId() tenantId: string,
+    @CurrentUserId() userId: string,
+    @CurrentRoleIds() roleIds: string[],
+    @Req() req: Request
+  ) {
+    if (!tenantId || !userId) {
+      throw new BadRequestException("Missing tenant or user context");
+    }
+    const grants = roleIds?.length
+      ? await this.grantRepo.listByRoleIdsAndTenant(tenantId, roleIds)
+      : [];
+    const ctx = resolveRequestContext(req as ContextAwareRequest);
+    return this.listAppLaunches.execute({
+      tenantId,
+      userId,
+      permissions: toAllowedPermissionKeys(grants),
+      workspaceId: ctx.workspaceId ?? undefined,
+      scope: "web",
+      surfaceId: ctx.surfaceId,
+      trustedSurfaceId: ctx.trustedSurfaceId,
+      declaredSurfaceId: ctx.declaredSurfaceId,
+      surfaceResolutionSource: ctx.surfaceResolutionSource,
+      surfaceHeaderMismatch: ctx.surfaceHeaderMismatch,
+      route: req.route?.path ?? req.originalUrl ?? req.url,
+    });
+  }
 
   @Get()
   async getMenu(
@@ -50,9 +94,14 @@ export class MenuController {
     @CurrentTenantId() tenantId: string,
     @CurrentUserId() userId: string,
     @CurrentRoleIds() roleIds: string[],
-    @Req() req: Request
+    @Req() req: Request,
+    @Query("launchId") launchId?: unknown
   ) {
-    const validatedScope = this.parseScope(scope);
+    const query = GetMenuQuerySchema.safeParse({ scope, launchId });
+    if (!query.success) {
+      throw new BadRequestException(query.error.message);
+    }
+    const validatedScope = query.data.scope;
     if (!tenantId || !userId) {
       throw new BadRequestException("Missing tenant or user context");
     }
@@ -63,14 +112,15 @@ export class MenuController {
         ? await this.grantRepo.listByRoleIdsAndTenant(tenantId, requestedRoles)
         : [];
     const permissions = toAllowedPermissionKeys(grants);
-    const ctx = (req as any).context ?? resolveRequestContext(req as any);
+    const ctx = resolveRequestContext(req as ContextAwareRequest);
 
     return await this.composeMenuUseCase.execute({
       tenantId,
       userId,
       permissions,
       scope: validatedScope,
-      workspaceId, // Include workspace ID for metadata
+      launchId: query.data.launchId,
+      workspaceId: ctx.workspaceId ?? workspaceId, // Use the same selector AuthGuard authorized.
       surfaceId: ctx.surfaceId,
       trustedSurfaceId: ctx.trustedSurfaceId,
       declaredSurfaceId: ctx.declaredSurfaceId,

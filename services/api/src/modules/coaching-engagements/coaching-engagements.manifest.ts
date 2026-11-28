@@ -2,6 +2,12 @@ import type { AppManifest } from "@corely/contracts";
 
 export const coachingEngagementsAppManifest: AppManifest = {
   appId: "coaching-engagements",
+  directory: {
+    menuId: "coaching-offers",
+    logo: { iconKey: "MessageSquare", tone: "accent" },
+    displayName: { en: "Coaching", de: "Coaching", vi: "Huấn luyện" },
+    category: "operations",
+  },
   name: "Coaching",
   tier: 2,
   version: "1.0.0",

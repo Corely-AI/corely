@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { LoadingSkeleton, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -154,7 +154,7 @@ function ReportGroup({
       </CardHeader>
       <CardContent className="space-y-3">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">{t("tax.reports.status.loading")}</p>
+          <LoadingSkeleton variant="list" label={t("tax.reports.status.loading")} />
         ) : reports.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("tax.reports.status.empty")}</p>
         ) : (

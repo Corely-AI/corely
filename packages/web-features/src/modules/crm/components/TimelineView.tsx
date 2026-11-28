@@ -1,3 +1,4 @@
+import { useUiCopy } from "@corely/web-shared/shared/i18n/ui-copy";
 import type { FC } from "react";
 import type { ActivityType, TimelineItem } from "@corely/contracts";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
@@ -13,6 +14,7 @@ interface TimelineViewProps {
 const looksLikeHtml = (value: string) => /<([a-z][a-z0-9]*)\b[^>]*>[\s\S]*<\/\1>/i.test(value);
 
 export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
+  const uiCopy = useUiCopy("ui.crm-timelineview");
   const { t, i18n } = useTranslation();
   if (items.length === 0) {
     return <div className="text-center text-muted-foreground py-8">{t("crm.timeline.empty")}</div>;
@@ -157,7 +159,8 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                             )}
                             {item.metadata.durationSeconds && (
                               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                ⏱ {Math.round(Number(item.metadata.durationSeconds) / 60)}m
+                                ⏱ {Math.round(Number(item.metadata.durationSeconds) / 60)}
+                                {uiCopy("m")}
                               </span>
                             )}
                             {item.metadata.location && (

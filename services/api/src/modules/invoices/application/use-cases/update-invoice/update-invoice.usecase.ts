@@ -20,6 +20,7 @@ import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 import { type CustomerQueryPort } from "../../ports/customer-query.port";
 import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
 import { type LegalEntityQueryPort } from "../../ports/legal-entity-query.port";
+import { validateInvoiceCurrency, validateInvoiceLineAmounts } from "../../../domain/invoice-money";
 
 type Deps = {
   logger: LoggerPort;
@@ -47,6 +48,12 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
     ) {
       throw new ValidationError("Nothing to update");
     }
+    if (input.headerPatch?.currency !== undefined) {
+      validateInvoiceCurrency(input.headerPatch.currency);
+    }
+    if (input.lineItems) {
+      validateInvoiceLineAmounts(input.lineItems);
+    }
     return input;
   }
 
@@ -62,6 +69,7 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
+    const expectedRevision = invoice.revision;
 
     let draftCustomerSnapshot: {
       name: string;
@@ -200,7 +208,7 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       return err(new ConflictError((error as Error).message));
     }
 
-    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice);
+    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice, { expectedRevision });
 
     return ok({ invoice: toInvoiceDto(invoice) });
   }

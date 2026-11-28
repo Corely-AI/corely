@@ -1,3 +1,4 @@
+import { AuthorizeToolService } from "./application/services/authorize-tool.service";
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { CopilotController } from "./adapters/http/copilot.controller";
@@ -61,8 +62,16 @@ import { CoachingEngagementsModule } from "../coaching-engagements";
 import { RestaurantModule } from "../restaurant/restaurant.module";
 import { PlatformModule } from "../platform/platform.module";
 import { copilotToolsProvider } from "./ai-copilot.tools.provider";
+import { TasksModule } from "../tasks/tasks.module";
 import { AI_TEXT_PORT } from "../../shared/ai/ai-text.port";
 import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
+import { KnowledgeModule } from "../knowledge/knowledge.module";
+import { KnowledgeQuestionController } from "./adapters/http/knowledge-question.controller";
+import { AnswerKnowledgeQuestionUseCase } from "./application/use-cases/answer-knowledge-question.usecase";
+import { KernelModule } from "../../shared/kernel/kernel.module";
+import { OperationsTodayModule } from "../operations-today/operations-today.module";
+import { OperationsBriefingController } from "./adapters/http/operations-briefing.controller";
+import { OperationsBriefingUseCase } from "./application/use-cases/operations-briefing.usecase";
 
 @Module({
   imports: [
@@ -83,11 +92,15 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     CoachingEngagementsModule,
     RestaurantModule,
     TaxModule,
+    TasksModule,
     PlatformEntitlementsModule,
     PlatformModule,
     PromptModule,
+    KnowledgeModule,
+    KernelModule,
+    OperationsTodayModule,
   ],
-  controllers: [CopilotController],
+  controllers: [CopilotController, KnowledgeQuestionController, OperationsBriefingController],
   providers: [
     PrismaAgentRunRepository,
     PrismaMessageRepository,
@@ -99,7 +112,10 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     IdempotencyService,
     PrismaCopilotIdempotencyAdapter,
     TenantGuard,
+    AuthorizeToolService,
     AiSdkTextAdapter,
+    AnswerKnowledgeQuestionUseCase,
+    OperationsBriefingUseCase,
     { provide: AI_TEXT_PORT, useExisting: AiSdkTextAdapter },
     { provide: "COPILOT_LOGGER", useClass: NestLoggerAdapter },
     {
@@ -112,7 +128,8 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
         logger: NestLoggerAdapter,
         observability: ObservabilityPort,
         promptRegistry: PromptRegistry,
-        promptUsageLogger: PromptUsageLogger
+        promptUsageLogger: PromptUsageLogger,
+        authorizeTool: AuthorizeToolService
       ) => {
         logger.debug("Creating AiSdkModelAdapter");
         return new AiSdkModelAdapter(
@@ -122,7 +139,8 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
           env,
           observability,
           promptRegistry,
-          promptUsageLogger
+          promptUsageLogger,
+          authorizeTool
         );
       },
       inject: [
@@ -134,6 +152,7 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
         "OBSERVABILITY_PORT",
         PromptRegistry,
         PromptUsageLogger,
+        AuthorizeToolService,
       ],
     },
     {
@@ -152,8 +171,9 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     },
     {
       provide: ListMessagesUseCase,
-      useFactory: (messages: PrismaMessageRepository) => new ListMessagesUseCase(messages),
-      inject: [PrismaMessageRepository],
+      useFactory: (messages: PrismaMessageRepository, getRun: GetRunUseCase) =>
+        new ListMessagesUseCase(messages, getRun),
+      inject: [PrismaMessageRepository, GetRunUseCase],
     },
     {
       provide: CHAT_STORE_PORT,

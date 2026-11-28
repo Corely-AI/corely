@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Bot,
@@ -17,36 +16,6 @@ import { SectionHeading } from "@/shared/components/SectionHeading";
 import { Badge } from "@/shared/ui/badge";
 import { buttonVariants } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { cn } from "@/shared/lib/utils";
-
-const modeContent = {
-  freelancer: {
-    label: "Freelancer mode",
-    headline: "Everything a solo operator needs, without the clutter.",
-    description:
-      "Track clients, send invoices, capture expenses, and keep taxes in view. Corely stays light until you invite teammates or add modules.",
-    bullets: [
-      "Simple client workspace and project timeline",
-      "Invoice to payment flow with reminders",
-      "Receipt capture with expense categorization",
-      "Tax snapshots built for quarterly planning",
-    ],
-    preview: "/preview-freelancer.svg",
-  },
-  company: {
-    label: "Company mode",
-    headline: "Upgrade to teams, roles, and approvals without rewrites.",
-    description:
-      "Move from a single workspace to multi-entity operations with permissions, audit trails, and predictable workflows. Your data model stays stable.",
-    bullets: [
-      "Role-based access with approval paths",
-      "Multi-entity readiness with tenant scoping",
-      "Workflow automation and event logs",
-      "Shared ledger and finance dashboards",
-    ],
-    preview: "/preview-company.svg",
-  },
-};
 
 const faqItems = [
   {
@@ -57,17 +26,17 @@ const faqItems = [
   {
     question: "How is Corely different from traditional ERP?",
     answer:
-      "Traditional ERP assumes a large company on day one. Corely starts with freelancer workflows, then scales to company mode through modular packs. You keep the same data model, get clean boundaries, and avoid the multi-year reimplementation cycle.",
+      "Corely brings connected apps into one workspace. Start with the capabilities you need and add apps through app management as your work grows.",
   },
   {
-    question: "What is the difference between freelancer mode and company mode?",
+    question: "Can I use the same workspace on my own and with a team?",
     answer:
-      "Freelancer mode focuses on single-operator workflows: clients, invoices, expenses, and tax visibility. Company mode adds teams, roles, approvals, audit trails, and multi-entity readiness. The transition is a configuration change, not a migration.",
+      "Yes. Solo operators and teams share the same workspace experience. Invite teammates, assign permissions, and activate the apps you need.",
   },
   {
-    question: "Can I start as a freelancer and upgrade later?",
+    question: "Can I invite teammates later?",
     answer:
-      "Yes. Corely is designed to let you start small and scale without rewriting. When you add teammates or departments, company mode features turn on while your invoices, automation history, and client data stay intact. You keep the same workspace and add governance only when needed.",
+      "Yes. Invite teammates into your existing workspace and manage their access through roles and permissions.",
   },
   {
     question: "Is Corely developer-friendly and extensible?",
@@ -92,7 +61,7 @@ const faqItems = [
   {
     question: "Does Corely handle invoices, expenses, and taxes?",
     answer:
-      "Yes. Freelancer mode covers invoicing, expense capture, and tax visibility. As you scale, the same workflows extend into approvals, role-based access, and compliance-ready reporting without moving to a new system. Reporting stays consistent and avoids double data entry.",
+      "Yes. Activate invoicing, expenses, and tax apps when they support your work. Solo operators and teams use the same apps.",
   },
   {
     question: "How does the AI copilot stay auditable?",
@@ -115,13 +84,11 @@ const faqJsonLd = {
 };
 
 export function HomePage() {
-  const [mode, setMode] = useState<"freelancer" | "company">("freelancer");
-
   return (
     <>
       <Seo
         title="Corely - AI-native ERP for freelancers and SMBs"
-        description="Corely is an AI-native ERP kernel that starts in freelancer mode and scales to company workflows without rewrites. Run your business clearly with invoices, expenses, taxes, and automations."
+        description="Corely connects your team's operations in one workspace. Choose the apps you need and invite teammates as you grow."
         canonicalPath="/"
       />
       <JsonLd id="faq" data={faqJsonLd} />
@@ -136,12 +103,11 @@ export function HomePage() {
               </div>
               <div className="space-y-4">
                 <h1 className="text-display text-foreground">
-                  AI-native ERP that grows from freelancer to company mode.
+                  One workspace for you and your team.
                 </h1>
                 <p className="text-body text-muted-foreground">
-                  Corely starts with focused freelancer workflows and scales into SMB operations
-                  without a rewrite. Run invoices, expenses, and taxes today, then add roles,
-                  approvals, and modules when your team is ready.
+                  Choose the apps that support your work and bring your team into one workspace. Add
+                  invoices, expenses, and taxes when you need them.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -225,69 +191,25 @@ export function HomePage() {
           <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
             <div className="space-y-6">
               <SectionHeading
-                eyebrow="Modes"
-                title="Freelancer or company mode, same Corely kernel."
-                description="Switch between modes without migrating systems. Corely starts simple and adds governance when you need it."
+                title="Start with the apps you need."
+                description="Use one workspace on your own or with a team. Add capabilities through app management as your work grows."
               />
-              <div className="inline-flex rounded-full border border-border bg-background p-1">
-                {(["freelancer", "company"] as const).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setMode(value)}
-                    aria-pressed={mode === value}
-                    className={cn(
-                      "rounded-full px-4 py-2 text-sm font-medium transition",
-                      mode === value
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {modeContent[value].label}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-h3">{modeContent[mode].headline}</h3>
-                <p className="text-body text-muted-foreground">{modeContent[mode].description}</p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {modeContent[mode].bullets.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                    to={`/${mode}`}
-                  >
-                    Explore {modeContent[mode].label}
-                  </Link>
-                  <a
-                    className={buttonVariants({ variant: "link", size: "sm" })}
-                    href="mailto:hello@corely.one"
-                  >
-                    Talk to us
-                  </a>
-                </div>
-              </div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li>Choose the apps that support your day-to-day work.</li>
+                <li>Invite teammates and manage access with roles and permissions.</li>
+                <li>Connect finance apps when you need invoices, expenses, or taxes.</li>
+              </ul>
+              <Link className={buttonVariants({ variant: "outline" })} to="/company">
+                Explore team workflows
+              </Link>
             </div>
-            <div className="relative">
-              <div className="absolute -inset-6 rounded-3xl bg-gradient-to-br from-accent/15 via-transparent to-primary/10 blur-2xl" />
-              <div className="relative overflow-hidden rounded-3xl border border-border bg-panel p-6 shadow-card">
-                <img
-                  src={modeContent[mode].preview}
-                  alt={`${modeContent[mode].label} preview`}
-                  loading="lazy"
-                  className="w-full rounded-2xl border border-border bg-background"
-                />
-                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Preview</span>
-                  <span className="badge-muted">Interactive toggle</span>
-                </div>
-              </div>
+            <div className="rounded-3xl border border-border bg-panel p-6 shadow-card">
+              <img
+                src="/preview-company.svg"
+                alt="Corely workspace preview"
+                loading="lazy"
+                className="w-full rounded-2xl border border-border bg-background"
+              />
             </div>
           </div>
         </Container>
@@ -351,7 +273,7 @@ export function HomePage() {
                 <Building2 className="h-6 w-6 text-accent" />
                 <CardTitle>Roles and permissions</CardTitle>
                 <CardDescription>
-                  Move into company mode with roles, approvals, and scoped access.
+                  Manage team access with roles, permissions, and approval workflows.
                 </CardDescription>
               </CardHeader>
             </Card>

@@ -17,6 +17,8 @@ export interface DomainToolPort {
   inputSchema: z.ZodTypeAny;
   kind: ToolKind;
   needsApproval?: boolean;
+  /** Operational tools require explicit workspace authority and redact tool provenance. */
+  operational?: boolean;
   execute?: (params: {
     tenantId: string;
     workspaceId?: string;
@@ -26,5 +28,7 @@ export interface DomainToolPort {
     runId?: string;
     messages?: ModelMessage[];
     latestUserMessage?: string;
+    explicitWorkspace?: boolean;
+    approved?: boolean;
   }) => Promise<unknown>;
 }

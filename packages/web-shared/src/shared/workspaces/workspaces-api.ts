@@ -12,6 +12,7 @@ import type {
   UpgradeWorkspaceInput,
   UpgradeWorkspaceOutput,
   WorkspaceConfig,
+  WorkspacePackageId,
   WorkspaceOnboardingStatusResponse,
   DeleteWorkspaceInput,
   DeleteWorkspaceOutput,
@@ -20,16 +21,17 @@ import { apiClient } from "@corely/web-shared/lib/api-client";
 
 class WorkspacesApi {
   async listWorkspaces(): Promise<ListWorkspacesOutput["workspaces"]> {
-    const result = await apiClient.get<ListWorkspacesOutput>("/workspaces");
+    const result = await apiClient.get<ListWorkspacesOutput>("/workspaces", {
+      workspaceScope: "none",
+    });
     return result.workspaces ?? [];
   }
 
   async createWorkspace(input: CreateWorkspaceInput): Promise<CreateWorkspaceOutput> {
-    return apiClient.post<CreateWorkspaceOutput>(
-      "/workspaces",
-      input,
-      this.withIdempotencyAndCorrelation()
-    );
+    return apiClient.post<CreateWorkspaceOutput>("/workspaces", input, {
+      ...this.withIdempotencyAndCorrelation(),
+      workspaceScope: "none",
+    });
   }
 
   async updateWorkspace(
@@ -59,10 +61,14 @@ class WorkspacesApi {
 
   async getWorkspaceConfig(
     workspaceId: string,
-    options?: { scope?: "web" | "pos" }
+    options?: { scope?: "web" | "pos"; packageId?: WorkspacePackageId }
   ): Promise<WorkspaceConfig> {
     const scope = options?.scope ?? "web";
-    return apiClient.get<WorkspaceConfig>(`/workspaces/${workspaceId}/config?scope=${scope}`);
+    const query = new URLSearchParams({ scope });
+    if (options?.packageId) {
+      query.set("packageId", options.packageId);
+    }
+    return apiClient.get<WorkspaceConfig>(`/workspaces/${workspaceId}/config?${query}`);
   }
 
   async upgradeWorkspace(

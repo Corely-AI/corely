@@ -24,6 +24,7 @@ export const PLATFORM_PERMISSION_KEYS = {
 export const PLATFORM_HOST_PERMISSION_KEYS = new Set<string>([
   PLATFORM_PERMISSION_KEYS.tenants.read,
   PLATFORM_PERMISSION_KEYS.tenants.write,
+  "platform.tenants.access",
   PLATFORM_PERMISSION_KEYS.roles.read,
   PLATFORM_PERMISSION_KEYS.roles.write,
   PLATFORM_PERMISSION_KEYS.settings.read,

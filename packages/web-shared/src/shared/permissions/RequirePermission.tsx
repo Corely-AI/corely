@@ -1,5 +1,6 @@
 import React from "react";
 import NotFound from "../components/NotFound";
+import { PageLoadingSkeleton } from "../components/page-loading-skeleton";
 import {
   hasPermission,
   isHostScopedPlatformPermission,
@@ -25,7 +26,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({ permission
       return <NotFound />;
     }
     if (isLoading) {
-      return null;
+      return <PageLoadingSkeleton />;
     }
     if (!hasPermission(data?.permissions, permission)) {
       return <NotFound />;
@@ -38,7 +39,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({ permission
   }
 
   if (isConfigLoading) {
-    return null;
+    return <PageLoadingSkeleton />;
   }
 
   if (!rbacEnabled) {
@@ -46,7 +47,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({ permission
   }
 
   if (isLoading) {
-    return null;
+    return <PageLoadingSkeleton />;
   }
 
   if (!hasPermission(data?.permissions, permission)) {
