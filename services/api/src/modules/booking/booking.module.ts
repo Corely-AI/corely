@@ -1,4 +1,6 @@
 import { OpenBukTimezone } from "./application/use-cases/openbuk-timezone.usecase";
+import { BookingSourceAccess } from "./application/use-cases/booking-source-access.usecase";
+import { PlatformModule } from "../platform/platform.module";
 import { PeopleModule } from "../people/people.module";
 import { BookingStaffConstraintAdapter } from "./infrastructure/adapters/booking-staff-constraint.adapter";
 import { OpenBukRateLimitGuard } from "./http/openbuk-rate-limit.guard";
@@ -86,7 +88,15 @@ import { BOOKING_POLICIES } from "./application/booking-policy";
 import { bookingPolicies } from "./booking-extensions";
 
 @Module({
-  imports: [PeopleModule, WorkspacesModule, DataModule, KernelModule, IdentityModule, CrmModule],
+  imports: [
+    PeopleModule,
+    WorkspacesModule,
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    CrmModule,
+    PlatformModule,
+  ],
   controllers: [
     OpenBukAdminController,
     OpenBukImportController,
@@ -99,6 +109,7 @@ import { bookingPolicies } from "./booking-extensions";
     PublicBookingController,
   ],
   providers: [
+    BookingSourceAccess,
     { provide: BOOKING_POLICIES, useValue: bookingPolicies },
     BookingStaffConstraintAdapter,
     OpenBukRateLimitGuard,
@@ -311,6 +322,6 @@ import { bookingPolicies } from "./booking-extensions";
       inject: [AVAILABILITY_RULE_REPOSITORY, RESOURCE_REPOSITORY],
     },
   ],
-  exports: [OpenBukAppointmentChangeUseCase, OpenBukTimezone],
+  exports: [OpenBukAppointmentChangeUseCase, OpenBukTimezone, BookingSourceAccess],
 })
 export class BookingModule {}

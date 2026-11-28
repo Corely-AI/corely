@@ -262,3 +262,47 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.task-context {
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--task-border);
+  border-radius: 8px;
+  background: var(--task-panel);
+  margin-top: 0.4rem;
+  overflow-wrap: anywhere;
+}
+.task-context summary {
+  min-height: 44px;
+  padding-top: 0.65rem;
+  cursor: pointer;
+}
+.task-context-body {
+  display: grid;
+  gap: 1rem;
+}
+.task-context-body form {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.task-context-body form label {
+  flex: 1 1 15rem;
+}
+.task-context-body textarea {
+  width: 100%;
+  min-height: 5rem;
+  background: var(--task-panel);
+  color: var(--task-ink);
+  border: 1px solid var(--task-border);
+  border-radius: 6px;
+  padding: 0.6rem;
+}
+.task-context-body a {
+  text-decoration: underline;
+}
+.task-context-preview {
+  max-width: min(100%, 24rem);
+  max-height: 20rem;
+  object-fit: contain;
+}

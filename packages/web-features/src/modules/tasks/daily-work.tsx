@@ -16,6 +16,7 @@ import type {
 import type { TasksClient } from "./tasks-client";
 import { tasksCopy } from "./tasks-copy";
 import { DailyWorkBoard, DailyWorkControls } from "./daily-work-controls";
+import { TaskContextPanel } from "./task-context-panel";
 import "./tasks.css";
 
 function statusOf(error: unknown) {
@@ -305,6 +306,15 @@ export function DailyWork({
           )}
         </div>
       </article>
+      {client.context && (
+        <TaskContextPanel
+          client={client.context}
+          taskId={task.id}
+          workspaceId={task.workspaceId}
+          locale={locale}
+          canWrite={Boolean(data?.capabilities.manage || data?.capabilities.completeOwn)}
+        />
+      )}
     </li>
   );
 

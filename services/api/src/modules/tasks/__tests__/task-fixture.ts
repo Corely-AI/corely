@@ -1,3 +1,10 @@
+import { TaskContextController } from "../adapters/http/task-context.controller";
+import { TaskContextUseCase } from "../application/task-context.usecase";
+import { ExtTaskContextAdapter } from "../infrastructure/ext-task-context.adapter";
+import { PrivateEmailOriginalsAdapter } from "../../documents/infrastructure/prisma/private-email-originals.adapter";
+import { TaskAttachmentsAdapter } from "../../documents/infrastructure/prisma/task-attachments.adapter";
+import { FakeObjectStoragePort } from "../../documents/testkit/fakes/fake-object-storage";
+import type { EnvService } from "@corely/config";
 import { StaffSelfServiceController } from "../../people/adapters/http/staff-self-service.controller";
 import { StaffSelfServiceUseCase } from "../../people/application/staff-self-service.usecase";
 import { StaffLifecycleUseCase } from "../../people/application/staff-lifecycle.usecase";
@@ -228,6 +235,39 @@ export async function tasksFixture(prisma: PrismaService) {
   const clock = { now: () => new Date(instant) };
   const recurringRepo = new ExtRecurringChecklistAdapter(prisma, new PrismaExtKvAdapter(prisma));
   const staffOps = new StaffOperationsLookup(repo);
+  const sourceId = uid();
+  let bookingSourceAvailable = true;
+  const objectStorage = new FakeObjectStoragePort();
+  objectStorage.getObject = async ({ objectKey }) => {
+    const object = objectStorage.objects.get(objectKey);
+    if (!object) {throw new Error("Test attachment missing");}
+    return object.bytes;
+  };
+  const env = { STORAGE_KEY_PREFIX: "" } as EnvService;
+  const documents = new TaskAttachmentsAdapter(
+    prisma,
+    new PrivateEmailOriginalsAdapter(prisma, objectStorage, env),
+    objectStorage,
+    env
+  );
+  const taskContext = new TaskContextUseCase(
+    tasks,
+    staffOps,
+    taskRepo,
+    new ExtTaskContextAdapter(new PrismaExtKvAdapter(prisma)),
+    {
+      booking: {
+        canRead: async (id, current) =>
+          bookingSourceAvailable &&
+          id === sourceId &&
+          current.tenantId === tenantA &&
+          current.workspaceId === workspaceA &&
+          current.userId === manager,
+      },
+    },
+    documents,
+    audit
+  );
   const materializer = new ChecklistMaterializer(
     recurringRepo,
     taskRepo,
@@ -317,9 +357,11 @@ export async function tasksFixture(prisma: PrismaService) {
       StaffController,
       RecurringChecklistsController,
       EmployeeTasksController,
+      TaskContextController,
     ],
     providers: [
       { provide: EmployeeTasksUseCase, useValue: tasks },
+      { provide: TaskContextUseCase, useValue: taskContext },
       { provide: RecurringChecklistsUseCase, useValue: checklists },
       { provide: StaffDirectoryUseCase, useValue: usecase },
       { provide: StaffSelfServiceUseCase, useValue: self },
@@ -338,6 +380,8 @@ export async function tasksFixture(prisma: PrismaService) {
   async function cleanup() {
     await app.close();
     for (const tenantId of [tenantA, tenantB]) {
+      await prisma.file.deleteMany({ where: { tenantId } });
+      await prisma.document.deleteMany({ where: { tenantId } });
       await prisma.extKv.deleteMany({ where: { tenantId, moduleId: { in: ["people", "tasks"] } } });
       await prisma.auditLog.deleteMany({ where: { tenantId } });
       await prisma.outboxEvent.deleteMany({ where: { tenantId } });
@@ -351,6 +395,10 @@ export async function tasksFixture(prisma: PrismaService) {
   }
   return {
     app,
+    sourceId,
+    revokeBookingSource: () => {
+      bookingSourceAvailable = false;
+    },
     self,
     lifecycle,
     lifecycleRepo,
