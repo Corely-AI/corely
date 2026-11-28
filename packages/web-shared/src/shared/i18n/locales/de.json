@@ -435,6 +435,7 @@
     "noResults": "Keine Einträge gefunden."
   },
   "nav": {
+    "operationsToday": "Heute",
     "people": "Personalverzeichnis",
     "peopleSelfService": "Mein Profil",
     "dashboard": "Übersicht",

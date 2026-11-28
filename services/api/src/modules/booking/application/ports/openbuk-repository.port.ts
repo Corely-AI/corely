@@ -10,6 +10,13 @@ import type { TransactionContext } from "@corely/kernel";
 import type { OccupiedInterval } from "../../domain/openbuk-availability";
 
 export type StudioScope = { tenantId: string; workspaceId: string };
+export type OperationalAppointment = {
+  id: string;
+  status: OpenBukAppointment["status"];
+  startAt: Date;
+  endAt: Date;
+  allocations: { resourceId: string; startAt: Date; endAt: Date }[];
+};
 export type BookingReceiptRecord = { fingerprint: string; receipt: OpenBukReceipt };
 export const OPENBUK_REPOSITORY = Symbol("OPENBUK_REPOSITORY");
 export interface OpenBukRepositoryPort {
@@ -51,4 +58,9 @@ export interface OpenBukRepositoryPort {
     tx: TransactionContext
   ): Promise<string>;
   appointments(scope: StudioScope, day: string): Promise<OpenBukAppointment[]>;
+  operationalAppointments(
+    scope: StudioScope,
+    from: Date,
+    to: Date
+  ): Promise<OperationalAppointment[]>;
 }

@@ -189,6 +189,7 @@ General developer guides and references.
 - [Platform Menu API](./platform/menu.md)
 - [Resumable pilot setup](./platform/pilot-setup.md) — private OpenBuk checkpoints, explicit publication and manually shared staff invitations
 - [Operational package configuration](./platform/operational-package.md) — existing OpenBuk client, manifest composition and independent access gates
+- [Operations Today](platform/operations-today.md) — local-day summaries and source availability.
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)
