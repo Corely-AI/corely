@@ -1,13 +1,10 @@
-import type { UseCaseContext } from "@corely/kernel";
-import type {
-  BookingRepositoryPort,
-  HoldRepositoryPort,
-  ResourceRepositoryPort,
-} from "../ports/booking-repo.ports";
+import { createHash } from "node:crypto";
+import type { UnitOfWorkPort, UseCaseContext } from "@corely/kernel";
+import type { BookingRepositoryPort, HoldRepositoryPort } from "../ports/booking-repo.ports";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
 import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
-import { BookingHold } from "../../domain/booking.entities";
+import { BookingHold, type BookingHoldSnapshot } from "../../domain/booking.entities";
 import { ConflictException, BadRequestException } from "@nestjs/common";
 
 export interface CreateHoldInput {
@@ -24,26 +21,21 @@ export interface CreateHoldInput {
 }
 
 export class CreateHoldUseCase {
-  private readonly actionKey = "booking.hold.create";
+  private readonly legacyAction = "booking.hold.create";
 
   constructor(
     private readonly holdRepo: HoldRepositoryPort,
     private readonly bookingRepo: BookingRepositoryPort,
-    private readonly resourceRepo: ResourceRepositoryPort,
     private readonly idempotency: IdempotencyStoragePort,
     private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly unitOfWork: UnitOfWorkPort
   ) {}
 
   async execute(input: CreateHoldInput, ctx: UseCaseContext): Promise<BookingHold> {
-    const tenantId = ctx.tenantId!;
-    const now = this.clock.now();
-
-    if (input.idempotencyKey) {
-      const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
-      if (cached) {
-        return cached.body as BookingHold;
-      }
+    const { tenantId } = ctx;
+    if (!tenantId) {
+      throw new BadRequestException("Select a tenant");
     }
 
     if (input.startAt >= input.endAt) {
@@ -54,72 +46,76 @@ export class CreateHoldUseCase {
       throw new BadRequestException("At least one resourceId is required");
     }
 
-    // Verify resources exist and are active
-    for (const resId of input.resourceIds) {
-      const res = await this.resourceRepo.findById(resId, tenantId);
-      if (!res || !res.isActive) {
-        throw new BadRequestException(`Resource ${resId} not found or inactive`);
+    const workspaceId = ctx.workspaceId ?? null;
+    const action = `booking.hold.create:${workspaceId ?? "tenant"}`;
+    const key = input.idempotencyKey;
+    const ttl = input.ttlSeconds ?? 600;
+    const resourceIds = [...new Set(input.resourceIds)];
+    const fingerprint = createHash("sha256")
+      .update(
+        JSON.stringify([
+          input.startAt,
+          input.endAt,
+          [...resourceIds].sort(),
+          input.serviceOfferingId ?? null,
+          input.bookedByPartyId ?? null,
+          input.bookedByName ?? null,
+          input.bookedByEmail ?? null,
+          input.notes ?? null,
+          ttl,
+        ])
+      )
+      .digest("hex");
+
+    return this.unitOfWork.withinTransaction(async (tx) => {
+      if (key) {
+        await this.bookingRepo.lockMutation(tenantId, `${action}:${key}`, tx);
+        const cached = await this.idempotency.get(action, tenantId, key, tx);
+        if (cached) {
+          const receipt = cached.body as { fingerprint: string; hold: BookingHoldSnapshot };
+          if (receipt.fingerprint !== fingerprint) {
+            throw new ConflictException("Booking:IdempotencyMismatch");
+          }
+          return BookingHold.fromSnapshot(receipt.hold);
+        }
+
+        const legacy = await this.idempotency.get(this.legacyAction, tenantId, key, tx);
+        const previous = legacy?.body as BookingHoldSnapshot | undefined;
+        if (previous?.tenantId === tenantId && previous.workspaceId === workspaceId) {
+          return BookingHold.fromSnapshot(previous);
+        }
       }
 
-      // Check for overlap using booking repository
-      const hasConflict = await this.bookingRepo.hasConflict(
+      const now = this.clock.now();
+      const hold = new BookingHold(
+        this.idGenerator.newId(),
         tenantId,
-        resId,
-        input.startAt,
-        input.endAt
-      );
-      if (hasConflict) {
-        throw new ConflictException(`Resource ${resId} is not available for requested time`);
-      }
-
-      const hasHoldConflict = await this.holdRepo.hasActiveOverlap(
-        tenantId,
-        resId,
+        workspaceId,
+        "ACTIVE",
         input.startAt,
         input.endAt,
+        input.serviceOfferingId ?? null,
+        resourceIds,
+        new Date(now.getTime() + ttl * 1000),
+        input.bookedByPartyId ?? null,
+        input.bookedByName ?? null,
+        input.bookedByEmail ?? null,
+        input.notes ?? null,
+        null,
+        ctx.userId ?? null,
         now
       );
-      if (hasHoldConflict) {
-        throw new ConflictException(`Resource ${resId} already has an active hold for this time`);
+      const created = await this.holdRepo.create(hold, tx);
+      if (key) {
+        await this.idempotency.store(
+          action,
+          tenantId,
+          key,
+          { body: { fingerprint, hold: created } },
+          tx
+        );
       }
-    }
-
-    const ttl = input.ttlSeconds ?? 600; // default 10 min
-    const expiresAt = new Date(now.getTime() + ttl * 1000);
-
-    const hold = new BookingHold(
-      this.idGenerator.newId(),
-      tenantId,
-      ctx.workspaceId ?? null,
-      "ACTIVE",
-      input.startAt,
-      input.endAt,
-      input.serviceOfferingId ?? null,
-      input.resourceIds,
-      expiresAt,
-      input.bookedByPartyId ?? null,
-      input.bookedByName ?? null,
-      input.bookedByEmail ?? null,
-      input.notes ?? null,
-      null, // confirmedBookingId
-      ctx.userId ?? null,
-      now
-    );
-
-    // Note: To be fully safe in high concurrency, the hasConflict check above
-    // and the hold create must be in a transaction. We will lean on the repository
-    // implementation to do a select-for-update if necessary, but holds are soft-locks
-    // so we can be slightly eventually consistent, relying on the hard-confirm to
-    // do the final rigorous check.
-
-    const created = await this.holdRepo.create(hold);
-
-    if (input.idempotencyKey) {
-      await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
-        body: created,
-      });
-    }
-
-    return created;
+      return created;
+    });
   }
 }

@@ -69,6 +69,7 @@ Backend specific documentation.
 - [Staff self-service and departure](./backend/staff-self-service.md) — own-field edits, approved onboarding and explicit workspace access follow-up
 - [Recurring checklists](./backend/recurring-checklists.md) — one task per assignee/local day, checkbox snapshots and bounded background recurrence
 - [Employee tasks](./backend/employee-tasks.md) — Daily Work lifecycle, ownership, permissions and replay/version guarantees
+- [Operational requests](./backend/operational-requests.md) — private drafts, reviewer routing and supporting documents
 - [People staff directory](./backend/people.md) — workspace profiles, identity links and private-field access
 - [Staff availability and Booking](./backend/people-availability.md) — effective working patterns, dated exceptions and Booking constraints
 - [Private absences](./backend/people-absences.md) — revision history, neutral availability and protected personnel files
@@ -109,6 +110,7 @@ Frontend guidelines and specific docs.
 Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
+- [Operational recovery rehearsal](./devops/operational-recovery.md)
 - [GitHub Actions backup](../backup/github-actions/README.md)
 - [Deploy with Vercel and Supabase](./devops/vercel-supabase.md)
 - [Prisma Migration Baseline](./devops/prisma-baseline.md)
@@ -187,7 +189,7 @@ General developer guides and references.
 - [Host-specific sessions and shared API transport](backend/host-sessions.md) — Identity-owned cookie transport and verification limits.
 - [Platform Menu API](./platform/menu.md)
 - [Resumable pilot setup](./platform/pilot-setup.md) — private OpenBuk checkpoints, explicit publication and manually shared staff invitations
-- [Operational package configuration](./platform/operational-package.md) — existing OpenBuk client, manifest composition and independent access gates
+- [Operational package and staff shell](./platform/operational-package.md) — OpenBuk navigation, deep links and independent access gates
 - [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)
@@ -200,7 +202,7 @@ General developer guides and references.
 
 ## Products
 
-- [OpenBuk](products/openbuk/README.md) — focused booking product and implementation roadmap.
+- [OpenBuk](products/openbuk/README.md) — studio setup, small-team booking and release gates.
 - [Booking availability and write consistency](products/openbuk/booking-availability.md)
 - [OpenBuk screenshot walkthrough](products/openbuk/screenshots.md)
 

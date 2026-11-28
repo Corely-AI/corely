@@ -79,7 +79,7 @@ export class CreateBookingUseCase {
         if (receipt) {
           return receipt;
         }
-        const legacy = await this.idempotency.get(this.legacyAction, tenantId, key);
+        const legacy = await this.idempotency.get(this.legacyAction, tenantId, key, tx);
         const previous = legacy?.body as BookingEntity | undefined;
         if (previous?.tenantId === tenantId && previous.workspaceId === (ctx.workspaceId ?? null)) {
           return previous;

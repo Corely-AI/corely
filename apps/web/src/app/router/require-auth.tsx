@@ -26,6 +26,8 @@ export const RequireAuth: React.FC = () => {
   const location = useLocation();
   const surfaceId = useSurfaceId();
   const isOnboardingRoute = location.pathname === "/onboarding";
+  const isOpenBukStudioRoute = /^\/openbuk\/app(?:\/|$)/.test(location.pathname);
+  const isWorkspaceSetupRoute = isOnboardingRoute || isOpenBukStudioRoute;
   const tenantAdminSession = getTenantAdminSession();
   const hint = readWorkspaceHint(location.search);
   const requestedId = hint.kind === "requested" ? hint.workspaceId : undefined;
@@ -54,12 +56,10 @@ export const RequireAuth: React.FC = () => {
   ]);
 
   // Workspace creation is tenant-scoped. Keep its draft mounted during background discovery.
-  const canKeepOnboarding = isOnboardingRoute && hint.kind === "absent" && !tenantAdminSession;
+  const canKeepSetup = isWorkspaceSetupRoute && hint.kind === "absent" && !tenantAdminSession;
   const waitingForWorkspace =
     workspaceInitialLoading ||
-    (workspaceLoading &&
-      !canKeepOnboarding &&
-      (!workspaces.length || (requestedId && !authorizedHint)));
+    (workspaceLoading && !canKeepSetup && (!workspaces.length || (requestedId && !authorizedHint)));
   if (isLoading || waitingForWorkspace) {
     return <PageLoadingSkeleton />;
   }
@@ -68,7 +68,13 @@ export const RequireAuth: React.FC = () => {
     return <TenantAdminSessionBanner />;
   }
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    return (
+      <Navigate
+        to={isOpenBukStudioRoute ? "/openbuk/login" : "/auth/login"}
+        state={{ from: location }}
+        replace
+      />
+    );
   }
   // Block children until discovery validates and adopts the requested workspace.
   if (hint.kind === "invalid" || (requestedId && (!authorizedHint || isHostScope))) {
@@ -81,7 +87,7 @@ export const RequireAuth: React.FC = () => {
   if (tenantAdminSession && workspaces.length === 0) {
     return <TenantAdminSessionBanner />;
   }
-  if (!isOnboardingRoute && workspaces.length === 0 && !isHostScope) {
+  if (!isWorkspaceSetupRoute && workspaces.length === 0 && !isHostScope) {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 

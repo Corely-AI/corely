@@ -4,10 +4,12 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { WorkspaceTemplates } from "../../../../packages/web-features/src/modules/sign/template-page";
 import { RequestActions } from "../../../../packages/web-features/src/modules/sign/request-actions";
+import { RequestDetail } from "../../../../packages/web-features/src/modules/sign/request-page";
 import type { SignRequestDraft } from "@corely/contracts";
 import "../../../../apps/web/src/index.css";
 const path = window.location.pathname;
 const edit = /^\/sign\/templates\/([^/]+)\/edit$/.exec(path);
+const request = /^\/sign\/requests\/([0-9a-f-]{36})$/.exec(path);
 const confirmationDraft: SignRequestDraft = {
   requestId: "10000000-0000-4000-8000-000000000002",
   templateId: "10000000-0000-4000-8000-000000000003",
@@ -20,7 +22,9 @@ const confirmationDraft: SignRequestDraft = {
 };
 createRoot(document.querySelector("#root")!).render(
   <BrowserRouter>
-    {path === "/sign/requests/confirmation-fixture" ? (
+    {request ? (
+      <RequestDetail id={request[1]} workspace="fixture-workspace" />
+    ) : path === "/sign/requests/confirmation-fixture" ? (
       <main className="space-y-4 p-4 sm:p-6">
         <h1 className="text-h1">{confirmationDraft.title}</h1>
         <p>Revision 1 · Parallel</p>

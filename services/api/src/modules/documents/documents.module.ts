@@ -1,5 +1,7 @@
 import { TaskAttachmentsAdapter } from "./infrastructure/prisma/task-attachments.adapter";
 import { TASK_ATTACHMENTS } from "./application/ports/task-attachments.port";
+import { OperationalRequestDocumentsAdapter } from "./infrastructure/prisma/operational-request-documents.adapter";
+import { OperationalRequestDocuments } from "./public";
 import { PersonnelDocumentsAdapter } from "./infrastructure/prisma/personnel-documents.adapter";
 import { EXPENSE_RECEIPT_DOCUMENTS, PERSONNEL_DOCUMENTS, VENDOR_BILL_DOCUMENTS } from "./public";
 import { ExpenseReceiptDocumentsAdapter } from "./infrastructure/prisma/expense-receipt-documents.adapter";
@@ -62,6 +64,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     { provide: EXPENSE_RECEIPT_DOCUMENTS, useClass: ExpenseReceiptDocumentsAdapter },
     { provide: VENDOR_BILL_DOCUMENTS, useExisting: VendorBillDocumentsAdapter },
     { provide: PERSONNEL_DOCUMENTS, useExisting: PersonnelDocumentsAdapter },
+    { provide: OperationalRequestDocuments, useClass: OperationalRequestDocumentsAdapter },
     { provide: TemplateDocuments, useClass: PrismaTemplateDocuments },
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
@@ -370,6 +373,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     VENDOR_BILL_DOCUMENTS,
     PERSONNEL_DOCUMENTS,
     TemplateDocuments,
+    OperationalRequestDocuments,
     DocumentsApplication,
     GcsObjectStorageAdapter,
     ListLinkedDocumentsUseCase,

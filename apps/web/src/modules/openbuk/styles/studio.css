@@ -91,14 +91,32 @@
     display: flex;
     gap: 14px;
   }
-  .sidebar nav a.active {
+  .sidebar nav a[aria-current="page"] {
     background: #dde6d6;
     font-weight: 700;
+  }
+  .studio-skip-link:not(:focus) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .studio-skip-link:focus {
+    align-self: flex-start;
+    padding: 8px;
+    background: white;
+    margin: 8px 0;
   }
   .sidebar-bottom {
     margin-top: auto;
     display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     justify-content: space-between;
+  }
+  .sidebar-bottom .text-button {
+    white-space: nowrap;
   }
   .studio-main {
     margin-left: 235px;
@@ -160,6 +178,40 @@
     gap: 12px;
     padding: 22px 25px;
     border-bottom: 1px solid var(--line);
+  }
+  .studio-schedule-skeleton {
+    display: grid;
+    gap: 12px;
+  }
+  .schedule .studio-schedule-skeleton {
+    padding: 16px 24px;
+  }
+  .studio-schedule-skeleton .page-heading {
+    row-gap: 12px;
+  }
+  .studio-schedule-skeleton
+    :is(
+      .studio-skeleton-title,
+      .studio-skeleton-date,
+      .studio-skeleton-public,
+      .studio-skeleton-row
+    ) {
+    background: var(--soft);
+  }
+  .studio-skeleton-title {
+    width: min(100%, 280px);
+    height: 58px;
+  }
+  .studio-skeleton-date {
+    width: 175px;
+    height: 47px;
+  }
+  .studio-skeleton-public {
+    height: 95px;
+    margin: 12px 0 20px;
+  }
+  .studio-skeleton-row {
+    height: 66px;
   }
   .schedule-header h2 {
     font-family: "DM Sans", sans-serif;
@@ -263,6 +315,23 @@
   .setup-form .muted {
     font-size: 12px;
   }
+  .team-booking-settings {
+    max-width: 800px;
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .team-booking-settings .setup-form > h3 {
+    margin: 24px 0 16px;
+  }
+  .team-booking-settings .team-eligibility {
+    margin: 4px 0 16px;
+    font-size: 13px;
+  }
+  .team-booking-settings .check-label {
+    min-height: 36px;
+    width: fit-content;
+  }
   .hours-row {
     display: flex;
     align-items: center;
@@ -314,4 +383,19 @@
   .staff-invitations input {
     max-width: 100%;
   }
+}
+
+/* OpenBuk has its own light palette. Give embedded shared views matching tokens. */
+.openbuk-embedded {
+  color-scheme: light;
+  --background: 48 45% 98%;
+  --foreground: 162 28% 18%;
+  --muted-foreground: 150 10% 36%;
+  --border: 100 15% 86%;
+  --input: 100 13% 82%;
+  --card: 0 0% 100%;
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --ring: 153 34% 35%;
 }

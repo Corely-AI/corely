@@ -15,13 +15,17 @@ original allocation roles and buffers, checks active holds and other bookings,
 and rechecks authoritative linked staff availability before updating. Cancellation
 and rescheduling serialize on the same booking lock. Booking creation and hold
 consumption, and a move's booking and changed allocations, commit with their
-audit, outbox and new idempotency receipts in the same transaction.
+audit, outbox and new idempotency receipts in the same transaction. Availability
+rule edits take the same resource lock and commit with their audit entry. An
+availability rule for a workspace-owned resource is editable and readable only
+in that workspace. Legacy tenant-wide resources keep their existing scope.
 
-New legacy create receipt keys are scoped to tenant and workspace. Reschedule
+New legacy booking and hold create receipt keys are scoped to tenant and workspace. Reschedule
 receipts are scoped to tenant and booking. The same key and payload returns the
 result captured at commit. Changing the payload returns a conflict. Historical
 create receipts continue to replay in their original workspace. Their stored
-format contains no request fingerprint.
+format contains no request fingerprint. A newly created hold and its receipt
+commit together, so simultaneous retries of the same request reserve time once.
 
 The OpenBuk public slot calculation and internal reservation intake have
 different rules. The internal intake continues to accept explicit intervals

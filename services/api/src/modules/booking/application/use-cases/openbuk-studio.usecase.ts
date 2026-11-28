@@ -21,10 +21,12 @@ import {
   OpenBukPublicStudioSchema,
   OpenBukSetupSchema,
   OpenBukSetupDraftSchema,
+  OpenBukTeamUpdateSchema,
   type OpenBukSetupDraft,
   type OpenBukSetup,
   type OpenBukBook,
   type OpenBukReceipt,
+  type OpenBukTeamUpdate,
 } from "@corely/contracts";
 import { StaffAvailabilityConstraintService } from "../../../people/public";
 import { createHash, randomBytes } from "node:crypto";
@@ -33,6 +35,7 @@ import {
   OPENBUK_REPOSITORY,
   type OpenBukRepositoryPort,
   type StudioScope,
+  type OpenBukSelection,
 } from "../ports/openbuk-repository.port";
 import { openBukAvailability, studioDate } from "../../domain/openbuk-availability";
 import { assertPublicModuleEnabled } from "../../../../shared/public";
@@ -70,7 +73,7 @@ export class OpenBukStudioUseCase {
       throw new BadRequestException("Authentication required");
     }
     const workspace = await this.authorize.execute({ ...scope, userId: ctx.userId, manage }, tx);
-    return { scope, workspace };
+    return { scope, workspace, userId: ctx.userId };
   }
   private publicScope(ctx: UseCaseContext) {
     const error = assertPublicModuleEnabled(ctx, "booking");
@@ -81,7 +84,52 @@ export class OpenBukStudioUseCase {
   }
   async getStudio(ctx: UseCaseContext) {
     const { scope, workspace } = await this.admin(ctx);
-    return { studio: await this.repo.studio(scope), canManage: workspace.canManage === true };
+    return {
+      studio: await this.repo.studioSettings(scope),
+      canManage: workspace.canManage === true,
+    };
+  }
+  async getTeam(ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    return { team: await this.repo.team(scope, this.clock.now()) };
+  }
+  async saveTeam(input: OpenBukTeamUpdate, ctx: UseCaseContext) {
+    const { scope, userId } = await this.admin(ctx, true);
+    const update = OpenBukTeamUpdateSchema.parse(input);
+    const fingerprint = createHash("sha256").update(JSON.stringify(update)).digest("hex");
+    return this.uow.withinTransaction(async (tx) => {
+      await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
+      await this.admin(ctx, true, tx);
+      const { team, changed } = await this.repo.saveTeam(
+        scope,
+        update,
+        fingerprint,
+        this.clock.now(),
+        tx
+      );
+      if (changed) {
+        await this.audit.log(
+          {
+            tenantId: scope.tenantId,
+            userId,
+            action: "openbuk.team.configured",
+            entityType: "Workspace",
+            entityId: scope.workspaceId,
+            metadata: { revision: team.revision },
+          },
+          tx
+        );
+        await this.outbox.enqueue(
+          {
+            tenantId: scope.tenantId,
+            eventType: "booking.openbuk-team.configured",
+            payload: { workspaceId: scope.workspaceId, revision: team.revision },
+          },
+          tx
+        );
+      }
+      return { team };
+    });
   }
   async getSetup(ctx: UseCaseContext) {
     const { scope } = await this.admin(ctx, true);
@@ -145,17 +193,24 @@ export class OpenBukStudioUseCase {
     }
   }
   async publicStudio(ctx: UseCaseContext) {
-    const studio = await this.repo.studio(this.publicScope(ctx));
-    if (!studio) {
+    const catalog = await this.repo.publicCatalog(this.publicScope(ctx));
+    if (!catalog) {
       throw new NotFoundException({
         code: "Booking:ServiceUnavailable",
         message: "Booking:ServiceUnavailable",
       });
     }
-    return { studio: OpenBukPublicStudioSchema.parse(studio) };
+    return {
+      studio: OpenBukPublicStudioSchema.parse({ ...catalog.studio, services: catalog.services }),
+    };
   }
-  private async slots(scope: StudioScope, day: string, tx?: TransactionContext) {
-    const studio = await this.repo.studio(scope, tx);
+  private async slots(
+    scope: StudioScope,
+    day: string,
+    selection?: OpenBukSelection,
+    tx?: TransactionContext
+  ) {
+    const studio = await this.repo.studio(scope, tx, selection);
     if (!studio) {
       throw new NotFoundException({
         code: "Booking:ServiceUnavailable",
@@ -181,8 +236,8 @@ export class OpenBukStudioUseCase {
     );
     return { studio, slots: openBukAvailability(studio, day, now, busy, staffWindows) };
   }
-  async availability(day: string, ctx: UseCaseContext) {
-    const result = await this.slots(this.publicScope(ctx), day);
+  async availability(day: string, ctx: UseCaseContext, selection?: OpenBukSelection) {
+    const result = await this.slots(this.publicScope(ctx), day, selection);
     return { slots: result.slots, timezone: result.studio.timezone };
   }
   async book(input: OpenBukBook, key: string, ctx: UseCaseContext) {
@@ -203,8 +258,8 @@ export class OpenBukStudioUseCase {
         }
         return { receipt: saved.receipt };
       }
-      const initial = await this.repo.studio(scope, tx);
-      if (!initial || initial.serviceId !== input.serviceId || initial.staffId !== input.staffId) {
+      const initial = await this.repo.studio(scope, tx, input);
+      if (!initial) {
         throw new NotFoundException({
           code: "Booking:ServiceUnavailable",
           message: "Booking:ServiceUnavailable",
@@ -214,6 +269,7 @@ export class OpenBukStudioUseCase {
       const { studio, slots } = await this.slots(
         scope,
         studioDate(new Date(input.startAt), initial.timezone),
+        input,
         tx
       );
       const slot = slots.find((s) => s.startAt === new Date(input.startAt).toISOString());

@@ -52,7 +52,7 @@ test("Daily Work creates, assigns, completes and reopens one task, including sta
     await route.abort("failed");
   });
   await page.goto("/openbuk/app/tasks");
-  await expect(page.getByRole("alert")).toContainText("Daily Work is unavailable");
+  await expect(page.getByRole("heading", { name: "Section unavailable" })).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath("tasks-disabled-desktop.png"),
     fullPage: true,
