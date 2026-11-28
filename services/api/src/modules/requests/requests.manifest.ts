@@ -1,4 +1,6 @@
-import type { AppManifest } from "@corely/contracts";
+import { OperationalExperienceIdSchema, type AppManifest } from "@corely/contracts";
+
+const decisionsExperience = OperationalExperienceIdSchema.safeParse("decisions");
 
 export const requestsAppManifest: AppManifest = {
   appId: "requests",
@@ -22,6 +24,15 @@ export const requestsAppManifest: AppManifest = {
     displayName: { en: "Requests", de: "Anträge", vi: "Yêu cầu" },
     category: "operations",
   },
+  operationalExperiences: decisionsExperience.success
+    ? [
+        {
+          experienceId: decisionsExperience.data,
+          route: "/requests/inbox",
+          requiredPermissions: ["requests.read", "requests.review"],
+        },
+      ]
+    : [],
   menu: [
     {
       id: "requests",

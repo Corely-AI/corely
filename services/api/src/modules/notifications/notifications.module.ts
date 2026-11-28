@@ -10,6 +10,7 @@ import { ListNotificationsUseCase } from "./application/use-cases/list-notificat
 import { GetUnreadCountUseCase } from "./application/use-cases/get-unread-count.usecase";
 import { MarkReadUseCase } from "./application/use-cases/mark-read.usecase";
 import { MarkAllReadUseCase } from "./application/use-cases/mark-all-read.usecase";
+import { PublishNotificationUseCase } from "./application/use-cases/publish-notification.usecase";
 import { PrismaNotificationRepository } from "./infrastructure/prisma-notification.repository";
 import { NOTIFICATION_REPOSITORY } from "./application/ports/notification.repository.port";
 import { APPOINTMENT_DELIVERY_STORE } from "./application/ports/appointment-delivery.port";
@@ -20,6 +21,7 @@ import { PrismaAppointmentDeliveryStore } from "./infrastructure/prisma-appointm
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule, WorkspacesModule, BookingModule],
   controllers: [NotificationsController],
   providers: [
+    PublishNotificationUseCase,
     ListNotificationsUseCase,
     GetUnreadCountUseCase,
     MarkReadUseCase,
@@ -31,6 +33,6 @@ import { PrismaAppointmentDeliveryStore } from "./infrastructure/prisma-appointm
       useClass: PrismaNotificationRepository,
     },
   ],
-  exports: [AppointmentDeliveryUseCase],
+  exports: [AppointmentDeliveryUseCase, PublishNotificationUseCase],
 })
 export class NotificationsModule {}

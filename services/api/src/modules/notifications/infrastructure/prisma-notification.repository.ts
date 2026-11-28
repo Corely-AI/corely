@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+import type { TransactionContext } from "@corely/kernel";
+import type { Prisma } from "@prisma/client";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type {
@@ -6,11 +9,56 @@ import type {
   NotificationRepositoryPort,
 } from "../application/ports/notification.repository.port";
 import type { Notification } from "../domain/notification.entity";
-import { NotificationSeveritySchema } from "@corely/contracts";
+import { NotificationSeveritySchema, type NotificationIntentPayload } from "@corely/contracts";
 
 @Injectable()
 export class PrismaNotificationRepository implements NotificationRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
+
+  async publish(payload: NotificationIntentPayload, tx?: TransactionContext): Promise<void> {
+    const { tenantId, workspaceId, dedupeKey, recipientUserIds, ...data } = payload;
+    const write = async (client: Prisma.TransactionClient) => {
+      const scope = { tenantId, workspaceId, dedupeKey };
+      const createdAt = new Date(data.createdAt);
+      await client.notification.createMany({
+        data: [
+          {
+            ...scope,
+            type: data.type,
+            severity: data.severity,
+            title: data.title,
+            body: data.body,
+            resource: data.resource,
+            data: (data.data ?? {}) as Prisma.InputJsonValue,
+            createdAt,
+          },
+        ],
+        skipDuplicates: true,
+      });
+      if (recipientUserIds.length === 0) {
+        return;
+      }
+      const notification = await client.notification.findUniqueOrThrow({
+        where: { tenantId_workspaceId_dedupeKey: scope },
+        select: { id: true },
+      });
+      await client.notificationRecipient.createMany({
+        data: recipientUserIds.map((userId) => ({
+          tenantId,
+          workspaceId,
+          id: randomUUID(),
+          notificationId: notification.id,
+          userId,
+          createdAt,
+        })),
+        skipDuplicates: true,
+      });
+    };
+    if (tx) {
+      return write(tx as unknown as Prisma.TransactionClient);
+    }
+    return this.prisma.$transaction(write);
+  }
 
   async list(params: ListNotificationsParams): Promise<ListNotificationsResult> {
     const { tenantId, workspaceId, userId, status, page, pageSize } = params;

@@ -219,6 +219,14 @@ export const appShellRoutes = (
         }
       />
       <Route
+        path="/requests/inbox"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationalRequestsPage view="inbox" />
+          </RequireSurface>
+        }
+      />
+      <Route
         path="/requests/:id"
         element={
           <RequireSurface surfaces={["platform"]}>

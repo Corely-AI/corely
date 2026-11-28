@@ -1,3 +1,5 @@
+import type { NotificationIntentPayload } from "@corely/contracts";
+import type { TransactionContext } from "@corely/kernel";
 import { type Notification } from "../../domain/notification.entity";
 
 export interface ListNotificationsParams {
@@ -15,6 +17,7 @@ export interface ListNotificationsResult {
 }
 
 export interface NotificationRepositoryPort {
+  publish(payload: NotificationIntentPayload, tx?: TransactionContext): Promise<void>;
   list(params: ListNotificationsParams): Promise<ListNotificationsResult>;
   countUnread(tenantId: string, workspaceId: string, userId: string): Promise<number>;
   markRead(

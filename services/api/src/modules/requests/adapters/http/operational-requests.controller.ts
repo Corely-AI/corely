@@ -30,6 +30,11 @@ export class OperationalRequestsController {
     return this.requests.list(query, toUseCaseContext(req));
   }
 
+  @Get("inbox")
+  inbox(@Query() query: unknown, @Req() req: ContextAwareRequest) {
+    return this.requests.inbox(query, toUseCaseContext(req));
+  }
+
   @Get("routing")
   routes(@Req() req: ContextAwareRequest) {
     return this.requests.routes(toUseCaseContext(req));

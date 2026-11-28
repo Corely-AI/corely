@@ -5523,6 +5523,7 @@
       "issue-created": "Đã tạo sự cố"
     },
     "notifications-notification-item": {
+      "request-awaiting-review": "Có yêu cầu đang chờ xét duyệt",
       "view-details": "Xem chi tiết",
       "mark-as-read": "Đánh dấu là đã đọc"
     },
