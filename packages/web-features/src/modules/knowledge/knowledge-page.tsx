@@ -25,8 +25,9 @@ import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-pro
 import { createProceduresClient, type ProceduresClient } from "./procedures-client";
 import { knowledgeCopy, type KnowledgeCopy } from "./knowledge-copy";
 import { ProcedureForm } from "./procedure-form";
+import { KnowledgeAssistant } from "./knowledge-assistant";
 
-type Mode = "list" | "search" | "published" | "new" | "detail" | "edit";
+type Mode = "list" | "search" | "published" | "new" | "detail" | "edit" | "ask";
 type ScopeKey = readonly unknown[];
 type Action = "publish" | "archive";
 type FormValues = Pick<UpdateProcedure, "title" | "reviewDate" | "content">;
@@ -98,7 +99,14 @@ type KnowledgeViewProps = {
   basePath: string;
 };
 
-function PublishedSearchView({ client, scope, copy, locale, basePath }: KnowledgeViewProps) {
+function PublishedSearchView({
+  client,
+  scope,
+  copy,
+  locale,
+  basePath,
+  assistantEnabled,
+}: KnowledgeViewProps & { assistantEnabled: boolean }) {
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const query = useQuery({
@@ -113,6 +121,11 @@ function PublishedSearchView({ client, scope, copy, locale, basePath }: Knowledg
           <h1 className="text-2xl font-semibold">{copy.heading}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{copy.subtitle}</p>
         </div>
+        {assistantEnabled && (
+          <Button variant="outline" asChild>
+            <Link to={`${basePath}/ask`}>{copy.ask}</Link>
+          </Button>
+        )}
         {!query.isFetching && !query.isError && query.data?.canManage && (
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
@@ -624,9 +637,11 @@ function ProcedureDetailView({
 export function KnowledgePage({
   mode = "search",
   basePath = "/knowledge",
+  assistantEnabled = false,
 }: {
   mode?: Mode;
   basePath?: string;
+  assistantEnabled?: boolean;
 }) {
   const { activeWorkspaceId } = useWorkspace();
   const { user } = useAuth();
@@ -646,6 +661,14 @@ export function KnowledgePage({
     >
       {!activeWorkspaceId ? (
         <p role="alert">{copy.denied}</p>
+      ) : mode === "ask" ? (
+        <KnowledgeAssistant
+          client={client}
+          copy={copy}
+          locale={locale}
+          basePath={basePath}
+          enabled={assistantEnabled}
+        />
       ) : mode === "search" ? (
         <PublishedSearchView
           client={client}
@@ -653,6 +676,7 @@ export function KnowledgePage({
           copy={copy}
           locale={locale}
           basePath={basePath}
+          assistantEnabled={assistantEnabled}
         />
       ) : mode === "published" ? (
         id ? (

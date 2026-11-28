@@ -1,4 +1,5 @@
 import {
+  KnowledgeAnswerSchema,
   ProcedureDetailSchema,
   ProcedureListSchema,
   PublishedProcedureReaderDetailSchema,
@@ -29,6 +30,19 @@ export function createProceduresClient(
     );
   }
   return {
+    ask: async (question: string) =>
+      KnowledgeAnswerSchema.parse(
+        await api.request(
+          "/copilot/knowledge/answer",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Workspace-Id": workspaceId },
+            body: JSON.stringify({ question }),
+            cache: "no-store",
+          },
+          { workspaceScope: "none" }
+        )
+      ),
     list: async (signal: AbortSignal) => ProcedureListSchema.parse(await request("", {}, signal)),
     detail: async (id: string, signal: AbortSignal) =>
       ProcedureDetailSchema.parse(await request(`/${encodeURIComponent(id)}`, {}, signal)),

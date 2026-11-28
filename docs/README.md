@@ -56,6 +56,7 @@ High-level design, boundaries, and core decisions.
 Design and implementation of the AI features.
 
 - [AI Copilot](./ai/ai-copilot.md)
+- [Cited Knowledge answer verification](./tasks/325-cited-knowledge-answers.md)
 - [Streaming Architecture](./ai/COPILOT_STREAMING.md)
 - [Streaming Implementation](./ai/copilot-streaming.md)
 - [Prompt Management](./ai/prompt-management.md)

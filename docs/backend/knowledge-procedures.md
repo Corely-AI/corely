@@ -17,6 +17,17 @@ Search reads the workspace collection directly and returns no cached excerpts. R
 responses use private no-store caching. The browser excludes Knowledge queries from offline
 snapshots and removes older Knowledge entries when restoring a snapshot.
 
+## Cited questions
+
+The Backoffice assistant selects evidence from current published pages. Each citation
+contains a verbatim passage, publication version and source link. The answer records
+when the source was last checked and flags an overdue review date.
+
+Copilot asks its text model for passage identifiers. Knowledge authorizes the candidate
+read and rechecks every selected passage, its version and access after selection. When the
+current page cannot confirm the passage, Copilot reports insufficient or changed evidence.
+The manual search and published reader remain available when the provider is unavailable.
+
 Knowledge is an authenticated Backoffice collection at `/knowledge`. Install
 and enable the Knowledge app through Platform and grant `knowledge.read` to
 workspace members who need the current published version. Grant

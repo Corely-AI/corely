@@ -292,6 +292,22 @@ describe.skipIf(!enabled)("private procedure publication with PostgreSQL", () =>
     expect(await app.canRead(created.id, outsider)).toBe(false);
     expect(await app.canRead(created.id, otherTenant)).toBe(false);
     expect((await app.searchPublished({}, outsider)).items).toEqual([]);
+    const question = "Where is the blue equipment cart?";
+    const citations = await app.findPublishedPassages(question, reader);
+    expect(citations).toMatchObject([
+      {
+        id: created.id,
+        title: fields.title,
+        quote: "Check the blue equipment cart.",
+        version: 1,
+        reviewOverdue: true,
+      },
+    ]);
+    expect(await app.findPublishedPassages(question, outsider)).toEqual([]);
+    expect(await app.findPublishedPassages(question, otherTenant)).toEqual([]);
+    expect(await app.findPublishedPassages("Red equipment cart", reader)).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ quote: "Red equipment cart" })])
+    );
     if (!reader.userId) throw new Error("Missing reader fixture");
     revoked.add(reader.userId);
     try {
@@ -299,6 +315,9 @@ describe.skipIf(!enabled)("private procedure publication with PostgreSQL", () =>
       await expect(app.previewPublished(created.id, reader)).rejects.toMatchObject({ status: 403 });
       await expect(app.detailPublished(created.id, reader)).rejects.toMatchObject({ status: 403 });
       await expect(app.searchPublished({}, reader)).rejects.toMatchObject({ status: 403 });
+      await expect(app.findPublishedPassages(question, reader)).rejects.toMatchObject({
+        status: 403,
+      });
     } finally {
       revoked.delete(reader.userId);
     }
