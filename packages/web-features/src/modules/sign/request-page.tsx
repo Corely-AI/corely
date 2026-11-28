@@ -14,6 +14,7 @@ import { apiClient } from "@corely/web-shared/lib/api-client";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { RequestActions } from "./request-actions";
+import { RequestDetailSkeleton } from "./request-loading";
 export default function RequestPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -37,14 +38,14 @@ export default function RequestPage() {
     );
   }
   return (
-    <Detail
+    <RequestDetail
       key={JSON.stringify([id, user.userId, user.activeTenantId, activeWorkspaceId])}
       id={id}
       workspace={activeWorkspaceId}
     />
   );
 }
-function Detail({ id, workspace }: { id: string; workspace: string }) {
+export function RequestDetail({ id, workspace }: { id: string; workspace: string }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState<SignRequestDraft>(),
     [error, setError] = useState(""),
@@ -81,14 +82,7 @@ function Detail({ id, workspace }: { id: string; workspace: string }) {
     );
   }
   if (!draft) {
-    return (
-      <LoadingSkeleton
-        label={t("sign.loadingRequest")}
-        variant="detail"
-        className="p-4 sm:p-6 lg:p-8"
-        withHeading
-      />
-    );
+    return <RequestDetailSkeleton />;
   }
   return (
     <section className="space-y-4 p-4 sm:p-6 lg:p-8">
