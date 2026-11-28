@@ -72,7 +72,7 @@ export interface OpenBukRepositoryPort {
   create(
     scope: StudioScope,
     studio: OpenBukStudio,
-    input: OpenBukBook,
+    input: Pick<OpenBukBook, "customer">,
     receipt: OpenBukReceipt,
     tx: TransactionContext
   ): Promise<string>;

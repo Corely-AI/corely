@@ -426,7 +426,7 @@ export class PrismaOpenBukRepositoryAdapter implements OpenBukRepositoryPort {
   async create(
     scope: StudioScope,
     studio: OpenBukStudio,
-    input: OpenBukBook,
+    input: Pick<OpenBukBook, "customer">,
     receipt: OpenBukReceipt,
     tx: TransactionContext
   ) {
