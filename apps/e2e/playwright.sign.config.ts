@@ -5,6 +5,7 @@ export default defineConfig({
     "template-authoring.spec.ts",
     "request-confirmation.spec.ts",
     "request-loading.spec.ts",
+    "request-editing.spec.ts",
   ],
   workers: 1,
   retries: 0,

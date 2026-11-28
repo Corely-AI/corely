@@ -11,8 +11,9 @@ import {
   LoadingSkeleton,
 } from "@corely/ui";
 import type { SignRequestDraft } from "@corely/contracts";
-import { lazy, Suspense, type ReactNode } from "react";
+import { lazy, Suspense, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { SignerMark } from "./signer-colors";
 
 const RequestDocumentPreview = lazy(() => import("./request-document-preview"));
 
@@ -38,8 +39,10 @@ export function RequestReview({
   onSend: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const [documentReady, setDocumentReady] = useState(false);
   const date = new Intl.DateTimeFormat(i18n.language, {
     dateStyle: "medium",
+    timeStyle: "medium",
     timeZone: "UTC",
   }).format(new Date(expiresAt));
 
@@ -51,7 +54,13 @@ export function RequestReview({
       >
         <AlertDialogHeader>
           <AlertDialogTitle>{t("sign.reviewSend")}</AlertDialogTitle>
-          <AlertDialogDescription>{t("sign.reviewSendDescription")}</AlertDialogDescription>
+          <AlertDialogDescription>
+            {t(
+              draft.replacesRequestId
+                ? "sign.confirmReplacementDescription"
+                : "sign.reviewSendDescription"
+            )}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="min-h-0 overflow-y-auto pr-1">
           <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
@@ -59,10 +68,17 @@ export function RequestReview({
               <ReviewSection title={t("sign.recipientsTitle")}>
                 <p>{t("sign." + draft.routing + "Delivery")}</p>
                 <ol className="ml-5 list-decimal space-y-2">
-                  {draft.recipients.map((recipient) => (
+                  {draft.recipients.map((recipient, index) => (
                     <li key={recipient.roleId}>
-                      <div className="break-words font-medium text-foreground">
-                        {recipient.name}
+                      <div className="flex items-center gap-2 font-medium text-foreground">
+                        <SignerMark
+                          index={
+                            draft.configuration?.layout.roles.findIndex(
+                              (role) => role.id === recipient.roleId
+                            ) ?? index
+                          }
+                        />
+                        <span className="min-w-0 break-words">{recipient.name}</span>
                       </div>
                       <div className="break-all">{recipient.email}</div>
                     </li>
@@ -80,7 +96,11 @@ export function RequestReview({
             <div className="min-w-0 self-start space-y-3">
               <h3 className="font-medium">{t("sign.pdf")}</h3>
               <Suspense fallback={<LoadingSkeleton label={t("sign.opening")} variant="detail" />}>
-                <RequestDocumentPreview draft={draft} workspace={workspace} />
+                <RequestDocumentPreview
+                  draft={draft}
+                  workspace={workspace}
+                  onReady={setDocumentReady}
+                />
               </Suspense>
             </div>
           </div>
@@ -89,10 +109,10 @@ export function RequestReview({
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             className={buttonVariants({ variant: "accent" })}
-            disabled={busy}
+            disabled={busy || (Boolean(draft.configuration) && !documentReady)}
             onClick={onSend}
           >
-            {t("sign.sendInvitations")}
+            {t(draft.replacesRequestId ? "sign.sendReplacement" : "sign.sendInvitations")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

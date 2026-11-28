@@ -6,13 +6,15 @@ import {
   SignCeremonyStatusSchema,
   SignRequestDraftSchema,
   type CreateSignRequestDraft,
+  type SignRequestDraftConfiguration,
+  type UpdateSignRequestDraft,
 } from "@corely/contracts";
 import type { TransactionContext } from "@corely/kernel";
 import {
   RequestDraftRepository,
   type RequestOwner,
 } from "../../application/ports/request-draft.repository";
-const include = {
+export const signRequestDraftInclude = {
   publication: { select: { canonicalSha256: true, snapshot: { select: { title: true } } } },
 };
 type DraftRow = {
@@ -21,9 +23,11 @@ type DraftRow = {
   templateRevision: number;
   recipients: unknown;
   routing: string;
+  configuration: unknown;
+  replacesRequestId: string | null;
   publication: { canonicalSha256: string; snapshot: { title: string } };
 };
-function project(row: DraftRow) {
+export function projectSignRequestDraft(row: DraftRow) {
   const { requestId, templateId, templateRevision, recipients, routing } = row;
   return SignRequestDraftSchema.parse({
     requestId,
@@ -34,6 +38,8 @@ function project(row: DraftRow) {
     title: row.publication.snapshot.title,
     canonicalSha256: row.publication.canonicalSha256,
     status: "DRAFT",
+    configuration: row.configuration ?? undefined,
+    replacesRequestId: row.replacesRequestId ?? undefined,
   });
 }
 @Injectable()
@@ -62,9 +68,9 @@ export class PrismaRequestDraftRepository extends RequestDraftRepository {
   async replay(owner: RequestOwner, commandId: string, tx: TransactionContext) {
     const row = await getPrismaClient(this.db, tx).signRequestDraft.findFirst({
       where: { ...owner, commandId },
-      include,
+      include: signRequestDraftInclude,
     });
-    return row ? { fingerprint: row.fingerprint, draft: project(row) } : null;
+    return row ? { fingerprint: row.fingerprint, draft: projectSignRequestDraft(row) } : null;
   }
   async list(owner: RequestOwner, after?: string, filters: SignRequestFilter = {}) {
     const now = new Date(),
@@ -115,9 +121,9 @@ export class PrismaRequestDraftRepository extends RequestDraftRepository {
   async get(owner: RequestOwner, requestId: string, tx?: TransactionContext) {
     const row = await getPrismaClient(this.db, tx).signRequestDraft.findFirst({
       where: { ...owner, requestId },
-      include,
+      include: signRequestDraftInclude,
     });
-    return row ? project(row) : null;
+    return row ? projectSignRequestDraft(row) : null;
   }
   async create(
     owner: RequestOwner,
@@ -125,7 +131,8 @@ export class PrismaRequestDraftRepository extends RequestDraftRepository {
     commandId: string,
     fingerprint: string,
     input: CreateSignRequestDraft,
-    tx: TransactionContext
+    tx: TransactionContext,
+    replacement?: { requestId: string; configuration: SignRequestDraftConfiguration }
   ) {
     const { templateId, templateRevision, recipients, routing } = input;
     const row = await getPrismaClient(this.db, tx).signRequestDraft.create({
@@ -138,9 +145,48 @@ export class PrismaRequestDraftRepository extends RequestDraftRepository {
         templateRevision,
         recipients,
         routing,
+        replacesRequestId: replacement?.requestId,
+        configuration: replacement?.configuration,
       },
-      include,
+      include: signRequestDraftInclude,
     });
-    return project(row);
+    return projectSignRequestDraft(row);
+  }
+
+  async update(
+    owner: RequestOwner,
+    requestId: string,
+    input: UpdateSignRequestDraft,
+    tx: TransactionContext
+  ) {
+    const row = await getPrismaClient(this.db, tx).signRequestDraft.update({
+      where: {
+        tenantId_workspaceId_requestId: {
+          tenantId: owner.tenantId,
+          workspaceId: owner.workspaceId,
+          requestId,
+        },
+        actorId: owner.actorId,
+      },
+      data: {
+        recipients: input.recipients,
+        routing: input.routing,
+        configuration: {
+          revision: input.expectedRevision + 1,
+          layout: input.layout,
+          settings: input.settings,
+        },
+      },
+      include: signRequestDraftInclude,
+    });
+    return projectSignRequestDraft(row);
+  }
+
+  async replacement(owner: RequestOwner, originalId: string, tx: TransactionContext) {
+    const row = await getPrismaClient(this.db, tx).signRequestDraft.findFirst({
+      where: { ...owner, replacesRequestId: originalId },
+      include: signRequestDraftInclude,
+    });
+    return row ? projectSignRequestDraft(row) : null;
   }
 }

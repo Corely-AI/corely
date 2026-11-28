@@ -5,10 +5,16 @@ import { UNIT_OF_WORK, type UnitOfWorkPort, type UseCaseContext } from "@corely/
 import { AuthorizeWorkspaceUseCase } from "../../../workspaces/public";
 import { CeremonyRepository } from "../ports/ceremony.repository";
 import { SignDraftRepository } from "../ports/sign-draft.repository";
-import { signingProgress, validSigningExpiry } from "../../domain/signing-lifecycle";
+import {
+  effectiveCeremonyStatus,
+  signingProgress,
+  validSigningExpiry,
+} from "../../domain/signing-lifecycle";
+import { hasRequiredSignatures } from "../../domain/template-revision";
 import { CeremonyTransitionsService } from "../services/ceremony-transitions.service";
 import { InvitationSecrets } from "../ports/invitation-secrets";
 import { SignRequestAccessService } from "../services/sign-request-access.service";
+import { CoachingSignRequestLinks } from "../../../coaching-engagements/public/sign-request-links";
 
 @Injectable()
 export class SendSignRequestUseCase {
@@ -19,7 +25,8 @@ export class SendSignRequestUseCase {
     private readonly repo: CeremonyRepository,
     private readonly templates: SignDraftRepository,
     @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWorkPort,
-    private readonly requestAccess: SignRequestAccessService
+    private readonly requestAccess: SignRequestAccessService,
+    private readonly coachingLinks: CoachingSignRequestLinks
   ) {}
 
   execute(ctx: UseCaseContext, id: string, body: unknown) {
@@ -33,8 +40,11 @@ export class SendSignRequestUseCase {
       );
       const existing = await this.repo.ceremony(ref, tx),
         expiresAt = new Date(input.expiresAt);
-      if (input.canonicalSha256 !== draft.canonicalSha256) {
-        throw new ConflictException("Review the published document again");
+      if (
+        input.canonicalSha256 !== draft.canonicalSha256 ||
+        (input.draftRevision ?? 0) !== (draft.configuration?.revision ?? 0)
+      ) {
+        throw new ConflictException("Reload and review the latest request draft");
       }
       if (existing) {
         if (
@@ -45,6 +55,22 @@ export class SendSignRequestUseCase {
           throw new ConflictException("Request already sent with different terms");
         }
         return;
+      }
+      const settings = draft.configuration?.settings;
+      if (
+        settings &&
+        (settings.consent !== input.consent ||
+          settings.invitation !== input.invitation ||
+          !settings.expiresAt ||
+          new Date(settings.expiresAt).getTime() !== expiresAt.getTime())
+      ) {
+        throw new ConflictException("Save the request settings before reviewing and sending");
+      }
+      if (draft.configuration && !hasRequiredSignatures(draft.configuration.layout)) {
+        throw new BadRequestException("Place a required signature field for every signer");
+      }
+      if (draft.configuration && (await this.coachingLinks.hasLink(ref, tx))) {
+        throw new ConflictException("Send the coaching agreement from its published template");
       }
       this.secrets.publicOrigin();
       const now = new Date();
@@ -68,6 +94,30 @@ export class SendSignRequestUseCase {
         { tenantId: ref.tenantId, workspaceId: ref.workspaceId, userId },
         tx
       );
+      if (draft.replacesRequestId) {
+        if (!input.confirmReplacement) {
+          throw new BadRequestException("Confirm sending this replacement request");
+        }
+        const { ref: originalRef } = await this.requestAccess.requireOwner(
+          ctx,
+          draft.replacesRequestId,
+          "sign.requests.send",
+          tx
+        );
+        const original = await this.repo.ceremony(originalRef, tx);
+        const status = effectiveCeremonyStatus(original, now);
+        if (!["SENT", "EXPIRED", "VOID", "DECLINED"].includes(status)) {
+          throw new ConflictException("The original request can no longer be replaced");
+        }
+        if (status === "SENT" || (status === "EXPIRED" && original?.status === "SENT")) {
+          await this.transitions.terminate(
+            originalRef,
+            status === "SENT" ? "VOID" : "EXPIRED",
+            userId,
+            tx
+          );
+        }
+      }
       await this.repo.create(
         {
           ...ref,
@@ -89,7 +139,10 @@ export class SendSignRequestUseCase {
       for (const s of signingProgress(draft.routing, rows).toInvite) {
         await this.transitions.invite(ref, s, userId, tx);
       }
-      await this.transitions.recordEvent(ref, userId, "sign.request.sent.v1", tx);
+      await this.transitions.recordEvent(ref, userId, "sign.request.sent.v1", tx, {
+        ...(draft.configuration ? { draftRevision: String(draft.configuration.revision) } : {}),
+        ...(draft.replacesRequestId ? { replacesRequestId: draft.replacesRequestId } : {}),
+      });
     });
   }
 }

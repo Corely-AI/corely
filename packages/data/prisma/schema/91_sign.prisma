@@ -44,10 +44,13 @@ model SignRequestDraft {
   routing String
   ceremony SignCeremony?
   recipients Json
+  configuration Json?
+  replacesRequestId String? @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   publication SignTemplatePublication @relation(fields:[tenantId,workspaceId,templateId,templateRevision],references:[tenantId,workspaceId,templateId,revision],onDelete:Restrict)
   @@id([tenantId,workspaceId,requestId])
   @@unique([tenantId,workspaceId,actorId,commandId],map:"sign_request_create_uq")
+  @@unique([tenantId,workspaceId,replacesRequestId],map:"sign_request_replacement_uq")
   @@index([tenantId,workspaceId,actorId,requestId])
   @@schema("platform")
 }

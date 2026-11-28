@@ -5,6 +5,7 @@ export { CreateSignRequestDraftUseCase } from "./create-sign-request-draft.useca
 export { DeclineSignRequestUseCase } from "./decline-sign-request.usecase";
 export { DeliverSignInvitationUseCase } from "./deliver-sign-invitation.usecase";
 export { DownloadSignArtifactUseCase } from "./download-sign-artifact.usecase";
+export { EditSignRequestDraftUseCase } from "./edit-sign-request-draft.usecase";
 export { ExchangeSignInvitationUseCase } from "./exchange-sign-invitation.usecase";
 export { ExpireSignRequestsUseCase } from "./expire-sign-requests.usecase";
 export { FinalizeSignRequestUseCase } from "./finalize-sign-request.usecase";

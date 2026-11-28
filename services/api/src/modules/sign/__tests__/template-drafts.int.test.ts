@@ -1,3 +1,7 @@
+import { CoachingSignRequestLinks } from "../../coaching-engagements/public/sign-request-links";
+import type { SignLayout } from "@corely/contracts";
+import { TemplateDocuments } from "../../documents/public";
+import { SignArtifactEngine } from "../application/ports/sign-artifact-engine";
 import {
   AcceptSignRequestUseCase,
   ArchiveSignTemplateUseCase,
@@ -6,6 +10,7 @@ import {
   DeclineSignRequestUseCase,
   DeliverSignInvitationUseCase,
   DownloadSignArtifactUseCase,
+  EditSignRequestDraftUseCase,
   ExchangeSignInvitationUseCase,
   ExpireSignRequestsUseCase,
   FinalizeSignRequestUseCase,
@@ -385,7 +390,10 @@ describe.skipIf(!url || !/^postgresql:\/\/[^/]+\/sign_test_[a-z0-9_]+$/.test(url
         const templates = new PrismaSignDraftRepository(db);
         const uow = new PrismaUnitOfWork(db);
         const listSignRequests = new ListSignRequestsUseCase(access, requests);
-        const getSignRequest = new GetSignRequestUseCase(access, requests);
+        const coachingLinks = new CoachingSignRequestLinks(
+          new PrismaCoachingEngagementRepositoryAdapter(db)
+        );
+        const getSignRequest = new GetSignRequestUseCase(access, requests, coachingLinks);
         const createSignRequestDraft = new CreateSignRequestDraftUseCase(
           access,
           templates,
@@ -476,7 +484,8 @@ describe.skipIf(!url || !/^postgresql:\/\/[^/]+\/sign_test_[a-z0-9_]+$/.test(url
           ceremonies,
           templates,
           uow,
-          requestAccess
+          requestAccess,
+          coachingLinks
         );
         const getSignRequestProgress = new GetSignRequestProgressUseCase(
           ceremonies,
@@ -989,6 +998,305 @@ describe.skipIf(!url || !/^postgresql:\/\/[^/]+\/sign_test_[a-z0-9_]+$/.test(url
       },
       process.env.SIGN_RUN_BROWSER === "1" ? 200000 : 30000
     );
+
+    it("stores edited signing drafts and atomically replaces an active request", async () => {
+      const tenantId = f.tenantA;
+      const workspaceId = f.workspaceA;
+      const scope = { tenantId, workspaceId };
+      await db.rolePermissionGrant.createMany({
+        data: ["sign.requests.create", "sign.requests.read", "sign.requests.send"].map(
+          (permissionKey) => ({
+            tenantId,
+            roleId: f.managerRole,
+            permissionKey,
+            effect: "ALLOW" as const,
+          })
+        ),
+        skipDuplicates: true,
+      });
+      const file = await PDFDocument.create();
+      file.addPage();
+      file.addPage();
+      const bytes = Buffer.from(await file.save());
+      const sha = createHash("sha256").update(bytes).digest("hex");
+      const templateId = randomUUID();
+      const primarySignature: SignLayout["fields"][number] = {
+        id: "primary-signature",
+        documentId: "original",
+        roleId: "client",
+        type: "signature",
+        pageIndex: 0,
+        required: true,
+        rect: { x: 0.1, y: 0.1, width: 0.3, height: 0.1 },
+      };
+      const publishedLayout: SignLayout = {
+        schemaVersion: 1,
+        document: { id: "original", sha256: sha, pageCount: 2 },
+        roles: [{ id: "client", name: "Client" }],
+        fields: [primarySignature],
+      };
+      await saveSignTemplate.execute(f.ctx, templateId, randomUUID(), {
+        expectedRevision: 0,
+        title: "Editable signing fixture",
+        layout: publishedLayout,
+      });
+      const requests = new PrismaRequestDraftRepository(db);
+      const templates = new PrismaSignDraftRepository(db);
+      const uow = new PrismaUnitOfWork(db);
+      await uow.withinTransaction((tx) =>
+        templates.publish(
+          scope,
+          {
+            templateId,
+            revision: 1,
+            canonicalSha256: sha,
+            originalSha256: sha,
+            profile: "static-pdf-v1",
+          },
+          f.ctx.userId,
+          tx
+        )
+      );
+      const createSignRequestDraft = new CreateSignRequestDraftUseCase(
+        access,
+        templates,
+        requests,
+        uow,
+        f.audit,
+        f.outbox
+      );
+      const coachingLinks = new CoachingSignRequestLinks(
+        new PrismaCoachingEngagementRepositoryAdapter(db)
+      );
+      const getSignRequest = new GetSignRequestUseCase(access, requests, coachingLinks);
+      const ceremonies = new PrismaCeremonyRepository(db);
+      const requestAccess = new SignRequestAccessService(access, ceremonies);
+      const transitions = new CeremonyTransitionsService(
+        ceremonies,
+        invitationSecrets,
+        f.audit,
+        f.outbox
+      );
+      const sendSignRequest = new SendSignRequestUseCase(
+        transitions,
+        invitationSecrets,
+        new AuthorizeWorkspaceUseCase(new PrismaWorkspaceRepository(db)),
+        ceremonies,
+        templates,
+        uow,
+        requestAccess,
+        coachingLinks
+      );
+      const getSignRequestProgress = new GetSignRequestProgressUseCase(
+        ceremonies,
+        uow,
+        requestAccess
+      );
+      const sessions = new RecipientSessionAccessService(ceremonies, entitlements);
+      const exchangeSignInvitation = new ExchangeSignInvitationUseCase(
+        invitationSecrets,
+        ceremonies,
+        uow,
+        sessions
+      );
+      const documents = mockDeep<TemplateDocuments>();
+      documents.read.mockResolvedValue(bytes);
+      const reviewSignRequest = new ReviewSignRequestUseCase(templates, documents, uow, sessions);
+      const engine = mockDeep<SignArtifactEngine>();
+      engine.preview.mockResolvedValue(bytes);
+      const previewSignAcceptance = new PreviewSignAcceptanceUseCase(
+        engine,
+        invitationSecrets,
+        templates,
+        documents,
+        uow,
+        sessions
+      );
+      const recipients = [
+        { roleId: "client", name: "Original Signer", email: "first@example.invalid" },
+      ];
+      const input = { templateId, templateRevision: 1, routing: "parallel", recipients };
+      const editable = await createSignRequestDraft.execute(f.ctx, input, randomUUID());
+      const configure = new EditSignRequestDraftUseCase(
+        requestAccess,
+        requests,
+        ceremonies,
+        templates,
+        uow,
+        f.audit,
+        coachingLinks
+      );
+      const coachingOffer = await db.coachingOffer.create({
+        data: {
+          ...scope,
+          titleJson: { en: "Fixture" },
+          currency: "EUR",
+          priceCents: 1000,
+          sessionDurationMinutes: 20,
+        },
+      });
+      const coachingEngagement = await db.coachingEngagement.create({
+        data: {
+          ...scope,
+          offerId: coachingOffer.id,
+          clientPartyId: "fixture",
+          coachUserId: f.ctx.userId,
+        },
+      });
+      const coaching = new NativeCoachingAgreements(
+        new PrismaCoachingEngagementRepositoryAdapter(db),
+        createSignRequestDraft,
+        {
+          getCustomerBillingSnapshot: async () => ({
+            partyId: "fixture",
+            displayName: "Original Signer",
+            email: recipients[0].email,
+          }),
+        },
+        uow
+      );
+      const linked = await coaching.prepare(f.ctx, coachingEngagement.id, input, randomUUID());
+      expect(await getSignRequest.execute(f.ctx, linked.requestId)).toMatchObject({
+        workflowManaged: true,
+      });
+      const added = {
+        roleId: "partner",
+        name: "Second Synthetic Signer",
+        email: "second@example.invalid",
+      };
+      const layout = {
+        ...publishedLayout,
+        roles: [...publishedLayout.roles, { id: added.roleId, name: added.name }],
+        fields: [
+          ...publishedLayout.fields,
+          { ...primarySignature, id: "partner-signature", roleId: added.roleId, pageIndex: 1 },
+        ],
+      };
+      const configuration = {
+        expectedRevision: 0,
+        routing: "sequential",
+        recipients: [added, ...recipients],
+        layout,
+        settings: {
+          expiresAt: new Date(Date.now() + 86400000).toISOString(),
+          consent: "I agree to sign the fixture.",
+          invitation: "Please review the edited request.",
+        },
+      };
+      const invitationCount = () =>
+        db.outboxEvent.count({
+          where: { tenantId: f.tenantA, eventType: "sign.invitation.requested.v1" },
+        });
+      const priorInvitations = await invitationCount();
+      await expect(configure.update(f.ctx, linked.requestId, configuration)).rejects.toThrow(
+        "originating coaching workflow"
+      );
+      await expect(configure.replace(f.ctx, linked.requestId)).rejects.toThrow(
+        "originating coaching workflow"
+      );
+      const edited = await configure.update(f.ctx, editable.requestId, configuration);
+      expect(edited.requestId).toBe(editable.requestId);
+      expect(edited.configuration).toMatchObject({
+        revision: 1,
+        layout,
+        settings: configuration.settings,
+      });
+      expect(await getSignRequest.execute(f.ctx, editable.requestId)).toEqual(edited);
+      expect(await configure.update(f.ctx, editable.requestId, configuration)).toEqual(edited);
+      await expect(
+        configure.update(f.ctx, editable.requestId, { ...configuration, routing: "parallel" })
+      ).rejects.toThrow("edited elsewhere");
+      await expect(
+        configure.update(
+          { ...f.ctx, workspaceId: f.workspaceA2 },
+          editable.requestId,
+          configuration
+        )
+      ).rejects.toThrow();
+      expect(await invitationCount()).toBe(priorInvitations);
+      const sendEdited = {
+        ...configuration.settings,
+        confirm: true,
+        canonicalSha256: editable.canonicalSha256,
+      };
+      await expect(sendSignRequest.execute(f.ctx, editable.requestId, sendEdited)).rejects.toThrow(
+        "latest request draft"
+      );
+      await expect(
+        sendSignRequest.execute(f.ctx, editable.requestId, {
+          ...sendEdited,
+          invitation: "Unsaved settings",
+          draftRevision: 1,
+        })
+      ).rejects.toThrow("Save the request settings");
+      process.env.SIGN_PUBLIC_ORIGIN = "http://127.0.0.1:48269";
+      process.env.SIGN_DELIVERY_KEY = createHash("sha256").update(randomUUID()).digest("hex");
+      try {
+        await sendSignRequest.execute(f.ctx, editable.requestId, {
+          ...sendEdited,
+          draftRevision: 1,
+        });
+        const editRef = {
+          tenantId: f.tenantA,
+          workspaceId: f.workspaceA,
+          requestId: editable.requestId,
+        };
+        const second = await db.signCeremonyRecipient.findFirstOrThrow({
+          where: { ...editRef, roleId: added.roleId },
+        });
+        expect(second.status).toBe("INVITED");
+        if (!second.envelope) {
+          throw new Error("Missing fixture invitation");
+        }
+        const invitationToken = invitationSecrets.openInvitation(second.envelope, second.id);
+        const { session } = await exchangeSignInvitation.execute(invitationToken);
+        const review = await reviewSignRequest.execute(session);
+        expect(review.fields).toMatchObject([{ id: "partner-signature", pageIndex: 1 }]);
+        await previewSignAcceptance.execute(session, {
+          consent: true,
+          review: review.review,
+          values: [{ fieldId: "partner-signature", value: added.name }],
+        });
+        expect(engine.preview).toHaveBeenCalledWith(bytes, layout, added.roleId, [
+          { fieldId: "partner-signature", value: added.name },
+        ]);
+        await expect(configure.update(f.ctx, editable.requestId, configuration)).rejects.toThrow(
+          "unsent draft"
+        );
+
+        const replacement = await configure.replace(f.ctx, editable.requestId);
+        expect(replacement.replacesRequestId).toBe(editable.requestId);
+        expect(await configure.replace(f.ctx, editable.requestId)).toEqual(replacement);
+        expect((await getSignRequestProgress.execute(f.ctx, editable.requestId)).status).toBe(
+          "SENT"
+        );
+        expect(await invitationCount()).toBe(priorInvitations + 1);
+        await configure.update(f.ctx, replacement.requestId, {
+          ...configuration,
+          expectedRevision: 1,
+        });
+        await expect(
+          sendSignRequest.execute(f.ctx, replacement.requestId, {
+            ...sendEdited,
+            draftRevision: 2,
+          })
+        ).rejects.toThrow("Confirm sending");
+        await sendSignRequest.execute(f.ctx, replacement.requestId, {
+          ...sendEdited,
+          draftRevision: 2,
+          confirmReplacement: true,
+        });
+        expect((await getSignRequestProgress.execute(f.ctx, editable.requestId)).status).toBe(
+          "VOID"
+        );
+        await expect(reviewSignRequest.execute(session)).rejects.toThrow();
+        expect(await invitationCount()).toBe(priorInvitations + 2);
+      } finally {
+        delete process.env.SIGN_PUBLIC_ORIGIN;
+        delete process.env.SIGN_DELIVERY_KEY;
+      }
+    });
+
     it("isolates workspaces, rechecks membership, permissions and app enablement", async () => {
       const other = { ...f.ctx, workspaceId: f.workspaceA2 };
       expect((await listSignTemplates.execute(other)).items).toEqual([]);

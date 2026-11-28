@@ -1,7 +1,7 @@
 import { LoadingSkeleton, Badge, Button, EmptyState, Input } from "@corely/ui";
 import { CrudListPageLayout } from "@corely/web-shared/shared/crud/CrudListPageLayout";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -15,6 +15,9 @@ import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { RequestActions } from "./request-actions";
 import { RequestDetailSkeleton } from "./request-loading";
+import type { RequestEditStep } from "./request-draft-editor";
+
+const RequestDraftEditor = lazy(() => import("./request-draft-editor"));
 export default function RequestPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -50,6 +53,7 @@ export function RequestDetail({ id, workspace }: { id: string; workspace: string
   const [draft, setDraft] = useState<SignRequestDraft>(),
     [error, setError] = useState(""),
     [attempt, retry] = useState(0);
+  const [editStep, setEditStep] = useState<RequestEditStep>();
   useEffect(() => {
     const controller = new AbortController();
     setError("");
@@ -86,7 +90,22 @@ export function RequestDetail({ id, workspace }: { id: string; workspace: string
   }
   return (
     <section className="space-y-4 p-4 sm:p-6 lg:p-8">
-      <RequestActions workspace={workspace} draft={draft} />
+      {editStep ? (
+        <Suspense fallback={<RequestDetailSkeleton />}>
+          <RequestDraftEditor
+            draft={draft}
+            workspace={workspace}
+            startStep={editStep}
+            onCancel={() => setEditStep(undefined)}
+            onSaved={(updated) => {
+              setDraft(updated);
+              setEditStep(undefined);
+            }}
+          />
+        </Suspense>
+      ) : (
+        <RequestActions workspace={workspace} draft={draft} onEdit={setEditStep} />
+      )}
     </section>
   );
 }

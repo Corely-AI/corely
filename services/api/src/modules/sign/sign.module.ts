@@ -6,6 +6,7 @@ import {
   DeclineSignRequestUseCase,
   DeliverSignInvitationUseCase,
   DownloadSignArtifactUseCase,
+  EditSignRequestDraftUseCase,
   ExchangeSignInvitationUseCase,
   ExpireSignRequestsUseCase,
   FinalizeSignRequestUseCase,
@@ -62,11 +63,13 @@ import { PlatformModule } from "../platform/platform.module";
 import { SignDraftRepository } from "./application/ports/sign-draft.repository";
 import { PrismaSignDraftRepository } from "./infrastructure/persistence/prisma-sign-draft.repository";
 import { SignTemplatesController } from "./adapters/http/sign-templates.controller";
+import { CoachingSignRequestLinksModule } from "../coaching-engagements/public/sign-request-links";
 @Module({
   imports: [
     WorkspacesModule,
     DocumentsModule,
     DataModule,
+    CoachingSignRequestLinksModule,
     forwardRef(() => IdentityModule),
     forwardRef(() => PlatformModule),
   ],
@@ -92,6 +95,7 @@ import { SignTemplatesController } from "./adapters/http/sign-templates.controll
     DeclineSignRequestUseCase,
     DeliverSignInvitationUseCase,
     DownloadSignArtifactUseCase,
+    EditSignRequestDraftUseCase,
     ExchangeSignInvitationUseCase,
     ExpireSignRequestsUseCase,
     FinalizeSignRequestUseCase,

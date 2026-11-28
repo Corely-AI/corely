@@ -200,6 +200,7 @@ General developer guides and references.
 
 ## Products
 
+- [Edit and replace Corely Sign requests](./products/corely/sign-request-editing.md)
 - [OpenBuk](products/openbuk/README.md) — focused booking product and implementation roadmap.
 - [Booking availability and write consistency](products/openbuk/booking-availability.md)
 - [OpenBuk screenshot walkthrough](products/openbuk/screenshots.md)

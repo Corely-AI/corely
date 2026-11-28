@@ -1,3 +1,4 @@
+import { requestLayout } from "../services/request-layout";
 import {
   BadRequestException,
   ConflictException,
@@ -63,16 +64,11 @@ export class AcceptSignRequestUseCase {
         return;
       }
       const { ref, s, c, draft } = await this.sessions.requireSigner(session, "sessionDigest", tx);
-      const template = await this.templates.version(
-        { tenantId: ref.tenantId, workspaceId: ref.workspaceId },
-        draft.templateId,
-        draft.templateRevision,
-        tx
-      );
+      const layout = await requestLayout(this.templates, ref, draft, tx);
       if (
-        !template ||
+        !layout ||
         input.review !== signingReviewDigest(c, s, draft.canonicalSha256) ||
-        !validateRecipientValues(template.layout, s.roleId, input.values)
+        !validateRecipientValues(layout, s.roleId, input.values)
       ) {
         throw new BadRequestException("Review the document and complete your assigned fields");
       }

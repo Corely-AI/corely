@@ -15,6 +15,9 @@ export type SignEvidence = {
   tenantId: string;
   templateId: string;
   templateRevision: number;
+  requestRevision?: number;
+  layoutSha256?: string;
+  replacesRequestId?: string;
   sourceSha256: string;
   senderWorkspace?: string | null;
   senderId: string;

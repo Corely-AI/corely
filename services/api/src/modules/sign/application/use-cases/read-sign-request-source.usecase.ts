@@ -1,3 +1,4 @@
+import { requestLayout } from "../services/request-layout";
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { UNIT_OF_WORK, type UnitOfWorkPort, type UseCaseContext } from "@corely/kernel";
 import { TemplateDocuments } from "../../../documents/public";
@@ -14,7 +15,7 @@ export class ReadSignRequestSourceUseCase {
   ) {}
 
   async execute(ctx: UseCaseContext, id: string) {
-    const { owner, fields } = await this.uow.withinTransaction(async (tx) => {
+    const { owner, layout, draftRevision } = await this.uow.withinTransaction(async (tx) => {
       const { ref, draft } = await this.requestAccess.requireOwner(
         ctx,
         id,
@@ -22,14 +23,10 @@ export class ReadSignRequestSourceUseCase {
         tx
       );
       const scope = { tenantId: ref.tenantId, workspaceId: ref.workspaceId };
-      const version = await this.templates.version(
-        scope,
-        draft.templateId,
-        draft.templateRevision,
-        tx
-      );
+      const layout = await requestLayout(this.templates, scope, draft, tx);
       return {
-        fields: version?.layout.fields,
+        layout,
+        draftRevision: draft.configuration?.revision ?? 0,
         owner: {
           tenantId: ref.tenantId,
           workspaceId: ref.workspaceId,
@@ -42,6 +39,12 @@ export class ReadSignRequestSourceUseCase {
     if (!pdf) {
       throw new NotFoundException("Source unavailable");
     }
-    return { base64: pdf.toString("base64"), sha256: owner.sha256, fields };
+    return {
+      base64: pdf.toString("base64"),
+      sha256: owner.sha256,
+      fields: layout?.fields,
+      layout,
+      draftRevision,
+    };
   }
 }

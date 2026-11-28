@@ -15,6 +15,7 @@ type Props = {
   preview: boolean;
   onSelect: () => void;
   onChange: (rect: SignRectangle) => void;
+  color?: React.CSSProperties;
 };
 const arrows: Record<string, readonly [number, number]> = {
   ArrowLeft: [-1, 0],
@@ -23,7 +24,15 @@ const arrows: Record<string, readonly [number, number]> = {
   ArrowDown: [0, 1],
 };
 
-export function FieldOverlay({ field, roleName, selected, preview, onSelect, onChange }: Props) {
+export function FieldOverlay({
+  field,
+  roleName,
+  selected,
+  preview,
+  onSelect,
+  onChange,
+  color,
+}: Props) {
   const { t } = useTranslation();
   const overlay = useRef<HTMLDivElement>(null);
   const active = useRef<{ pointer: number; project: (x: number, y: number) => SignRectangle }>();
@@ -31,7 +40,9 @@ export function FieldOverlay({ field, roleName, selected, preview, onSelect, onC
 
   function begin(event: React.PointerEvent<HTMLButtonElement>, resize: boolean) {
     const bounds = overlay.current?.offsetParent?.getBoundingClientRect();
-    if (preview || active.current || event.button !== 0 || !bounds?.width || !bounds.height) return;
+    if (preview || active.current || event.button !== 0 || !bounds?.width || !bounds.height) {
+      return;
+    }
     const { clientX, clientY, pointerId } = event;
     const initial = field.rect;
     const adjust = resize ? resizeSignField : moveSignField;
@@ -48,13 +59,16 @@ export function FieldOverlay({ field, roleName, selected, preview, onSelect, onC
     <div
       ref={overlay}
       className="absolute border border-blue-700 bg-blue-100/80 text-blue-950"
-      style={signFieldPosition(field.rect)}
+      style={{ ...signFieldPosition(field.rect), ...color }}
       onPointerMove={(event) => {
-        if (!preview && active.current?.pointer === event.pointerId)
+        if (!preview && active.current?.pointer === event.pointerId) {
           onChange(active.current.project(event.clientX, event.clientY));
+        }
       }}
       onLostPointerCapture={(event) => {
-        if (active.current?.pointer === event.pointerId) active.current = undefined;
+        if (active.current?.pointer === event.pointerId) {
+          active.current = undefined;
+        }
       }}
       onClick={(event) => event.stopPropagation()}
     >
@@ -67,7 +81,9 @@ export function FieldOverlay({ field, roleName, selected, preview, onSelect, onC
         onClick={onSelect}
         onKeyDown={(event) => {
           const delta = arrows[event.key];
-          if (!delta) return;
+          if (!delta) {
+            return;
+          }
           event.preventDefault();
           onSelect();
           const adjust = event.shiftKey ? resizeSignField : moveSignField;

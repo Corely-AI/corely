@@ -1,3 +1,4 @@
+import { requestLayout } from "../services/request-layout";
 import { ConflictException, ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import { SignValuesSchema } from "@corely/contracts";
 import { UNIT_OF_WORK, type UnitOfWorkPort } from "@corely/kernel";
@@ -18,13 +19,8 @@ export class ReviewSignRequestUseCase {
   async execute(session: string) {
     const view = await this.uow.withinTransaction(async (tx) => {
       const { ref, s, c, draft } = await this.sessions.requireSigner(session, "sessionDigest", tx);
-      const template = await this.templates.version(
-        { tenantId: ref.tenantId, workspaceId: ref.workspaceId },
-        draft.templateId,
-        draft.templateRevision,
-        tx
-      );
-      if (!template) {
+      const layout = await requestLayout(this.templates, ref, draft, tx);
+      if (!layout) {
         throw new ForbiddenException("Signing access unavailable");
       }
       return {
@@ -33,7 +29,7 @@ export class ReviewSignRequestUseCase {
         owner: { ...ref, templateId: draft.templateId, sha256: draft.canonicalSha256 },
         title: draft.title,
         role: s.roleId,
-        fields: template.layout.fields.filter((f) => f.roleId === s.roleId),
+        fields: layout.fields.filter((f) => f.roleId === s.roleId),
         consent: c.consent,
         review: signingReviewDigest(c, s, draft.canonicalSha256),
       };
