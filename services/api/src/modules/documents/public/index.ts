@@ -9,6 +9,10 @@ export {
   OPERATIONAL_REQUEST_DOCUMENT_PREFIX,
 } from "../application/ports/operational-request-documents.port";
 export { TemplateDocuments } from "../application/ports/template-documents.port";
+export {
+  PROCEDURE_DOCUMENTS,
+  type ProcedureDocuments,
+} from "../application/ports/procedure-documents.port";
 
 export {
   VENDOR_BILL_DOCUMENTS,

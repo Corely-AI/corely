@@ -4,3 +4,7 @@ export { AuthorizeRequestContextUseCase } from "../application/use-cases/authori
 export { AssociateInvitedAccountUseCase } from "../application/use-cases/associate-invited-account.usecase";
 export { StaffAccountLookupAdapter } from "../infrastructure/adapters/staff-account-lookup.adapter";
 export { GetWorkspacePermissionsUseCase } from "../application/use-cases/get-workspace-permissions.usecase";
+export {
+  USER_REPOSITORY_TOKEN,
+  type UserRepositoryPort,
+} from "../application/ports/user-repository.port";
