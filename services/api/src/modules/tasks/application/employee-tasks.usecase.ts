@@ -93,6 +93,7 @@ export class EmployeeTasksUseCase {
       .filter(
         (t) =>
           (auth.manage || t.ownerStaffId === auth.self?.id) &&
+          (!input.taskId || t.id === input.taskId) &&
           (input.status === "all" || t.status === input.status)
       )
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));

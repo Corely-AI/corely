@@ -1,4 +1,5 @@
 import { OperationsTodayPage } from "../../modules/operations-today/operations-today-page";
+import { OperationsBriefingPage } from "../../modules/operations-today/operations-briefing-page";
 import { OperationalRequestsPage } from "../../modules/operational-requests/operational-requests-page";
 import { StaffProfilePage } from "../../modules/people/staff-profile-extensions";
 import { BackofficeDirectory } from "../../modules/app-center/backoffice-directory";
@@ -185,6 +186,14 @@ export const appShellRoutes = (
         element={
           <RequireSurface surfaces={["platform"]}>
             <OperationsTodayPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/today/briefing"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <OperationsBriefingPage />
           </RequireSurface>
         }
       />

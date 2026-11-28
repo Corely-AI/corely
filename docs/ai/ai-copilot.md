@@ -79,6 +79,18 @@ messages or financial/personnel changes. An outbox event is not proof of deliver
 - **Chat history + search**: `GET /copilot/threads`, `GET /copilot/threads/:threadId`, `GET /copilot/threads/:threadId/messages`, `POST /copilot/threads`, and `GET /copilot/threads/search` provide recent-chat sidebar and history search support. Aliased `/ai-copilot/*` routes are available for the same endpoints.
 - **Running locally**: use root `pnpm dev:api` and `pnpm dev:web` scripts with a configured environment. Ensure valid API mode/base URL. Historical mock-server instructions need a separate restoration: no tracked mock runtime/package is present in this commit.
 
+### Morning operations briefing
+
+The Backoffice Today page can generate a morning briefing from the viewer's authorized Today
+sources. The model receives a bounded list of operation categories and times, using local ordinal
+IDs. It chooses an order. The server rechecks the chosen records and displays links to the
+owning Booking, Tasks and Requests screens. Source availability, freshness and the workspace
+date are visible alongside the briefing.
+
+The manual Today view remains usable throughout generation and provider failure. Briefing
+telemetry records generation outcome, latency, token counts, and optional usefulness and
+review timing. These measures describe the briefing and its review.
+
 ### Tool Authoring Guardrails
 
 - Use shared helpers from `services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts`:

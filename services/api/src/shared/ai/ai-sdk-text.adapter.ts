@@ -21,6 +21,10 @@ export class AiSdkTextAdapter implements AiTextPort {
       maxOutputTokens: request.maxOutputTokens,
     });
 
+    request.onUsage?.({
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+    });
     return result.text.trim();
   }
 

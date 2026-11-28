@@ -56,6 +56,7 @@ High-level design, boundaries, and core decisions.
 Design and implementation of the AI features.
 
 - [AI Copilot](./ai/ai-copilot.md)
+- [Morning operations briefing verification](./tasks/329-source-linked-operations-briefing.md)
 - [Streaming Architecture](./ai/COPILOT_STREAMING.md)
 - [Streaming Implementation](./ai/copilot-streaming.md)
 - [Prompt Management](./ai/prompt-management.md)
