@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { UnitOfWorkPort, UseCaseContext } from "@corely/kernel";
+import type { TransactionContext, UnitOfWorkPort, UseCaseContext } from "@corely/kernel";
 import type { BookingRepositoryPort, HoldRepositoryPort } from "../ports/booking-repo.ports";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
@@ -32,7 +32,11 @@ export class CreateHoldUseCase {
     private readonly unitOfWork: UnitOfWorkPort
   ) {}
 
-  async execute(input: CreateHoldInput, ctx: UseCaseContext): Promise<BookingHold> {
+  async execute(
+    input: CreateHoldInput,
+    ctx: UseCaseContext,
+    authorizePublicWrite?: (tx: TransactionContext) => Promise<void>
+  ): Promise<BookingHold> {
     const { tenantId } = ctx;
     if (!tenantId) {
       throw new BadRequestException("Select a tenant");
@@ -68,6 +72,7 @@ export class CreateHoldUseCase {
       .digest("hex");
 
     return this.unitOfWork.withinTransaction(async (tx) => {
+      await authorizePublicWrite?.(tx);
       if (key) {
         await this.bookingRepo.lockMutation(tenantId, `${action}:${key}`, tx);
         const cached = await this.idempotency.get(action, tenantId, key, tx);

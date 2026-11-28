@@ -65,7 +65,7 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
       new PrismaOutboxAdapter(prisma),
       { now: () => now },
       { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-      { publish: async () => {} },
+      { publish: async () => {}, requirePublicBooking: async () => {} },
       staff
     );
     const { serviceId, staffId, slug, ...setup } = studioFixture();
@@ -109,7 +109,7 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
         new PrismaOutboxAdapter(prisma),
         policyClock,
         { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-        { publish: async () => {} },
+        { publish: async () => {}, requirePublicBooking: async () => {} },
         staff,
         [{ ...scope, validate: acmeBookingPolicy }]
       );
@@ -399,7 +399,7 @@ describe.skipIf(!enabled)("OpenBuk PostgreSQL transaction boundary", () => {
       },
       { now: () => now },
       { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-      { publish: async () => {} },
+      { publish: async () => {}, requirePublicBooking: async () => {} },
       staff
     );
     const key = randomUUID();

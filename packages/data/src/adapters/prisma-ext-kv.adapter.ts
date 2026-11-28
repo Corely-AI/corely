@@ -1,4 +1,5 @@
 import type { TransactionContext } from "@corely/kernel";
+import { randomUUID } from "node:crypto";
 import { getPrismaClient } from "../uow/prisma-unit-of-work.adapter";
 import { Injectable } from "@nestjs/common";
 import type { ExtKv as PrismaExtKvRecord } from "@prisma/client";
@@ -85,6 +86,31 @@ export class PrismaExtKvAdapter implements ExtKvPort {
         },
       },
     });
+  }
+
+  /** The unique key serializes claims across connections. PostgreSQL supplies the shared clock. */
+  async claimFixedWindow(input: KvGetInput, limit: number, windowMs: number): Promise<boolean> {
+    const result = await this.prisma.$queryRaw<{ claimed: number }[]>`
+      INSERT INTO "ext"."ExtKv" AS counter
+        ("id", "tenantId", "moduleId", "scope", "key", "value", "createdAt", "updatedAt")
+      VALUES (
+        ${randomUUID()}, ${input.tenantId}, ${input.moduleId}, ${input.scope}, ${input.key},
+        jsonb_build_object('window', floor(extract(epoch from statement_timestamp()) * 1000 / ${windowMs})::bigint, 'count', 1),
+        statement_timestamp(), statement_timestamp()
+      )
+      ON CONFLICT ("tenantId", "moduleId", "scope", "key") DO UPDATE SET
+        "value" = CASE
+          WHEN (counter."value"->>'window')::bigint = (excluded."value"->>'window')::bigint
+          THEN jsonb_set(counter."value", '{count}', to_jsonb((counter."value"->>'count')::integer + 1))
+          ELSE excluded."value"
+        END,
+        "updatedAt" = excluded."updatedAt"
+      WHERE (counter."value"->>'window')::bigint < (excluded."value"->>'window')::bigint
+         OR ((counter."value"->>'window')::bigint = (excluded."value"->>'window')::bigint
+           AND (counter."value"->>'count')::integer < ${limit})
+      RETURNING 1::integer AS claimed
+    `;
+    return result.length === 1;
   }
 
   async list(input: KvListInput): Promise<KvEntry[]> {
