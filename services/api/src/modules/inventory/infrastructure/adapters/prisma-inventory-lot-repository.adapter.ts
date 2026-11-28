@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { getPrismaClient, PrismaService } from "@corely/data";
+import { Inject, Injectable } from "@nestjs/common";
+import { EXT_KV_PORT, getPrismaClient, PrismaService, type ExtKvPort } from "@corely/data";
 import {
   ConflictError,
   ValidationError,
@@ -18,11 +18,29 @@ import type {
 import type { InventoryLotStatus } from "../../domain/inventory.types";
 import { pickFEFO } from "../../domain/fefo-picker";
 
+const invoiceConsumptionKey = (tenantId: string, invoiceId: string) => ({
+  tenantId,
+  moduleId: "inventory",
+  scope: "invoice-lot-consumption",
+  key: invoiceId,
+});
+
 @Injectable()
 export class PrismaInventoryLotRepository
   implements InventoryLotRepositoryPort, InvoiceInventoryLotPort
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(EXT_KV_PORT) private readonly kv: ExtKvPort
+  ) {}
+
+  async hasInvoiceConsumption(tenantId: string, invoiceId: string, tx?: TransactionContext) {
+    return (await this.kv.get(invoiceConsumptionKey(tenantId, invoiceId), tx)) !== null;
+  }
+
+  async recordInvoiceConsumption(tenantId: string, invoiceId: string, tx: TransactionContext) {
+    await this.kv.set({ ...invoiceConsumptionKey(tenantId, invoiceId), value: true }, tx);
+  }
 
   async hasProductLots(
     tenantId: string,

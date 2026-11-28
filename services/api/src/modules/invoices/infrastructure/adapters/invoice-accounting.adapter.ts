@@ -19,6 +19,12 @@ import {
 } from "../../../inventory/application/ports/inventory-lot-repository.port";
 import type { InvoiceAggregate } from "../../domain/invoice.aggregate";
 
+const archivedProductReference = (reference: string) =>
+  new ValidationError(
+    "An invoice line references an archived product. Choose an active product before issuing.",
+    { reference }
+  );
+
 @Injectable()
 export class InvoiceAccountingAdapter {
   constructor(
@@ -37,7 +43,11 @@ export class InvoiceAccountingAdapter {
       );
     }
     const setup = await this.accounting.getSetupStatus.getStatus(tenantId, tx);
-    if (!setup.isSetup || (await this.cogs.hasInvoicePosting(tenantId, invoice.id, tx))) {
+    if (
+      !setup.isSetup ||
+      (await this.lots.hasInvoiceConsumption(tenantId, invoice.id, tx)) ||
+      (await this.cogs.hasInvoicePosting(tenantId, invoice.id, tx))
+    ) {
       return;
     }
 
@@ -79,18 +89,22 @@ export class InvoiceAccountingAdapter {
         "Invoice stock costs could not be recorded. Check Accounting setup and retry."
       );
     }
-    if (posting.journalEntryId) {
-      stock.sort((a, b) => a.lot.id.localeCompare(b.lot.id));
-      for (const { lot, quantityPicked } of stock) {
-        await this.lots.consumeInvoiceLot(lot, quantityPicked, tx);
-      }
+    stock.sort((a, b) => a.lot.id.localeCompare(b.lot.id));
+    for (const { lot, quantityPicked } of stock) {
+      await this.lots.consumeInvoiceLot(lot, quantityPicked, tx);
     }
+    await this.lots.recordInvoiceConsumption(tenantId, invoice.id, tx);
   }
 
   async assertCorrectionAllowed(tenantId: string, invoiceId: string, tx?: TransactionContext) {
     if (await this.cogs.hasInvoicePosting(tenantId, invoiceId, tx)) {
       throw new ConflictError(
         "This invoice has recorded stock costs and requires a specialist correction."
+      );
+    }
+    if (await this.lots.hasInvoiceConsumption(tenantId, invoiceId, tx)) {
+      throw new ConflictError(
+        "This invoice has consumed stock and requires a specialist correction."
       );
     }
   }
@@ -105,17 +119,24 @@ export class InvoiceAccountingAdapter {
       return null;
     }
     const productId = reference.match(/\[product:([a-zA-Z0-9_-]+)\]/i)?.[1];
+    const idMatch = await this.catalog.findItemById(scope, productId ?? reference, tx);
+    const activeId = idMatch?.status === "ACTIVE" && !idMatch.archivedAt;
     if (productId) {
+      if (idMatch && !activeId) {
+        throw archivedProductReference(productId);
+      }
       return productId;
     }
-    const idMatch = await this.catalog.findItemById(scope, reference, tx);
     if (!idMatch && (await this.lots.hasProductLots(scope.tenantId, reference, tx))) {
       return reference;
     }
-    let candidate = idMatch;
-    if (!candidate || candidate.status !== "ACTIVE" || candidate.archivedAt) {
+    let candidate = activeId ? idMatch : null;
+    if (!candidate) {
       const codeMatch = await this.catalog.findItemByCode(scope, reference, tx);
       candidate = codeMatch?.status === "ACTIVE" && !codeMatch.archivedAt ? codeMatch : null;
+    }
+    if (!candidate && idMatch) {
+      throw archivedProductReference(reference);
     }
     if (!candidate) {
       const matches = await this.catalog.listItems(

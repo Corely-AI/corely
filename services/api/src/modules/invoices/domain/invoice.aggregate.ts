@@ -52,6 +52,7 @@ type InvoiceProps = {
   createdAt: Date;
   updatedAt: Date;
   revision?: number;
+  hiddenFromList?: boolean | null;
   pdfStorageKey?: string | null;
   pdfGeneratedAt?: Date | null;
   pdfSourceVersion?: string | null;
@@ -95,6 +96,7 @@ export class InvoiceAggregate {
   createdAt: Date;
   updatedAt: Date;
   revision: number;
+  hiddenFromList: boolean | null;
   pdfStorageKey: string | null;
   pdfGeneratedAt: Date | null;
   pdfSourceVersion: string | null;
@@ -138,6 +140,7 @@ export class InvoiceAggregate {
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
     this.revision = props.revision ?? 0;
+    this.hiddenFromList = props.hiddenFromList ?? null;
     this.pdfStorageKey = props.pdfStorageKey ?? null;
     this.pdfGeneratedAt = props.pdfGeneratedAt ?? null;
     this.pdfSourceVersion = props.pdfSourceVersion ?? null;
@@ -315,14 +318,19 @@ export class InvoiceAggregate {
     this.touch(now);
   }
 
-  cancel(now: Date) {
+  cancel(now: Date, hideFromList = false) {
+    if (this.status === "CANCELED") {
+      if (hideFromList && this.hiddenFromList !== true) {
+        this.hiddenFromList = true;
+        this.touch(now);
+      }
+      return;
+    }
     if (this.status === "PAID" || this.payments.length > 0) {
       throw new Error("Cannot cancel an invoice with recorded payments");
     }
-    if (this.status === "CANCELED") {
-      return;
-    }
     this.status = "CANCELED";
+    this.hiddenFromList = hideFromList;
     this.touch(now);
   }
 

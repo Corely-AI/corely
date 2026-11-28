@@ -35,17 +35,24 @@ from manual journals that reference the invoice. A recorded stock cost blocks th
 correction before saving the draft. Delivery rechecks cancellation before
 provider handoff with or without a PDF.
 
+The second review follow-up restores list deletion with a dedicated visibility
+flag and preserves existing notes and legacy hidden records. Issuance rejects
+unresolved archived product IDs and decrements zero-cost lots. Inventory
+records consumption so cancellation and correction also block when there
+is no stock-cost journal entry.
+
 ## Verification
 
-- Both migrations were applied to a fresh, disposable
-  `corely_invoice_test_353_review` PostgreSQL database. PostgreSQL reported the
+- The three ticket migrations were applied to a fresh, disposable
+  `corely_invoice_test_353_review2` PostgreSQL database. PostgreSQL reported the
   concurrent correction index ready and valid. The isolated suite is
   `pnpm --dir services/api exec vitest run src/modules/invoices/__tests__/invoice-tax-snapshot-usecase.int.test.ts`
   with `INVOICE_TEST_DATABASE_URL` pointing at that database. All eight cases
   passed, including fractional drafts, default payment details, concurrent issue
   and cancellation, and rollback of invoice and stock changes.
-- The invoice HTTP suite in `invoices-api.int.test.ts` passed five cases with
-  local PostgreSQL and synthetic mail configuration.
+- The invoice HTTP suite in `invoices-api.int.test.ts` passed eight cases with
+  local PostgreSQL and synthetic mail configuration. The three latest
+  regressions reproduced on the reviewed commit before the fixes.
 - Invoice unit command
   `pnpm --dir services/api exec vitest run src/modules/invoices --exclude '**/*.int.test.ts'`.
   The run included Accounting, Catalog, Inventory, the Tax engine, the German
@@ -80,8 +87,8 @@ Drafts retain exact input quantities and round each item's amount to the nearest
 cent. Historical issued invoices can be retrieved and finalize retries retain
 their existing number.
 
-The migrations add an invoice revision, a fractional draft quantity, and a
-concurrent unique partial index. Follow the [rollout and rollback procedure](../backend/invoice-lifecycle.md#deploy-and-roll-back)
+The migrations add an invoice revision, a fractional draft quantity, a list
+visibility flag, and a concurrent unique partial index. Follow the [rollout and rollback procedure](../backend/invoice-lifecycle.md#deploy-and-roll-back)
 to fence old API and background writers before applying the migrations.
 
 Pilot demand, specialist approval for broader tax or credited documents and

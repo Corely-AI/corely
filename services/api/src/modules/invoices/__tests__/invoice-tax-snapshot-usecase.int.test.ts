@@ -1,6 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { PrismaAuditAdapter, PrismaService, PrismaUnitOfWork } from "@corely/data";
+import {
+  PrismaAuditAdapter,
+  PrismaExtKvAdapter,
+  PrismaService,
+  PrismaUnitOfWork,
+} from "@corely/data";
 import { FixedClock, NoopLogger, TimeService, unwrap } from "@corely/kernel";
 import { InvoiceDtoSchema, type CreateInvoiceInput } from "@corely/contracts";
 import { CreateInvoiceUseCase } from "../application/use-cases/create-invoice/create-invoice.usecase";
@@ -134,7 +139,7 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
         accountingDeps.entryRepo
       ),
       new PrismaCatalogRepositoryAdapter(prisma),
-      new PrismaInventoryLotRepository(prisma)
+      new PrismaInventoryLotRepository(prisma, new PrismaExtKvAdapter(prisma))
     );
     const draftDeps = {
       logger,
@@ -192,6 +197,7 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
     await prisma.ledgerAccount.deleteMany({ where: { tenantId } });
     await prisma.accountingSettings.deleteMany({ where: { tenantId } });
     await prisma.inventoryLot.deleteMany({ where: { tenantId } });
+    await prisma.extKv.deleteMany({ where: { tenantId, moduleId: "inventory" } });
     await prisma.taxProfile.deleteMany({ where: { tenantId } });
     await prisma.party.deleteMany({ where: { tenantId } });
     await prisma.tenant.deleteMany({ where: { id: tenantId } });
@@ -449,6 +455,7 @@ describe.skipIf(!enabled)("Invoice issuance and corrections in PostgreSQL", () =
         revision: 0,
       });
       expect(await prisma.journalEntry.count({ where: { tenantId, sourceId: first.id } })).toBe(1);
+      expect(await prisma.extKv.count({ where: { tenantId, key: first.id } })).toBe(0);
       expect(await prisma.inventoryLot.findUnique({ where: { id: lot.id } })).toMatchObject({
         qtyOnHand: 5,
       });

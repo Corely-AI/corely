@@ -24,6 +24,11 @@ The invoice keeps the committed number, billing details and tax snapshot on
 retry. Tax comes from the owning pack and the snapshot retains its rounding
 method and computed totals. Accounting's existing stock-cost workflow applies
 when Accounting is configured and the invoice draws on recognized inventory.
+Issuance consumes the allocated lots even when their cost is zero or missing.
+Inventory records that consumption in the issuance transaction. An archived
+product ID blocks issuance. If a plain reference also matches an active
+product code, issuance uses that active product. An explicit `[product:ID]`
+reference always identifies the specified product.
 
 ## Correct an issued invoice
 
@@ -41,8 +46,13 @@ when Accounting is configured and the invoice draws on recognized inventory.
 API clients can create the linked draft through `POST /invoices` by providing
 `correctsInvoiceId` along with the normal draft fields. The source invoice must
 belong to the current workspace. Existing create, issue and cancel permissions
-apply independently. Invoices with a payment or a recorded stock-cost entry
-require a specialist correction workflow.
+apply independently. Invoices with a payment, recorded stock consumption, or
+a stock-cost journal entry require a specialist correction workflow.
+
+The list's delete and bulk delete actions cancel and hide the invoice while
+preserving its original fields and direct link. Ordinary cancellation keeps
+the invoice in the list. Regenerating a class billing run hides the canceled
+predecessor. Older hidden invoices retain their visibility behavior.
 
 The linked draft covers the local invoice record. An already delivered invoice
 may need separate customer notification or an accountant-directed correction.
@@ -57,8 +67,9 @@ running the migrations and deploying the updated API and background workers.
 Resume traffic and job processing after all invoice writers run the updated
 code. Apply the same fence during rollback and retain the additive schema and
 index. Keep invoice writes paused if rolling back to code that cannot enforce
-revision checks or read fractional draft quantities. Before the first updated
-writer runs, verify that the correction index exists and is valid.
+revision checks, read fractional draft quantities, or preserve invoice list
+visibility and lot consumption. Before the first updated writer runs, verify
+that the correction index exists and is valid.
 
 The index is built concurrently in its own migration. If the build is
 interrupted, inspect `pg_index.indisvalid` and the migration record. If duplicate

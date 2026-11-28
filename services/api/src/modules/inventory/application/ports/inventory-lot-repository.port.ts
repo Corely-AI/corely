@@ -47,6 +47,16 @@ export type InvoiceLotAllocation = { lot: InventoryLot; quantityPicked: number }
 
 export type InvoiceInventoryLotPort = {
   hasProductLots(tenantId: string, productId: string, tx: TransactionContext): Promise<boolean>;
+  hasInvoiceConsumption(
+    tenantId: string,
+    invoiceId: string,
+    tx?: TransactionContext
+  ): Promise<boolean>;
+  recordInvoiceConsumption(
+    tenantId: string,
+    invoiceId: string,
+    tx: TransactionContext
+  ): Promise<void>;
   allocateInvoiceLots(
     tenantId: string,
     productId: string,

@@ -18,6 +18,8 @@ import {
 import type { CancelInvoiceInput, CancelInvoiceOutput } from "@corely/contracts";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 import { InvoiceChangedError, type InvoiceRepoPort } from "../../ports/invoice-repository.port";
+import type { InvoiceAggregate } from "../../../domain/invoice.aggregate";
+import { isInvoiceListDeletionReason } from "../../../domain/invoice-list-visibility";
 
 type Deps = {
   logger: LoggerPort;
@@ -49,57 +51,82 @@ export class CancelInvoiceUseCase extends BaseUseCase<CancelInvoiceInput, Cancel
       return err(new ValidationError("Tenant and workspace context are required"));
     }
 
-    const invoice = await this.useCaseDeps.invoiceRepo.findById(workspaceId, input.invoiceId);
+    const reason = input.reason?.trim() || null;
+    const hideFromList = isInvoiceListDeletionReason(input.reason);
+    const isCancellationComplete = (invoice: InvoiceAggregate) =>
+      invoice.status === "CANCELED" &&
+      (!hideFromList || (invoice.hiddenFromList ?? isInvoiceListDeletionReason(invoice.notes)));
+    let invoice = await this.useCaseDeps.invoiceRepo.findById(workspaceId, input.invoiceId);
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
 
-    if (invoice.status === "CANCELED") {
-      return ok({ invoice: toInvoiceDto(invoice) });
-    }
-
-    const expectedRevision = invoice.revision;
-    const previousStatus = invoice.status;
-    const canceledAt = this.useCaseDeps.clock.now();
-    try {
-      invoice.cancel(canceledAt);
-    } catch (error) {
-      return err(new ConflictError((error as Error).message));
-    }
-
-    try {
-      await this.useCaseDeps.unitOfWork.withinTransaction(async (tx) => {
-        if (previousStatus !== "DRAFT") {
-          await this.useCaseDeps.accounting?.assertCorrectionAllowed(tenantId, invoice.id, tx);
-        }
-        await this.useCaseDeps.invoiceRepo.save(workspaceId, invoice, { expectedRevision, tx });
-        await this.useCaseDeps.audit.log(
-          {
-            tenantId,
-            userId: ctx.userId ?? "system",
-            action: "invoice.canceled",
-            entityType: "Invoice",
-            entityId: invoice.id,
-            metadata: {
-              workspaceId,
-              previousStatus,
-              invoiceNumber: invoice.number,
-              canceledAt: canceledAt.toISOString(),
-              reason: input.reason?.trim() || null,
-            },
-          },
-          tx
-        );
-      });
-    } catch (error) {
-      if (error instanceof InvoiceChangedError) {
-        const current = await this.useCaseDeps.invoiceRepo.findById(workspaceId, invoice.id);
-        if (current?.status === "CANCELED") {
-          return ok({ invoice: toInvoiceDto(current) });
-        }
+    for (let attempt = 0; ; attempt++) {
+      if (isCancellationComplete(invoice)) {
+        return ok({ invoice: toInvoiceDto(invoice) });
       }
-      throw error;
+
+      const currentInvoice = invoice;
+      const expectedRevision = currentInvoice.revision;
+      const previousStatus = currentInvoice.status;
+      const wasCanceled = previousStatus === "CANCELED";
+      const changedAt = this.useCaseDeps.clock.now();
+      try {
+        currentInvoice.cancel(changedAt, hideFromList);
+      } catch (error) {
+        return err(
+          new ConflictError(error instanceof Error ? error.message : "Invoice cannot be canceled.")
+        );
+      }
+
+      try {
+        await this.useCaseDeps.unitOfWork.withinTransaction(async (tx) => {
+          if (previousStatus !== "DRAFT" && !wasCanceled) {
+            await this.useCaseDeps.accounting?.assertCorrectionAllowed(
+              tenantId,
+              currentInvoice.id,
+              tx
+            );
+          }
+          await this.useCaseDeps.invoiceRepo.save(workspaceId, currentInvoice, {
+            expectedRevision,
+            tx,
+          });
+          await this.useCaseDeps.audit.log(
+            {
+              tenantId,
+              userId: ctx.userId ?? "system",
+              action: wasCanceled ? "invoice.hidden_from_list" : "invoice.canceled",
+              entityType: "Invoice",
+              entityId: currentInvoice.id,
+              metadata: {
+                workspaceId,
+                previousStatus,
+                invoiceNumber: currentInvoice.number,
+                ...(wasCanceled
+                  ? { hiddenAt: changedAt.toISOString() }
+                  : { canceledAt: changedAt.toISOString() }),
+                reason,
+                hiddenFromList: hideFromList,
+              },
+            },
+            tx
+          );
+        });
+        return ok({ invoice: toInvoiceDto(currentInvoice) });
+      } catch (error) {
+        if (error instanceof InvoiceChangedError) {
+          const current = await this.useCaseDeps.invoiceRepo.findById(workspaceId, input.invoiceId);
+          if (current && isCancellationComplete(current)) {
+            return ok({ invoice: toInvoiceDto(current) });
+          }
+          if (attempt === 0 && current?.status === "CANCELED") {
+            invoice = current;
+            continue;
+          }
+        }
+        throw error;
+      }
     }
-    return ok({ invoice: toInvoiceDto(invoice) });
   }
 }

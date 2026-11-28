@@ -12,6 +12,7 @@ import {
   ListInvoicesResult,
 } from "../../application/ports/invoice-repository.port";
 import { InvoiceAggregate } from "../../domain/invoice.aggregate";
+import { invoiceListDeletionReasons } from "../../domain/invoice-list-visibility";
 import {
   InvoiceLine,
   InvoicePayment,
@@ -146,6 +147,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       billToPostalCode: invoice.billToPostalCode,
       billToCountry: invoice.billToCountry,
       updatedAt: invoice.updatedAt,
+      hiddenFromList: invoice.hiddenFromList,
       pdfStorageKey: invoice.pdfStorageKey,
       pdfGeneratedAt: invoice.pdfGeneratedAt,
       pdfSourceVersion: invoice.pdfSourceVersion,
@@ -204,10 +206,23 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     pagination: { page?: number; pageSize: number; cursor?: string }
   ): Promise<ListInvoicesResult> {
     const { page = 1, pageSize, cursor } = pagination;
-    const softDeleteReasons = ["Soft delete", "Bulk delete", "Regenerated class billing run"];
     const where: any = {
       tenantId: workspaceId,
-      NOT: [{ status: "CANCELED", notes: { in: softDeleteReasons } }],
+      AND: [
+        {
+          OR: [
+            { hiddenFromList: false },
+            {
+              hiddenFromList: null,
+              OR: [
+                { status: { not: "CANCELED" } },
+                { notes: null },
+                { notes: { notIn: invoiceListDeletionReasons } },
+              ],
+            },
+          ],
+        },
+      ],
     };
 
     // Standard filters
@@ -284,58 +299,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       }),
     ]);
 
-    const items = results.map((row) => {
-      const lines: InvoiceLine[] = row.lines.map((line) => ({
-        id: line.id,
-        description: line.description,
-        qty: line.draftQuantity ?? line.qty,
-        unitPriceCents: line.unitPriceCents,
-      }));
-      return new InvoiceAggregate({
-        id: row.id,
-        tenantId: row.tenantId,
-        customerPartyId: (row as any).customerPartyId ?? "",
-        currency: row.currency,
-        notes: (row as any).notes ?? null,
-        terms: (row as any).terms ?? null,
-        number: (row as any).number ?? null,
-        status: row.status as any,
-        lineItems: lines,
-        payments: row.payments.map((payment) => ({
-          id: payment.id,
-          amountCents: payment.amountCents,
-          paidAt: payment.paidAt,
-          note: payment.note ?? undefined,
-        })),
-        issuedAt: row.issuedAt,
-        invoiceDate: fromPrismaDate((row as any).invoiceDate ?? null),
-        dueDate: fromPrismaDate((row as any).dueDate ?? null),
-        sentAt: (row as any).sentAt ?? null,
-        billToName: (row as any).billToName ?? null,
-        billToEmail: (row as any).billToEmail ?? null,
-        billToVatId: (row as any).billToVatId ?? null,
-        billToAddressLine1: (row as any).billToAddressLine1 ?? null,
-        billToAddressLine2: (row as any).billToAddressLine2 ?? null,
-        billToCity: (row as any).billToCity ?? null,
-        billToPostalCode: (row as any).billToPostalCode ?? null,
-        billToCountry: (row as any).billToCountry ?? null,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-        pdfStorageKey: (row as any).pdfStorageKey ?? null,
-        pdfGeneratedAt: (row as any).pdfGeneratedAt ?? null,
-        pdfSourceVersion: (row as any).pdfSourceVersion ?? null,
-        pdfStatus: ((row as any).pdfStatus as PdfStatus) ?? "NONE",
-        pdfFailureReason: (row as any).pdfFailureReason ?? null,
-        sourceType: (row as any).sourceType ?? null,
-        sourceId: (row as any).sourceId ?? null,
-        paymentDetails: ((row as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
-        taxSnapshot: ((row as any).taxSnapshot as any) ?? null,
-        issuerSnapshot: ((row as any).issuerSnapshot as any) ?? null,
-        paymentSnapshot: ((row as any).paymentSnapshot as PaymentDetailsSnapshot) ?? null,
-        legalEntityId: (row as any).legalEntityId ?? null,
-        paymentMethodId: (row as any).paymentMethodId ?? null,
-      });
-    });
+    const items = results.map((row) => this.toAggregate(row));
 
     const nextCursor = items.length === pageSize ? items[items.length - 1].id : null;
     return { items, nextCursor, total };
@@ -423,6 +387,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     createdAt: Date;
     updatedAt: Date;
     revision: number;
+    hiddenFromList: boolean | null;
     lines: Array<{
       id: string;
       description: string;
@@ -471,6 +436,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       revision: data.revision,
+      hiddenFromList: data.hiddenFromList,
       pdfStorageKey: (data as any).pdfStorageKey ?? null,
       pdfGeneratedAt: (data as any).pdfGeneratedAt ?? null,
       pdfSourceVersion: (data as any).pdfSourceVersion ?? null,

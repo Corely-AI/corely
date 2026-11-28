@@ -34,6 +34,8 @@ model Invoice {
   createdAt      DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
   revision       Int       @default(0)
+  // Null preserves the visibility rule for invoices canceled by older versions.
+  hiddenFromList Boolean?
 
   pdfStorageKey    String?
   pdfGeneratedAt   DateTime? @db.Timestamptz(6)
