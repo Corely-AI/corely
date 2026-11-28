@@ -1,5 +1,22 @@
 # Private Knowledge procedures
 
+## Reading current procedures
+
+The Knowledge page searches current publications in the active workspace. Search matches
+published titles, page text and attachment names. It returns up to 100 summaries with the
+owner, publication version, review date and overdue status. Review is overdue after the
+recorded UTC calendar date. The management view is available through `/knowledge/manage`.
+
+Links from operational work use `/knowledge/published/<procedure-id>`. A link follows the
+current publication. It stores a procedure identifier and leaves publication text, titles
+and version history with Knowledge. The reader and preview recheck workspace membership,
+Knowledge access and the current publication. A draft, archived or deleted procedure has no
+reader preview. A published attachment has its own reader download path with the same checks.
+
+Search reads the workspace collection directly and returns no cached excerpts. Reader
+responses use private no-store caching. The browser excludes Knowledge queries from offline
+snapshots and removes older Knowledge entries when restoring a snapshot.
+
 Knowledge is an authenticated Backoffice collection at `/knowledge`. Install
 and enable the Knowledge app through Platform and grant `knowledge.read` to
 workspace members who need the current published version. Grant

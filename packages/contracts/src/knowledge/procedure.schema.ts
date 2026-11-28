@@ -100,6 +100,31 @@ export const ProcedureListSchema = z
     ),
   })
   .strict();
+
+export const PublishedProcedureSearchSchema = z
+  .object({ query: z.string().trim().max(160).default("") })
+  .strict();
+export const PublishedProcedureSummarySchema = identity
+  .extend({
+    title: metadata.shape.title,
+    reviewDate: metadata.shape.reviewDate,
+    version: PublishedProcedureSchema.shape.version,
+    reviewOverdue: z.boolean(),
+  })
+  .strict();
+export const PublishedProcedureSearchResultSchema = z
+  .object({
+    items: z.array(PublishedProcedureSummarySchema),
+    limited: z.boolean(),
+    canManage: z.boolean(),
+  })
+  .strict();
+export const PublishedProcedureReaderDetailSchema = identity
+  .extend({
+    published: PublishedProcedureSchema,
+    reviewOverdue: z.boolean(),
+  })
+  .strict();
 export const ProcedurePublicationEventTypeSchema = z.enum([
   "knowledge.procedure.publish",
   "knowledge.procedure.archive",
@@ -118,3 +143,6 @@ export type ProcedureFields = z.infer<typeof ProcedureFieldsSchema>;
 export type PublishedProcedure = z.infer<typeof PublishedProcedureSchema>;
 export type ProcedureDetail = z.infer<typeof ProcedureDetailSchema>;
 export type ProcedureList = z.infer<typeof ProcedureListSchema>;
+export type PublishedProcedureSummary = z.infer<typeof PublishedProcedureSummarySchema>;
+export type PublishedProcedureSearchResult = z.infer<typeof PublishedProcedureSearchResultSchema>;
+export type PublishedProcedureReaderDetail = z.infer<typeof PublishedProcedureReaderDetailSchema>;
