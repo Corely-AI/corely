@@ -27,6 +27,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { OperationalRequestsClient } from "./operational-requests-api";
+import { RequestReview } from "./request-review";
 import { emptyDraft, kindLabel, RequestDraftFields } from "./request-draft-fields";
 import { formatDate, statusLabel, statusOf, type RequestsCopy } from "./requests-copy";
 
@@ -65,7 +66,10 @@ export function RequestForm({
   }, []);
   const client = useQueryClient();
   const navigate = useNavigate();
-  const editable = canSubmit && (!saved || saved.status === "DRAFT");
+  const editable = saved?.actions?.canEdit ?? (canSubmit && (!saved || saved.status === "DRAFT"));
+  const canWithdraw =
+    saved?.actions?.canWithdraw ??
+    Boolean(canSubmit && saved && ["DRAFT", "SUBMITTED"].includes(saved.status));
   const dirty = !saved || JSON.stringify(saved.draft) !== JSON.stringify(draft);
   const policyDocumentId = saved?.canReadPolicy ? saved.draft.policyDocumentId : null;
 
@@ -307,6 +311,32 @@ export function RequestForm({
           )}
         </CardContent>
       </Card>
+      {saved && (
+        <RequestReview
+          request={saved}
+          copy={copy}
+          locale={locale}
+          pending={pending || stale}
+          decide={(decision, note) =>
+            void run(async () => {
+              const result = await withKey(
+                JSON.stringify(["decide", saved.id, saved.version, decision, note]),
+                (key) => requestsApi.decide(saved.id, saved.version, decision, note, key)
+              );
+              accept(result);
+            })
+          }
+          apply={(timezone) =>
+            void run(async () => {
+              const result = await withKey(
+                JSON.stringify(["apply", saved.id, saved.version, timezone]),
+                (key) => requestsApi.apply(saved.id, saved.version, timezone, key)
+              );
+              accept(result);
+            })
+          }
+        />
+      )}
       {error && (
         <Alert className="border-destructive/70 text-foreground" role="alert">
           <AlertDescription>{error}</AlertDescription>
@@ -352,7 +382,7 @@ export function RequestForm({
             {copy.send}
           </Button>
         )}
-        {saved && canSubmit && saved.status !== "WITHDRAWN" && (
+        {canWithdraw && (
           <Button
             variant="outline"
             disabled={pending || stale}

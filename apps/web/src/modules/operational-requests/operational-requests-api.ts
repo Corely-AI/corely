@@ -3,6 +3,7 @@ import {
   OperationalRequestSchema,
   OperationalRequestsPageSchema,
   type OperationalRequestDraft,
+  type OperationalRequestDecision,
   type OperationalRequestKind,
 } from "@corely/contracts";
 import { apiClient } from "@corely/web-shared/lib/api-client";
@@ -64,6 +65,22 @@ export function createRequestsClient(workspaceId: string) {
     async transition(id: string, command: "submit" | "withdraw", version: number, key: string) {
       return OperationalRequestSchema.parse(
         await write(`${path(id)}/${command}`, "POST", { version }, key)
+      );
+    },
+    async decide(
+      id: string,
+      version: number,
+      decision: OperationalRequestDecision,
+      note: string | null,
+      key: string
+    ) {
+      return OperationalRequestSchema.parse(
+        await write(`${path(id)}/decision`, "POST", { version, decision, note }, key)
+      );
+    },
+    async apply(id: string, version: number, timezone: string, key: string) {
+      return OperationalRequestSchema.parse(
+        await write(`${path(id)}/apply`, "POST", { version, timezone }, key)
       );
     },
     async attach(id: string, version: number, file: File, base64: string, key: string) {
