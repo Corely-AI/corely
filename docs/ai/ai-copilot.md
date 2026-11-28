@@ -79,6 +79,27 @@ messages or financial/personnel changes. An outbox event is not proof of deliver
 - **Chat history + search**: `GET /copilot/threads`, `GET /copilot/threads/:threadId`, `GET /copilot/threads/:threadId/messages`, `POST /copilot/threads`, and `GET /copilot/threads/search` provide recent-chat sidebar and history search support. Aliased `/ai-copilot/*` routes are available for the same endpoints.
 - **Running locally**: use root `pnpm dev:api` and `pnpm dev:web` scripts with a configured environment. Ensure valid API mode/base URL. Historical mock-server instructions need a separate restoration: no tracked mock runtime/package is present in this commit.
 
+### Daily Work assistant
+
+The Backoffice Tasks assistant at `/tasks/copilot` uses the existing Copilot registry and the
+[Tasks owner](../backend/employee-tasks.md). It requires a verified workspace, enabled Tasks
+and AI Assistant apps, a configured API signing key (`JWT_SECRET` or `JWT_ACCESS_SECRET`),
+and current Tasks read access. It lists up to ten visible tasks with a
+source and retrieval time. The read result omits assignee and personnel details.
+
+The assistant can propose completing one task. The Tasks owner applies the same rules as
+Daily Work when previewing it. Copilot shows the title and version and accepts the signed-in
+actor’s response only for the exact server-stored approval request. The proposal is bound to
+the tenant, workspace, actor and conversation and expires after ten minutes. Approved writes
+use the existing Tasks completion command, which rechecks the current permissions, version and
+task rules. Retries reuse the same Tasks idempotency key.
+
+Task tool execution records and telemetry omit tool payloads. The actor's workspace-scoped
+conversation retains the review content needed for approval. Each model stream has a tool
+execution and model-step limit. Daily Work remains available when the assistant is disabled or
+unavailable. This slice exposes only Tasks reads and completion. Other operational integrations
+use their own issues, owning use cases, and approval policies.
+
 ### Tool Authoring Guardrails
 
 - Use shared helpers from `services/api/src/modules/ai-copilot/infrastructure/tools/tool-utils.ts`:

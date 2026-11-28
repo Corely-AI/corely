@@ -59,7 +59,7 @@ import {
   TaxDocumentsPage,
   taxRoutes,
 } from "../../modules/tax";
-import { CopilotPage } from "../../routes/copilot";
+import { CopilotPage, OperationalCopilotPage } from "../../routes/copilot";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
 import { RequireAuth } from "./require-auth";
 import { appSettingsRoutes } from "./app-settings-routes";
@@ -183,6 +183,7 @@ export const appShellRoutes = (
         element={<DailyWorkPage getCreationGuidance={getTaskCreationGuidance} />}
       />
       <Route path="/tasks/templates" element={<DailyWorkPage templates />} />
+      <Route path="/tasks/copilot" element={<OperationalCopilotPage />} />
       <Route path="/people/me" element={<StaffJourneyPage />} />
       <Route path="/people/staff/:id/lifecycle" element={<StaffJourneyPage manager />} />
       <Route path="/people/staff" element={<PeopleDirectoryPage />} />

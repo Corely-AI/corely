@@ -86,6 +86,19 @@ export class EmployeeTasksUseCase {
       throw new NotFoundException("Task not found");
     }
   }
+  private assertCanTransition(auth: Awaited<ReturnType<EmployeeTasksUseCase["authorize"]>>) {
+    if (!auth.manage && !auth.completeOwn) {
+      throw new ForbiddenException("Task completion denied");
+    }
+  }
+  private assertTransition(record: TaskRecord, completed: boolean) {
+    if (completed && record.checklist?.some((item) => !item.completed)) {
+      throw new ConflictException("Complete every checklist item first");
+    }
+    if ((record.status === "COMPLETED") === completed) {
+      throw new ConflictException("Task already has this status; reload before saving");
+    }
+  }
   async list(query: unknown, ctx: UseCaseContext): Promise<EmployeeTaskList> {
     const auth = await this.authorize(ctx);
     const input = ListEmployeeTasksSchema.parse(query);
@@ -124,6 +137,14 @@ export class EmployeeTasksUseCase {
     this.visible(task, auth);
     return this.projection(auth.scope, task);
   }
+  async previewCompletion(id: string, ctx: UseCaseContext) {
+    const auth = await this.authorize(ctx);
+    this.assertCanTransition(auth);
+    const record = await this.record(auth.scope, id);
+    this.visible(record, auth);
+    this.assertTransition(record, true);
+    return { id: record.id, title: record.title, version: record.version };
+  }
   async command(
     kind: Command,
     id: string | null,
@@ -157,9 +178,7 @@ export class EmployeeTasksUseCase {
       if ((kind === "create" || kind === "update") && !auth.manage) {
         throw new ForbiddenException("Task management required");
       }
-      if (!auth.manage && !auth.completeOwn) {
-        throw new ForbiddenException("Task completion denied");
-      }
+      this.assertCanTransition(auth);
       const replay = await this.repo.replay(auth.scope, commandKey, tx);
       if (replay) {
         if (replay.fingerprint !== fingerprint) {
@@ -192,8 +211,9 @@ export class EmployeeTasksUseCase {
           const message = taskCreationRejection(taskCreationPolicies, auth.scope, {
             dueAt: fields.dueAt,
           });
-          if (message)
-            {throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });}
+          if (message) {
+            throw new BadRequestException({ code: TaskCreationPolicyRejectedCode, message });
+          }
         }
         next = {
           ...fields,
@@ -234,12 +254,7 @@ export class EmployeeTasksUseCase {
           };
         } else {
           const completed = kind === "complete";
-          if (completed && previous.checklist?.some((item) => !item.completed)) {
-            throw new ConflictException("Complete every checklist item first");
-          }
-          if ((previous.status === "COMPLETED") === completed) {
-            throw new ConflictException("Task already has this status; reload before saving");
-          }
+          this.assertTransition(previous, completed);
           next = transitionTask(previous, completed, now);
         }
       }

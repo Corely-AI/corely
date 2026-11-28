@@ -170,6 +170,45 @@ describe.skipIf(!enabled)("Employee tasks persisted lifecycle and trust boundari
       data: { status: "ACTIVE" },
     });
   });
+  it("previews the same task completion policy for an actor without changing the record", async () => {
+    const mine = (await create()).body as EmployeeTask;
+    const another = (await create({ ownerStaffId: other.id })).body as EmployeeTask;
+    const staffCtx = { ...f.ctx, userId: f.staff };
+    await expect(f.tasks.previewCompletion(another.id, staffCtx)).rejects.toThrow("Task not found");
+    await expect(
+      f.tasks.previewCompletion(mine.id, { ...f.ctx, workspaceId: f.workspaceA2 })
+    ).rejects.toThrow("Task not found");
+    await expect(f.tasks.previewCompletion(mine.id, staffCtx)).resolves.toEqual({
+      id: mine.id,
+      title: mine.title,
+      version: mine.version,
+    });
+    expect(await prisma.auditLog.count({ where: { tenantId: f.tenantA, entityId: mine.id } })).toBe(
+      1
+    );
+    const updated = await http("patch", `/${mine.id}`).send({
+      title: "Check current stock",
+      ownerStaffId: owner.id,
+      dueAt: null,
+      version: mine.version,
+    });
+    expect(updated.status).toBe(200);
+    await expect(
+      f.tasks.command("complete", mine.id, { version: mine.version }, randomUUID(), staffCtx)
+    ).rejects.toThrow("Task changed");
+    const current = await f.tasks.previewCompletion(mine.id, staffCtx);
+    const key = randomUUID();
+    await Promise.all([
+      f.tasks.command("complete", mine.id, { version: current.version }, key, staffCtx),
+      f.tasks.command("complete", mine.id, { version: current.version }, key, staffCtx),
+    ]);
+    await expect(f.tasks.previewCompletion(mine.id, staffCtx)).rejects.toThrow(
+      "Task already has this status"
+    );
+    expect(await prisma.auditLog.count({ where: { tenantId: f.tenantA, entityId: mine.id } })).toBe(
+      3
+    );
+  });
   it("serializes duplicate commands and returns current versions on replay without duplicate events", async () => {
     const key = randomUUID();
     const responses = await Promise.all(Array.from({ length: 8 }, () => create({}, key)));

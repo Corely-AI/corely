@@ -3,7 +3,11 @@ import { type DomainToolPort } from "./domain-tool.port";
 import { type ObservabilitySpanRef } from "@corely/kernel";
 import { type WorkspaceKind } from "@corely/prompts";
 import { type LanguageModelUsage, type StreamTextResult } from "ai";
-import { type PosVerticalId, type SurfaceId } from "@corely/contracts";
+import {
+  type OperationalTaskCompletion,
+  type PosVerticalId,
+  type SurfaceId,
+} from "@corely/contracts";
 
 export interface LanguageModelPort {
   streamChat(params: {
@@ -14,6 +18,8 @@ export interface LanguageModelPort {
     tenantId: string;
     toolTenantId?: string;
     workspaceId?: string;
+    explicitWorkspace?: boolean;
+    operationalApprovals?: ReadonlyMap<string, OperationalTaskCompletion>;
     userId: string;
     workspaceKind?: WorkspaceKind;
     environment?: string;

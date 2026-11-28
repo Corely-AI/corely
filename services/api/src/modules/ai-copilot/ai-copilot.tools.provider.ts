@@ -77,6 +77,9 @@ import { buildCashManagementTools } from "../cash-management/adapters/tools/cash
 import { buildTaxAnnualFilingTools } from "../tax/adapters/tools/tax-annual-filing.tools";
 import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coaching.tools";
 import { buildRestaurantAiTools } from "../restaurant/adapters/tools/restaurant.tools";
+import { EmployeeTasksUseCase } from "../tasks/public";
+import { buildOperationalTaskTools } from "./infrastructure/tools/operational-task.tools";
+import { TenantEntitlementService } from "../platform/public";
 
 export const copilotToolsProvider: Provider = {
   provide: COPILOT_TOOLS,
@@ -137,10 +140,14 @@ export const copilotToolsProvider: Provider = {
     env: EnvService,
     promptRegistry: PromptRegistry,
     promptUsageLogger: PromptUsageLogger,
-    aiText: AiTextPort
+    aiText: AiTextPort,
+    tasks: EmployeeTasksUseCase,
+    entitlements: TenantEntitlementService
   ) => {
     const withAppId = (appId: string, tools: DomainToolPort[]): DomainToolPort[] =>
       tools.map((tool) => ({ ...tool, appId }));
+    const proposalSigningKey =
+      env.getValue("JWT_SECRET")?.trim() || process.env.JWT_ACCESS_SECRET?.trim();
 
     return [
       ...withAppId("invoices", buildInvoiceWorkflowTools(invoices, partyCrm)),
@@ -228,6 +235,11 @@ export const copilotToolsProvider: Provider = {
       ),
       ...withAppId("coaching-engagements", buildCoachingTools(coaching)),
       ...withAppId("restaurant", buildRestaurantAiTools(restaurantAi)),
+      ...(proposalSigningKey
+        ? buildOperationalTaskTools(tasks, proposalSigningKey, (tenantId) =>
+            entitlements.isAppEnabled(tenantId, "ai-copilot")
+          )
+        : []),
     ];
   },
   inject: [
@@ -288,5 +300,7 @@ export const copilotToolsProvider: Provider = {
     PromptRegistry,
     PromptUsageLogger,
     AI_TEXT_PORT,
+    EmployeeTasksUseCase,
+    TenantEntitlementService,
   ],
 };

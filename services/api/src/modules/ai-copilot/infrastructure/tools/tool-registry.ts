@@ -54,7 +54,9 @@ export class ToolRegistry implements ToolRegistryPort {
         ? (this.tools as DomainToolPort[][]).flat()
         : (this.tools as DomainToolPort[]);
 
-    let availableTools = flatTools;
+    let availableTools = flatTools.filter(
+      (tool) => Boolean(tool.operational) === (activeAppId === "tasks")
+    );
 
     const shouldBypassEntitlements = isFreelancerScopedContext(activeAppId);
 
@@ -62,6 +64,11 @@ export class ToolRegistry implements ToolRegistryPort {
       const appEnablement = await this.entitlementsRead
         .getAppEnablementMap(tenantId)
         .catch(() => null);
+      availableTools = availableTools.filter(
+        (tool) =>
+          !tool.operational ||
+          (appEnablement?.["ai-copilot"] === true && appEnablement?.tasks === true)
+      );
 
       if (appEnablement) {
         availableTools = availableTools.filter((tool) => {
@@ -74,6 +81,8 @@ export class ToolRegistry implements ToolRegistryPort {
           return appEnablement[tool.appId] === true;
         });
       }
+    } else {
+      availableTools = availableTools.filter((tool) => !tool.operational);
     }
 
     if (activeAppId) {
@@ -87,7 +96,9 @@ export class ToolRegistry implements ToolRegistryPort {
         {
           allowedSurfaces: resolveAllowedSurfaces(tool),
           allowedVerticals: tool.allowedVerticals,
-          requiredPermissions: tool.requiredPermissions,
+          // The model adapter resolves fresh actor grants when the stream has no list-time snapshot.
+          requiredPermissions:
+            tool.operational && !permissions ? undefined : tool.requiredPermissions,
         },
         {
           surfaceId,
