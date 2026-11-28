@@ -5,17 +5,22 @@ Production uses `soloroute/corely-web` on Vercel with `apps/web` as its root dir
 The API at `https://api.corely.one` uses Supabase PostgreSQL through the session pooler on
 port `5432` with certificate verification. Recheck these bindings before each release.
 
-Run the examples in Bash from an isolated checkout of the selected commit. Use the repository's
-pnpm version, the Vercel project's Node version for local web builds, an authenticated Vercel CLI
-and `gcloud`, and Docker with `linux/amd64` build support. The traffic check uses `jq`.
+Follow the [release skill](../SKILL.md) and record the release ticket before execution. Run the
+examples manually in Bash on the local computer from an isolated checkout of the selected commit.
+Use the repository's pnpm version, the Vercel project's Node version for local web builds, an
+authenticated Vercel CLI and `gcloud`, and Docker with `linux/amd64` build support. The traffic
+check uses `jq`.
 
 ## Select the source and capture the current release
 
-Use `git ls-remote --symref origin HEAD` to confirm the default branch when the request says
-"latest". Resolve its exact SHA, check that commit's CI results, and use `git worktree add --detach`
-for a clean checkout. Record the current Vercel deployment URL and Cloud Run traffic allocation
-for rollback. If both live artifacts already match the requested SHA and pass the release checks,
-report the verified release. An explicit redeploy request may still call for a new deployment.
+Verify the production remote and fetch its `main` branch. For a request to release the latest
+version, use the fetched `main` tip. Verify a selected SHA against that branch, for example with
+`git merge-base --is-ancestor <sha> origin/main` when `origin` is the verified remote. Stop if
+`main` is unavailable or the commit cannot be verified. Use `git worktree add --detach` for a
+clean checkout of the verified SHA. Record the current Vercel deployment URL and Cloud Run traffic
+allocation for rollback. If both live artifacts already match the requested SHA and pass the
+release checks, report the verified release. An explicit redeploy request may still call for a new
+deployment.
 
 ```bash
 release_sha=$(git rev-parse HEAD)
@@ -84,21 +89,24 @@ Use the resulting `repository@sha256:…` for deployment. [Artifact Registry CLI
 
 ## Check Supabase and stage the API
 
-In a migration runner at the same SHA, install dependencies with `pnpm install --frozen-lockfile`
-and supply Prisma's `DATABASE_URL` securely from the production secret store. Use the verified
-Supabase project with a direct or session-mode migration connection and a trusted CA available to
-the runner. Check the target and ledger before any write.
+In the local release checkout at the verified SHA from `main`, install dependencies with
+`pnpm install --frozen-lockfile` and supply Prisma's `DATABASE_URL` securely from the production
+secret store. Use the verified Supabase project with a direct or session-mode migration connection
+and a trusted CA. Check the target and ledger before any write.
 
 ```bash
 : "${DATABASE_URL:?Load the verified production migration connection}"
 NODE_ENV=production pnpm --filter @corely/data exec prisma migrate status
 ```
 
-If the ledger matches, proceed without reapplying migrations. For a legacy ledger, follow the
-[Prisma baseline adoption runbook](../../../../docs/devops/prisma-baseline.md). For pending
-migrations, establish a verified backup and compatibility with the current and candidate API,
-then run `NODE_ENV=production pnpm prisma:migrate` and recheck status. Resolve a failed or partial migration before
-changing traffic. [Supabase connection modes](https://supabase.com/docs/guides/database/connecting-to-postgres)
+Apply pending migrations only during an authorized release of a new version. Establish a verified
+backup and compatibility with the current and candidate API, run
+`NODE_ENV=production pnpm prisma:migrate` (`prisma migrate deploy`), and recheck status. During
+that same release, handle a legacy ledger with the
+[Prisma baseline adoption runbook](../../../../docs/devops/prisma-baseline.md) if applicable.
+Use read-only status and compatibility checks for same-version redeployments and rollbacks.
+Resolve a failed or partial migration before changing traffic.
+[Supabase connection modes](https://supabase.com/docs/guides/database/connecting-to-postgres)
 
 Stage the verified digest with zero traffic. Use a unique revision suffix for an explicit redeploy
 of the same source. A tagged smoke check can start an API instance, so check startup and background
@@ -162,7 +170,8 @@ curl -fsS -o /dev/null "$web_origin/auth/login"
 Read back API traffic, the resolved image digest, and the Vercel alias. In a browser, verify sign-in
 renders and that API requests use `https://api.corely.one` with CORS for `https://app.corely.one`.
 Verify an authenticated database-backed read if an authorized account is available. Record the SHA,
-image digest, revision, Vercel deployment ID, migration status, and checks that remain unverified.
+image digest, revision, Vercel deployment ID, migration status, and any unverified checks in the
+release ticket.
 
 For a rollback, restore `app.corely.one` with `vercel alias set` and the recorded previous deployment.
 Restore Cloud Run traffic with `gcloud run services update-traffic --to-revisions` and the previous
