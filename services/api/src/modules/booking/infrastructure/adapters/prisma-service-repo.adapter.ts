@@ -72,6 +72,10 @@ export class PrismaServiceRepoAdapter implements ServiceRepositoryPort {
   ): Promise<ServicePage> {
     const where: Prisma.BookingServiceOfferingWhereInput = { tenantId };
 
+    if (filters.workspaceId) {
+      where.OR = [{ workspaceId: filters.workspaceId }, { workspaceId: null }];
+    }
+
     if (filters.q) {
       where.name = { contains: filters.q, mode: "insensitive" };
     }

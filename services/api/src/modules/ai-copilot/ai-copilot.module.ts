@@ -62,6 +62,7 @@ import { CoachingEngagementsModule } from "../coaching-engagements";
 import { RestaurantModule } from "../restaurant/restaurant.module";
 import { PlatformModule } from "../platform/platform.module";
 import { copilotToolsProvider } from "./ai-copilot.tools.provider";
+import { TasksModule } from "../tasks/tasks.module";
 import { AI_TEXT_PORT } from "../../shared/ai/ai-text.port";
 import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
 
@@ -84,6 +85,7 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
     CoachingEngagementsModule,
     RestaurantModule,
     TaxModule,
+    TasksModule,
     PlatformEntitlementsModule,
     PlatformModule,
     PromptModule,

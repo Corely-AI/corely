@@ -17,6 +17,7 @@ import {
 import type { OpenBukManageDetails, OpenBukStudio } from "@corely/contracts";
 import type { BookingPolicyRegistration } from "@corely/booking/extensions";
 import { assertPublicModuleEnabled } from "../../../../shared/public";
+import { PilotSetupUseCase } from "../../../workspaces/public";
 import {
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
   type IdempotencyStoragePort,
@@ -50,6 +51,7 @@ export class OpenBukGuestManagementUseCase {
     @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN) private readonly receipts: IdempotencyStoragePort,
     private readonly credentials: OpenBukGuestCredentials,
     private readonly studioApp: OpenBukStudioUseCase,
+    private readonly publication: PilotSetupUseCase,
     private readonly cancellation: CancelBookingUseCase,
     private readonly reschedule: RescheduleBookingUseCase
   ) {}
@@ -112,7 +114,9 @@ export class OpenBukGuestManagementUseCase {
       this.studio.snapshot(scope, booking.id, tx),
       selection ? this.studio.studio(scope, tx, selection) : Promise.resolve(null),
     ]);
-    if (!snapshot) {throw this.unavailable();}
+    if (!snapshot) {
+      throw this.unavailable();
+    }
     return {
       reference: snapshot.reference,
       startAt: booking.startAt.toISOString(),
@@ -129,7 +133,9 @@ export class OpenBukGuestManagementUseCase {
     const scope = this.scope(ctx);
     const now = this.clock.now();
     const result = await this.credentials.find(scope, token, now);
-    if (!result || result.credential.revokedAt) {throw this.unavailable();}
+    if (!result || result.credential.revokedAt) {
+      throw this.unavailable();
+    }
     return { scope, booking: await this.activeBooking(scope, result.credential.bookingId, now) };
   }
 
@@ -141,7 +147,9 @@ export class OpenBukGuestManagementUseCase {
   async availability(token: string, day: string, ctx: UseCaseContext) {
     const { scope, booking } = await this.lookup(token, ctx);
     const selection = this.selection(booking);
-    if (!selection) {return { slots: [] };}
+    if (!selection) {
+      return { slots: [] };
+    }
     try {
       const { slots, studio } = await this.studioApp.appointmentSlots(
         scope,
@@ -149,10 +157,14 @@ export class OpenBukGuestManagementUseCase {
         selection,
         booking.id
       );
-      if (!this.compatible(studio, booking)) {return { slots: [] };}
+      if (!this.compatible(studio, booking)) {
+        return { slots: [] };
+      }
       return { slots: slots.filter(({ startAt }) => startAt !== booking.startAt.toISOString()) };
     } catch (error) {
-      if (error instanceof NotFoundException) {return { slots: [] };}
+      if (error instanceof NotFoundException) {
+        return { slots: [] };
+      }
       throw error;
     }
   }
@@ -164,14 +176,18 @@ export class OpenBukGuestManagementUseCase {
     ctx: UseCaseContext
   ): Promise<Result> {
     const scope = this.scope(ctx);
-    if (!/^[A-Za-z0-9_-]{16,128}$/.test(key))
-      {throw new BadRequestException("A valid Idempotency-Key is required");}
+    if (!/^[A-Za-z0-9_-]{16,128}$/.test(key)) {
+      throw new BadRequestException("A valid Idempotency-Key is required");
+    }
     const fingerprint = createHash("sha256").update(JSON.stringify(command)).digest("hex");
     return this.uow.withinTransaction(async (tx) => {
       await this.studio.lock(scope, `openbuk:${scope.workspaceId}`, tx);
+      await this.publication.requirePublicBooking(scope.tenantId, scope.workspaceId, tx);
       const now = this.clock.now();
       const access = await this.credentials.find(scope, token, now, tx);
-      if (!access) {throw this.unavailable();}
+      if (!access) {
+        throw this.unavailable();
+      }
       const { credential, digest } = access;
       const action = `openbuk.guest.manage:${scope.workspaceId}:${digest}`;
       const cached = await this.receipts.get(action, scope.tenantId, key, tx);
@@ -180,16 +196,22 @@ export class OpenBukGuestManagementUseCase {
         if (
           record.fingerprint === fingerprint &&
           (!credential.revokedAt || record.result.status === "cancelled")
-        )
-          {return record.result;}
-        if (credential.revokedAt) {throw this.unavailable();}
+        ) {
+          return record.result;
+        }
+        if (credential.revokedAt) {
+          throw this.unavailable();
+        }
         throw new ConflictException("Booking:IdempotencyMismatch");
       }
-      if (credential.revokedAt) {throw this.unavailable();}
+      if (credential.revokedAt) {
+        throw this.unavailable();
+      }
       await this.bookings.lockMutation(scope.tenantId, credential.bookingId, tx);
       const booking = await this.activeBooking(scope, credential.bookingId, now, tx);
-      if (booking.updatedAt.toISOString() !== command.version)
-        {throw new ConflictException("Booking:ReviewStale");}
+      if (booking.updatedAt.toISOString() !== command.version) {
+        throw new ConflictException("Booking:ReviewStale");
+      }
       const guestContext = { ...ctx, userId: "public" };
       let result: Result;
       if (command.kind === "cancel") {
@@ -225,8 +247,9 @@ export class OpenBukGuestManagementUseCase {
     tx: TransactionContext
   ): Promise<Result> {
     const selection = this.selection(booking);
-    if (!selection || start.getTime() === booking.startAt.getTime())
-      {throw new ConflictException("Booking:SlotUnavailable");}
+    if (!selection || start.getTime() === booking.startAt.getTime()) {
+      throw new ConflictException("Booking:SlotUnavailable");
+    }
     await this.studio.lock(scope, selection.staffId, tx);
     const studio = await this.studio.studio(scope, tx, selection);
     // Preserve the originally booked duration and buffers when the studio still offers that pair.

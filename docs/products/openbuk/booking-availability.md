@@ -72,6 +72,12 @@ duration and buffers, a guest can choose another time. The move revalidates
 availability and policy under the same Booking locks. Guest cancellation checks
 the same booking policy and confirmation version before releasing the time.
 
+Public writes recheck Workspace publication inside the booking transaction.
+OpenBuk public checkout and management, and the older Booking routes, use fixed
+PostgreSQL request budgets shared by all API instances. PostgreSQL supplies the
+window clock. See the [public boundary verification](../../tasks/322-openbuk-public-isolation.md)
+for budget values, failure responses and ingress verification limits.
+
 Guests can choose to receive a confirmation email at checkout. The
 optional checkbox starts unchecked. Booking commits the preference with
 the appointment, and Notifications handles the message after the commit

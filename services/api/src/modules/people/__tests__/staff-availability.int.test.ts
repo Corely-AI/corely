@@ -75,7 +75,7 @@ describe.skipIf(!enabled)("People patterns constrain authoritative Booking", () 
       f.outbox,
       clock,
       { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-      { publish: async () => {} },
+      { publish: async () => {}, requirePublicBooking: async () => {} },
       f.constraint
     );
     const { serviceId, staffId: unused, slug, ...setup } = studioFixture();

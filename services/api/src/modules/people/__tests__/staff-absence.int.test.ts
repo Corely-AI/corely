@@ -313,7 +313,7 @@ describe.skipIf(!absenceTestsEnabled)(
         f.outbox,
         { now: () => now },
         { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-        { publish: async () => {} },
+        { publish: async () => {}, requirePublicBooking: async () => {} },
         f.constraint
       );
       const {
@@ -391,7 +391,7 @@ describe.skipIf(!absenceTestsEnabled)(
         f.outbox,
         { now: () => now },
         { execute: async () => ({ slug: "test-studio", name: "Studio" }) },
-        { publish: async () => {} },
+        { publish: async () => {}, requirePublicBooking: async () => {} },
         f.constraint
       );
       const {

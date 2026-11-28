@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
 } from "@nestjs/common";
 import {
   AUDIT_PORT,
@@ -103,6 +104,12 @@ export class PilotSetupUseCase {
     await this.authorize.execute({ ...actor, workspaceId: ctx.workspaceId, manage: true }, tx);
     if (publication !== "closed") {
       throw new ConflictException("Close public booking before importing appointments");
+    }
+  }
+  async requirePublicBooking(tenantId: string, workspaceId: string, tx: TransactionContext) {
+    await this.repo.lock(`publication:${workspaceId}`, tx);
+    if ((await this.repo.lockBookingPublication(tenantId, workspaceId, tx)) !== "open") {
+      throw new NotFoundException("Public booking is unavailable");
     }
   }
   async invite(workspaceId: string, email: string, ctx: UseCaseContext) {

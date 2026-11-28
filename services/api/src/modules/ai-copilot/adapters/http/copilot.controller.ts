@@ -208,6 +208,7 @@ export class CopilotController {
       modelProvider: this.env.AI_MODEL_PROVIDER,
       trigger: body.trigger,
       toolTenantId: context.toolTenantId,
+      explicitWorkspace: context.explicitWorkspace,
     });
   }
 
@@ -336,6 +337,7 @@ export class CopilotController {
       modelProvider: this.env.AI_MODEL_PROVIDER,
       trigger: body.trigger,
       toolTenantId: context.toolTenantId,
+      explicitWorkspace: context.explicitWorkspace,
     });
   }
 
@@ -345,6 +347,7 @@ export class CopilotController {
     userId: string;
     requestId: string;
     workspaceId: string;
+    explicitWorkspace: boolean;
     activeAppId?: string;
     surfaceId?: SurfaceId;
     verticalId?: PosVerticalId | null;
@@ -362,6 +365,7 @@ export class CopilotController {
       userId,
       requestId,
       workspaceId,
+      explicitWorkspace: Boolean(ctx.workspaceId && ctx.tenantId && ctx.userId),
       activeAppId: ctx.activeAppId,
       surfaceId: ctx.surfaceId as SurfaceId | undefined,
     };

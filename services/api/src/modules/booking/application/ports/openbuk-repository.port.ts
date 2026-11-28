@@ -35,7 +35,7 @@ export interface OpenBukRepositoryPort {
   lock(scope: StudioScope, key: string, tx: TransactionContext): Promise<void>;
   draft(scope: StudioScope, tx?: TransactionContext): Promise<OpenBukSetupDraft | null>;
   saveDraft(scope: StudioScope, input: OpenBukSetupDraft, tx: TransactionContext): Promise<void>;
-  isRegistered(scope: StudioScope): Promise<boolean>;
+  isRegistered(scope: StudioScope, tx?: TransactionContext): Promise<boolean>;
   studio(
     scope: StudioScope,
     tx?: TransactionContext,

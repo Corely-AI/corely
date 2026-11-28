@@ -43,7 +43,11 @@ export class CreateBookingUseCase {
     private readonly policies: readonly BookingPolicyRegistration[] = []
   ) {}
 
-  async execute(input: CreateBookingInput, ctx: UseCaseContext): Promise<BookingEntity> {
+  async execute(
+    input: CreateBookingInput,
+    ctx: UseCaseContext,
+    authorizePublicWrite?: (tx: TransactionContext) => Promise<void>
+  ): Promise<BookingEntity> {
     const { tenantId } = ctx;
     if (!tenantId) {
       throw new BadRequestException("Select a tenant");
@@ -67,6 +71,7 @@ export class CreateBookingUseCase {
       .digest("hex");
 
     return this.uow.withinTransaction(async (tx) => {
+      await authorizePublicWrite?.(tx);
       if (key) {
         await this.bookingRepo.lockMutation(tenantId, `${action}:${key}`, tx);
         const receipt = await this.bookingRepo.mutationReceipt(

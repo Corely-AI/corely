@@ -96,6 +96,9 @@ test("an anonymous guest can move and cancel only the appointment granted by a p
       await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
     ).toBe(true);
     const endpoint = `/api/w/${slug}/public/openbuk/manage`;
+    const legacy = await guest.request.get(`/api/w/${slug}/public/booking/pages/${slug}`);
+    expect(legacy.status()).toBe(404);
+    expect(await legacy.json()).toMatchObject({ detail: "Use the OpenBuk booking page" });
     const projection = await guest.request.post(endpoint, { data: { token } });
     expect(projection.ok()).toBe(true);
     expect(Object.keys(await projection.json()).sort()).toEqual(
