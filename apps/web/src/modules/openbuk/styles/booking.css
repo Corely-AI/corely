@@ -95,6 +95,13 @@
   .consent input {
     margin-top: 3px;
   }
+  .confirmation-email-choice {
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .confirmation-email-choice input {
+    margin-top: 2px;
+  }
   .booking-footer {
     text-align: center;
     font-size: 10px;
