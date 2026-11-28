@@ -10,6 +10,7 @@ import { LoadingSkeleton, Button, Input } from "@corely/ui";
 import type { EmployeeTask, EmployeeTaskList, TaskAssignee } from "@corely/contracts";
 import type { TasksClient } from "./tasks-client";
 import { tasksCopy } from "./tasks-copy";
+import { TaskContextPanel } from "./task-context-panel";
 import "./tasks.css";
 
 function statusOf(error: unknown) {
@@ -440,6 +441,15 @@ export function DailyWork({
                         )}
                       </div>
                     </article>
+                    {client.context && (
+                      <TaskContextPanel
+                        client={client.context}
+                        taskId={task.id}
+                        workspaceId={task.workspaceId}
+                        locale={locale}
+                        canWrite={data.capabilities.manage || data.capabilities.completeOwn}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
