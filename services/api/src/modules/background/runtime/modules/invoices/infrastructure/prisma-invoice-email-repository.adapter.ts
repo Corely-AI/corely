@@ -34,9 +34,18 @@ export class PrismaInvoiceEmailRepository {
         status: "ISSUED",
       },
       data: {
+        revision: { increment: 1 },
         status: "SENT",
         sentAt,
       },
     });
+  }
+
+  async isInvoiceCanceled(workspaceId: string, invoiceId: string): Promise<boolean> {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { id: invoiceId, tenantId: workspaceId, status: "CANCELED" },
+      select: { id: true },
+    });
+    return invoice !== null;
   }
 }

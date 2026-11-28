@@ -38,6 +38,9 @@ const FREELANCER_INFO = {
 
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 
+const hasFractionalQuantity = (lines: InvoiceFormData["lineItems"]) =>
+  lines.some(({ qty }) => Number.isFinite(qty) && !Number.isInteger(qty));
+
 export default function NewInvoicePage() {
   const runtime = useInvoiceRuntime();
   const invoicesApi = useInvoicesApi();
@@ -64,6 +67,7 @@ export default function NewInvoicePage() {
     watch,
   } = methods;
   useInvoiceDraftGuard("invoice-new", methods.formState.isDirty);
+  const savesDraft = hasFractionalQuantity(watch("lineItems"));
 
   // Submit mutation
   const createInvoiceMutation = useMutation({
@@ -117,21 +121,25 @@ export default function NewInvoicePage() {
   const onSubmit = async (data: InvoiceFormData) => {
     try {
       const invoice = await createInvoiceMutation.mutateAsync(data);
+      const savesDraft = hasFractionalQuantity(data.lineItems);
       const finalStatus = await runStatusFlow(
         invoice.id,
         invoice.status ?? "DRAFT",
-        targetStatus,
+        savesDraft ? "DRAFT" : targetStatus,
         data.paymentMethodId
       );
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
-      toast.success(
-        finalStatus === targetStatus ? t("invoices.created") : t("invoices.savedUnchanged")
-      );
+      const successMessage = savesDraft
+        ? "invoices.fractionalDraftSaved"
+        : finalStatus === targetStatus
+          ? "invoices.created"
+          : "invoices.savedUnchanged";
+      toast.success(t(successMessage));
       flushSync(() => {
         methods.reset(data);
         runtime?.registerDraft("invoice-new", false);
       });
-      navigate("/invoices");
+      navigate(savesDraft ? `/invoices/${invoice.id}` : "/invoices");
     } catch {
       // handled in mutation callbacks
     }
@@ -163,7 +171,9 @@ export default function NewInvoicePage() {
             >
               {isSubmitting || createInvoiceMutation.isPending
                 ? t("invoices.creating")
-                : t("invoices.createInvoice")}
+                : savesDraft
+                  ? t("invoices.saveFractionalDraft")
+                  : t("invoices.createInvoice")}
             </Button>
           </div>
         </div>
@@ -197,6 +207,9 @@ export default function NewInvoicePage() {
 
               {/* Line items table */}
               <InvoiceLineItems locale={locale} />
+              {savesDraft && (
+                <p className="text-sm text-muted-foreground">{t("invoices.fractionalDraftHelp")}</p>
+              )}
 
               {/* Notes and Totals */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

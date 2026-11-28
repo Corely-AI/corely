@@ -1,6 +1,51 @@
 import { test, expect } from "@playwright/test";
 import { invoiceTransport } from "./invoice-fixture";
 
+test("creates an editable correction draft and links back to the canceled original", async ({
+  page,
+  context,
+}, testInfo) => {
+  const fixture = await invoiceTransport(context, { correction: "allowed" });
+  await page.goto("/invoices/invoice-1?workspaceId=workspace-a");
+  const createCorrection = page.getByRole("button", { name: "Create correction draft" });
+  await expect(createCorrection).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("invoice-line-description-0")).toBeDisabled();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-correction-original-desktop.png"),
+  });
+  await createCorrection.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/invoices\/created-1\?workspaceId=workspace-a/);
+  await expect(page.getByTestId("invoice-line-description-0")).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Issue invoice", exact: true })).toBeVisible();
+  expect(fixture.commands.map(({ path }) => path)).toEqual(["/api/bff/invoices"]);
+  expect(fixture.commands[0].body).toMatchObject({
+    correctsInvoiceId: "invoice-1",
+    notes: "Original invoice notes",
+    lineItems: [{ description: "Consulting package", qty: 2, unitPriceCents: 15000 }],
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const original = page.getByRole("button", { name: "View original invoice" });
+  await expect(original).toBeVisible();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-correction-draft-mobile.png"),
+  });
+  await original.click();
+  await expect(page).toHaveURL(/\/invoices\/invoice-1\?workspaceId=workspace-a/);
+  await expect(page.getByTestId("invoice-line-description-0")).toBeDisabled();
+});
+
+test("stays on the original when creating a correction is rejected", async ({ page, context }) => {
+  const fixture = await invoiceTransport(context, { correction: "conflict" });
+  await page.goto("/invoices/invoice-1?workspaceId=workspace-a");
+  await page.getByRole("button", { name: "Create correction draft" }).click();
+  await expect(page.getByText("Action failed", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/invoices\/invoice-1\?workspaceId=workspace-a/);
+  expect(fixture.commands).toHaveLength(1);
+});
+
 test("downloads a draft PDF through its owner without calling forbidden settings", async ({
   page,
   context,
@@ -97,6 +142,44 @@ test("creates through existing contracts with deterministic cents and scoped coo
     expect(command.headers["x-idempotency-key"]).toBeTruthy();
     expect(command.headers.authorization).toBeUndefined();
   }
+});
+
+test("saves a fractional invoice as a draft without attempting issuance", async ({
+  page,
+  context,
+}, testInfo) => {
+  const fixture = await invoiceTransport(context);
+  await page.goto("/invoices/new?workspaceId=workspace-a");
+  await page.getByTestId("invoice-customer-select").click({ timeout: 15_000 });
+  await page.getByTestId("invoice-customer-option-customer-1").click();
+  await page.getByTestId("invoice-line-description-0").fill("Design consultation");
+  const quantity = page.getByTestId("invoice-line-qty-0");
+  await quantity.fill("1.5");
+  await page.getByTestId("invoice-line-rate-0").fill("150");
+  const saveDraft = page.getByRole("button", { name: "Save as draft" });
+  await expect(saveDraft).toBeEnabled();
+  const guidance = page.getByText(
+    "You can save fractional quantities in drafts. Use whole quantities before issuing."
+  );
+  await expect(guidance).toBeVisible();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-fractional-entry-desktop.png"),
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await guidance.scrollIntoViewIfNeeded();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("invoice-fractional-entry-mobile.png"),
+  });
+  await saveDraft.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/invoices\/created-1\?workspaceId=workspace-a/);
+  await expect(quantity).toHaveValue("1.5");
+  expect(fixture.commands.map(({ path }) => path)).toEqual(["/api/bff/invoices"]);
+  expect(fixture.commands[0].body).toMatchObject({
+    lineItems: [{ description: "Design consultation", qty: 1.5, unitPriceCents: 15000 }],
+  });
 });
 
 test("updates an existing draft and keeps the same resource and workspace", async ({

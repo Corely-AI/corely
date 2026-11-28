@@ -12,6 +12,7 @@ import {
 import type { UpdateJournalEntryInput, UpdateJournalEntryOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapEntryToDto } from "../mappers/accounting.mapper";
+import { hasStockCostTag } from "../../domain/stock-cost-tag";
 
 @RequireTenant()
 export class UpdateJournalEntryUseCase extends BaseUseCase<
@@ -35,6 +36,11 @@ export class UpdateJournalEntryUseCase extends BaseUseCase<
 
     if (entry.status !== "Draft") {
       return err(new ValidationError("Only draft entries can be updated"));
+    }
+    if (input.lines && (hasStockCostTag(input.lines) || hasStockCostTag(entry.toProps().lines))) {
+      return err(
+        new ValidationError("Stock-cost journal lines are managed by Accounting automation.")
+      );
     }
 
     const now = this.deps.clock.now();

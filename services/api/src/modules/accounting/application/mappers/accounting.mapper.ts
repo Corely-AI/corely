@@ -1,6 +1,7 @@
 import { type LedgerAccountAggregate } from "../../domain/ledger-account.aggregate";
 import { type JournalEntryAggregate } from "../../domain/journal-entry.aggregate";
 import { type LedgerAccountRepoPort } from "../ports/accounting-repository.port";
+import type { TransactionContext } from "@corely/kernel";
 
 export function mapSettingsToDto(settings: any) {
   const props = settings.toProps();
@@ -53,14 +54,15 @@ export function mapAccountToDto(account: LedgerAccountAggregate) {
 export async function mapEntryToDto(
   entry: JournalEntryAggregate,
   accountRepo: LedgerAccountRepoPort,
-  tenantId: string
+  tenantId: string,
+  tx?: TransactionContext
 ) {
   const props = entry.toProps();
 
   // Enrich lines with account details
   const lines = await Promise.all(
     props.lines.map(async (line) => {
-      const account = await accountRepo.findById(tenantId, line.ledgerAccountId);
+      const account = await accountRepo.findById(tenantId, line.ledgerAccountId, tx);
       return {
         id: line.id,
         ledgerAccountId: line.ledgerAccountId,

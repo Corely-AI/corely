@@ -1,9 +1,8 @@
 import { invoiceFinalizationPolicies } from "./invoice-extensions";
 import { Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
-import { PrismaService } from "@corely/data";
-import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
-import type { OutboxPort, AuditPort } from "@corely/kernel";
+import { OUTBOX_PORT, AUDIT_PORT, UNIT_OF_WORK } from "@corely/kernel";
+import type { OutboxPort, AuditPort, ClockPort, UnitOfWorkPort } from "@corely/kernel";
 import { EnvService } from "@corely/config";
 import { PromptRegistry } from "@corely/prompts";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -25,7 +24,10 @@ import {
   InvoiceNumberingPort,
 } from "./application/ports/invoice-numbering.port";
 import { CUSTOMER_QUERY_PORT, CustomerQueryPort } from "./application/ports/customer-query.port";
-import { PAYMENT_METHOD_QUERY_PORT } from "./application/ports/payment-method-query.port";
+import {
+  PAYMENT_METHOD_QUERY_PORT,
+  type PaymentMethodQueryPort,
+} from "./application/ports/payment-method-query.port";
 import { PrismaPaymentMethodQueryAdapter } from "./infrastructure/adapters/prisma-payment-method-query.adapter";
 import { LEGAL_ENTITY_QUERY_PORT } from "./application/ports/legal-entity-query.port";
 import { PrismaLegalEntityQueryAdapter } from "./infrastructure/adapters/legal-entity-query.adapter";
@@ -41,6 +43,8 @@ import { DocumentsModule } from "../documents/documents.module";
 import { TaxModule } from "../tax/tax.module";
 import { PlatformModule } from "../platform/platform.module";
 import { AccountingModule } from "../accounting/accounting.module";
+import { CatalogModule } from "../catalog/catalog.module";
+import { InventoryModule } from "../inventory/inventory.module";
 import { TaxEngineService } from "../tax/application/services/tax-engine.service";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
@@ -59,7 +63,7 @@ import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
 import { InvoiceCommandService } from "./application/services/invoice-command.service";
 import { INVOICE_COPILOT_RATE_LIMIT_PORT } from "./application/ports/invoice-copilot-rate-limit.port";
 import type { InvoiceCopilotRateLimitPort } from "./application/ports/invoice-copilot-rate-limit.port";
-import { CogsPostingService } from "../accounting/application/services/cogs-posting.service";
+import { InvoiceAccountingAdapter } from "./infrastructure/adapters/invoice-accounting.adapter";
 import {
   INVOICE_REMINDER_STATE_PORT,
   type InvoiceReminderStatePort,
@@ -81,6 +85,8 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
     forwardRef(() => TaxModule),
     forwardRef(() => PlatformModule),
     AccountingModule,
+    CatalogModule,
+    InventoryModule,
   ],
   controllers: [
     InvoicesHttpController,
@@ -91,6 +97,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
   ],
   providers: [
     PrismaInvoiceRepoAdapter,
+    InvoiceAccountingAdapter,
     PrismaInvoiceCopilotRateLimitAdapter,
     PrismaTenantTimeZoneAdapter,
     AiSdkTextAdapter,
@@ -125,7 +132,8 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         timeService: TimeService,
         customerQuery: CustomerQueryPort,
         legalEntityQuery: any,
-        paymentMethodQuery: any
+        paymentMethodQuery: any,
+        accounting: InvoiceAccountingAdapter
       ) =>
         new CreateInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -136,6 +144,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
           customerQuery,
           legalEntityQuery,
           paymentMethodQuery,
+          accounting,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
@@ -145,6 +154,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         CUSTOMER_QUERY_PORT,
         LEGAL_ENTITY_QUERY_PORT,
         PAYMENT_METHOD_QUERY_PORT,
+        InvoiceAccountingAdapter,
       ],
     },
     {
@@ -180,12 +190,13 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
       useFactory: (
         repo: PrismaInvoiceRepoAdapter,
         numbering: InvoiceNumberingPort,
-        clock: any,
+        clock: ClockPort,
         customerQuery: CustomerQueryPort,
-        paymentMethodQuery: any,
+        paymentMethodQuery: PaymentMethodQueryPort,
         taxEngine: TaxEngineService,
-        prisma: PrismaService,
-        cogsPostingService: CogsPostingService
+        unitOfWork: UnitOfWorkPort,
+        audit: AuditPort,
+        accounting: InvoiceAccountingAdapter
       ) =>
         new FinalizeInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -195,8 +206,9 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
           customerQuery,
           paymentMethodQuery,
           taxEngine,
-          prisma,
-          cogsPostingService,
+          unitOfWork,
+          audit,
+          accounting,
           policies: invoiceFinalizationPolicies,
         }),
       inject: [
@@ -206,8 +218,9 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         CUSTOMER_QUERY_PORT,
         PAYMENT_METHOD_QUERY_PORT,
         TaxEngineService,
-        PrismaService,
-        CogsPostingService,
+        UNIT_OF_WORK,
+        AUDIT_PORT,
+        InvoiceAccountingAdapter,
       ],
     },
     {
@@ -294,13 +307,28 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
     },
     {
       provide: CancelInvoiceUseCase,
-      useFactory: (repo: PrismaInvoiceRepoAdapter, clock: any) =>
+      useFactory: (
+        repo: PrismaInvoiceRepoAdapter,
+        clock: ClockPort,
+        unitOfWork: UnitOfWorkPort,
+        audit: AuditPort,
+        accounting: InvoiceAccountingAdapter
+      ) =>
         new CancelInvoiceUseCase({
           logger: new NestLoggerAdapter(),
           invoiceRepo: repo,
           clock,
+          unitOfWork,
+          audit,
+          accounting,
         }),
-      inject: [PrismaInvoiceRepoAdapter, CLOCK_PORT_TOKEN],
+      inject: [
+        PrismaInvoiceRepoAdapter,
+        CLOCK_PORT_TOKEN,
+        UNIT_OF_WORK,
+        AUDIT_PORT,
+        InvoiceAccountingAdapter,
+      ],
     },
     {
       provide: GetInvoiceByIdUseCase,

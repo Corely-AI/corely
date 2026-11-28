@@ -1,17 +1,114 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
-import { formatLocalDate, parseLocalDate } from "@corely/kernel";
+import { Inject, Injectable } from "@nestjs/common";
+import { EXT_KV_PORT, getPrismaClient, PrismaService, type ExtKvPort } from "@corely/data";
+import {
+  ConflictError,
+  ValidationError,
+  formatLocalDate,
+  parseLocalDate,
+  type TransactionContext,
+} from "@corely/kernel";
 import type {
   InventoryLotRepositoryPort,
+  InvoiceInventoryLotPort,
+  InvoiceLotAllocation,
   InventoryLot,
   ListLotsFilter,
   ExpiryItem,
 } from "../../application/ports/inventory-lot-repository.port";
 import type { InventoryLotStatus } from "../../domain/inventory.types";
+import { pickFEFO } from "../../domain/fefo-picker";
+
+const invoiceConsumptionKey = (tenantId: string, invoiceId: string) => ({
+  tenantId,
+  moduleId: "inventory",
+  scope: "invoice-lot-consumption",
+  key: invoiceId,
+});
 
 @Injectable()
-export class PrismaInventoryLotRepository implements InventoryLotRepositoryPort {
-  constructor(private readonly prisma: PrismaService) {}
+export class PrismaInventoryLotRepository
+  implements InventoryLotRepositoryPort, InvoiceInventoryLotPort
+{
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(EXT_KV_PORT) private readonly kv: ExtKvPort
+  ) {}
+
+  async hasInvoiceConsumption(tenantId: string, invoiceId: string, tx?: TransactionContext) {
+    return (await this.kv.get(invoiceConsumptionKey(tenantId, invoiceId), tx)) !== null;
+  }
+
+  async recordInvoiceConsumption(tenantId: string, invoiceId: string, tx: TransactionContext) {
+    await this.kv.set({ ...invoiceConsumptionKey(tenantId, invoiceId), value: true }, tx);
+  }
+
+  async hasProductLots(
+    tenantId: string,
+    productId: string,
+    tx: TransactionContext
+  ): Promise<boolean> {
+    const lot = await getPrismaClient(this.prisma, tx).inventoryLot.findFirst({
+      where: { tenantId, productId, archivedAt: null },
+      select: { id: true },
+    });
+    return lot !== null;
+  }
+
+  async allocateInvoiceLots(
+    tenantId: string,
+    productId: string,
+    quantity: number,
+    tx: TransactionContext
+  ): Promise<InvoiceLotAllocation[]> {
+    const lots = await getPrismaClient(this.prisma, tx).inventoryLot.findMany({
+      where: { tenantId, productId, archivedAt: null, status: "AVAILABLE", qtyOnHand: { gt: 0 } },
+      orderBy: [
+        { expiryDate: "asc" },
+        { receivedDate: "asc" },
+        { createdAt: "asc" },
+        { id: "asc" },
+      ],
+    });
+    const available = lots.map((lot) => this.mapToEntity(lot));
+    const pick = pickFEFO(available, quantity);
+    if (pick.shortfall > 0) {
+      throw new ValidationError("Insufficient available, unexpired stock for an invoice line.", {
+        productId,
+        qtyRequested: quantity,
+        availableQty: pick.quantityAllocated,
+      });
+    }
+    const lotsById = new Map(available.map((lot) => [lot.id, lot]));
+    return pick.allocations.flatMap(({ lotId, quantityPicked }) => {
+      const lot = lotsById.get(lotId);
+      return lot ? [{ lot, quantityPicked }] : [];
+    });
+  }
+
+  async consumeInvoiceLot(
+    lot: InventoryLot,
+    quantity: number,
+    tx: TransactionContext
+  ): Promise<void> {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const result = await getPrismaClient(this.prisma, tx).inventoryLot.updateMany({
+      where: {
+        id: lot.id,
+        tenantId: lot.tenantId,
+        status: "AVAILABLE",
+        archivedAt: null,
+        updatedAt: lot.updatedAt,
+        qtyOnHand: lot.qtyOnHand,
+        qtyReserved: lot.qtyReserved,
+        OR: [{ expiryDate: null }, { expiryDate: { gte: today } }],
+      },
+      data: { qtyOnHand: { decrement: quantity } },
+    });
+    if (result.count !== 1) {
+      throw new ConflictError("Stock changed while issuing the invoice. Retry finalizing.");
+    }
+  }
 
   async create(_tenantId: string, lot: InventoryLot): Promise<void> {
     await this.prisma.inventoryLot.create({

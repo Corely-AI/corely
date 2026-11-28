@@ -1,5 +1,14 @@
 import { type InvoiceAggregate } from "../../domain/invoice.aggregate";
 import { type InvoiceStatus } from "../../domain/invoice.types";
+import { ConflictError, type TransactionContext } from "@corely/kernel";
+
+export class InvoiceNumberConflictError extends ConflictError {}
+
+export class InvoiceChangedError extends ConflictError {
+  constructor() {
+    super("Invoice changed while this operation was in progress. Reload and retry.");
+  }
+}
 
 export type ListInvoicesFilters = {
   status?: InvoiceStatus;
@@ -47,7 +56,11 @@ export interface InvoiceRepoPort {
     workspaceId: string,
     sentBefore: Date
   ): Promise<InvoiceReminderCandidate[]>;
-  save(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;
+  save(
+    workspaceId: string,
+    invoice: InvoiceAggregate,
+    options: { expectedRevision: number; tx?: TransactionContext }
+  ): Promise<void>;
   create(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;
   isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean>;
 }

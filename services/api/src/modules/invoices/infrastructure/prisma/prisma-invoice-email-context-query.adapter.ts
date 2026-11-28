@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
+import { invoiceLineNetCents } from "@corely/contracts";
 import {
   InvoiceEmailContextQueryPort,
   InvoiceEmailContext,
@@ -29,7 +30,7 @@ export class PrismaInvoiceEmailContextQueryAdapter implements InvoiceEmailContex
 
     // Calculate total from lines
     const totalAmountCents = invoice.lines.reduce(
-      (sum, line) => sum + line.qty * line.unitPriceCents,
+      (sum, line) => sum + invoiceLineNetCents(line.draftQuantity ?? line.qty, line.unitPriceCents),
       0
     );
 

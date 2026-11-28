@@ -1,3 +1,5 @@
+import { invoiceLineNetCents } from "@corely/contracts";
+
 export class InvoiceLine {
   constructor(
     public readonly id: string,
@@ -7,6 +9,6 @@ export class InvoiceLine {
   ) {}
 
   get lineTotal(): number {
-    return this.qty * this.unitPriceCents;
+    return invoiceLineNetCents(this.qty, this.unitPriceCents);
   }
 }

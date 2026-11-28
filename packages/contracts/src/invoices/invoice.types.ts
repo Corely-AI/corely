@@ -69,7 +69,7 @@ export const InvoiceDtoSchema = z.object({
   pdfFailureReason: z.string().nullable().optional(),
   // Sales source tracking
   sourceType: z
-    .enum(["order", "quote", "deal", "manual", "coaching_engagement"])
+    .enum(["order", "quote", "deal", "manual", "coaching_engagement", "invoice_correction"])
     .nullable()
     .optional(),
   sourceId: z.string().nullable().optional(),

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { getPrismaClient, PrismaService, type PrismaTransactionClient } from "@corely/data";
+import type { TransactionContext } from "@corely/kernel";
 import type {
   AccountingSettingsRepoPort,
   LedgerAccountRepoPort,
@@ -21,13 +22,17 @@ import {
   accountingPeriodToPrisma,
 } from "./mappers";
 import type { AccountType, EntryStatus } from "@corely/contracts";
+import { AUTO_COGS_TAG } from "../../domain/stock-cost-tag";
 
 @Injectable()
 export class PrismaAccountingSettingsRepository implements AccountingSettingsRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByTenant(tenantId: string): Promise<AccountingSettingsAggregate | null> {
-    const settings = await this.prisma.accountingSettings.findUnique({
+  async findByTenant(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<AccountingSettingsAggregate | null> {
+    const settings = await getPrismaClient(this.prisma, tx).accountingSettings.findUnique({
       where: { tenantId },
     });
     return settings ? accountingSettingsFromPrisma(settings) : null;
@@ -47,15 +52,23 @@ export class PrismaAccountingSettingsRepository implements AccountingSettingsRep
 export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findById(tenantId: string, accountId: string): Promise<LedgerAccountAggregate | null> {
-    const account = await this.prisma.ledgerAccount.findFirst({
+  async findById(
+    tenantId: string,
+    accountId: string,
+    tx?: TransactionContext
+  ): Promise<LedgerAccountAggregate | null> {
+    const account = await getPrismaClient(this.prisma, tx).ledgerAccount.findFirst({
       where: { id: accountId, tenantId },
     });
     return account ? ledgerAccountFromPrisma(account) : null;
   }
 
-  async findByCode(tenantId: string, code: string): Promise<LedgerAccountAggregate | null> {
-    const account = await this.prisma.ledgerAccount.findUnique({
+  async findByCode(
+    tenantId: string,
+    code: string,
+    tx?: TransactionContext
+  ): Promise<LedgerAccountAggregate | null> {
+    const account = await getPrismaClient(this.prisma, tx).ledgerAccount.findUnique({
       where: { tenantId_code: { tenantId, code } },
     });
     return account ? ledgerAccountFromPrisma(account) : null;
@@ -63,9 +76,10 @@ export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
 
   async findBySystemKey(
     tenantId: string,
-    systemKey: string
+    systemKey: string,
+    tx?: TransactionContext
   ): Promise<LedgerAccountAggregate | null> {
-    const account = await this.prisma.ledgerAccount.findFirst({
+    const account = await getPrismaClient(this.prisma, tx).ledgerAccount.findFirst({
       where: { tenantId, systemAccountKey: systemKey },
     });
     return account ? ledgerAccountFromPrisma(account) : null;
@@ -148,6 +162,23 @@ export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
 export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
+  async hasInvoiceStockCost(
+    tenantId: string,
+    invoiceId: string,
+    tx?: TransactionContext
+  ): Promise<boolean> {
+    const entry = await getPrismaClient(this.prisma, tx).journalEntry.findFirst({
+      where: {
+        tenantId,
+        sourceType: "Invoice",
+        sourceId: invoiceId,
+        lines: { some: { tags: JSON.stringify([AUTO_COGS_TAG, `invoice:${invoiceId}`]) } },
+      },
+      select: { id: true },
+    });
+    return entry !== null;
+  }
+
   async findById(tenantId: string, entryId: string): Promise<JournalEntryAggregate | null> {
     const entry = await this.prisma.journalEntry.findFirst({
       where: { id: entryId, tenantId },
@@ -219,10 +250,10 @@ export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
     };
   }
 
-  async save(entry: JournalEntryAggregate): Promise<void> {
+  async save(entry: JournalEntryAggregate, transaction?: TransactionContext): Promise<void> {
     const { entry: entryData, lines: linesData } = journalEntryToPrisma(entry);
 
-    await this.prisma.$transaction(async (tx) => {
+    const persist = async (tx: PrismaTransactionClient) => {
       // Upsert entry payload only; lines are replaced in a single pass below.
       await tx.journalEntry.upsert({
         where: { id: entry.id },
@@ -240,7 +271,12 @@ export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
           data: linesData.map((l) => ({ ...l, tenantId: entry.tenantId })),
         });
       }
-    });
+    };
+    if (transaction) {
+      await persist(getPrismaClient(this.prisma, transaction));
+    } else {
+      await this.prisma.$transaction(persist);
+    }
   }
 
   async delete(tenantId: string, entryId: string): Promise<void> {

@@ -2,7 +2,13 @@ export type InvoiceStatus = "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED";
 
 export type PdfStatus = "NONE" | "GENERATING" | "READY" | "FAILED";
 
-export type InvoiceSourceType = "manual" | "order" | "quote" | "deal" | "coaching_engagement";
+export type InvoiceSourceType =
+  | "manual"
+  | "order"
+  | "quote"
+  | "deal"
+  | "coaching_engagement"
+  | "invoice_correction";
 
 export type InvoiceLine = {
   id: string;
