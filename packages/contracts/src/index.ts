@@ -17,6 +17,7 @@ export * from "./directory";
 export * from "./directory-admin";
 export * from "./cms";
 export * from "./copilot/operations.schema";
+export * from "./knowledge/procedure.schema";
 export * from "./website";
 export * from "./sales";
 export * from "./rentals";

@@ -72,8 +72,8 @@ export class PrivateEmailOriginalsAdapter {
     });
   }
 
-  async downloadUrl(owner: OriginalOwner, documentId: string) {
-    const file = await this.prisma.file.findFirst({
+  private findPrivateFile(owner: OriginalOwner, documentId: string) {
+    return this.prisma.file.findFirst({
       where: {
         tenantId: owner.tenantId,
         documentId,
@@ -83,6 +83,17 @@ export class PrivateEmailOriginalsAdapter {
       },
       select: { objectKey: true },
     });
+  }
+
+  async read(owner: OriginalOwner, documentId: string) {
+    const file = await this.findPrivateFile(owner, documentId);
+    return file
+      ? this.storage.getObject({ tenantId: owner.tenantId, objectKey: file.objectKey })
+      : null;
+  }
+
+  async downloadUrl(owner: OriginalOwner, documentId: string) {
+    const file = await this.findPrivateFile(owner, documentId);
     if (!file) {
       return null;
     }

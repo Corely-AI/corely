@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from "@nestjs/common";
 import {
   AUDIT_PORT,
@@ -25,6 +26,9 @@ import {
   type OpenBukSetupDraft,
   type OpenBukSetup,
   type OpenBukBook,
+  type OpenBukPublicBookResponse,
+  type OpenBukAgendaQuery,
+  type OpenBukManagerBook,
   type OpenBukReceipt,
   type OpenBukTeamUpdate,
 } from "@corely/contracts";
@@ -40,6 +44,7 @@ import {
 import { openBukAvailability, studioDate } from "../../domain/openbuk-availability";
 import { assertPublicModuleEnabled } from "../../../../shared/public";
 import { toHttpException } from "../../../../shared/http/usecase-error.mapper";
+import { OpenBukGuestCredentials } from "./openbuk-guest-credentials";
 
 import type { BookingPolicyRegistration } from "@corely/booking/extensions";
 import { BOOKING_POLICIES, enforceBookingPolicy } from "../booking-policy";
@@ -58,7 +63,8 @@ export class OpenBukStudioUseCase {
     @Inject(StaffAvailabilityConstraintService)
     private readonly staffAvailability: Pick<StaffAvailabilityConstraintService, "windows">,
     @Inject(BOOKING_POLICIES)
-    private readonly policies: readonly BookingPolicyRegistration[] = []
+    private readonly policies: readonly BookingPolicyRegistration[] = [],
+    @Optional() private readonly guestCredentials?: OpenBukGuestCredentials
   ) {}
 
   private scope(ctx: UseCaseContext): StudioScope {
@@ -208,7 +214,8 @@ export class OpenBukStudioUseCase {
     scope: StudioScope,
     day: string,
     selection?: OpenBukSelection,
-    tx?: TransactionContext
+    tx?: TransactionContext,
+    excludeBookingId?: string
   ) {
     const studio = await this.repo.studio(scope, tx, selection);
     if (!studio) {
@@ -225,7 +232,8 @@ export class OpenBukStudioUseCase {
       new Date(midnight - 14 * 3600000),
       new Date(midnight + 38 * 3600000),
       now,
-      tx
+      tx,
+      excludeBookingId
     );
     const staffWindows = await this.staffAvailability.windows(
       scope,
@@ -236,19 +244,63 @@ export class OpenBukStudioUseCase {
     );
     return { studio, slots: openBukAvailability(studio, day, now, busy, staffWindows) };
   }
+  async replacementSlot(
+    scope: StudioScope,
+    timezone: string,
+    bookingId: string,
+    startAt: Date,
+    tx?: TransactionContext,
+    selection?: OpenBukSelection
+  ) {
+    const { slots } = await this.slots(
+      scope,
+      studioDate(startAt, timezone),
+      selection,
+      tx,
+      bookingId
+    );
+    const slot = slots.find((candidate) => candidate.startAt === startAt.toISOString());
+    if (!slot) {
+      throw new ConflictException("Booking:SlotUnavailable");
+    }
+    return slot;
+  }
+  async appointmentSlots(
+    scope: StudioScope,
+    day: string,
+    selection: OpenBukSelection,
+    bookingId: string
+  ) {
+    return this.slots(scope, day, selection, undefined, bookingId);
+  }
   async availability(day: string, ctx: UseCaseContext, selection?: OpenBukSelection) {
     const result = await this.slots(this.publicScope(ctx), day, selection);
     return { slots: result.slots, timezone: result.studio.timezone };
   }
   async book(input: OpenBukBook, key: string, ctx: UseCaseContext) {
-    const scope = this.publicScope(ctx);
+    return this.commitBooking(input, key, this.publicScope(ctx));
+  }
+
+  async bookForStudio(input: OpenBukManagerBook, key: string, ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    return this.commitBooking(input, key, scope, ctx);
+  }
+
+  private async commitBooking(
+    input: OpenBukManagerBook & Pick<OpenBukBook, "confirmationEmailRequested">,
+    key: string,
+    scope: StudioScope,
+    manager?: UseCaseContext
+  ): Promise<OpenBukPublicBookResponse> {
     if (!/^[a-zA-Z0-9_-]{16,128}$/.test(key)) {
       throw new BadRequestException("A valid Idempotency-Key is required");
     }
+    const receiptKey = manager ? `manager:${key}` : key;
     const fingerprint = createHash("sha256").update(JSON.stringify(input)).digest("hex");
     return this.uow.withinTransaction(async (tx) => {
       await this.repo.lock(scope, `openbuk:${scope.workspaceId}`, tx);
-      const saved = await this.repo.receipt(scope, key, tx);
+      const userId = manager ? (await this.admin(manager, true, tx)).userId : undefined;
+      const saved = await this.repo.receipt(scope, receiptKey, tx);
       if (saved) {
         if (saved.fingerprint !== fingerprint) {
           throw new ConflictException({
@@ -256,7 +308,11 @@ export class OpenBukStudioUseCase {
             message: "Booking:IdempotencyMismatch",
           });
         }
-        return { receipt: saved.receipt };
+        const management =
+          saved.guestBookingId && !manager
+            ? await this.guestCredentials?.replay(scope, saved.guestBookingId, this.clock.now(), tx)
+            : undefined;
+        return { receipt: saved.receipt, management };
       }
       const initial = await this.repo.studio(scope, tx, input);
       if (!initial) {
@@ -295,12 +351,38 @@ export class OpenBukStudioUseCase {
         currency: studio.currency,
         timezone: studio.timezone,
       };
-      const bookingId = await this.repo.create(scope, studio, input, receipt, tx);
-      await this.repo.saveReceipt(scope, key, { fingerprint, receipt }, tx);
+      const bookingId = await this.repo.create(
+        scope,
+        studio,
+        input,
+        receipt,
+        tx,
+        userId,
+        !manager && input.confirmationEmailRequested
+      );
+      const management = !manager
+        ? await this.guestCredentials?.issue(
+            scope,
+            bookingId,
+            receipt.startAt,
+            this.clock.now(),
+            tx
+          )
+        : undefined;
+      await this.repo.saveReceipt(
+        scope,
+        receiptKey,
+        {
+          fingerprint,
+          receipt,
+          ...(management ? { guestBookingId: bookingId } : {}),
+        },
+        tx
+      );
       await this.audit.log(
         {
           tenantId: scope.tenantId,
-          userId: "public",
+          userId: userId ?? "public",
           action: "booking.created",
           entityType: "Booking",
           entityId: bookingId,
@@ -321,12 +403,79 @@ export class OpenBukStudioUseCase {
         },
         tx
       );
-      return { receipt };
+      return { receipt, management };
     });
   }
   async appointments(day: string, ctx: UseCaseContext) {
     // Customer contact snapshots are operational data; initial roles are owner/admin.
     const { scope } = await this.admin(ctx, true);
     return { appointments: await this.repo.appointments(scope, day) };
+  }
+
+  async agenda(query: OpenBukAgendaQuery, ctx: UseCaseContext) {
+    const { scope } = await this.admin(ctx, true);
+    const [settings, catalog] = await Promise.all([
+      this.repo.studioSettings(scope),
+      this.repo.publicCatalog(scope),
+    ]);
+    if (!settings) {
+      throw new NotFoundException("Studio not found");
+    }
+    const services = catalog?.services ?? (catalog ? [this.defaultService(catalog.studio)] : []);
+    const service = services.find(({ serviceId }) => serviceId === query.serviceId) ?? services[0];
+    const staff =
+      service?.staff.find(({ staffId }) => staffId === query.staffId) ?? service?.staff[0];
+    const selection =
+      service && staff ? { serviceId: service.serviceId, staffId: staff.staffId } : null;
+    const start = Date.parse(`${query.day}T00:00:00Z`);
+    const days = await Promise.all(
+      Array.from({ length: query.span === "week" ? 7 : 1 }, (_, offset) => {
+        const day = new Date(start + offset * 86_400_000).toISOString().slice(0, 10);
+        return this.agendaDay(scope, day, selection);
+      })
+    );
+    return { timezone: settings.timezone, services, selection, days };
+  }
+
+  private defaultService(
+    studio: NonNullable<Awaited<ReturnType<OpenBukRepositoryPort["studio"]>>>
+  ) {
+    const {
+      serviceId,
+      serviceName,
+      durationMinutes,
+      priceCents,
+      currency,
+      bufferBeforeMinutes,
+      bufferAfterMinutes,
+      staffId,
+      staffName,
+      timezone,
+    } = studio;
+    return {
+      serviceId,
+      serviceName,
+      durationMinutes,
+      priceCents,
+      currency,
+      bufferBeforeMinutes,
+      bufferAfterMinutes,
+      staff: [{ staffId, staffName, timezone }],
+    };
+  }
+
+  private async agendaDay(scope: StudioScope, day: string, selection: OpenBukSelection | null) {
+    const appointments = await this.repo.appointments(scope, day);
+    if (!selection) {
+      return { day, appointments, slots: [] };
+    }
+    try {
+      return { day, appointments, slots: (await this.slots(scope, day, selection)).slots };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return { day, appointments, slots: [] };
+      }
+      throw error;
+    }
   }
 }
